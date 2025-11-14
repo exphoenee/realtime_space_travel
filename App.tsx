@@ -4,6 +4,7 @@ import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
 import MainMenu from "./components/MainMenu";
 import * as tf from "@tensorflow/tfjs";
+import "@tensorflow-models/face-detection/dist/tfjs/tfjs";
 import * as faceDetection from "@tensorflow-models/face-detection";
 
 export interface Destination {
