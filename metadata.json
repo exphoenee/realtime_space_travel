@@ -1,0 +1,5 @@
+{
+  "name": "Valós idejű űrutazás szimulátor",
+  "description": "Egy egyszerű, valós idejű űrutazás szimulátor, amely egy csillagmező effektet és egy visszaszámlálót jelenít meg a legközelebbi naprendszerig. React és Canvas segítségével készült.",
+  "requestFramePermissions": []
+}
