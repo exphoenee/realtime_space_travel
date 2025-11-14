@@ -1,25 +1,67 @@
 
-import React, { useRef, useEffect } from 'react';
-import { Star } from '../types';
+import React, { useRef, useEffect } from "react";
+import { Star } from "../types";
 
 const STAR_COUNT = 800;
 const STAR_SPEED = 0.05;
+const TARGET_ASPECT = 16 / 9;
 
-const Starfield: React.FC = () => {
+interface StarfieldProps {
+  onCanvasBoundsChange?: (bounds: DOMRectReadOnly) => void;
+}
+
+const Starfield: React.FC<StarfieldProps> = ({ onCanvasBoundsChange }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let stars: Star[] = [];
+    const cockpitImage = new Image();
+    let cockpitLoaded = false;
+
+    cockpitImage.src = "/cockpit.png";
+    cockpitImage.onload = () => {
+      cockpitLoaded = true;
+      if (onCanvasBoundsChange) {
+        const rect = canvas.getBoundingClientRect();
+        onCanvasBoundsChange(rect);
+      }
+    };
+
+    const resizeCanvas = () => {
+      const { innerWidth, innerHeight } = window;
+      let width = innerWidth;
+      let height = innerHeight;
+
+      if (width / height > TARGET_ASPECT) {
+        width = height * TARGET_ASPECT;
+      } else {
+        height = width / TARGET_ASPECT;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      canvas.style.left = `${(innerWidth - width) / 2}px`;
+      canvas.style.top = `${(innerHeight - height) / 2}px`;
+
+      queueMicrotask(() => {
+        if (onCanvasBoundsChange) {
+          const rect = canvas.getBoundingClientRect();
+          onCanvasBoundsChange(rect);
+        }
+      });
+    };
 
     const setup = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      resizeCanvas();
       stars = [];
       for (let i = 0; i < STAR_COUNT; i++) {
         stars.push({
@@ -38,7 +80,7 @@ const Starfield: React.FC = () => {
 
     let animationFrameId: number;
     const draw = () => {
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
@@ -55,7 +97,7 @@ const Starfield: React.FC = () => {
         const r = Math.max(0.1, (canvas.width - star.z) / canvas.width * 2.5);
 
         const opacity = (canvas.width - star.z) / canvas.width;
-        
+
         ctx.beginPath();
         ctx.arc(sx, sy, r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
@@ -63,25 +105,30 @@ const Starfield: React.FC = () => {
       }
 
       ctx.restore();
-      animationFrameId = requestAnimationFrame(draw);
-    };
 
-    const handleResize = () => {
-      setup();
+      if (cockpitLoaded) {
+        ctx.drawImage(cockpitImage, 0, 0, canvas.width, canvas.height);
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
     };
 
     setup();
     draw();
 
-    window.addEventListener('resize', handleResize);
+    const handleResize = () => {
+      setup();
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full z-0" />;
+  return <canvas ref={canvasRef} className="absolute z-0" />;
 };
 
 export default Starfield;
