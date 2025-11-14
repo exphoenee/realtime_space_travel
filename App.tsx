@@ -13,7 +13,9 @@ export interface Destination {
 }
 
 const isFaceLookingForward = (face: faceDetection.Face) => {
-  const namedKeypoints = face.keypoints.reduce<Record<string, faceDetection.Keypoint>>((acc, keypoint) => {
+  const namedKeypoints = face.keypoints.reduce<
+    Record<string, faceDetection.Keypoint>
+  >((acc, keypoint) => {
     if (keypoint.name) {
       acc[keypoint.name] = keypoint;
     }
@@ -39,14 +41,13 @@ const isFaceLookingForward = (face: faceDetection.Face) => {
     return false;
   }
 
-  // Expect both ears to be almost equally far from the nose when the face is
-  // directed toward the camera. The threshold can be tuned if needed.
   const balanceRatio = leftEarDistance / rightEarDistance;
   const symmetricalFace = balanceRatio > 0.65 && balanceRatio < 1 / 0.65;
 
   const eyeHorizontalSpan = Math.abs(leftEye.x - rightEye.x);
   const eyeVerticalOffset = Math.abs(leftEye.y - rightEye.y);
-  const eyesLevel = eyeHorizontalSpan > 0 && eyeVerticalOffset / eyeHorizontalSpan < 0.35;
+  const eyesLevel =
+    eyeHorizontalSpan > 0 && eyeVerticalOffset / eyeHorizontalSpan < 0.35;
 
   return symmetricalFace && eyesLevel;
 };
@@ -63,7 +64,9 @@ const App: React.FC = () => {
   const [inactivitySeconds, setInactivitySeconds] = useState(0);
   const [crewLost, setCrewLost] = useState(false);
   const [missionComplete, setMissionComplete] = useState(false);
-  const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
+  const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(
+    null,
+  );
   const [serviceSeconds, setServiceSeconds] = useState(0);
   const [bestServiceSeconds, setBestServiceSeconds] = useState(0);
   const [isMusicMuted, setIsMusicMuted] = useState(false);
@@ -184,9 +187,10 @@ const App: React.FC = () => {
     }
   };
 
-  const attentionCountdown = isAttentionLost && !missionComplete
-    ? Math.max(0, INACTIVITY_LIMIT_SECONDS - inactivitySeconds)
-    : null;
+  const attentionCountdown =
+    isAttentionLost && !missionComplete
+      ? Math.max(0, INACTIVITY_LIMIT_SECONDS - inactivitySeconds)
+      : null;
 
   const handleCanvasBoundsChange = useCallback((bounds: DOMRectReadOnly) => {
     setCanvasBounds(bounds);
@@ -205,8 +209,13 @@ const App: React.FC = () => {
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
   const isPauseOverlayVisible =
-    !crewLost && !missionComplete && isPaused && !cameraError && !showExitConfirm;
-  const showBellOverlay = !!canvasBounds && (!destination || isPauseOverlayVisible);
+    !crewLost &&
+    !missionComplete &&
+    isPaused &&
+    !cameraError &&
+    !showExitConfirm;
+  const showBellOverlay =
+    !!canvasBounds && (!destination || isPauseOverlayVisible);
   const bellOverlay =
     showBellOverlay && canvasBounds ? (
       <div
@@ -269,24 +278,18 @@ const App: React.FC = () => {
     }, intervalDuration);
   }, []);
 
-  const updateBestServiceTime = useCallback(
-    (seconds: number) => {
-      if (seconds <= 0) return;
-      setBestServiceSeconds((prev) => {
-        if (seconds <= prev) {
-          return prev;
-        }
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(
-            "bestServiceSeconds",
-            seconds.toString(),
-          );
-        }
-        return seconds;
-      });
-    },
-    [],
-  );
+  const updateBestServiceTime = useCallback((seconds: number) => {
+    if (seconds <= 0) return;
+    setBestServiceSeconds((prev) => {
+      if (seconds <= prev) {
+        return prev;
+      }
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("bestServiceSeconds", seconds.toString());
+      }
+      return seconds;
+    });
+  }, []);
 
   const shouldPlayMusic =
     !destination ||
@@ -371,7 +374,13 @@ const App: React.FC = () => {
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [destination, isAttentionLost, crewLost, missionComplete, updateBestServiceTime]);
+  }, [
+    destination,
+    isAttentionLost,
+    crewLost,
+    missionComplete,
+    updateBestServiceTime,
+  ]);
 
   useEffect(() => {
     if (!destination || missionComplete || crewLost) {
@@ -386,7 +395,13 @@ const App: React.FC = () => {
       setInactivitySeconds(0);
       setShowExitConfirm(false);
     }
-  }, [destination, remainingYears, missionComplete, crewLost, updateBestServiceTime]);
+  }, [
+    destination,
+    remainingYears,
+    missionComplete,
+    crewLost,
+    updateBestServiceTime,
+  ]);
 
   // Camera and face detection effect
   useEffect(() => {
@@ -419,12 +434,21 @@ const App: React.FC = () => {
       try {
         await tf.setBackend("webgl");
         const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+
+        // ======================= EZ A JAVÍTÁS =========================
+        // Különbséget teszünk a fejlesztői és a buildelt verzió között.
+        // Vite `import.meta.env.DEV` változója megmondja, hogy a dev szerver fut-e.
+        const solutionPath = import.meta.env.DEV
+          ? "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection" // DEV módban használjuk a CDN-t
+          : `${import.meta.env.BASE_URL}face_detection`; // BUILD után a lokális másolatot
+
         const detectorConfig: faceDetection.MediaPipeFaceDetectorMediaPipeModelConfig =
           {
             runtime: "mediapipe",
-            solutionPath:
-              "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection",
+            solutionPath: solutionPath, // Itt használjuk a fent meghatározott útvonalat
           };
+        // =================================================================
+
         detector = await faceDetection.createDetector(model, detectorConfig);
       } catch (error) {
         console.error("Error loading face detection model:", error);
