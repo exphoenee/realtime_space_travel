@@ -128,7 +128,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const audio = new Audio("/main_theme.mp3");
+    const audio = new Audio(`${import.meta.env.BASE_URL}main_theme.mp3`);
     audio.loop = true;
     audio.volume = 0;
     audioRef.current = audio;
@@ -418,13 +418,9 @@ const App: React.FC = () => {
       try {
         await tf.setBackend("webgl");
         const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
-        // FIX: The type `MediaPipeFaceDetectorModelConfig` is deprecated.
-        // For the 'mediapipe' runtime, `MediaPipeFaceDetectorMediaPipeModelConfig` should be used.
-        const detectorConfig: faceDetection.MediaPipeFaceDetectorMediaPipeModelConfig =
+        const detectorConfig: faceDetection.MediaPipeFaceDetectorTfjsModelConfig =
           {
-            runtime: "mediapipe",
-            solutionPath:
-              "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection",
+            runtime: "tfjs",
           };
         detector = await faceDetection.createDetector(model, detectorConfig);
       } catch (error) {

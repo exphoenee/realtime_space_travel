@@ -23,8 +23,9 @@ const Starfield: React.FC<StarfieldProps> = ({ onCanvasBoundsChange }) => {
     let stars: Star[] = [];
     const cockpitImage = new Image();
     let cockpitLoaded = false;
+    const cockpitSrc = `${import.meta.env.BASE_URL}cockpit.png`;
 
-    cockpitImage.src = "/cockpit.png";
+    cockpitImage.src = cockpitSrc;
     cockpitImage.onload = () => {
       cockpitLoaded = true;
       if (onCanvasBoundsChange) {
