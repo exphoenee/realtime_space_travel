@@ -1,2 +1,2 @@
-This game made with one propmt only:
+This game made with one propmt only: "készíts nekem egy javascript canvas játékot, ami valós idejű úrutazást szimulál. legyen majd egy műszerfal és semmi más ne történjen, csak jöjjenek felénk a csillagok, és számolja visszafelé, hogy a legközelebbi naprendszerig mennyi év van még hátra"
 [Evidence](https://aistudio.google.com/apps/drive/1YqVuWLKWptffNxBC3C7PGtLMnI9X45a1?showAssistant=true&resourceKey=&showCode=true)
