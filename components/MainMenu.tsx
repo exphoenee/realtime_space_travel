@@ -15,14 +15,17 @@ const baseDestinations = [
   {
     name: "Proxima Centauri Rendszer",
     distanceLy: 4.24,
+    wage: 50,
   },
   {
     name: "Wolf 424",
     distanceLy: 14.31,
+    wage: 250,
   },
   {
     name: "Ross 780",
     distanceLy: 15.34,
+    wage: 1000,
   },
 ];
 
@@ -44,11 +47,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelectDestination }) => {
           Realtime Space Traveller v2.0
         </h1>
         <p className="text-base md:text-lg text-cyan-100 max-w-3xl mx-auto mb-8 leading-relaxed">
-          Te vagy az emberiség egyetlen reménye. Ügyelj az űrhajóra, ne piszkáld a gombokat. A hibernált
-          legénység élete múlhat rajtad!
+          Te vagy az emberiség egyetlen reménye. Ügyelj az űrhajóra, ne piszkáld
+          a gombokat. A hibernált legénység élete múlhat rajtad!
         </p>
         <h1 className="text-4xl md:text-6xl font-bold text-cyan-300 tracking-widest uppercase mb-12 animate-pulse">
-          Válaszd ki az úticélt
+          Válassz egy küldetést!
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -69,6 +72,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelectDestination }) => {
               <p className="text-md md:text-lg text-cyan-400 mt-2">
                 {dest.distanceLy} fényév
               </p>
+              <h2 className="text-xl md:text-2xl font-bold text-white tracking-wider">
+                Jutalom {dest.wage}$
+              </h2>
             </button>
           ))}
         </div>
