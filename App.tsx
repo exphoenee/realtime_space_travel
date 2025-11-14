@@ -4,7 +4,7 @@ import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
 import MainMenu from "./components/MainMenu";
 import * as tf from "@tensorflow/tfjs";
-import "@tensorflow-models/face-detection/dist/tfjs/tfjs";
+import "@mediapipe/face_detection";
 import * as faceDetection from "@tensorflow-models/face-detection";
 
 export interface Destination {
@@ -419,9 +419,11 @@ const App: React.FC = () => {
       try {
         await tf.setBackend("webgl");
         const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
-        const detectorConfig: faceDetection.MediaPipeFaceDetectorTfjsModelConfig =
+        const detectorConfig: faceDetection.MediaPipeFaceDetectorMediaPipeModelConfig =
           {
-            runtime: "tfjs",
+            runtime: "mediapipe",
+            solutionPath:
+              "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection",
           };
         detector = await faceDetection.createDetector(model, detectorConfig);
       } catch (error) {
