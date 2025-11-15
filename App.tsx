@@ -3,14 +3,12 @@ import Starfield from "./components/Starfield";
 import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
 import MainMenu from "./components/MainMenu";
+import IntroScreen from "./components/IntroScreen";
 import * as tf from "@tensorflow/tfjs";
 import "@mediapipe/face_detection";
 import * as faceDetection from "@tensorflow-models/face-detection";
-
-export interface Destination {
-  name: string;
-  travelYears: number;
-}
+import useGameStore from "./state/useGameStore";
+import { Destination } from "./types";
 
 const isFaceLookingForward = (face: faceDetection.Face) => {
   const namedKeypoints = face.keypoints.reduce<
@@ -56,84 +54,46 @@ const INACTIVITY_LIMIT_SECONDS = 60;
 const TRAVEL_YEARS_PER_SECOND = 0.02;
 
 const App: React.FC = () => {
-  const [destination, setDestination] = useState<Destination | null>(null);
-  const [remainingYears, setRemainingYears] = useState(0);
-  const [isPaused, setIsPaused] = useState(true);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [isAttentionLost, setIsAttentionLost] = useState(false);
-  const [inactivitySeconds, setInactivitySeconds] = useState(0);
-  const [crewLost, setCrewLost] = useState(false);
-  const [crewLostReason, setCrewLostReason] = useState<
-    "attention" | "buttons" | null
-  >(null);
-  const [missionComplete, setMissionComplete] = useState(false);
-  const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(
-    null,
-  );
-  const [serviceSeconds, setServiceSeconds] = useState(0);
-  const [bestServiceSeconds, setBestServiceSeconds] = useState(0);
-  const [isMusicMuted, setIsMusicMuted] = useState(false);
+  const {
+    destination,
+    remainingYears,
+    isPaused,
+    cameraError,
+    showExitConfirm,
+    isAttentionLost,
+    inactivitySeconds,
+    crewLost,
+    crewLostReason,
+    missionComplete,
+    canvasBounds,
+    serviceSeconds,
+    bestServiceSeconds,
+    isMusicMuted,
+    isInitializing,
+    showIntro,
+    setDestination,
+    setRemainingYears,
+    setIsPaused,
+    setCameraError,
+    setShowExitConfirm,
+    setIsAttentionLost,
+    setInactivitySeconds,
+    setCrewLost,
+    setCrewLostReason,
+    setMissionComplete,
+    setCanvasBounds,
+    setServiceSeconds,
+    setBestServiceSeconds,
+    setIsMusicMuted,
+    setIsInitializing,
+    setShowIntro,
+  } = useGameStore();
   const [isAudioReady, setIsAudioReady] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const isDetectingRef = useRef(false);
-  const showExitConfirmRef = useRef(showExitConfirm);
-  const cameraErrorRef = useRef<string | null>(cameraError);
-  const crewLostRef = useRef(crewLost);
-  const missionCompleteRef = useRef(missionComplete);
-  const serviceSecondsRef = useRef(serviceSeconds);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeIntervalRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    showExitConfirmRef.current = showExitConfirm;
-  }, [showExitConfirm]);
-
-  useEffect(() => {
-    cameraErrorRef.current = cameraError;
-  }, [cameraError]);
-
-  useEffect(() => {
-    crewLostRef.current = crewLost;
-  }, [crewLost]);
-
-  useEffect(() => {
-    missionCompleteRef.current = missionComplete;
-  }, [missionComplete]);
-
-  useEffect(() => {
-    serviceSecondsRef.current = serviceSeconds;
-  }, [serviceSeconds]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("bestServiceSeconds");
-    if (!stored) return;
-    const parsed = parseFloat(stored);
-    if (!Number.isNaN(parsed) && parsed > 0) {
-      setBestServiceSeconds(parsed);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (bestServiceSeconds > 0) {
-      window.localStorage.setItem(
-        "bestServiceSeconds",
-        bestServiceSeconds.toString(),
-      );
-    }
-  }, [bestServiceSeconds]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const storedMute = window.localStorage.getItem("musicMuted");
-    if (storedMute === "true") {
-      setIsMusicMuted(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -159,7 +119,9 @@ const App: React.FC = () => {
     setRemainingYears(selectedDestination.travelYears);
     setIsPaused(true); // Start paused until face is detected
     setIsInitializing(true);
+    setCameraError(null);
     setShowExitConfirm(false);
+    setShowIntro(false);
     setCrewLost(false);
     setCrewLostReason(null);
     setIsAttentionLost(false);
@@ -187,6 +149,7 @@ const App: React.FC = () => {
     setInactivitySeconds(0);
     setMissionComplete(false);
     setServiceSeconds(0);
+    setShowIntro(false);
   };
 
   const handleCancelExit = () => {
@@ -201,19 +164,20 @@ const App: React.FC = () => {
       ? Math.max(0, INACTIVITY_LIMIT_SECONDS - inactivitySeconds)
       : null;
 
-  const handleCanvasBoundsChange = useCallback((bounds: DOMRectReadOnly) => {
-    setCanvasBounds(bounds);
-  }, []);
+  const handleCanvasBoundsChange = useCallback(
+    (bounds: DOMRectReadOnly) => {
+      setCanvasBounds(bounds);
+    },
+    [setCanvasBounds],
+  );
 
   const handleToggleMusic = useCallback(() => {
-    setIsMusicMuted((prev) => {
-      const next = !prev;
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("musicMuted", next ? "true" : "false");
-      }
-      return next;
-    });
-  }, []);
+    setIsMusicMuted((prev) => !prev);
+  }, [setIsMusicMuted]);
+
+  const handleSkipIntro = useCallback(() => {
+    setShowIntro(false);
+  }, [setShowIntro]);
 
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
@@ -291,28 +255,50 @@ const App: React.FC = () => {
     }, intervalDuration);
   }, []);
 
-  const updateBestServiceTime = useCallback((seconds: number) => {
-    if (seconds <= 0) return;
-    setBestServiceSeconds((prev) => {
-      if (seconds <= prev) {
-        return prev;
-      }
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("bestServiceSeconds", seconds.toString());
-      }
-      return seconds;
-    });
-  }, []);
+  const updateBestServiceTime = useCallback(
+    (seconds: number) => {
+      if (seconds <= 0) return;
+      setBestServiceSeconds((prev) => (seconds <= prev ? prev : seconds));
+    },
+    [setBestServiceSeconds],
+  );
+
+  useEffect(() => {
+    if (!showIntro) return;
+
+    const timer = window.setTimeout(handleSkipIntro, 600000);
+    return () => window.clearTimeout(timer);
+  }, [showIntro, handleSkipIntro]);
+
+  useEffect(() => {
+    if (!showIntro) return;
+
+    const handleSkip = () => {
+      handleSkipIntro();
+    };
+
+    window.addEventListener("keydown", handleSkip);
+    window.addEventListener("mousedown", handleSkip);
+    window.addEventListener("touchstart", handleSkip);
+
+    return () => {
+      window.removeEventListener("keydown", handleSkip);
+      window.removeEventListener("mousedown", handleSkip);
+      window.removeEventListener("touchstart", handleSkip);
+    };
+  }, [showIntro, handleSkipIntro]);
 
   useEffect(() => {
     if (!destination) return;
 
     const handleKeyDown = () => {
-      if (crewLostRef.current || missionCompleteRef.current) {
+      const { crewLost, missionComplete, serviceSeconds } =
+        useGameStore.getState();
+      if (crewLost || missionComplete) {
         return;
       }
 
-      updateBestServiceTime(serviceSecondsRef.current);
+      updateBestServiceTime(serviceSeconds);
       setCrewLost(true);
       setCrewLostReason("buttons");
       setShowExitConfirm(false);
@@ -323,7 +309,16 @@ const App: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [destination, updateBestServiceTime]);
+  }, [
+    destination,
+    setCrewLost,
+    setCrewLostReason,
+    setShowExitConfirm,
+    setIsPaused,
+    setIsAttentionLost,
+    setInactivitySeconds,
+    updateBestServiceTime,
+  ]);
 
   const shouldPlayMusic =
     !destination ||
@@ -374,13 +369,20 @@ const App: React.FC = () => {
     }, 50);
 
     return () => window.clearInterval(interval);
-  }, [destination, isPaused, crewLost, missionComplete]);
+  }, [
+    destination,
+    isPaused,
+    crewLost,
+    missionComplete,
+    setServiceSeconds,
+    setRemainingYears,
+  ]);
 
   useEffect(() => {
     if (!isAttentionLost) {
       setInactivitySeconds(0);
     }
-  }, [isAttentionLost]);
+  }, [isAttentionLost, setInactivitySeconds]);
 
   useEffect(() => {
     if (!destination || !isAttentionLost || crewLost || missionComplete) {
@@ -391,7 +393,7 @@ const App: React.FC = () => {
       setInactivitySeconds((prev) => {
         const next = prev + 1;
         if (next >= INACTIVITY_LIMIT_SECONDS) {
-          updateBestServiceTime(serviceSecondsRef.current);
+          updateBestServiceTime(useGameStore.getState().serviceSeconds);
           setCrewLost(true);
           setCrewLostReason("attention");
           setShowExitConfirm(false);
@@ -409,6 +411,11 @@ const App: React.FC = () => {
     crewLost,
     missionComplete,
     updateBestServiceTime,
+    setInactivitySeconds,
+    setCrewLost,
+    setCrewLostReason,
+    setShowExitConfirm,
+    setIsPaused,
   ]);
 
   useEffect(() => {
@@ -417,7 +424,7 @@ const App: React.FC = () => {
     }
 
     if (remainingYears <= 0) {
-      updateBestServiceTime(serviceSecondsRef.current);
+      updateBestServiceTime(useGameStore.getState().serviceSeconds);
       setMissionComplete(true);
       setIsPaused(true);
       setIsAttentionLost(false);
@@ -430,6 +437,11 @@ const App: React.FC = () => {
     missionComplete,
     crewLost,
     updateBestServiceTime,
+    setMissionComplete,
+    setIsPaused,
+    setIsAttentionLost,
+    setInactivitySeconds,
+    setShowExitConfirm,
   ]);
 
   // Camera and face detection effect
@@ -513,11 +525,12 @@ const App: React.FC = () => {
           });
           const hasForwardFacingFace = faces.some(isFaceLookingForward);
           const attentionLost = !hasForwardFacingFace;
+          const stateSnapshot = useGameStore.getState();
           const blockingOverlay =
-            showExitConfirmRef.current ||
-            crewLostRef.current ||
-            !!cameraErrorRef.current ||
-            missionCompleteRef.current;
+            stateSnapshot.showExitConfirm ||
+            stateSnapshot.crewLost ||
+            !!stateSnapshot.cameraError ||
+            stateSnapshot.missionComplete;
 
           setIsAttentionLost(attentionLost && !blockingOverlay);
 
@@ -557,14 +570,27 @@ const App: React.FC = () => {
         detector.dispose();
       }
     };
-  }, [destination]);
+  }, [
+    destination,
+    setIsInitializing,
+    setCameraError,
+    setIsPaused,
+    setIsAttentionLost,
+    setInactivitySeconds,
+  ]);
 
   if (!destination) {
     return (
       <main className="relative w-screen h-screen bg-black overflow-hidden font-mono">
         <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
-        <MainMenu onSelectDestination={handleSelectDestination} />
-        {bellOverlay}
+        {showIntro ? (
+          <IntroScreen onSkip={handleSkipIntro} />
+        ) : (
+          <>
+            <MainMenu onSelectDestination={handleSelectDestination} />
+            {bellOverlay}
+          </>
+        )}
       </main>
     );
   }

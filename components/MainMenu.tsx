@@ -1,5 +1,5 @@
 import React from "react";
-import { Destination } from "../App";
+import { Destination } from "../types";
 
 const speedKmPerSecond = 191; // km / s
 
@@ -43,13 +43,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelectDestination }) => {
   return (
     <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center z-50 backdrop-blur-sm p-4">
       <div className="text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-widest uppercase mb-6">
-          Realtime Space Traveller v2.0
-        </h1>
-        <p className="text-base md:text-lg text-cyan-100 max-w-3xl mx-auto mb-8 leading-relaxed">
-          Te vagy az emberiség egyetlen reménye. Ügyelj az űrhajóra, ne piszkáld
-          a gombokat. A hibernált legénység élete múlhat rajtad!
-        </p>
         <h1 className="text-4xl md:text-6xl font-bold text-cyan-300 tracking-widest uppercase mb-12 animate-pulse">
           Válassz egy küldetést!
         </h1>

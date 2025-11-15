@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.intro-fade {
+  animation: introFadeIn 45s ease-in forwards;
+}
+
+.intro-scroll {
+  animation: introScrollUp 600s linear forwards;
+}
+
+.intro-block {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 1.5s ease,
+    transform 1.5s ease;
+}
+
+.intro-block-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: var(--intro-block-delay, 0s);
+}
+
+@keyframes introFadeIn {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes introScrollUp {
+  0% {
+    transform: translateY(80vh);
+  }
+  100% {
+    transform: translateY(-250%);
+  }
+}

@@ -4,3 +4,8 @@ export interface Star {
   y: number;
   z: number;
 }
+
+export interface Destination {
+  name: string;
+  travelYears: number;
+}
