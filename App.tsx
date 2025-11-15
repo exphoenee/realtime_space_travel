@@ -53,6 +53,7 @@ const isFaceLookingForward = (face: faceDetection.Face) => {
 };
 
 const INACTIVITY_LIMIT_SECONDS = 60;
+const TRAVEL_YEARS_PER_SECOND = 0.02;
 
 const App: React.FC = () => {
   const [destination, setDestination] = useState<Destination | null>(null);
@@ -63,6 +64,9 @@ const App: React.FC = () => {
   const [isAttentionLost, setIsAttentionLost] = useState(false);
   const [inactivitySeconds, setInactivitySeconds] = useState(0);
   const [crewLost, setCrewLost] = useState(false);
+  const [crewLostReason, setCrewLostReason] = useState<
+    "attention" | "buttons" | null
+  >(null);
   const [missionComplete, setMissionComplete] = useState(false);
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(
     null,
@@ -157,6 +161,7 @@ const App: React.FC = () => {
     setIsInitializing(true);
     setShowExitConfirm(false);
     setCrewLost(false);
+    setCrewLostReason(null);
     setIsAttentionLost(false);
     setInactivitySeconds(0);
     setMissionComplete(false);
@@ -177,6 +182,7 @@ const App: React.FC = () => {
     setIsPaused(true);
     setIsInitializing(false);
     setCrewLost(false);
+    setCrewLostReason(null);
     setIsAttentionLost(false);
     setInactivitySeconds(0);
     setMissionComplete(false);
@@ -211,6 +217,10 @@ const App: React.FC = () => {
 
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
+  const crewLostMessage =
+    crewLostReason === "buttons"
+      ? "Az egész hibernált legénység elpusztult, mert piszkáltad a gombokat!"
+      : "Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.";
   const isPauseOverlayVisible =
     !crewLost &&
     !missionComplete &&
@@ -294,6 +304,27 @@ const App: React.FC = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (!destination) return;
+
+    const handleKeyDown = () => {
+      if (crewLostRef.current || missionCompleteRef.current) {
+        return;
+      }
+
+      updateBestServiceTime(serviceSecondsRef.current);
+      setCrewLost(true);
+      setCrewLostReason("buttons");
+      setShowExitConfirm(false);
+      setIsPaused(true);
+      setIsAttentionLost(false);
+      setInactivitySeconds(0);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [destination, updateBestServiceTime]);
+
   const shouldPlayMusic =
     !destination ||
     (!showExitConfirm &&
@@ -320,33 +351,27 @@ const App: React.FC = () => {
     fadeAudio(targetVolume);
   }, [shouldPlayMusic, isMusicMuted, fadeAudio, isAudioReady]);
 
-  // Countdown timer effect
-  useEffect(() => {
-    if (!destination) return;
-
-    const timer = setInterval(() => {
-      if (isPaused) return;
-
-      setRemainingYears((prevYears) => {
-        if (prevYears <= 0) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevYears - 0.001;
-      });
-    }, 50);
-
-    return () => clearInterval(timer);
-  }, [isPaused, destination]);
-
   useEffect(() => {
     if (!destination || isPaused || crewLost || missionComplete) {
       return;
     }
 
+    let lastTimestamp = performance.now();
     const interval = window.setInterval(() => {
-      setServiceSeconds((prev) => prev + 1);
-    }, 1000);
+      const now = performance.now();
+      const deltaSeconds = (now - lastTimestamp) / 1000;
+      lastTimestamp = now;
+
+      setServiceSeconds((prev) => prev + deltaSeconds);
+      setRemainingYears((prev) => {
+        if (prev <= 0) {
+          return 0;
+        }
+
+        const next = prev - deltaSeconds * TRAVEL_YEARS_PER_SECOND;
+        return next <= 0 ? 0 : next;
+      });
+    }, 50);
 
     return () => window.clearInterval(interval);
   }, [destination, isPaused, crewLost, missionComplete]);
@@ -368,6 +393,7 @@ const App: React.FC = () => {
         if (next >= INACTIVITY_LIMIT_SECONDS) {
           updateBestServiceTime(serviceSecondsRef.current);
           setCrewLost(true);
+          setCrewLostReason("attention");
           setShowExitConfirm(false);
           setIsPaused(true);
           return INACTIVITY_LIMIT_SECONDS;
@@ -545,7 +571,10 @@ const App: React.FC = () => {
 
   return (
     <main className="relative w-screen h-screen bg-black overflow-hidden font-mono">
-      <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
+      <Starfield
+        onCanvasBoundsChange={handleCanvasBoundsChange}
+        isPaused={isPauseOverlayVisible}
+      />
       {canvasBounds && (
         <div
           className="absolute z-60 pointer-events-none"
@@ -603,7 +632,7 @@ const App: React.FC = () => {
               Vége a játéknak
             </h2>
             <p className="text-lg text-red-200 leading-relaxed">
-              Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.
+              {crewLostMessage}
             </p>
             <button
               onClick={handleConfirmExit}

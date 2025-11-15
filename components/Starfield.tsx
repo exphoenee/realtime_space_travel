@@ -8,10 +8,19 @@ const TARGET_ASPECT = 16 / 9;
 
 interface StarfieldProps {
   onCanvasBoundsChange?: (bounds: DOMRectReadOnly) => void;
+  isPaused?: boolean;
 }
 
-const Starfield: React.FC<StarfieldProps> = ({ onCanvasBoundsChange }) => {
+const Starfield: React.FC<StarfieldProps> = ({
+  onCanvasBoundsChange,
+  isPaused = false,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isPausedRef = useRef(isPaused);
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -88,9 +97,11 @@ const Starfield: React.FC<StarfieldProps> = ({ onCanvasBoundsChange }) => {
       ctx.translate(canvas.width / 2, canvas.height / 2);
 
       for (const star of stars) {
-        star.z -= STAR_SPEED;
-        if (star.z <= 0) {
-          resetStar(star);
+        if (!isPausedRef.current) {
+          star.z -= STAR_SPEED;
+          if (star.z <= 0) {
+            resetStar(star);
+          }
         }
 
         const sx = (star.x / star.z) * canvas.width;
