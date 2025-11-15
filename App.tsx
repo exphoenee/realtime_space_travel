@@ -71,6 +71,7 @@ const App: React.FC = () => {
   const [bestServiceSeconds, setBestServiceSeconds] = useState(0);
   const [isMusicMuted, setIsMusicMuted] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const isDetectingRef = useRef(false);
@@ -153,6 +154,7 @@ const App: React.FC = () => {
     setDestination(selectedDestination);
     setRemainingYears(selectedDestination.travelYears);
     setIsPaused(true); // Start paused until face is detected
+    setIsInitializing(true);
     setShowExitConfirm(false);
     setCrewLost(false);
     setIsAttentionLost(false);
@@ -173,6 +175,7 @@ const App: React.FC = () => {
     setRemainingYears(0);
     setCameraError(null);
     setIsPaused(true);
+    setIsInitializing(false);
     setCrewLost(false);
     setIsAttentionLost(false);
     setInactivitySeconds(0);
@@ -405,10 +408,14 @@ const App: React.FC = () => {
 
   // Camera and face detection effect
   useEffect(() => {
-    if (!destination) return;
+    if (!destination) {
+      setIsInitializing(false);
+      return;
+    }
 
     let detector: faceDetection.FaceDetector | null = null;
     let detectionInterval: number;
+    let isCancelled = false;
 
     const setup = async () => {
       // 1. Setup camera
@@ -422,11 +429,14 @@ const App: React.FC = () => {
           await video.play();
         }
       } catch (err) {
-        console.error("Error accessing camera:", err);
-        setCameraError(
-          "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.",
-        );
-        setIsPaused(true);
+        if (!isCancelled) {
+          console.error("Error accessing camera:", err);
+          setCameraError(
+            "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.",
+          );
+          setIsPaused(true);
+          setIsInitializing(false);
+        }
         return;
       }
 
@@ -451,11 +461,14 @@ const App: React.FC = () => {
 
         detector = await faceDetection.createDetector(model, detectorConfig);
       } catch (error) {
-        console.error("Error loading face detection model:", error);
-        setCameraError(
-          "Hiba a gépi látás modell betöltése közben. Próbáld meg frissíteni az oldalt.",
-        );
-        setIsPaused(true);
+        if (!isCancelled) {
+          console.error("Error loading face detection model:", error);
+          setCameraError(
+            "Hiba a gépi látás modell betöltése közben. Próbáld meg frissíteni az oldalt.",
+          );
+          setIsPaused(true);
+          setIsInitializing(false);
+        }
         return;
       }
 
@@ -500,11 +513,15 @@ const App: React.FC = () => {
       };
 
       detectionInterval = window.setInterval(detectFace, 500);
+      if (!isCancelled) {
+        setIsInitializing(false);
+      }
     };
 
     setup();
 
     return () => {
+      isCancelled = true;
       clearInterval(detectionInterval);
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
@@ -633,7 +650,10 @@ const App: React.FC = () => {
           </div>
         </div>
       ) : isPauseOverlayVisible ? (
-        <PauseMenu countdownSeconds={attentionCountdown} />
+        <PauseMenu
+          countdownSeconds={attentionCountdown}
+          isInitializing={isInitializing}
+        />
       ) : null}
 
       {bellOverlay}
