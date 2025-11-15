@@ -1,43 +1,12 @@
 import React from "react";
 import { Destination } from "../types";
-import {
-  SHIP_SPEED_KM_PER_SECOND,
-  LIGHT_YEAR_TO_KM,
-  DAYS_PER_YEAR,
-  HOURS_PER_DAY,
-  MINUTES_PER_HOUR,
-  SECONDS_PER_MINUTE,
-} from "../constants/constants";
-
-const secondsPerYear =
-  DAYS_PER_YEAR * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
-
-// hány fényévet tesz meg 1 év alatt
-const speedLyPerYear =
-  (SHIP_SPEED_KM_PER_SECOND * secondsPerYear) / LIGHT_YEAR_TO_KM;
-
-const baseDestinations = [
-  {
-    name: "Proxima Centauri Rendszer",
-    distanceLy: 4.24,
-    wage: 50,
-  },
-  {
-    name: "Wolf 424",
-    distanceLy: 14.31,
-    wage: 250,
-  },
-  {
-    name: "Ross 780",
-    distanceLy: 15.34,
-    wage: 1000,
-  },
-];
+import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../constants/constants";
+import { baseDestinations } from "../constants/universeData";
 
 // ha akarod, itt már előre ráteheted a travelYears-t is
 const destinations = baseDestinations.map((dest) => ({
   ...dest,
-  travelYears: dest.distanceLy / speedLyPerYear,
+  travelYears: dest.distanceLy / SHIP_SPEED_LIGHTYEARS_PER_YEAR,
 }));
 
 interface MainMenuProps {

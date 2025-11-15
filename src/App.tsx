@@ -15,16 +15,33 @@ import {
   AUDIO_FADE_STEP,
   ATTENTION_INTERVAL_MS,
   FACE_DETECTION_INTERVAL_MS,
+  FACE_BALANCE_MAX_RATIO,
+  FACE_BALANCE_MIN_RATIO,
+  EYE_LEVEL_MAX_OFFSET_RATIO,
   INACTIVITY_LIMIT_SECONDS,
   INTRO_AUTO_SKIP_TIMEOUT_MS,
+  MAX_WEATHER_UPDATE_INTERVAL_MS,
+  MIN_WEATHER_UPDATE_INTERVAL_MS,
   MUSIC_ACTIVE_VOLUME,
   SERVICE_UPDATE_INTERVAL_MS,
   TRAVEL_YEARS_PER_SECOND,
 } from "./constants/constants";
+import { weatherConditions } from "./constants/universeData";
 import {
   createFaceDetector,
   isFaceLookingForward,
+  analyzeFace,
+  FaceAnalysis,
 } from "./services/faceRecognition";
+
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+const DEBUG_KEYPOINT_COLORS: Record<string, string> = {
+  noseTip: "#fbbf24",
+  leftEye: "#38bdf8",
+  rightEye: "#38bdf8",
+  leftEarTragion: "#f97316",
+  rightEarTragion: "#f97316",
+};
 
 const App: React.FC = () => {
   const {
@@ -63,8 +80,19 @@ const App: React.FC = () => {
     resetToMenu,
   } = useGameStore();
   const [isAudioReady, setIsAudioReady] = useState(false);
+  const [localWeather, setLocalWeather] = useState(weatherConditions[0]);
+  const [faceStatus, setFaceStatus] = useState<{
+    detected: boolean;
+    timestamp: number;
+  }>({
+    detected: false,
+    timestamp: Date.now(),
+  });
+  const [debugMetrics, setDebugMetrics] = useState<FaceAnalysis | null>(null);
 
+  const isDebugMode = DEBUG_MODE;
   const videoRef = useRef<HTMLVideoElement>(null);
+  const debugCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDetectingRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeIntervalRef = useRef<number | null>(null);
@@ -129,6 +157,38 @@ const App: React.FC = () => {
     setShowIntro(false);
   }, [setShowIntro]);
 
+  useEffect(() => {
+    const pickWeather = () =>
+      weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+
+    if (!destination) {
+      setLocalWeather(weatherConditions[0]);
+      return;
+    }
+
+    let timeoutId: number | null = null;
+
+    const scheduleNext = () => {
+      const delay =
+        MIN_WEATHER_UPDATE_INTERVAL_MS +
+        Math.random() *
+          (MAX_WEATHER_UPDATE_INTERVAL_MS - MIN_WEATHER_UPDATE_INTERVAL_MS);
+      timeoutId = window.setTimeout(() => {
+        setLocalWeather(pickWeather());
+        scheduleNext();
+      }, delay);
+    };
+
+    setLocalWeather(pickWeather());
+    scheduleNext();
+
+    return () => {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [destination]);
+
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
   const crewLostMessage =
@@ -161,6 +221,66 @@ const App: React.FC = () => {
         >
           {isMusicMuted ? "🔕" : "🔔"}
         </button>
+      </div>
+    ) : null;
+  const videoElement = videoRef.current;
+  const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
+  const videoAspect =
+    videoElement && videoElement.videoHeight > 0
+      ? videoElement.videoWidth / videoElement.videoHeight
+      : 16 / 9;
+  const debugHeight = debugWidth / videoAspect;
+  const lastUpdateAgoSeconds = Math.max(
+    0,
+    (Date.now() - faceStatus.timestamp) / 1000,
+  );
+  const debugOverlay =
+    isDebugMode && destination ? (
+      <div className="absolute bottom-6 left-6 z-50 pointer-events-none flex flex-col gap-2">
+        <canvas
+          ref={debugCanvasRef}
+          className="rounded border border-cyan-400/60 shadow-lg shadow-black/50 bg-black/80"
+          style={{
+            width: `${debugWidth}px`,
+            height: `${debugHeight}px`,
+          }}
+        />
+        <div className="px-3 py-2 bg-black/70 text-cyan-100 text-xs rounded border border-cyan-400/40">
+          <p>
+            Kamera állapot:{" "}
+            <span
+              className={
+                faceStatus.detected ? "text-green-400 font-semibold" : "text-red-400 font-semibold"
+              }
+            >
+              {faceStatus.detected ? "Arc érzékelve" : "Nincs arc"}
+            </span>
+          </p>
+          <p className="mt-1 text-[11px] text-cyan-200/80">
+            Utolsó frissítés: {lastUpdateAgoSeconds.toFixed(1)}s
+          </p>
+          <div className="mt-2 space-y-1 text-[11px] text-cyan-200/90">
+            <p>
+              Balance arány:{" "}
+              {debugMetrics
+                ? `${debugMetrics.balanceRatio.toFixed(2)} (céltartomány ${FACE_BALANCE_MIN_RATIO.toFixed(2)}-${FACE_BALANCE_MAX_RATIO.toFixed(2)})`
+                : "N/A"}
+            </p>
+            <p>
+              Szem döntés arány:{" "}
+              {debugMetrics
+                ? `${debugMetrics.eyeVerticalRatio.toFixed(2)} (limit ${EYE_LEVEL_MAX_OFFSET_RATIO.toFixed(2)})`
+                : "N/A"}
+            </p>
+            <p>
+              Szem-fül különbség:{" "}
+              {debugMetrics
+                ? `${debugMetrics.eyeEarMargin.toFixed(2)}`
+                : "N/A"}{" "}
+              (pozitív érték szükséges)
+            </p>
+          </div>
+        </div>
       </div>
     ) : null;
 
@@ -305,12 +425,8 @@ const App: React.FC = () => {
       return;
     }
 
-    let lastTimestamp = performance.now();
+    const deltaSeconds = SERVICE_UPDATE_INTERVAL_MS / 1000;
     const interval = window.setInterval(() => {
-      const now = performance.now();
-      const deltaSeconds = (now - lastTimestamp) / 1000;
-      lastTimestamp = now;
-
       setServiceSeconds((prev) => prev + deltaSeconds);
       setRemainingYears((prev) => {
         if (prev <= 0) {
@@ -402,11 +518,21 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!destination) {
       setIsInitializing(false);
+      setFaceStatus({ detected: false, timestamp: Date.now() });
+      setDebugMetrics(null);
+      const canvas = debugCanvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
       return;
     }
 
     let detector: FaceDetector | null = null;
     let detectionInterval: number;
+    const debugCanvas = debugCanvasRef.current;
     let isCancelled = false;
 
     const setup = async () => {
@@ -448,8 +574,8 @@ const App: React.FC = () => {
       }
 
       // 3. Start detection loop
-      const detectFace = async () => {
-        if (isDetectingRef.current || !videoRef.current || !detector) return;
+    const detectFace = async () => {
+      if (isDetectingRef.current || !videoRef.current || !detector) return;
 
         const video = videoRef.current;
         if (video.readyState < 3) return; // Wait for enough data to play
@@ -460,7 +586,47 @@ const App: React.FC = () => {
           const faces = await detector.estimateFaces(video, {
             flipHorizontal: false,
           });
-          const hasForwardFacingFace = faces.some(isFaceLookingForward);
+          let primaryAnalysis: FaceAnalysis | null = null;
+          const hasForwardFacingFace = faces.some((face) => {
+            const analysis = analyzeFace(face);
+            if (!primaryAnalysis) {
+              primaryAnalysis = analysis;
+            }
+            return analysis.forward;
+          });
+
+          if (isDebugMode && debugCanvas) {
+            const ctx = debugCanvas.getContext("2d");
+            if (ctx) {
+              debugCanvas.width = video.videoWidth;
+              debugCanvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, debugCanvas.width, debugCanvas.height);
+              ctx.strokeStyle = hasForwardFacingFace ? "#22c55e" : "#ef4444";
+              ctx.lineWidth = 4;
+              faces.forEach((face) => {
+                const box = face.box;
+                ctx.strokeRect(box.xMin, box.yMin, box.width, box.height);
+                face.keypoints?.forEach((kp) => {
+                  if (!kp.name) return;
+                  const color = DEBUG_KEYPOINT_COLORS[kp.name];
+                  if (!color) return;
+                  ctx.beginPath();
+                  ctx.fillStyle = color;
+                  ctx.strokeStyle = "#0f172a";
+                  ctx.lineWidth = 2;
+                  ctx.arc(kp.x, kp.y, 6, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                });
+              });
+            }
+          }
+          setDebugMetrics(primaryAnalysis);
+          setFaceStatus({
+            detected: hasForwardFacingFace,
+            timestamp: Date.now(),
+          });
+
           const attentionLost = !hasForwardFacingFace;
           const stateSnapshot = useGameStore.getState();
           const blockingOverlay =
@@ -517,6 +683,7 @@ const App: React.FC = () => {
     setIsPaused,
     setIsAttentionLost,
     setInactivitySeconds,
+    isDebugMode,
   ]);
 
   if (!destination) {
@@ -569,6 +736,7 @@ const App: React.FC = () => {
         <Dashboard
           remainingYears={remainingYears}
           destinationName={destination.name}
+          localWeather={localWeather}
         />
       </div>
 
@@ -652,6 +820,7 @@ const App: React.FC = () => {
       ) : null}
 
       {bellOverlay}
+      {debugOverlay}
 
       <video
         ref={videoRef}

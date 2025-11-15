@@ -8,7 +8,15 @@ import {
   EYE_LEVEL_MAX_OFFSET_RATIO,
 } from "../constants/constants";
 
-export const isFaceLookingForward = (face: faceDetection.Face) => {
+export interface FaceAnalysis {
+  forward: boolean;
+  balanceRatio: number;
+  eyeVerticalRatio: number;
+  earCenterY: number;
+  eyeEarMargin: number;
+}
+
+export const analyzeFace = (face: faceDetection.Face): FaceAnalysis => {
   const namedKeypoints = face.keypoints.reduce<
     Record<string, faceDetection.Keypoint>
   >((acc, keypoint) => {
@@ -25,7 +33,13 @@ export const isFaceLookingForward = (face: faceDetection.Face) => {
   const nose = namedKeypoints.noseTip;
 
   if (!leftEar || !rightEar || !leftEye || !rightEye || !nose) {
-    return false;
+    return {
+      forward: false,
+      balanceRatio: 0,
+      eyeVerticalRatio: 1,
+      earCenterY: 1,
+      eyeEarMargin: 0,
+    };
   }
 
   const distance = (a: faceDetection.Keypoint, b: faceDetection.Keypoint) =>
@@ -34,7 +48,13 @@ export const isFaceLookingForward = (face: faceDetection.Face) => {
   const rightEarDistance = distance(nose, rightEar);
 
   if (leftEarDistance === 0 || rightEarDistance === 0) {
-    return false;
+    return {
+      forward: false,
+      balanceRatio: 0,
+      eyeVerticalRatio: 1,
+      earCenterY: 1,
+      eyeEarMargin: 0,
+    };
   }
 
   const balanceRatio = leftEarDistance / rightEarDistance;
@@ -44,12 +64,28 @@ export const isFaceLookingForward = (face: faceDetection.Face) => {
 
   const eyeHorizontalSpan = Math.abs(leftEye.x - rightEye.x);
   const eyeVerticalOffset = Math.abs(leftEye.y - rightEye.y);
-  const eyesLevel =
-    eyeHorizontalSpan > 0 &&
-    eyeVerticalOffset / eyeHorizontalSpan < EYE_LEVEL_MAX_OFFSET_RATIO;
+  const eyeVerticalRatio =
+    eyeHorizontalSpan > 0 ? eyeVerticalOffset / eyeHorizontalSpan : 1;
+  const eyesLevel = eyeVerticalRatio < EYE_LEVEL_MAX_OFFSET_RATIO;
 
-  return symmetricalFace && eyesLevel;
+  const averageEarY = (leftEar.y + rightEar.y) / 2;
+  const leftEarMargin = averageEarY - leftEye.y;
+  const rightEarMargin = averageEarY - rightEye.y;
+  const eyeEarMargin = Math.max(leftEarMargin, rightEarMargin);
+
+  const eyesAboveEars = eyeEarMargin > 0;
+
+  return {
+    forward: symmetricalFace && eyesLevel && eyesAboveEars,
+    balanceRatio,
+    eyeVerticalRatio,
+    earCenterY: averageEarY,
+    eyeEarMargin,
+  };
 };
+
+export const isFaceLookingForward = (face: faceDetection.Face) =>
+  analyzeFace(face).forward;
 
 export const createFaceDetector = async () => {
   await tf.setBackend("webgl");
