@@ -30,9 +30,9 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
 
     const computeDelaySeconds = (index: number) => {
       if (index === 0) return 0;
-      if (index === 1) return 4;
-      if (index === 2) return 8;
-      return index + 3;
+      if (index === 1) return 6;
+      if (index === 2) return 12;
+      return index + 5;
     };
 
     blocks.forEach((block, index) => {
@@ -52,6 +52,9 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
         <div ref={scrollRef} className={styles.scroll}>
           <div className={styles.block} data-intro-block="true">
             <h1 className={styles.headline}>Realtime Space Travel</h1>
+          </div>
+
+          <div className={styles.block} data-intro-block="true">
             <p className={styles.motto}>Az életedre szóló élmény!</p>
           </div>
 

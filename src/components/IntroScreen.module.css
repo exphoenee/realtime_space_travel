@@ -25,7 +25,10 @@
 .scroll {
   max-height: 70vh;
   overflow: hidden;
+  transform: translateY(calc(35vh - 30px));
   animation: introScroll 600s linear forwards;
+  animation-delay: 4s;
+  animation-fill-mode: forwards;
 }
 
 .block {
@@ -94,7 +97,7 @@
 
 @keyframes introScroll {
   0% {
-    transform: translateY(80vh);
+    transform: translateY(calc(35vh - 30px));
   }
   100% {
     transform: translateY(-250%);
