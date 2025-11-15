@@ -57,7 +57,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
         >
           <div className="intro-block space-y-3 text-center">
             <h1 className="text-5xl md:text-6xl font-bold tracking-[0.35em] uppercase text-center">
-              Realtime Space Traveller
+              Realtime Space Travel
             </h1>
           </div>
           <div className="intro-block space-y-3 text-center">

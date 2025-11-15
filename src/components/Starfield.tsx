@@ -1,10 +1,11 @@
 
 import React, { useRef, useEffect } from "react";
 import { Star } from "../types";
-
-const STAR_COUNT = 800;
-const STAR_SPEED = 0.05;
-const TARGET_ASPECT = 16 / 9;
+import {
+  STAR_COUNT,
+  STAR_SPEED,
+  TARGET_ASPECT_RATIO,
+} from "../constants/constants";
 
 interface StarfieldProps {
   onCanvasBoundsChange?: (bounds: DOMRectReadOnly) => void;
@@ -48,10 +49,10 @@ const Starfield: React.FC<StarfieldProps> = ({
       let width = innerWidth;
       let height = innerHeight;
 
-      if (width / height > TARGET_ASPECT) {
-        width = height * TARGET_ASPECT;
+      if (width / height > TARGET_ASPECT_RATIO) {
+        width = height * TARGET_ASPECT_RATIO;
       } else {
-        height = width / TARGET_ASPECT;
+        height = width / TARGET_ASPECT_RATIO;
       }
 
       canvas.width = width;

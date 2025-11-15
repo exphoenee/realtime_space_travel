@@ -1,57 +1,30 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import type { FaceDetector } from "@tensorflow-models/face-detection";
+
 import Starfield from "./components/Starfield";
 import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
 import MainMenu from "./components/MainMenu";
 import IntroScreen from "./components/IntroScreen";
-import * as tf from "@tensorflow/tfjs";
-import "@mediapipe/face_detection";
-import * as faceDetection from "@tensorflow-models/face-detection";
+
 import useGameStore from "./state/useGameStore";
+
 import { Destination } from "./types";
-
-const isFaceLookingForward = (face: faceDetection.Face) => {
-  const namedKeypoints = face.keypoints.reduce<
-    Record<string, faceDetection.Keypoint>
-  >((acc, keypoint) => {
-    if (keypoint.name) {
-      acc[keypoint.name] = keypoint;
-    }
-    return acc;
-  }, {});
-
-  const leftEar = namedKeypoints.leftEarTragion;
-  const rightEar = namedKeypoints.rightEarTragion;
-  const leftEye = namedKeypoints.leftEye;
-  const rightEye = namedKeypoints.rightEye;
-  const nose = namedKeypoints.noseTip;
-
-  if (!leftEar || !rightEar || !leftEye || !rightEye || !nose) {
-    return false;
-  }
-
-  const distance = (a: faceDetection.Keypoint, b: faceDetection.Keypoint) =>
-    Math.hypot(a.x - b.x, a.y - b.y);
-  const leftEarDistance = distance(nose, leftEar);
-  const rightEarDistance = distance(nose, rightEar);
-
-  if (leftEarDistance === 0 || rightEarDistance === 0) {
-    return false;
-  }
-
-  const balanceRatio = leftEarDistance / rightEarDistance;
-  const symmetricalFace = balanceRatio > 0.65 && balanceRatio < 1 / 0.65;
-
-  const eyeHorizontalSpan = Math.abs(leftEye.x - rightEye.x);
-  const eyeVerticalOffset = Math.abs(leftEye.y - rightEye.y);
-  const eyesLevel =
-    eyeHorizontalSpan > 0 && eyeVerticalOffset / eyeHorizontalSpan < 0.35;
-
-  return symmetricalFace && eyesLevel;
-};
-
-const INACTIVITY_LIMIT_SECONDS = 60;
-const TRAVEL_YEARS_PER_SECOND = 0.02;
+import {
+  AUDIO_FADE_INTERVAL_MS,
+  AUDIO_FADE_STEP,
+  ATTENTION_INTERVAL_MS,
+  FACE_DETECTION_INTERVAL_MS,
+  INACTIVITY_LIMIT_SECONDS,
+  INTRO_AUTO_SKIP_TIMEOUT_MS,
+  MUSIC_ACTIVE_VOLUME,
+  SERVICE_UPDATE_INTERVAL_MS,
+  TRAVEL_YEARS_PER_SECOND,
+} from "./constants/constants";
+import {
+  createFaceDetector,
+  isFaceLookingForward,
+} from "./services/faceRecognition";
 
 const App: React.FC = () => {
   const {
@@ -71,7 +44,6 @@ const App: React.FC = () => {
     isMusicMuted,
     isInitializing,
     showIntro,
-    setDestination,
     setRemainingYears,
     setIsPaused,
     setCameraError,
@@ -87,6 +59,8 @@ const App: React.FC = () => {
     setIsMusicMuted,
     setIsInitializing,
     setShowIntro,
+    startMission,
+    resetToMenu,
   } = useGameStore();
   const [isAudioReady, setIsAudioReady] = useState(false);
 
@@ -115,19 +89,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleSelectDestination = (selectedDestination: Destination) => {
-    setDestination(selectedDestination);
-    setRemainingYears(selectedDestination.travelYears);
-    setIsPaused(true); // Start paused until face is detected
-    setIsInitializing(true);
-    setCameraError(null);
-    setShowExitConfirm(false);
-    setShowIntro(false);
-    setCrewLost(false);
-    setCrewLostReason(null);
-    setIsAttentionLost(false);
-    setInactivitySeconds(0);
-    setMissionComplete(false);
-    setServiceSeconds(0);
+    startMission(selectedDestination);
   };
 
   const handleRequestExit = () => {
@@ -137,19 +99,7 @@ const App: React.FC = () => {
 
   const handleConfirmExit = () => {
     updateBestServiceTime(serviceSeconds);
-    setShowExitConfirm(false);
-    setDestination(null);
-    setRemainingYears(0);
-    setCameraError(null);
-    setIsPaused(true);
-    setIsInitializing(false);
-    setCrewLost(false);
-    setCrewLostReason(null);
-    setIsAttentionLost(false);
-    setInactivitySeconds(0);
-    setMissionComplete(false);
-    setServiceSeconds(0);
-    setShowIntro(false);
+    resetToMenu();
   };
 
   const handleCancelExit = () => {
@@ -224,8 +174,8 @@ const App: React.FC = () => {
       volumeIntervalRef.current = null;
     }
 
-    const step = 0.05;
-    const intervalDuration = 50;
+    const step = AUDIO_FADE_STEP;
+    const intervalDuration = AUDIO_FADE_INTERVAL_MS;
 
     volumeIntervalRef.current = window.setInterval(() => {
       if (!audioRef.current) {
@@ -266,7 +216,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!showIntro) return;
 
-    const timer = window.setTimeout(handleSkipIntro, 600000);
+    const timer = window.setTimeout(
+      handleSkipIntro,
+      INTRO_AUTO_SKIP_TIMEOUT_MS,
+    );
     return () => window.clearTimeout(timer);
   }, [showIntro, handleSkipIntro]);
 
@@ -332,7 +285,8 @@ const App: React.FC = () => {
     const audio = audioRef.current;
     if (!audio || !isAudioReady) return;
 
-    const targetVolume = shouldPlayMusic && !isMusicMuted ? 0.6 : 0;
+    const targetVolume =
+      shouldPlayMusic && !isMusicMuted ? MUSIC_ACTIVE_VOLUME : 0;
 
     if (shouldPlayMusic && !isMusicMuted) {
       const playPromise = audio.play();
@@ -366,7 +320,7 @@ const App: React.FC = () => {
         const next = prev - deltaSeconds * TRAVEL_YEARS_PER_SECOND;
         return next <= 0 ? 0 : next;
       });
-    }, 50);
+    }, SERVICE_UPDATE_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
   }, [
@@ -402,7 +356,7 @@ const App: React.FC = () => {
         }
         return next;
       });
-    }, 1000);
+    }, ATTENTION_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
   }, [
@@ -451,7 +405,7 @@ const App: React.FC = () => {
       return;
     }
 
-    let detector: faceDetection.FaceDetector | null = null;
+    let detector: FaceDetector | null = null;
     let detectionInterval: number;
     let isCancelled = false;
 
@@ -480,24 +434,7 @@ const App: React.FC = () => {
 
       // 2. Load model
       try {
-        await tf.setBackend("webgl");
-        const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
-
-        // ======================= EZ A JAVÍTÁS =========================
-        // Különbséget teszünk a fejlesztői és a buildelt verzió között.
-        // Vite `import.meta.env.DEV` változója megmondja, hogy a dev szerver fut-e.
-        const solutionPath = import.meta.env.DEV
-          ? "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection" // DEV módban használjuk a CDN-t
-          : `${import.meta.env.BASE_URL}face_detection`; // BUILD után a lokális másolatot
-
-        const detectorConfig: faceDetection.MediaPipeFaceDetectorMediaPipeModelConfig =
-          {
-            runtime: "mediapipe",
-            solutionPath: solutionPath, // Itt használjuk a fent meghatározott útvonalat
-          };
-        // =================================================================
-
-        detector = await faceDetection.createDetector(model, detectorConfig);
+        detector = await createFaceDetector();
       } catch (error) {
         if (!isCancelled) {
           console.error("Error loading face detection model:", error);
@@ -551,7 +488,10 @@ const App: React.FC = () => {
         }
       };
 
-      detectionInterval = window.setInterval(detectFace, 500);
+      detectionInterval = window.setInterval(
+        detectFace,
+        FACE_DETECTION_INTERVAL_MS,
+      );
       if (!isCancelled) {
         setIsInitializing(false);
       }

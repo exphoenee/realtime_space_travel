@@ -45,6 +45,8 @@ interface GameState {
   setBestServiceSeconds: (updater: StateUpdater<number>) => void;
   setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setIsInitializing: (updater: StateUpdater<boolean>) => void;
+  startMission: (destination: Destination) => void;
+  resetToMenu: () => void;
 }
 
 const useGameStore = create<GameState>()(
@@ -129,6 +131,41 @@ const useGameStore = create<GameState>()(
       setIsInitializing: (updater) =>
         set((state) => ({
           isInitializing: resolveState(updater, state.isInitializing),
+        })),
+      startMission: (destination) =>
+        set(() => ({
+          destination,
+          remainingYears: destination.travelYears,
+          isPaused: true,
+          isInitializing: true,
+          cameraError: null,
+          showExitConfirm: false,
+          showIntro: false,
+          crewLost: false,
+          crewLostReason: null,
+          isAttentionLost: false,
+          inactivitySeconds: 0,
+          missionComplete: false,
+          serviceSeconds: 0,
+        })),
+      resetToMenu: () =>
+        set((state) => ({
+          destination: null,
+          remainingYears: 0,
+          cameraError: null,
+          isPaused: true,
+          isInitializing: false,
+          crewLost: false,
+          crewLostReason: null,
+          isAttentionLost: false,
+          inactivitySeconds: 0,
+          missionComplete: false,
+          serviceSeconds: 0,
+          showExitConfirm: false,
+          showIntro: false,
+          canvasBounds: state.canvasBounds,
+          bestServiceSeconds: state.bestServiceSeconds,
+          isMusicMuted: state.isMusicMuted,
         })),
     }),
     {

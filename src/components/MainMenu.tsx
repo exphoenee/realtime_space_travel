@@ -1,15 +1,20 @@
 import React from "react";
 import { Destination } from "../types";
+import {
+  SHIP_SPEED_KM_PER_SECOND,
+  LIGHT_YEAR_TO_KM,
+  DAYS_PER_YEAR,
+  HOURS_PER_DAY,
+  MINUTES_PER_HOUR,
+  SECONDS_PER_MINUTE,
+} from "../constants/constants";
 
-const speedKmPerSecond = 191; // km / s
-
-// HELYES fényév -> km átváltás
-const lyToKm = 9_460_730_472_580.8; // ≈ 9.46e12 km, nem 9.46e15!
-
-const secondsPerYear = 365.25 * 24 * 60 * 60;
+const secondsPerYear =
+  DAYS_PER_YEAR * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
 // hány fényévet tesz meg 1 év alatt
-const speedLyPerYear = (speedKmPerSecond * secondsPerYear) / lyToKm;
+const speedLyPerYear =
+  (SHIP_SPEED_KM_PER_SECOND * secondsPerYear) / LIGHT_YEAR_TO_KM;
 
 const baseDestinations = [
   {
