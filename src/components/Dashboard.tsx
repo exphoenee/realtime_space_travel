@@ -4,12 +4,16 @@ interface DashboardProps {
   remainingYears: number;
   destinationName: string;
   localWeather: string;
+  currentSpeedKmPerSecond: number;
+  currentSpeedLyPerYear: number;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
   remainingYears,
   destinationName,
   localWeather,
+  currentSpeedKmPerSecond,
+  currentSpeedLyPerYear,
 }) => {
   return (
     <div className="w-full max-w-4xl p-4 md:p-6 mb-4 md:mb-8 bg-black/50 backdrop-blur-sm border-t-2 border-cyan-400/50 rounded-t-lg shadow-lg shadow-cyan-500/10 pointer-events-auto">
@@ -20,6 +24,9 @@ const Dashboard: React.FC<DashboardProps> = ({
           </h1>
           <p className="text-xs md:text-sm text-cyan-500">
             Státusz: Minden rendszer működik
+          </p>
+          <p className="text-xs md:text-sm text-cyan-300 mt-1">
+            Sebesség: {currentSpeedKmPerSecond.toFixed(0)} km/s
           </p>
         </div>
         <div className="flex-1 text-center border-y-2 md:border-y-0 md:border-x-2 border-cyan-400/30 py-2 md:py-0 md:px-4 space-y-1">

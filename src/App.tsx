@@ -22,6 +22,8 @@ import {
   INTRO_AUTO_SKIP_TIMEOUT_MS,
   MAX_WEATHER_UPDATE_INTERVAL_MS,
   MIN_WEATHER_UPDATE_INTERVAL_MS,
+  SHIP_SPEED_KM_PER_SECOND,
+  SHIP_SPEED_LIGHTYEARS_PER_YEAR,
   MUSIC_ACTIVE_VOLUME,
   SERVICE_UPDATE_INTERVAL_MS,
   TRAVEL_YEARS_PER_SECOND,
@@ -737,6 +739,7 @@ const App: React.FC = () => {
           remainingYears={remainingYears}
           destinationName={destination.name}
           localWeather={localWeather}
+          currentSpeedKmPerSecond={SHIP_SPEED_KM_PER_SECOND}
         />
       </div>
 
