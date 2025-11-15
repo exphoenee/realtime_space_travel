@@ -1,0 +1,42 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 50;
+  color: #cffafe;
+  padding: 1rem;
+}
+
+.heading {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+
+.subtitle {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: #7dd3fc;
+}
+
+.countdown {
+  margin-top: 1.5rem;
+  color: #fde68a;
+}
+
+.countdownValue {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.countdownText {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}

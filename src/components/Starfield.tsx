@@ -141,7 +141,12 @@ const Starfield: React.FC<StarfieldProps> = ({
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute z-0" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: "absolute", inset: 0, zIndex: 0 }}
+    />
+  );
 };
 
 export default Starfield;

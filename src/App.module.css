@@ -1,0 +1,246 @@
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  font-family: "Space Mono", "Courier New", monospace;
+}
+
+.canvasControls {
+  position: absolute;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.exitButton {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  pointer-events: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.exitButton:hover {
+  background: rgba(248, 113, 113, 0.95);
+  transform: translateY(-1px);
+}
+
+.statsPanel {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: rgba(2, 6, 23, 0.8);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.5);
+  box-shadow: 0 10px 30px rgba(8, 145, 178, 0.3);
+  pointer-events: none;
+}
+
+.statsRecord {
+  font-size: 0.85rem;
+  color: #bae6fd;
+  margin-top: 0.25rem;
+}
+
+.dashboardWrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.overlayCard {
+  width: min(100%, 640px);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.successCard {
+  background: rgba(6, 78, 59, 0.85);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #d1fae5;
+}
+
+.dangerCard {
+  background: rgba(80, 7, 36, 0.9);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fecdd3;
+}
+
+.neutralCard {
+  background: rgba(8, 47, 73, 0.92);
+  border-color: rgba(103, 232, 249, 0.5);
+  color: #e0f2fe;
+}
+
+.overlayTitle {
+  font-size: clamp(2rem, 4vw, 3rem);
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  margin-bottom: 1rem;
+}
+
+.overlayText {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.overlayActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.button:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 3px;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.dangerButton {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.dangerButton:hover {
+  background: #dc2626;
+}
+
+.successButton {
+  background: #047857;
+  color: #fff;
+}
+
+.successButton:hover {
+  background: #059669;
+}
+
+.neutralButton {
+  background: #0369a1;
+  color: #fff;
+}
+
+.neutralButton:hover {
+  background: #0284c7;
+}
+
+.cameraError {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.cameraErrorCard {
+  background: rgba(0, 0, 0, 0.75);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+}
+
+.bellOverlay {
+  position: absolute;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.musicButton {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  pointer-events: auto;
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: #bae6fd;
+  cursor: pointer;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+  transition: color 0.2s ease;
+}
+
+.musicButton:hover {
+  color: #fff;
+}
+
+.debugOverlay {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.debugCanvas {
+  width: 100%;
+  border: 1px solid rgba(103, 232, 249, 0.6);
+  border-radius: 0.75rem;
+  background: rgba(2, 6, 23, 0.85);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+.debugInfo {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.75rem;
+  color: #cffafe;
+  text-align: left;
+}
+
+.cameraErrorTitle {
+  color: #fca5a5;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.cameraErrorText {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  color: #fecdd3;
+}

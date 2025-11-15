@@ -23,7 +23,6 @@ import {
   MAX_WEATHER_UPDATE_INTERVAL_MS,
   MIN_WEATHER_UPDATE_INTERVAL_MS,
   SHIP_SPEED_KM_PER_SECOND,
-  SHIP_SPEED_LIGHTYEARS_PER_YEAR,
   MUSIC_ACTIVE_VOLUME,
   SERVICE_UPDATE_INTERVAL_MS,
   TRAVEL_YEARS_PER_SECOND,
@@ -35,6 +34,7 @@ import {
   analyzeFace,
   FaceAnalysis,
 } from "./services/faceRecognition";
+import styles from "./App.module.css";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 const DEBUG_KEYPOINT_COLORS: Record<string, string> = {
@@ -208,7 +208,7 @@ const App: React.FC = () => {
   const bellOverlay =
     showBellOverlay && canvasBounds ? (
       <div
-        className="absolute z-[80] pointer-events-none"
+        className={styles.bellOverlay}
         style={{
           top: canvasBounds.top,
           left: canvasBounds.left,
@@ -218,7 +218,7 @@ const App: React.FC = () => {
       >
         <button
           onClick={handleToggleMusic}
-          className="absolute bottom-6 right-6 text-3xl text-cyan-200 hover:text-white transition focus:outline-none pointer-events-auto drop-shadow-[0_0_10px_rgba(0,0,0,0.7)]"
+          className={styles.musicButton}
           aria-label={isMusicMuted ? "Zene bekapcsolása" : "Zene némítása"}
         >
           {isMusicMuted ? "🔕" : "🔔"}
@@ -238,50 +238,39 @@ const App: React.FC = () => {
   );
   const debugOverlay =
     isDebugMode && destination ? (
-      <div className="absolute bottom-6 left-6 z-50 pointer-events-none flex flex-col gap-2">
+      <div className={styles.debugOverlay}>
         <canvas
           ref={debugCanvasRef}
-          className="rounded border border-cyan-400/60 shadow-lg shadow-black/50 bg-black/80"
+          className={styles.debugCanvas}
           style={{
             width: `${debugWidth}px`,
             height: `${debugHeight}px`,
           }}
         />
-        <div className="px-3 py-2 bg-black/70 text-cyan-100 text-xs rounded border border-cyan-400/40">
+        <div className={styles.debugInfo}>
           <p>
             Kamera állapot:{" "}
-            <span
-              className={
-                faceStatus.detected ? "text-green-400 font-semibold" : "text-red-400 font-semibold"
-              }
-            >
+            <span style={{ color: faceStatus.detected ? "#22c55e" : "#f87171" }}>
               {faceStatus.detected ? "Arc érzékelve" : "Nincs arc"}
             </span>
           </p>
-          <p className="mt-1 text-[11px] text-cyan-200/80">
-            Utolsó frissítés: {lastUpdateAgoSeconds.toFixed(1)}s
+          <p>Utolsó frissítés: {lastUpdateAgoSeconds.toFixed(1)}s</p>
+          <p>
+            Balance arány:{" "}
+            {debugMetrics
+              ? `${debugMetrics.balanceRatio.toFixed(2)} (céltartomány ${FACE_BALANCE_MIN_RATIO.toFixed(2)}-${FACE_BALANCE_MAX_RATIO.toFixed(2)})`
+              : "N/A"}
           </p>
-          <div className="mt-2 space-y-1 text-[11px] text-cyan-200/90">
-            <p>
-              Balance arány:{" "}
-              {debugMetrics
-                ? `${debugMetrics.balanceRatio.toFixed(2)} (céltartomány ${FACE_BALANCE_MIN_RATIO.toFixed(2)}-${FACE_BALANCE_MAX_RATIO.toFixed(2)})`
-                : "N/A"}
-            </p>
-            <p>
-              Szem döntés arány:{" "}
-              {debugMetrics
-                ? `${debugMetrics.eyeVerticalRatio.toFixed(2)} (limit ${EYE_LEVEL_MAX_OFFSET_RATIO.toFixed(2)})`
-                : "N/A"}
-            </p>
-            <p>
-              Szem-fül különbség:{" "}
-              {debugMetrics
-                ? `${debugMetrics.eyeEarMargin.toFixed(2)}`
-                : "N/A"}{" "}
-              (pozitív érték szükséges)
-            </p>
-          </div>
+          <p>
+            Szem döntés arány:{" "}
+            {debugMetrics
+              ? `${debugMetrics.eyeVerticalRatio.toFixed(2)} (limit ${EYE_LEVEL_MAX_OFFSET_RATIO.toFixed(2)})`
+              : "N/A"}
+          </p>
+          <p>
+            Szem-fül különbség:{" "}
+            {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"} (pozitív érték szükséges)
+          </p>
         </div>
       </div>
     ) : null;
@@ -690,7 +679,7 @@ const App: React.FC = () => {
 
   if (!destination) {
     return (
-      <main className="relative w-screen h-screen bg-black overflow-hidden font-mono">
+      <main className={styles.app}>
         <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
         {showIntro ? (
           <IntroScreen onSkip={handleSkipIntro} />
@@ -705,14 +694,14 @@ const App: React.FC = () => {
   }
 
   return (
-    <main className="relative w-screen h-screen bg-black overflow-hidden font-mono">
+    <main className={styles.app}>
       <Starfield
         onCanvasBoundsChange={handleCanvasBoundsChange}
         isPaused={isPauseOverlayVisible}
       />
       {canvasBounds && (
         <div
-          className="absolute z-60 pointer-events-none"
+          className={styles.canvasControls}
           style={{
             top: canvasBounds.top,
             left: canvasBounds.left,
@@ -720,21 +709,18 @@ const App: React.FC = () => {
             height: canvasBounds.height,
           }}
         >
-          <button
-            onClick={handleRequestExit}
-            className="absolute top-6 right-6 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white font-semibold rounded shadow-lg transition focus:outline-none focus:ring-2 focus:ring-red-400 pointer-events-auto"
-          >
+          <button onClick={handleRequestExit} className={styles.exitButton}>
             Kilépés
           </button>
-          <div className="absolute top-6 left-6 bg-black/60 text-cyan-100 px-4 py-2 rounded shadow pointer-events-none font-semibold tracking-wide text-left space-y-1">
+          <div className={styles.statsPanel}>
             <p>Szolgálati idő: {serviceMinutes.toFixed(2)} perc</p>
-            <p className="text-sm text-cyan-200 font-normal">
+            <p className={styles.statsRecord}>
               Rekord: {bestServiceMinutes.toFixed(2)} perc
             </p>
           </div>
         </div>
       )}
-      <div className="absolute inset-0 flex flex-col justify-end items-center pointer-events-none">
+      <div className={styles.dashboardWrapper}>
         <Dashboard
           remainingYears={remainingYears}
           destinationName={destination.name}
@@ -744,62 +730,58 @@ const App: React.FC = () => {
       </div>
 
       {missionComplete && (
-        <div className="absolute inset-0 bg-black/80 flex flex-col justify-center items-center z-50 px-6 text-center">
-          <div className="bg-emerald-900/40 border border-emerald-400/60 rounded-2xl p-8 max-w-xl shadow-2xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-emerald-200 mb-4 uppercase tracking-widest">
-              Megérkeztél!
-            </h2>
-            <p className="text-lg text-emerald-100 leading-relaxed">
+        <div className={styles.overlay}>
+          <div className={`${styles.overlayCard} ${styles.successCard}`}>
+            <h2 className={styles.overlayTitle}>Megérkeztél!</h2>
+            <p className={styles.overlayText}>
               Megérkeztél! Az uticélod a jobb oldalon van!
             </p>
-            <button
-              onClick={handleConfirmExit}
-              className="mt-8 px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded shadow"
-            >
-              Vissza a főmenübe
-            </button>
+            <div className={styles.overlayActions}>
+              <button
+                onClick={handleConfirmExit}
+                className={`${styles.button} ${styles.successButton}`}
+              >
+                Vissza a főmenübe
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {crewLost && (
-        <div className="absolute inset-0 bg-black/85 flex flex-col justify-center items-center z-50 px-6 text-center">
-          <div className="bg-red-950/40 border border-red-500/60 rounded-2xl p-8 max-w-xl shadow-2xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-red-300 mb-4 uppercase tracking-widest">
-              Vége a játéknak
-            </h2>
-            <p className="text-lg text-red-200 leading-relaxed">
-              {crewLostMessage}
-            </p>
-            <button
-              onClick={handleConfirmExit}
-              className="mt-8 px-6 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded shadow"
-            >
-              Vissza a főmenübe
-            </button>
+        <div className={styles.overlay}>
+          <div className={`${styles.overlayCard} ${styles.dangerCard}`}>
+            <h2 className={styles.overlayTitle}>Vége a játéknak</h2>
+            <p className={styles.overlayText}>{crewLostMessage}</p>
+            <div className={styles.overlayActions}>
+              <button
+                onClick={handleConfirmExit}
+                className={`${styles.button} ${styles.dangerButton}`}
+              >
+                Vissza a főmenübe
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {showExitConfirm ? (
-        <div className="absolute inset-0 bg-black/80 flex flex-col justify-center items-center z-50 px-6">
-          <div className="bg-slate-900/90 border border-cyan-400/40 rounded-xl p-8 max-w-lg text-center shadow-2xl">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Biztosan kilépsz?
-            </h2>
-            <p className="text-cyan-200 leading-relaxed">
+        <div className={styles.overlay}>
+          <div className={`${styles.overlayCard} ${styles.neutralCard}`}>
+            <h2 className={styles.overlayTitle}>Biztosan kilépsz?</h2>
+            <p className={styles.overlayText}>
               A játék nem menti az eddigi elért eredményeidet!
             </p>
-            <div className="mt-8 flex flex-wrap gap-4 justify-center">
+            <div className={styles.overlayActions}>
               <button
                 onClick={handleConfirmExit}
-                className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded"
+                className={`${styles.button} ${styles.dangerButton}`}
               >
                 Igen
               </button>
               <button
                 onClick={handleCancelExit}
-                className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded"
+                className={`${styles.button} ${styles.neutralButton}`}
               >
                 Nem
               </button>
@@ -807,12 +789,10 @@ const App: React.FC = () => {
           </div>
         </div>
       ) : cameraError ? (
-        <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center z-50 backdrop-blur-md">
-          <div className="text-center p-4">
-            <h2 className="text-2xl font-bold text-red-400 tracking-widest uppercase">
-              Hiba
-            </h2>
-            <p className="mt-4 text-lg text-red-300">{cameraError}</p>
+        <div className={`${styles.overlay} ${styles.cameraError}`}>
+          <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
+            <h2 className={styles.cameraErrorTitle}>Hiba</h2>
+            <p className={styles.cameraErrorText}>{cameraError}</p>
           </div>
         </div>
       ) : isPauseOverlayVisible ? (

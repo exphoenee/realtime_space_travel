@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import styles from "./IntroScreen.module.css";
 
 interface IntroScreenProps {
   onSkip: () => void;
@@ -12,14 +13,14 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
     if (!root) return;
 
     const blocks = Array.from(
-      root.querySelectorAll<HTMLElement>(".intro-block"),
+      root.querySelectorAll<HTMLElement>('[data-intro-block="true"]'),
     );
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("intro-block-visible");
+            entry.target.classList.add(styles.blockVisible);
             observer.unobserve(entry.target);
           }
         });
@@ -46,110 +47,53 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
   }, []);
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 text-center px-6 cursor-pointer overflow-hidden"
-      onClick={onSkip}
-    >
-      <div className="intro-fade flex flex-col items-center justify-center text-white max-h-full px-4">
-        <div
-          ref={scrollRef}
-          className="intro-scroll max-w-4xl space-y-6 text-left pb-20"
-        >
-          <div className="intro-block space-y-3 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-[0.35em] uppercase text-center">
-              Realtime Space Travel
-            </h1>
-          </div>
-          <div className="intro-block space-y-3 text-center">
-            <p className="text-2xl italic text-cyan-100">
-              Az életedre szóló élmény!
-            </p>
+    <div className={styles.overlay} onClick={onSkip}>
+      <div className={`${styles.content} ${styles.fade}`}>
+        <div ref={scrollRef} className={styles.scroll}>
+          <div className={styles.block} data-intro-block="true">
+            <h1 className={styles.headline}>Realtime Space Travel</h1>
+            <p className={styles.motto}>Az életedre szóló élmény!</p>
           </div>
 
-          <div className="intro-block text-lg leading-8 text-cyan-50">
-            Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen
-            reménye. Ez nem egy játék, a túlélésünk a tét. Ez az utolsó
-            esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen reménye. Ez nem egy játék, a
+            túlélésünk a tét. Ez az utolsó esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A
             bárka, amely az emberiség jövőjét hordozza, indulásra kész.
-          </div>
+          </p>
 
-          <div className="intro-block text-lg leading-8 text-cyan-50">
-            A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói –
-            mély, kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... Az
-            emberiség sorsa most a te kezedben van. Te vagy az az élő, lélegző
-            komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.
-          </div>
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói – mély, kriogén álomba
+            merült. A sorsuk, az álmaik, a jövőnk... Az emberiség sorsa most a te kezedben van. Te vagy az
+            az élő, lélegző komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.
+          </p>
 
-          <div className="intro-block text-xl font-semibold uppercase tracking-[0.3em] text-cyan-200 text-center">
+          <p className={`${styles.sectionTitle} ${styles.block}`} data-intro-block="true">
             A Feladataid – A Küldetés Legszigorúbb Protokolljai
-          </div>
+          </p>
 
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <h2 className="text-lg font-semibold text-cyan-200">
-              Az Éberség Protokollja
-            </h2>
-          </div>
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <p>
-              A legfőbb feladatod a parancsnoki híd rendszereinek folyamatos,
-              megszakítás nélküli vizuális monitorozása. A hajó komplex autonóm
-              rendszereihez egy emberi tudati horgony szükséges, hogy a több
-              ezer éves út során a navigációs adatok szinkronizációja tökéletes
-              maradjon. A te figyelmed az, ami stabilizálja a rendszert. Ha a
-              vizuális kapcsolat megszakad, a hajó vészleállást kezdeményez, és
-              a küldetés elbukik. A tekinteted az, ami egyben tartja a jövőt.
-            </p>
-          </div>
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            <strong>Az Éberség Protokollja</strong> – folyamatos vizuális monitorozás szükséges a
+            navigációs adatok stabilizálásához. Ha a figyelmed megszakad, a hajó vészleállást kezdeményez.
+          </p>
 
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <h2 className="text-lg font-semibold text-cyan-200">
-              A Zéró Beavatkozás Elve
-            </h2>
-          </div>
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <p>
-              A parancsnoki híd rendszerei tökéletesen kalibráltak és
-              önfenntartóak. Bármilyen manuális beavatkozás – egyetlen
-              gombnyomás, egy felesleges parancs – azonnali és végzetes
-              kaszkádhibát idéz elő a létfenntartó rendszerekben. Ennek
-              következménye a legénység teljes és visszafordíthatatlan
-              pusztulása. A legfontosabb képességed a fegyelem és a türelem. Ne
-              cselekedj – felügyelj!
-            </p>
-          </div>
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            <strong>A Zéró Beavatkozás Elve</strong> – a rendszerek önfenntartóak, a manuális beavatkozás
+            végzetes lehet. A legfontosabb képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!
+          </p>
 
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <h2 className="text-lg font-semibold text-cyan-200">
-              Valós Idejű Utazás
-            </h2>
-          </div>
-          <div className="intro-block space-y-3 text-lg leading-8 text-cyan-50">
-            <p>
-              Készülj fel, hogy megtapasztald a csillagközi utazás hiteles,
-              kompromisszumok nélküli valóságát. Valós időben. Láthatod, ahogy a
-              csillagok lassan, szinte észrevétlenül elmozdulnak az évezredek
-              alatt. Ez a mélyűr nyers és fenséges valósága, ahol a legnagyobb
-              ellenség az idő.
-            </p>
-          </div>
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            <strong>Valós Idejű Utazás</strong> – tapasztald meg a csillagközi utazás hiteles valóságát.
+            A csillagok évezredek alatt mozdulnak el; a legnagyobb ellenség az idő.
+          </p>
 
-          <div className="intro-block text-lg leading-8 text-cyan-50 font-semibold uppercase tracking-[0.25em] text-center">
-            A tét: Minden.
-          </div>
+          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+            <strong>A tét: Minden.</strong> Nincs dicsőség, nincsenek harcok, nincsenek jutalmak – csak a
+            csend, a végtelen kozmosz és a válladra nehezedő felelősség. A jövő a te szemedben tükröződik.
+          </p>
 
-          <div className="intro-block text-lg leading-8 text-cyan-50 text-center">
-            Nincs dicsőség, nincsenek harcok, nincsenek jutalmak – csak a csend,
-            a végtelen kozmosz és a válladra nehezedő, elképzelhetetlen
-            felelősség.
-          </div>
-
-          <div className="intro-block text-lg leading-8 text-cyan-50 text-center">
-            A felelősség a tiéd. A jövő a te szemedben tükröződik.
-          </div>
-
-          <div className="intro-block text-sm uppercase tracking-[0.3em] text-cyan-200/80 text-center">
+          <p className={`${styles.instruction} ${styles.block}`} data-intro-block="true">
             Kattints vagy nyomj meg bármilyen gombot a kihagyáshoz
-          </div>
+          </p>
         </div>
       </div>
     </div>
