@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./IntroScreen.module.css";
 
 interface IntroScreenProps {
   onSkip: () => void;
 }
 
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+
 const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [instructionsVisible, setInstructionsVisible] = useState(false);
 
   useEffect(() => {
     const root = scrollRef.current;
@@ -16,49 +19,75 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
       root.querySelectorAll<HTMLElement>('[data-intro-block="true"]'),
     );
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add(styles.blockVisible);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { root: null, rootMargin: "0px 0px -20% 0px", threshold: 0 },
-    );
+    const revealed = new Set<HTMLElement>();
+    let rafId: number;
 
-    const computeDelaySeconds = (index: number) => {
-      if (index === 0) return 0;
-      if (index === 1) return 6;
-      if (index === 2) return 12;
-      return index + 5;
+    const revealBlock = (block: HTMLElement) => {
+      if (revealed.has(block)) return;
+      block.classList.add(styles.blockVisible);
+      revealed.add(block);
     };
 
-    blocks.forEach((block, index) => {
-      block.style.setProperty(
-        "--intro-block-delay",
-        `${computeDelaySeconds(index)}s`,
-      );
-      observer.observe(block);
-    });
+    const checkBlocks = () => {
+      const triggerY = (window.innerHeight / 3) * 2;
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        if (revealed.has(block)) {
+          continue;
+        }
 
-    return () => observer.disconnect();
+        if (i > 0 && !revealed.has(blocks[i - 1])) {
+          break;
+        }
+
+        const rect = block.getBoundingClientRect();
+        if (rect.top <= triggerY) {
+          revealBlock(block);
+        }
+        break;
+      }
+
+      const lastBlock = blocks[blocks.length - 1];
+      if (
+        lastBlock &&
+        lastBlock.getBoundingClientRect().bottom <= 0
+      ) {
+        setInstructionsVisible((prev) => (prev ? prev : true));
+      }
+
+      rafId = window.requestAnimationFrame(checkBlocks);
+    };
+
+    rafId = window.requestAnimationFrame(checkBlocks);
+
+    return () => window.cancelAnimationFrame(rafId);
   }, []);
 
   return (
     <div className={styles.overlay} onClick={onSkip}>
       <div className={`${styles.content} ${styles.fade}`}>
-        <div ref={scrollRef} className={styles.scroll}>
-          <div className={styles.block} data-intro-block="true">
+        <div
+          ref={scrollRef}
+          className={styles.scroll}
+          style={
+            DEBUG_MODE
+              ? ({ ["--intro-scroll-duration" as string]: "60s" } as React.CSSProperties)
+              : undefined
+          }
+        >
+          <div className={styles.block} data-intro-block="true" data-timed-block="true">
             <h1 className={styles.headline}>Realtime Space Travel</h1>
           </div>
 
-          <div className={styles.block} data-intro-block="true">
+          <div className={styles.block} data-intro-block="true" data-timed-block="true">
             <p className={styles.motto}>Az életedre szóló élmény!</p>
           </div>
 
-          <p className={`${styles.paragraph} ${styles.block}`} data-intro-block="true">
+          <p
+            className={`${styles.paragraph} ${styles.block}`}
+            data-intro-block="true"
+            data-timed-block="true"
+          >
             Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen reménye. Ez nem egy játék, a
             túlélésünk a tét. Ez az utolsó esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A
             bárka, amely az emberiség jövőjét hordozza, indulásra kész.
@@ -93,11 +122,12 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
             <strong>A tét: Minden.</strong> Nincs dicsőség, nincsenek harcok, nincsenek jutalmak – csak a
             csend, a végtelen kozmosz és a válladra nehezedő felelősség. A jövő a te szemedben tükröződik.
           </p>
-
-          <p className={`${styles.instruction} ${styles.block}`} data-intro-block="true">
-            Kattints vagy nyomj meg bármilyen gombot a kihagyáshoz
-          </p>
         </div>
+        {instructionsVisible && (
+          <div className={styles.finalInstruction}>
+            Kattints vagy nyomj meg bármilyen gombot a kihagyáshoz
+          </div>
+        )}
       </div>
     </div>
   );
