@@ -23,7 +23,7 @@
 }
 
 .scroll {
-  transform: translateY(60vh);
+  transform: translateY(calc(87.5vh));
   animation-name: introScroll;
   animation-duration: var(--intro-scroll-duration, 600s);
   animation-timing-function: linear;
@@ -48,20 +48,27 @@
   letter-spacing: 0.35em;
   text-transform: uppercase;
   margin: 0.5rem 0;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
 }
 
 .motto {
   font-size: 2.4rem;
   font-style: italic;
   color: #bae6fd;
+  font-weight: 600;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.7);
 }
 
 .paragraph {
-  font-size: 1.15rem;
-  line-height: 1.9;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.5;
   margin-top: 1.6rem;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
   color: #e2e8f0;
   text-align: left;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
 }
 
 .sectionTitle {
@@ -71,6 +78,9 @@
   color: #fcd34d;
   margin-top: 2rem;
   text-align: left;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.7);
 }
 
 .instruction {
@@ -79,6 +89,7 @@
   text-transform: uppercase;
   color: #67e8f9;
   margin-top: 1rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
 }
 
 .finalInstruction {
@@ -96,6 +107,7 @@
   letter-spacing: 0.4em;
   text-transform: uppercase;
   animation: introFade 1.5s ease forwards;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.75);
 }
 
 @keyframes introFade {
