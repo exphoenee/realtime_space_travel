@@ -1,6 +1,13 @@
-import "@mediapipe/face_detection";
-import * as faceDetection from "@tensorflow-models/face-detection";
-import * as tf from "@tensorflow/tfjs";
+import type {
+  Face,
+  Keypoint,
+  MediaPipeFaceDetectorMediaPipeModelConfig,
+} from "@tensorflow-models/face-detection";
+import {
+  SupportedModels,
+  createDetector,
+} from "@tensorflow-models/face-detection";
+import { setBackend } from "@tensorflow/tfjs";
 
 import {
   FACE_BALANCE_MAX_RATIO,
@@ -16,15 +23,16 @@ export interface FaceAnalysis {
   eyeEarMargin: number;
 }
 
-export const analyzeFace = (face: faceDetection.Face): FaceAnalysis => {
-  const namedKeypoints = face.keypoints.reduce<
-    Record<string, faceDetection.Keypoint>
-  >((acc, keypoint) => {
-    if (keypoint.name) {
-      acc[keypoint.name] = keypoint;
-    }
-    return acc;
-  }, {});
+export const analyzeFace = (face: Face): FaceAnalysis => {
+  const namedKeypoints = face.keypoints.reduce<Record<string, Keypoint>>(
+    (acc, keypoint) => {
+      if (keypoint.name) {
+        acc[keypoint.name] = keypoint;
+      }
+      return acc;
+    },
+    {},
+  );
 
   const leftEar = namedKeypoints.leftEarTragion;
   const rightEar = namedKeypoints.rightEarTragion;
@@ -42,7 +50,7 @@ export const analyzeFace = (face: faceDetection.Face): FaceAnalysis => {
     };
   }
 
-  const distance = (a: faceDetection.Keypoint, b: faceDetection.Keypoint) =>
+  const distance = (a: Keypoint, b: Keypoint) =>
     Math.hypot(a.x - b.x, a.y - b.y);
   const leftEarDistance = distance(nose, leftEar);
   const rightEarDistance = distance(nose, rightEar);
@@ -84,22 +92,40 @@ export const analyzeFace = (face: faceDetection.Face): FaceAnalysis => {
   };
 };
 
-export const isFaceLookingForward = (face: faceDetection.Face) =>
-  analyzeFace(face).forward;
+export const isFaceLookingForward = (face: Face) => analyzeFace(face).forward;
 
 export const createFaceDetector = async () => {
-  await tf.setBackend("webgl");
-  const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
+  await setBackend("webgl");
 
-  const solutionPath = import.meta.env.DEV
-    ? "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"
-    : `${import.meta.env.BASE_URL}face_detection`;
+  if (typeof window !== "undefined") {
+    const timeout = 10000;
+    const startTime = Date.now();
 
-  const detectorConfig: faceDetection.MediaPipeFaceDetectorMediaPipeModelConfig =
-    {
-      runtime: "mediapipe",
-      solutionPath,
-    };
+    while (!(window as any).FaceDetection) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error("MediaPipe FaceDetection failed to load from CDN");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
 
-  return faceDetection.createDetector(model, detectorConfig);
+    console.log(
+      "FaceDetection loaded successfully:",
+      typeof (window as any).FaceDetection,
+    );
+
+    if (!(globalThis as any).FaceDetection) {
+      (globalThis as any).FaceDetection = (window as any).FaceDetection;
+    }
+  }
+
+  const model = SupportedModels.MediaPipeFaceDetector;
+  const solutionPath =
+    "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4";
+
+  const detectorConfig: MediaPipeFaceDetectorMediaPipeModelConfig = {
+    runtime: "mediapipe",
+    solutionPath,
+  };
+
+  return createDetector(model, detectorConfig);
 };

@@ -2,24 +2,15 @@
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
-    <base href="/realtime_space_travel/">
+    <base href="/realtime_space_travel/" />
     <link rel="icon" type="image/svg+xml" href="vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Valós idejű űrutazás szimulátor</title>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "vite": "https://aistudiocdn.com/vite@^7.2.2",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
-    "@tensorflow/tfjs": "https://aistudiocdn.com/@tensorflow/tfjs@^4.20.0",
-    "@tensorflow-models/face-detection": "https://aistudiocdn.com/@tensorflow-models/face-detection@^1.0.2"
-  }
-}
-</script>
-</head>
+    <title>Realtime Space Travel</title>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js"
+    ></script>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
