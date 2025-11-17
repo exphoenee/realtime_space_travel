@@ -9,15 +9,10 @@ WebShop
 
 Könnyű küldetés a holdig / marsig
 
-Ha a player gombot nyom, akkor azonnal veszít.
-
 Rendszertelen időközönként történjen valami, ami interakciót kíván.
 - kürtszó -> gombnyomás
-
-Hard fokozatban az interakciók téves utasítást adnak, és a player veszít.
+- Hard fokozatban az interakciók téves utasítást adnak, és a player veszít.
 
 Érdekes események:
-- mentőhajóra át lehet szálni más a műszerfal, de ugyanúgy 2000 év az útidő.
-- aszeroida a röppályán egy műszerfalon üzenet, hogy elkerülje a player azt, erre a menetidő megnövekszik.
-
-
+- mentőhajóra át lehet szálni más a műszerfalat kell nézni onnantól kezdve, de ugyanúgy 2000 év az útidő.
+- aszteroida a röppályán egy műszerfalon üzenet, hogy elkerülje a player azt, erre a menetidő megnövekszik.
