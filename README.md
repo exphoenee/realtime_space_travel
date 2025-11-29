@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Realtime Space Travel
 
-# Run and deploy your AI Studio app
+**Az életedre szóló élmény!**
 
-This contains everything you need to run your app locally.
+Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen reménye. Ez nem egy játék, a túlélésünk a tét. Ez az utolsó esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A bárka, amely az emberiség jövőjét hordozza, indulásra kész.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1YqVuWLKWptffNxBC3C7PGtLMnI9X45a1
+A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói – mély, kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... Az emberiség sorsa most a te kezedben van. Te vagy az az élő, lélegző komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.
+
+## A Feladataid – A Küldetés Legszigorúbb Protokolljai
+
+**Az Éberség Protokollja** – folyamatos vizuális monitorozás szükséges a navigációs adatok stabilizálásához. Ha a figyelmed megszakad, a hajó vészleállást kezdeményez.
+
+**A Zéró Beavatkozás Elve** – a rendszerek önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!
+
+**Valós Idejű Utazás** – tapasztald meg a csillagközi utazás hiteles valóságát. A csillagok évezredek alatt mozdulnak el; a legnagyobb ellenség az idő.
+
+**A tét: Minden.** Nincs dicsőség, nincsenek harcok, nincsenek jutalmak – csak a csend, a végtelen kozmosz és a válladra nehezedő felelősség. A jövő a te szemedben tükröződik.
+
+---
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1.  Install dependencies:
+    `npm install`
+2.  Run the app:
+    `npm run dev`
