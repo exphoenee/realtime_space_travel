@@ -29,15 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Check debug mode is disabled
-        run: |
-          if grep -q '^VITE_DEBUG_MODE=true' .env; then
-            echo "::error::Deployment blocked: VITE_DEBUG_MODE is true in .env"
-            exit 1
-          fi
-
       - name: Build
         run: npm run build
+        env:
+          VITE_DEBUG_MODE: "false"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
