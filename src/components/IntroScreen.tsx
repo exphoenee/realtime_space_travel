@@ -20,7 +20,6 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
     );
 
     const revealed = new Set<HTMLElement>();
-    let rafId: number;
 
     const revealBlock = (block: HTMLElement) => {
       if (revealed.has(block)) return;
@@ -56,13 +55,16 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
         setInstructionsVisible(true);
         return;
       }
-
-      rafId = window.requestAnimationFrame(checkBlocks);
     };
 
-    rafId = window.requestAnimationFrame(checkBlocks);
+    const onScroll = () => {
+      checkBlocks();
+    };
 
-    return () => window.cancelAnimationFrame(rafId);
+    root.addEventListener("scroll", onScroll, { passive: true });
+    checkBlocks();
+
+    return () => root.removeEventListener("scroll", onScroll);
   }, []);
 
   return (

@@ -11,6 +11,7 @@ import {
   analyzeFace,
   FaceAnalysis,
 } from "../services/faceRecognition";
+import { Destination } from "../types";
 import useGameStore from "../state/useGameStore";
 
 const DEBUG_KEYPOINT_COLORS: Record<string, string> = {
@@ -22,12 +23,14 @@ const DEBUG_KEYPOINT_COLORS: Record<string, string> = {
 };
 
 export const useCamera = (
-  destination: unknown,
+  destination: Destination | null,
   debugMode: boolean,
 ) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const debugCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDetectingRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const detectorRef = useRef<FaceDetector | null>(null);
 
   const [faceStatus, setFaceStatus] = useState<{
     detected: boolean;
@@ -61,7 +64,6 @@ export const useCamera = (
       return;
     }
 
-    let detector: FaceDetector | null = null;
     let detectionInterval: number;
     let isCancelled = false;
 
@@ -70,6 +72,7 @@ export const useCamera = (
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
+        streamRef.current = stream;
         const video = videoRef.current;
         if (video) {
           video.srcObject = stream;
@@ -109,6 +112,7 @@ export const useCamera = (
         return;
       }
 
+      let detector: FaceDetector;
       try {
         detector = await createFaceDetector();
       } catch (error) {
@@ -122,9 +126,10 @@ export const useCamera = (
         }
         return;
       }
+      detectorRef.current = detector;
 
       const detectFace = async () => {
-        if (isDetectingRef.current || !videoRef.current || !detector) return;
+        if (isDetectingRef.current || !videoRef.current || !detectorRef.current) return;
 
         const video = videoRef.current;
         if (video.readyState < 3) return;
@@ -132,7 +137,7 @@ export const useCamera = (
         isDetectingRef.current = true;
 
         try {
-          const faces = await detector.estimateFaces(video, {
+          const faces = await detectorRef.current.estimateFaces(video, {
             flipHorizontal: false,
           });
           let primaryAnalysis: FaceAnalysis | null = null;
@@ -218,12 +223,13 @@ export const useCamera = (
     return () => {
       isCancelled = true;
       clearInterval(detectionInterval);
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
-      if (detector) {
-        detector.dispose();
+      if (detectorRef.current) {
+        detectorRef.current.dispose();
+        detectorRef.current = null;
       }
     };
   }, [

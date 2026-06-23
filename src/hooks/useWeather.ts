@@ -4,8 +4,9 @@ import {
   MIN_WEATHER_UPDATE_INTERVAL_MS,
 } from "../constants/constants";
 import { weatherConditions } from "../constants/universeData";
+import { Destination } from "../types";
 
-export const useWeather = (destination: unknown) => {
+export const useWeather = (destination: Destination | null) => {
   const [localWeather, setLocalWeather] = useState(weatherConditions[0]);
 
   useEffect(() => {

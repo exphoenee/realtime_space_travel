@@ -15,13 +15,6 @@ import {
   EYE_LEVEL_MAX_OFFSET_RATIO,
 } from "../constants/constants";
 
-declare global {
-  interface Window {
-    FaceDetection?: unknown;
-  }
-  var FaceDetection: unknown;
-}
-
 export interface FaceAnalysis {
   forward: boolean;
   balanceRatio: number;
@@ -101,58 +94,11 @@ export const analyzeFace = (face: Face): FaceAnalysis => {
 
 export const isFaceLookingForward = (face: Face) => analyzeFace(face).forward;
 
-const loadMediaPipeScript = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (window.FaceDetection) {
-      resolve();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = `${import.meta.env.BASE_URL}mediapipe/face_detection/face_detection.js`;
-    script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new Error("Failed to load MediaPipe face detection script"));
-    document.head.appendChild(script);
-  });
-};
-
-const waitForFaceDetection = (timeoutMs: number): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (window.FaceDetection) {
-      resolve();
-      return;
-    }
-
-    const startTime = Date.now();
-    const checkInterval = setInterval(() => {
-      if (window.FaceDetection) {
-        clearInterval(checkInterval);
-        resolve();
-      } else if (Date.now() - startTime > timeoutMs) {
-        clearInterval(checkInterval);
-        reject(new Error("MediaPipe FaceDetection failed to initialize"));
-      }
-    }, 100);
-  });
-};
-
 export const createFaceDetector = async () => {
-  await setBackend("webgl");
-
-  if (typeof window !== "undefined") {
-    await loadMediaPipeScript();
-    await waitForFaceDetection(10000);
-
-    if (import.meta.env.VITE_DEBUG_MODE === "true") {
-      console.log(
-        "FaceDetection loaded successfully:",
-        typeof window.FaceDetection,
-      );
-    }
-
-    if (!globalThis.FaceDetection) {
-      globalThis.FaceDetection = window.FaceDetection;
-    }
+  try {
+    await setBackend("webgl");
+  } catch {
+    await setBackend("cpu");
   }
 
   const model = SupportedModels.MediaPipeFaceDetector;

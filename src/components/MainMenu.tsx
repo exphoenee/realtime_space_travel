@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Destination } from "../types";
 import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../constants/constants";
 import { baseDestinations } from "../constants/universeData";
@@ -8,7 +8,7 @@ interface MainMenuProps {
   onSelectDestination: (destination: Destination) => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onSelectDestination }) => {
+const MainMenu = ({ onSelectDestination }: MainMenuProps) => {
   const destinations = useMemo(
     () =>
       baseDestinations.map((dest) => ({

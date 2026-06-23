@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./PauseMenu.module.css";
 
 interface PauseMenuProps {
@@ -6,10 +5,10 @@ interface PauseMenuProps {
   isInitializing?: boolean;
 }
 
-const PauseMenu: React.FC<PauseMenuProps> = ({
+const PauseMenu = ({
   countdownSeconds,
   isInitializing,
-}) => {
+}: PauseMenuProps) => {
   const headingText = isInitializing
     ? "Az élmény hamarosan kezdődik!"
     : "Szünet";

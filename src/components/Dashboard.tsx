@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./Dashboard.module.css";
 
 interface DashboardProps {
@@ -8,12 +7,12 @@ interface DashboardProps {
   currentSpeedKmPerSecond: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({
+const Dashboard = ({
   remainingYears,
   destinationName,
   localWeather,
   currentSpeedKmPerSecond,
-}) => {
+}: DashboardProps) => {
   return (
     <div className={styles.container}>
       <div className={styles.inner}>

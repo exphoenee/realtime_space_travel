@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import {
   AUDIO_FADE_INTERVAL_MS,
   AUDIO_FADE_STEP,
@@ -8,23 +8,26 @@ import {
 export const useAudio = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeIntervalRef = useRef<number | null>(null);
-  const [isAudioReady, setIsAudioReady] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const ensureAudio = useCallback(() => {
+    if (audioRef.current) return audioRef.current;
     const audio = new Audio(`${import.meta.env.BASE_URL}main_theme.mp3`);
     audio.loop = true;
     audio.volume = 0;
     audioRef.current = audio;
-    setIsAudioReady(true);
+    return audio;
+  }, []);
 
+  useEffect(() => {
     return () => {
       if (volumeIntervalRef.current !== null) {
         window.clearInterval(volumeIntervalRef.current);
         volumeIntervalRef.current = null;
       }
-      audio.pause();
-      audioRef.current = null;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -71,8 +74,7 @@ export const useAudio = () => {
 
   const playMusic = useCallback(
     (shouldPlay: boolean, isMuted: boolean) => {
-      const audio = audioRef.current;
-      if (!audio || !isAudioReady) return;
+      const audio = ensureAudio();
 
       const targetVolume =
         shouldPlay && !isMuted ? MUSIC_ACTIVE_VOLUME : 0;
@@ -88,8 +90,8 @@ export const useAudio = () => {
 
       fadeAudio(targetVolume);
     },
-    [fadeAudio, isAudioReady],
+    [ensureAudio, fadeAudio],
   );
 
-  return { playMusic, isAudioReady };
+  return { playMusic };
 };

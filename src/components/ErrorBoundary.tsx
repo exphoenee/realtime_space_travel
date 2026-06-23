@@ -61,7 +61,7 @@ class ErrorBoundary extends Component<Props, State> {
                   fontWeight: 600,
                 }}
               >
-                �jratöltés
+                Újratöltés
               </button>
             </div>
           </div>

@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
-import path from "path";
 
 export default defineConfig({
   plugins: [react()],
@@ -10,17 +9,6 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
     },
-  },
-  resolve: {
-    alias: {
-      "@mediapipe/face_detection": path.resolve(
-        __dirname,
-        "./src/stubs/mediapipe-stub.ts",
-      ),
-    },
-  },
-  optimizeDeps: {
-    exclude: ["@mediapipe/face_detection"],
   },
   test: {
     globals: true,

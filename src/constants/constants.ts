@@ -29,4 +29,3 @@ export const MUSIC_ACTIVE_VOLUME = 0.6;
 
 export const STAR_COUNT = 400;
 export const STAR_SPEED = 0.05;
-export const TARGET_ASPECT_RATIO = 16 / 9;

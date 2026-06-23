@@ -77,6 +77,14 @@ const App: React.FC = () => {
     setIsPaused(true);
   };
 
+  const updateBestServiceTime = useCallback(
+    (seconds: number) => {
+      if (seconds <= 0) return;
+      setBestServiceSeconds((prev) => (seconds <= prev ? prev : seconds));
+    },
+    [setBestServiceSeconds],
+  );
+
   const handleConfirmExit = () => {
     updateBestServiceTime(serviceSeconds);
     resetToMenu();
@@ -202,14 +210,6 @@ const App: React.FC = () => {
       </div>
     ) : null;
 
-  const updateBestServiceTime = useCallback(
-    (seconds: number) => {
-      if (seconds <= 0) return;
-      setBestServiceSeconds((prev) => (seconds <= prev ? prev : seconds));
-    },
-    [setBestServiceSeconds],
-  );
-
   useEffect(() => {
     if (!showIntro) return;
 
@@ -241,10 +241,14 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!destination) return;
 
-    const handleKeyDown = () => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (e.key === "Escape" || e.key === "Tab" || e.key.startsWith("F")) return;
+
       const {
         crewLost,
         missionComplete,
+        showExitConfirm,
         serviceSeconds,
         setCrewLost,
         setCrewLostReason,
@@ -253,7 +257,7 @@ const App: React.FC = () => {
         setIsAttentionLost,
         setInactivitySeconds,
       } = useGameStore.getState();
-      if (crewLost || missionComplete) {
+      if (crewLost || missionComplete || showExitConfirm) {
         return;
       }
 
@@ -306,15 +310,13 @@ const App: React.FC = () => {
     isPaused,
     crewLost,
     missionComplete,
-    setServiceSeconds,
-    setRemainingYears,
   ]);
 
   useEffect(() => {
     if (!isAttentionLost) {
       setInactivitySeconds(0);
     }
-  }, [isAttentionLost, setInactivitySeconds]);
+  }, [isAttentionLost]);
 
   useEffect(() => {
     if (!destination || !isAttentionLost || crewLost || missionComplete) {
@@ -343,11 +345,6 @@ const App: React.FC = () => {
     crewLost,
     missionComplete,
     updateBestServiceTime,
-    setInactivitySeconds,
-    setCrewLost,
-    setCrewLostReason,
-    setShowExitConfirm,
-    setIsPaused,
   ]);
 
   useEffect(() => {
@@ -369,11 +366,6 @@ const App: React.FC = () => {
     missionComplete,
     crewLost,
     updateBestServiceTime,
-    setMissionComplete,
-    setIsPaused,
-    setIsAttentionLost,
-    setInactivitySeconds,
-    setShowExitConfirm,
   ]);
 
   if (!destination) {

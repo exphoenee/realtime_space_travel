@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface ScreenCheckProps {
   children: React.ReactNode;
@@ -7,7 +7,7 @@ interface ScreenCheckProps {
 const MIN_WIDTH = 900;
 const MIN_HEIGHT = 530;
 
-const ScreenCheck: React.FC<ScreenCheckProps> = ({ children }) => {
+const ScreenCheck = ({ children }: ScreenCheckProps) => {
   const [isBlocked, setIsBlocked] = useState(true);
   const [reason, setReason] = useState<"portrait" | "small" | null>(null);
 
