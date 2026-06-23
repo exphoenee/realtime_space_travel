@@ -94,19 +94,31 @@ export const analyzeFace = (face: Face): FaceAnalysis => {
 
 export const isFaceLookingForward = (face: Face) => analyzeFace(face).forward;
 
+const waitForFaceDetection = (timeoutMs: number): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if ((window as any).FaceDetection) {
+      resolve();
+      return;
+    }
+
+    const startTime = Date.now();
+    const checkInterval = setInterval(() => {
+      if ((window as any).FaceDetection) {
+        clearInterval(checkInterval);
+        resolve();
+      } else if (Date.now() - startTime > timeoutMs) {
+        clearInterval(checkInterval);
+        reject(new Error("MediaPipe FaceDetection failed to load from CDN"));
+      }
+    }, 100);
+  });
+};
+
 export const createFaceDetector = async () => {
   await setBackend("webgl");
 
   if (typeof window !== "undefined") {
-    const timeout = 10000;
-    const startTime = Date.now();
-
-    while (!(window as any).FaceDetection) {
-      if (Date.now() - startTime > timeout) {
-        throw new Error("MediaPipe FaceDetection failed to load from CDN");
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    await waitForFaceDetection(10000);
 
     console.log(
       "FaceDetection loaded successfully:",
