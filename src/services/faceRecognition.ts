@@ -101,6 +101,21 @@ export const analyzeFace = (face: Face): FaceAnalysis => {
 
 export const isFaceLookingForward = (face: Face) => analyzeFace(face).forward;
 
+const loadMediaPipeScript = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (window.FaceDetection) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = `${import.meta.env.BASE_URL}mediapipe/face_detection/face_detection.js`;
+    script.onload = () => resolve();
+    script.onerror = () =>
+      reject(new Error("Failed to load MediaPipe face detection script"));
+    document.head.appendChild(script);
+  });
+};
+
 const waitForFaceDetection = (timeoutMs: number): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (window.FaceDetection) {
@@ -115,7 +130,7 @@ const waitForFaceDetection = (timeoutMs: number): Promise<void> => {
         resolve();
       } else if (Date.now() - startTime > timeoutMs) {
         clearInterval(checkInterval);
-        reject(new Error("MediaPipe FaceDetection failed to load from CDN"));
+        reject(new Error("MediaPipe FaceDetection failed to initialize"));
       }
     }, 100);
   });
@@ -125,6 +140,7 @@ export const createFaceDetector = async () => {
   await setBackend("webgl");
 
   if (typeof window !== "undefined") {
+    await loadMediaPipeScript();
     await waitForFaceDetection(10000);
 
     if (import.meta.env.VITE_DEBUG_MODE === "true") {
