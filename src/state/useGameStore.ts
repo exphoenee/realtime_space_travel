@@ -24,11 +24,11 @@ interface GameState {
   crewLost: boolean;
   crewLostReason: CrewLostReason;
   missionComplete: boolean;
-  canvasBounds: DOMRectReadOnly | null;
   serviceSeconds: number;
   bestServiceSeconds: number;
   isMusicMuted: boolean;
   isInitializing: boolean;
+  debugIgnoreAttention: boolean;
   setDestination: (updater: StateUpdater<Destination | null>) => void;
   setRemainingYears: (updater: StateUpdater<number>) => void;
   setIsPaused: (updater: StateUpdater<boolean>) => void;
@@ -40,11 +40,11 @@ interface GameState {
   setCrewLost: (updater: StateUpdater<boolean>) => void;
   setCrewLostReason: (updater: StateUpdater<CrewLostReason>) => void;
   setMissionComplete: (updater: StateUpdater<boolean>) => void;
-  setCanvasBounds: (updater: StateUpdater<DOMRectReadOnly | null>) => void;
   setServiceSeconds: (updater: StateUpdater<number>) => void;
   setBestServiceSeconds: (updater: StateUpdater<number>) => void;
   setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setIsInitializing: (updater: StateUpdater<boolean>) => void;
+  setDebugIgnoreAttention: (updater: StateUpdater<boolean>) => void;
   startMission: (destination: Destination) => void;
   resetToMenu: () => void;
 }
@@ -63,11 +63,11 @@ const useGameStore = create<GameState>()(
       crewLost: false,
       crewLostReason: null,
       missionComplete: false,
-      canvasBounds: null,
       serviceSeconds: 0,
       bestServiceSeconds: 0,
       isMusicMuted: false,
       isInitializing: false,
+      debugIgnoreAttention: false,
       setDestination: (updater) =>
         set((state) => ({
           destination: resolveState(updater, state.destination),
@@ -112,10 +112,6 @@ const useGameStore = create<GameState>()(
         set((state) => ({
           missionComplete: resolveState(updater, state.missionComplete),
         })),
-      setCanvasBounds: (updater) =>
-        set((state) => ({
-          canvasBounds: resolveState(updater, state.canvasBounds),
-        })),
       setServiceSeconds: (updater) =>
         set((state) => ({
           serviceSeconds: resolveState(updater, state.serviceSeconds),
@@ -131,6 +127,10 @@ const useGameStore = create<GameState>()(
       setIsInitializing: (updater) =>
         set((state) => ({
           isInitializing: resolveState(updater, state.isInitializing),
+        })),
+      setDebugIgnoreAttention: (updater) =>
+        set((state) => ({
+          debugIgnoreAttention: resolveState(updater, state.debugIgnoreAttention),
         })),
       startMission: (destination) =>
         set(() => ({
@@ -163,7 +163,6 @@ const useGameStore = create<GameState>()(
           serviceSeconds: 0,
           showExitConfirm: false,
           showIntro: false,
-          canvasBounds: state.canvasBounds,
           bestServiceSeconds: state.bestServiceSeconds,
           isMusicMuted: state.isMusicMuted,
         })),

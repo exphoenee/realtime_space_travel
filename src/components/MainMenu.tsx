@@ -1,20 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Destination } from "../types";
 import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../constants/constants";
 import { baseDestinations } from "../constants/universeData";
 import styles from "./MainMenu.module.css";
-
-// ha akarod, itt már előre ráteheted a travelYears-t is
-const destinations = baseDestinations.map((dest) => ({
-  ...dest,
-  travelYears: dest.distanceLy / SHIP_SPEED_LIGHTYEARS_PER_YEAR,
-}));
 
 interface MainMenuProps {
   onSelectDestination: (destination: Destination) => void;
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ onSelectDestination }) => {
+  const destinations = useMemo(
+    () =>
+      baseDestinations.map((dest) => ({
+        ...dest,
+        travelYears: dest.distanceLy / SHIP_SPEED_LIGHTYEARS_PER_YEAR,
+      })),
+    [],
+  );
+
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>

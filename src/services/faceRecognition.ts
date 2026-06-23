@@ -15,6 +15,13 @@ import {
   EYE_LEVEL_MAX_OFFSET_RATIO,
 } from "../constants/constants";
 
+declare global {
+  interface Window {
+    FaceDetection?: unknown;
+  }
+  var FaceDetection: unknown;
+}
+
 export interface FaceAnalysis {
   forward: boolean;
   balanceRatio: number;
@@ -96,14 +103,14 @@ export const isFaceLookingForward = (face: Face) => analyzeFace(face).forward;
 
 const waitForFaceDetection = (timeoutMs: number): Promise<void> => {
   return new Promise((resolve, reject) => {
-    if ((window as any).FaceDetection) {
+    if (window.FaceDetection) {
       resolve();
       return;
     }
 
     const startTime = Date.now();
     const checkInterval = setInterval(() => {
-      if ((window as any).FaceDetection) {
+      if (window.FaceDetection) {
         clearInterval(checkInterval);
         resolve();
       } else if (Date.now() - startTime > timeoutMs) {
@@ -120,19 +127,20 @@ export const createFaceDetector = async () => {
   if (typeof window !== "undefined") {
     await waitForFaceDetection(10000);
 
-    console.log(
-      "FaceDetection loaded successfully:",
-      typeof (window as any).FaceDetection,
-    );
+    if (import.meta.env.VITE_DEBUG_MODE === "true") {
+      console.log(
+        "FaceDetection loaded successfully:",
+        typeof window.FaceDetection,
+      );
+    }
 
-    if (!(globalThis as any).FaceDetection) {
-      (globalThis as any).FaceDetection = (window as any).FaceDetection;
+    if (!globalThis.FaceDetection) {
+      globalThis.FaceDetection = window.FaceDetection;
     }
   }
 
   const model = SupportedModels.MediaPipeFaceDetector;
-  const solutionPath =
-    "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4";
+  const solutionPath = `${import.meta.env.BASE_URL}mediapipe/face_detection`;
 
   const detectorConfig: MediaPipeFaceDetectorMediaPipeModelConfig = {
     runtime: "mediapipe",

@@ -33,7 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className={`${styles.segment} ${styles.arrival}`}>
           <p className={styles.arrivalLabel}>Érkezés a célrendszerbe</p>
           <p className={styles.arrivalValue}>
-            {remainingYears.toFixed(7)} <span>Földi év</span>
+            {remainingYears.toFixed(3)} <span>Földi év</span>
           </p>
         </div>
       </div>

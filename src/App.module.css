@@ -207,7 +207,7 @@
   position: absolute;
   bottom: 1.5rem;
   left: 1.5rem;
-  z-index: 50;
+  z-index: 100;
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -243,4 +243,21 @@
   margin-top: 0.75rem;
   font-size: 1rem;
   color: #fecdd3;
+}
+
+.debugToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.debugToggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: #22c55e;
 }

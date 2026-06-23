@@ -1,7 +1,6 @@
 export const FACE_BALANCE_MIN_RATIO = 0.4;
 export const FACE_BALANCE_MAX_RATIO = 1 / FACE_BALANCE_MIN_RATIO;
 export const EYE_LEVEL_MAX_OFFSET_RATIO = 0.35;
-export const EYE_CENTER_VERTICAL_LIMIT = 0.25;
 export const SHIP_SPEED_KM_PER_SECOND = 191;
 export const LIGHT_YEAR_TO_KM = 9_460_730_472_580.8;
 export const DAYS_PER_YEAR = 365.25;
@@ -18,7 +17,7 @@ export const INACTIVITY_LIMIT_SECONDS = 60;
 export const TRAVEL_YEARS_PER_SECOND = 1 / SECONDS_PER_YEAR;
 
 export const INTRO_AUTO_SKIP_TIMEOUT_MS = 600_000;
-export const FACE_DETECTION_INTERVAL_MS = 500;
+export const FACE_DETECTION_INTERVAL_MS = 1000;
 export const SERVICE_UPDATE_INTERVAL_MS = 50;
 export const ATTENTION_INTERVAL_MS = 1_000;
 export const MIN_WEATHER_UPDATE_INTERVAL_MS = 30 * 60 * 1000;
@@ -28,6 +27,6 @@ export const AUDIO_FADE_STEP = 0.05;
 export const AUDIO_FADE_INTERVAL_MS = 50;
 export const MUSIC_ACTIVE_VOLUME = 0.6;
 
-export const STAR_COUNT = 800;
+export const STAR_COUNT = 400;
 export const STAR_SPEED = 0.05;
 export const TARGET_ASPECT_RATIO = 16 / 9;

@@ -4,7 +4,6 @@ import { Star } from "../types";
 import {
   STAR_COUNT,
   STAR_SPEED,
-  TARGET_ASPECT_RATIO,
 } from "../constants/constants";
 
 interface StarfieldProps {
@@ -18,10 +17,15 @@ const Starfield: React.FC<StarfieldProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPausedRef = useRef(isPaused);
+  const onBoundsChangeRef = useRef(onCanvasBoundsChange);
 
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
+
+  useEffect(() => {
+    onBoundsChangeRef.current = onCanvasBoundsChange;
+  }, [onCanvasBoundsChange]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,35 +42,27 @@ const Starfield: React.FC<StarfieldProps> = ({
     cockpitImage.src = cockpitSrc;
     cockpitImage.onload = () => {
       cockpitLoaded = true;
-      if (onCanvasBoundsChange) {
+      if (onBoundsChangeRef.current) {
         const rect = canvas.getBoundingClientRect();
-        onCanvasBoundsChange(rect);
+        onBoundsChangeRef.current(rect);
       }
     };
 
     const resizeCanvas = () => {
       const { innerWidth, innerHeight } = window;
-      let width = innerWidth;
-      let height = innerHeight;
 
-      if (width / height > TARGET_ASPECT_RATIO) {
-        width = height * TARGET_ASPECT_RATIO;
-      } else {
-        height = width / TARGET_ASPECT_RATIO;
-      }
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
 
-      canvas.width = width;
-      canvas.height = height;
-
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      canvas.style.left = `${(innerWidth - width) / 2}px`;
-      canvas.style.top = `${(innerHeight - height) / 2}px`;
+      canvas.style.width = `${innerWidth}px`;
+      canvas.style.height = `${innerHeight}px`;
+      canvas.style.left = "0px";
+      canvas.style.top = "0px";
 
       queueMicrotask(() => {
-        if (onCanvasBoundsChange) {
+        if (onBoundsChangeRef.current) {
           const rect = canvas.getBoundingClientRect();
-          onCanvasBoundsChange(rect);
+          onBoundsChangeRef.current(rect);
         }
       });
     };
@@ -120,7 +116,15 @@ const Starfield: React.FC<StarfieldProps> = ({
       ctx.restore();
 
       if (cockpitLoaded) {
-        ctx.drawImage(cockpitImage, 0, 0, canvas.width, canvas.height);
+        const scale = Math.max(
+          canvas.width / cockpitImage.width,
+          canvas.height / cockpitImage.height,
+        );
+        const drawWidth = cockpitImage.width * scale;
+        const drawHeight = cockpitImage.height * scale;
+        const offsetX = (canvas.width - drawWidth) / 2;
+        const offsetY = (canvas.height - drawHeight) / 2;
+        ctx.drawImage(cockpitImage, offsetX, offsetY, drawWidth, drawHeight);
       }
 
       animationFrameId = requestAnimationFrame(draw);

@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./src/App";
+import ErrorBoundary from "./src/components/ErrorBoundary";
+import ScreenCheck from "./src/components/ScreenCheck";
 import "./index.css";
 
 const rootElement = document.getElementById("root");
@@ -11,6 +13,10 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <ScreenCheck>
+        <App />
+      </ScreenCheck>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

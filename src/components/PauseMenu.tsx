@@ -15,7 +15,7 @@ const PauseMenu: React.FC<PauseMenuProps> = ({
     : "Szünet";
 
   return (
-    <div className={styles.overlay} aria-live="assertive">
+    <div className={styles.overlay} aria-live="polite">
       <div>
         <h2 className={styles.heading}>{headingText}</h2>
         <p className={styles.subtitle}>Nézz a képernyőre a folytatáshoz</p>

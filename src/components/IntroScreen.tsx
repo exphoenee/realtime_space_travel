@@ -54,6 +54,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
         lastBlock.getBoundingClientRect().bottom <= 0
       ) {
         setInstructionsVisible(true);
+        return;
       }
 
       rafId = window.requestAnimationFrame(checkBlocks);

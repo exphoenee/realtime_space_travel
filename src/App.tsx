@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import type { FaceDetector } from "@tensorflow-models/face-detection";
+import React, { useState, useEffect, useCallback } from "react";
 
 import Starfield from "./components/Starfield";
 import Dashboard from "./components/Dashboard";
@@ -8,42 +7,22 @@ import MainMenu from "./components/MainMenu";
 import IntroScreen from "./components/IntroScreen";
 
 import useGameStore from "./state/useGameStore";
+import { useAudio } from "./hooks/useAudio";
+import { useWeather } from "./hooks/useWeather";
+import { useCamera } from "./hooks/useCamera";
 
 import { Destination } from "./types";
 import {
-  AUDIO_FADE_INTERVAL_MS,
-  AUDIO_FADE_STEP,
   ATTENTION_INTERVAL_MS,
-  FACE_DETECTION_INTERVAL_MS,
-  FACE_BALANCE_MAX_RATIO,
-  FACE_BALANCE_MIN_RATIO,
-  EYE_LEVEL_MAX_OFFSET_RATIO,
   INACTIVITY_LIMIT_SECONDS,
   INTRO_AUTO_SKIP_TIMEOUT_MS,
-  MAX_WEATHER_UPDATE_INTERVAL_MS,
-  MIN_WEATHER_UPDATE_INTERVAL_MS,
   SHIP_SPEED_KM_PER_SECOND,
-  MUSIC_ACTIVE_VOLUME,
   SERVICE_UPDATE_INTERVAL_MS,
   TRAVEL_YEARS_PER_SECOND,
 } from "./constants/constants";
-import { weatherConditions } from "./constants/universeData";
-import {
-  createFaceDetector,
-  isFaceLookingForward,
-  analyzeFace,
-  FaceAnalysis,
-} from "./services/faceRecognition";
 import styles from "./App.module.css";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
-const DEBUG_KEYPOINT_COLORS: Record<string, string> = {
-  noseTip: "#fbbf24",
-  leftEye: "#38bdf8",
-  rightEye: "#38bdf8",
-  leftEarTragion: "#f97316",
-  rightEarTragion: "#f97316",
-};
 
 const App: React.FC = () => {
   const {
@@ -57,7 +36,6 @@ const App: React.FC = () => {
     crewLost,
     crewLostReason,
     missionComplete,
-    canvasBounds,
     serviceSeconds,
     bestServiceSeconds,
     isMusicMuted,
@@ -65,58 +43,30 @@ const App: React.FC = () => {
     showIntro,
     setRemainingYears,
     setIsPaused,
-    setCameraError,
     setShowExitConfirm,
     setIsAttentionLost,
     setInactivitySeconds,
     setCrewLost,
     setCrewLostReason,
     setMissionComplete,
-    setCanvasBounds,
     setServiceSeconds,
     setBestServiceSeconds,
     setIsMusicMuted,
-    setIsInitializing,
     setShowIntro,
+    debugIgnoreAttention,
+    setDebugIgnoreAttention,
     startMission,
     resetToMenu,
   } = useGameStore();
-  const [isAudioReady, setIsAudioReady] = useState(false);
-  const [localWeather, setLocalWeather] = useState(weatherConditions[0]);
-  const [faceStatus, setFaceStatus] = useState<{
-    detected: boolean;
-    timestamp: number;
-  }>({
-    detected: false,
-    timestamp: Date.now(),
-  });
-  const [debugMetrics, setDebugMetrics] = useState<FaceAnalysis | null>(null);
 
-  const isDebugMode = DEBUG_MODE;
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const debugCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isDetectingRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const volumeIntervalRef = useRef<number | null>(null);
+  const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const audio = new Audio(`${import.meta.env.BASE_URL}main_theme.mp3`);
-    audio.loop = true;
-    audio.volume = 0;
-    audioRef.current = audio;
-    setIsAudioReady(true);
-
-    return () => {
-      if (volumeIntervalRef.current !== null) {
-        window.clearInterval(volumeIntervalRef.current);
-        volumeIntervalRef.current = null;
-      }
-      audio.pause();
-      audioRef.current = null;
-      setIsAudioReady(false);
-    };
-  }, []);
+  const { playMusic } = useAudio();
+  const localWeather = useWeather(destination);
+  const { videoRef, debugCanvasRef, faceStatus, debugMetrics } = useCamera(
+    destination,
+    DEBUG_MODE,
+  );
 
   const handleSelectDestination = (selectedDestination: Destination) => {
     startMission(selectedDestination);
@@ -159,38 +109,6 @@ const App: React.FC = () => {
     setShowIntro(false);
   }, [setShowIntro]);
 
-  useEffect(() => {
-    const pickWeather = () =>
-      weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-
-    if (!destination) {
-      setLocalWeather(weatherConditions[0]);
-      return;
-    }
-
-    let timeoutId: number | null = null;
-
-    const scheduleNext = () => {
-      const delay =
-        MIN_WEATHER_UPDATE_INTERVAL_MS +
-        Math.random() *
-          (MAX_WEATHER_UPDATE_INTERVAL_MS - MIN_WEATHER_UPDATE_INTERVAL_MS);
-      timeoutId = window.setTimeout(() => {
-        setLocalWeather(pickWeather());
-        scheduleNext();
-      }, delay);
-    };
-
-    setLocalWeather(pickWeather());
-    scheduleNext();
-
-    return () => {
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, [destination]);
-
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
   const crewLostMessage =
@@ -225,6 +143,7 @@ const App: React.FC = () => {
         </button>
       </div>
     ) : null;
+
   const videoElement = videoRef.current;
   const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
   const videoAspect =
@@ -237,7 +156,7 @@ const App: React.FC = () => {
     (Date.now() - faceStatus.timestamp) / 1000,
   );
   const debugOverlay =
-    isDebugMode && destination ? (
+    DEBUG_MODE && destination ? (
       <div className={styles.debugOverlay}>
         <canvas
           ref={debugCanvasRef}
@@ -258,63 +177,30 @@ const App: React.FC = () => {
           <p>
             Balance arány:{" "}
             {debugMetrics
-              ? `${debugMetrics.balanceRatio.toFixed(2)} (céltartomány ${FACE_BALANCE_MIN_RATIO.toFixed(2)}-${FACE_BALANCE_MAX_RATIO.toFixed(2)})`
+              ? `${debugMetrics.balanceRatio.toFixed(2)}`
               : "N/A"}
           </p>
           <p>
             Szem döntés arány:{" "}
             {debugMetrics
-              ? `${debugMetrics.eyeVerticalRatio.toFixed(2)} (limit ${EYE_LEVEL_MAX_OFFSET_RATIO.toFixed(2)})`
+              ? `${debugMetrics.eyeVerticalRatio.toFixed(2)}`
               : "N/A"}
           </p>
           <p>
             Szem-fül különbség:{" "}
-            {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"} (pozitív érték szükséges)
+            {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"}
           </p>
+          <label className={styles.debugToggle}>
+            <input
+              type="checkbox"
+              checked={debugIgnoreAttention}
+              onChange={(e) => setDebugIgnoreAttention(e.target.checked)}
+            />
+            <span>Figyelmen kívül hagyás</span>
+          </label>
         </div>
       </div>
     ) : null;
-
-  const fadeAudio = useCallback((targetVolume: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const clampedTarget = Math.max(0, Math.min(1, targetVolume));
-
-    if (volumeIntervalRef.current !== null) {
-      window.clearInterval(volumeIntervalRef.current);
-      volumeIntervalRef.current = null;
-    }
-
-    const step = AUDIO_FADE_STEP;
-    const intervalDuration = AUDIO_FADE_INTERVAL_MS;
-
-    volumeIntervalRef.current = window.setInterval(() => {
-      if (!audioRef.current) {
-        if (volumeIntervalRef.current !== null) {
-          window.clearInterval(volumeIntervalRef.current);
-          volumeIntervalRef.current = null;
-        }
-        return;
-      }
-
-      const currentVolume = audio.volume;
-      const diff = clampedTarget - currentVolume;
-
-      if (Math.abs(diff) <= step) {
-        audio.volume = clampedTarget;
-        if (volumeIntervalRef.current !== null) {
-          window.clearInterval(volumeIntervalRef.current);
-          volumeIntervalRef.current = null;
-        }
-        if (clampedTarget === 0) {
-          audio.pause();
-        }
-        return;
-      }
-
-      audio.volume = currentVolume + Math.sign(diff) * step;
-    }, intervalDuration);
-  }, []);
 
   const updateBestServiceTime = useCallback(
     (seconds: number) => {
@@ -356,8 +242,17 @@ const App: React.FC = () => {
     if (!destination) return;
 
     const handleKeyDown = () => {
-      const { crewLost, missionComplete, serviceSeconds } =
-        useGameStore.getState();
+      const {
+        crewLost,
+        missionComplete,
+        serviceSeconds,
+        setCrewLost,
+        setCrewLostReason,
+        setShowExitConfirm,
+        setIsPaused,
+        setIsAttentionLost,
+        setInactivitySeconds,
+      } = useGameStore.getState();
       if (crewLost || missionComplete) {
         return;
       }
@@ -373,16 +268,7 @@ const App: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    destination,
-    setCrewLost,
-    setCrewLostReason,
-    setShowExitConfirm,
-    setIsPaused,
-    setIsAttentionLost,
-    setInactivitySeconds,
-    updateBestServiceTime,
-  ]);
+  }, [destination, updateBestServiceTime]);
 
   const shouldPlayMusic =
     !destination ||
@@ -393,23 +279,8 @@ const App: React.FC = () => {
       isPaused);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !isAudioReady) return;
-
-    const targetVolume =
-      shouldPlayMusic && !isMusicMuted ? MUSIC_ACTIVE_VOLUME : 0;
-
-    if (shouldPlayMusic && !isMusicMuted) {
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          // Autoplay might be blocked; ignore errors.
-        });
-      }
-    }
-
-    fadeAudio(targetVolume);
-  }, [shouldPlayMusic, isMusicMuted, fadeAudio, isAudioReady]);
+    playMusic(shouldPlayMusic, isMusicMuted);
+  }, [shouldPlayMusic, isMusicMuted, playMusic]);
 
   useEffect(() => {
     if (!destination || isPaused || crewLost || missionComplete) {
@@ -505,178 +376,6 @@ const App: React.FC = () => {
     setShowExitConfirm,
   ]);
 
-  // Camera and face detection effect
-  useEffect(() => {
-    if (!destination) {
-      setIsInitializing(false);
-      setFaceStatus({ detected: false, timestamp: Date.now() });
-      setDebugMetrics(null);
-      const canvas = debugCanvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-      return;
-    }
-
-    let detector: FaceDetector | null = null;
-    let detectionInterval: number;
-    const debugCanvas = debugCanvasRef.current;
-    let isCancelled = false;
-
-    const setup = async () => {
-      // 1. Setup camera
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
-        const video = videoRef.current;
-        if (video) {
-          video.srcObject = stream;
-          await video.play();
-        }
-      } catch (err) {
-        if (!isCancelled) {
-          console.error("Error accessing camera:", err);
-          setCameraError(
-            "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.",
-          );
-          setIsPaused(true);
-          setIsInitializing(false);
-        }
-        return;
-      }
-
-      // 2. Load model
-      try {
-        detector = await createFaceDetector();
-      } catch (error) {
-        if (!isCancelled) {
-          console.error("Error loading face detection model:", error);
-          setCameraError(
-            "Hiba a gépi látás modell betöltése közben. Próbáld meg frissíteni az oldalt.",
-          );
-          setIsPaused(true);
-          setIsInitializing(false);
-        }
-        return;
-      }
-
-      // 3. Start detection loop
-    const detectFace = async () => {
-      if (isDetectingRef.current || !videoRef.current || !detector) return;
-
-        const video = videoRef.current;
-        if (video.readyState < 3) return; // Wait for enough data to play
-
-        isDetectingRef.current = true;
-
-        try {
-          const faces = await detector.estimateFaces(video, {
-            flipHorizontal: false,
-          });
-          let primaryAnalysis: FaceAnalysis | null = null;
-          const hasForwardFacingFace = faces.some((face) => {
-            const analysis = analyzeFace(face);
-            if (!primaryAnalysis) {
-              primaryAnalysis = analysis;
-            }
-            return analysis.forward;
-          });
-
-          if (isDebugMode && debugCanvas) {
-            const ctx = debugCanvas.getContext("2d");
-            if (ctx) {
-              debugCanvas.width = video.videoWidth;
-              debugCanvas.height = video.videoHeight;
-              ctx.drawImage(video, 0, 0, debugCanvas.width, debugCanvas.height);
-              ctx.strokeStyle = hasForwardFacingFace ? "#22c55e" : "#ef4444";
-              ctx.lineWidth = 4;
-              faces.forEach((face) => {
-                const box = face.box;
-                ctx.strokeRect(box.xMin, box.yMin, box.width, box.height);
-                face.keypoints?.forEach((kp) => {
-                  if (!kp.name) return;
-                  const color = DEBUG_KEYPOINT_COLORS[kp.name];
-                  if (!color) return;
-                  ctx.beginPath();
-                  ctx.fillStyle = color;
-                  ctx.strokeStyle = "#0f172a";
-                  ctx.lineWidth = 2;
-                  ctx.arc(kp.x, kp.y, 6, 0, Math.PI * 2);
-                  ctx.fill();
-                  ctx.stroke();
-                });
-              });
-            }
-          }
-          setDebugMetrics(primaryAnalysis);
-          setFaceStatus({
-            detected: hasForwardFacingFace,
-            timestamp: Date.now(),
-          });
-
-          const attentionLost = !hasForwardFacingFace;
-          const stateSnapshot = useGameStore.getState();
-          const blockingOverlay =
-            stateSnapshot.showExitConfirm ||
-            stateSnapshot.crewLost ||
-            !!stateSnapshot.cameraError ||
-            stateSnapshot.missionComplete;
-
-          setIsAttentionLost(attentionLost && !blockingOverlay);
-
-          if (attentionLost) {
-            setIsPaused(true);
-          } else if (!blockingOverlay) {
-            setIsPaused(false);
-          }
-
-          if (!attentionLost) {
-            setInactivitySeconds(0);
-          }
-        } catch (error) {
-          console.error("Error detecting face:", error);
-          setIsPaused(true);
-        } finally {
-          isDetectingRef.current = false;
-        }
-      };
-
-      detectionInterval = window.setInterval(
-        detectFace,
-        FACE_DETECTION_INTERVAL_MS,
-      );
-      if (!isCancelled) {
-        setIsInitializing(false);
-      }
-    };
-
-    setup();
-
-    return () => {
-      isCancelled = true;
-      clearInterval(detectionInterval);
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
-      if (detector) {
-        detector.dispose();
-      }
-    };
-  }, [
-    destination,
-    setIsInitializing,
-    setCameraError,
-    setIsPaused,
-    setIsAttentionLost,
-    setInactivitySeconds,
-    isDebugMode,
-  ]);
-
   if (!destination) {
     return (
       <main className={styles.app}>
@@ -709,7 +408,7 @@ const App: React.FC = () => {
             height: canvasBounds.height,
           }}
         >
-          <button onClick={handleRequestExit} className={styles.exitButton}>
+          <button onClick={handleRequestExit} className={styles.exitButton} aria-label="Kilépés a küldetésből">
             Kilépés
           </button>
           <div className={styles.statsPanel}>
@@ -793,6 +492,17 @@ const App: React.FC = () => {
           <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
             <h2 className={styles.cameraErrorTitle}>Hiba</h2>
             <p className={styles.cameraErrorText}>{cameraError}</p>
+            <div className={styles.overlayActions}>
+              <button
+                onClick={() => {
+                  useGameStore.getState().setCameraError(null);
+                  useGameStore.getState().setIsPaused(false);
+                }}
+                className={`${styles.button} ${styles.neutralButton}`}
+              >
+                Próbáld újra
+              </button>
+            </div>
           </div>
         </div>
       ) : isPauseOverlayVisible ? (
