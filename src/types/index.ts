@@ -1,4 +1,6 @@
 
+export type CrewLostReason = "attention" | "buttons" | null;
+
 export type GamePhase =
   | "intro"
   | "menu"

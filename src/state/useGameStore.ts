@@ -1,16 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Destination, GamePhase } from "../types";
-
-export type CrewLostReason = "attention" | "buttons" | null;
-
-type StateUpdater<T> = T | ((prev: T) => T);
-
-const resolveState = <T>(updater: StateUpdater<T>, current: T): T => {
-  return typeof updater === "function"
-    ? (updater as (prev: T) => T)(current)
-    : updater;
-};
+import { Destination, GamePhase, CrewLostReason } from "../types";
+import type { StateUpdater } from "./utils";
+import { resolveState } from "./utils";
 
 interface GameState {
   /** Primary state machine phase */

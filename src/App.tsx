@@ -147,7 +147,11 @@ const App: React.FC = () => {
   const handleCancelExit = () => {
     setShowExitConfirm(false);
     if (!crewLost && !missionComplete) {
-      setIsPaused(false);
+      if (gamePhase === "paused" || gamePhase === "countdown") {
+        useGameStore.getState().transitionTo("playing");
+      } else {
+        setIsPaused(false);
+      }
     }
   };
 
@@ -310,15 +314,10 @@ const App: React.FC = () => {
         uiState.showExitConfirm
       ) {
         return;
-      }
-
-      updateBestServiceTime(gameState.serviceSeconds);
-      gameState.setCrewLost(true);
-      gameState.setCrewLostReason("buttons");
-      uiState.setShowExitConfirm(false);
-      gameState.setIsPaused(true);
-      gameState.setIsAttentionLost(false);
-      gameState.setInactivitySeconds(0);
+      }      updateBestServiceTime(gameState.serviceSeconds);
+          gameState.transitionTo("crewLost");
+          gameState.setCrewLostReason("buttons");
+          uiState.setShowExitConfirm(false);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -410,11 +409,9 @@ const App: React.FC = () => {
     }
 
     if (remainingYears <= 0) {
-      updateBestServiceTime(useGameStore.getState().serviceSeconds);
-      setMissionComplete(true);
-      setIsPaused(true);
-      setIsAttentionLost(false);
-      setInactivitySeconds(0);
+      const gs = useGameStore.getState();
+      updateBestServiceTime(gs.serviceSeconds);
+      gs.transitionTo("missionComplete");
       setShowExitConfirm(false);
     }
   }, [

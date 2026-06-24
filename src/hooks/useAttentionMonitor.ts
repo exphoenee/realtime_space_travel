@@ -25,27 +25,32 @@ export const useAttentionMonitor = (
       gameSnapshot.missionComplete;
 
     // --- gamePhase transitions for attention ---
+    let didTransition = false;
     if (attentionLost && !gameSnapshot.debugIgnoreAttention && !blockingOverlay) {
       if (gameSnapshot.gamePhase === "playing") {
         gameSnapshot.transitionTo("paused");
+        didTransition = true;
       }
     } else if (!blockingOverlay) {
       if (gameSnapshot.gamePhase === "paused" || gameSnapshot.gamePhase === "countdown") {
         gameSnapshot.transitionTo("playing");
+        didTransition = true;
       }
     }
 
-    // --- legacy boolean setters (backward compat) ---
-    setIsAttentionLost(attentionLost && !blockingOverlay);
+    // Only use legacy setters when no transition happened (avoids dupe Zustand sets)
+    if (!didTransition) {
+      setIsAttentionLost(attentionLost && !blockingOverlay);
 
-    if (attentionLost && !gameSnapshot.debugIgnoreAttention) {
-      setIsPaused(true);
-    } else if (!blockingOverlay) {
-      setIsPaused(false);
-    }
+      if (attentionLost && !gameSnapshot.debugIgnoreAttention) {
+        setIsPaused(true);
+      } else if (!blockingOverlay) {
+        setIsPaused(false);
+      }
 
-    if (!attentionLost) {
-      setInactivitySeconds(0);
+      if (!attentionLost) {
+        setInactivitySeconds(0);
+      }
     }
   }, [
     faceStatus.timestamp,
