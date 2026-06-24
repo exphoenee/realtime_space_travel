@@ -120,11 +120,9 @@
   100% {
     opacity: 1;
   }
-}
-
-@keyframes introScroll {
+}  @keyframes introScroll {
   0% {
-    transform: translateY(70);
+    transform: translateY(calc(87.5vh));
   }
   100% {
     transform: translateY(-250%);

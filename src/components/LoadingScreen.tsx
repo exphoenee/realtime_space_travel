@@ -1,0 +1,115 @@
+import { useEffect, useRef, useState } from "react";
+import useGameStore from "../state/useGameStore";
+import styles from "./LoadingScreen.module.css";
+
+const STEPS = [
+  { icon: "📡", label: "Kamera csatlakoztatása..." },
+  { icon: "🧠", label: "Mesterséges intelligencia modell betöltése..." },
+  { icon: "👁️", label: "Arcfelismerő rendszer kalibrálása..." },
+  { icon: "✅", label: "Minden rendszer üzemkész!" },
+];
+
+const STEP_DELAYS = [1000, 2000, 3000]; // ms delays to advance step 0→1, 1→2, 2→3
+const READY_HOLD_MS = 1200; // how long to show the ready screen before transition
+
+interface LoadingScreenProps {
+  onComplete: () => void;
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
+  const isInitializing = useGameStore((s) => s.isInitializing);
+  const [activeStep, setActiveStep] = useState(0);
+  const [ready, setReady] = useState(false);
+  const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Advance through steps on a timer
+  useEffect(() => {
+    if (activeStep >= STEPS.length - 1) return;
+    const delay = STEP_DELAYS[activeStep] ?? 3000;
+    const timer = setTimeout(() => setActiveStep((s) => s + 1), delay);
+    return () => clearTimeout(timer);
+  }, [activeStep]);
+
+  // When initializing finishes, jump to final step and show ready state
+  useEffect(() => {
+    if (!isInitializing && activeStep < STEPS.length - 1) {
+      setActiveStep(STEPS.length - 1);
+    }
+  }, [isInitializing, activeStep]);
+
+  // Show ready overlay once initializing is done + last step has appeared
+  useEffect(() => {
+    if (activeStep === STEPS.length - 1 && !isInitializing) {
+      readyTimerRef.current = setTimeout(() => {
+        setReady(true);
+        // Transition to playing after the ready card animation
+        transitionTimerRef.current = setTimeout(onComplete, 800);
+      }, READY_HOLD_MS);
+      return () => {
+        if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+        if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+      };
+    }
+  }, [activeStep, isInitializing, onComplete]);
+
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.container}>
+        {/* Radar spinner */}
+        <div className={styles.spinner}>
+          <div className={styles.spinnerRing} />
+          <div className={styles.spinnerRing} />
+          <div className={styles.spinnerRing} />
+          <div className={styles.spinnerCenter} />
+          <div className={styles.spinnerDot} />
+        </div>
+
+        {/* Title */}
+        <div>
+          <h2 className={styles.title}>Rendszerek inicializálása</h2>
+          <p className={styles.subtitle}>A hajó fedélzeti számítógépe ellenőrzi a rendszereket</p>
+        </div>
+
+        {/* Steps */}
+        <ul className={styles.steps}>
+          {STEPS.map((step, i) => {
+            let stateClass = "";
+            if (i < activeStep) stateClass = styles.stepDone;
+            else if (i === activeStep) stateClass = styles.stepActive;
+
+            const statusText =
+              i < activeStep
+                ? "Kész"
+                : i === activeStep && i === STEPS.length - 1 && !isInitializing
+                  ? "Kész"
+                  : i === activeStep
+                    ? "Folyamatban"
+                    : "";
+
+            return (
+              <li key={i} className={`${styles.step} ${stateClass}`}>
+                <span className={styles.stepIcon}>{step.icon}</span>
+                <span className={styles.stepLabel}>{step.label}</span>
+                {statusText && <span className={styles.stepStatus}>{statusText}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Ready flash overlay */}
+      {ready && (
+        <div className={styles.readyOverlay}>
+          <div className={styles.readyCard}>
+            <div className={styles.readyIcon}>🚀</div>
+            <h2 className={styles.readyText}>Minden készen áll</h2>
+            <p className={styles.readySubtext}>Nézz a képernyőre az utazás megkezdéséhez</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LoadingScreen;

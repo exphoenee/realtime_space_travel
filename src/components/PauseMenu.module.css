@@ -1,8 +1,8 @@
 .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,31 +12,101 @@
   padding: 1rem;
 }
 
+/* ── Paused (warning) state ── */
+
+.warningIcon {
+  font-size: 3.5rem;
+  margin: 0 0 0.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
 .heading {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  letter-spacing: 0.4em;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: 0.35em;
   text-transform: uppercase;
-  color: #67e8f9;
+  color: #fbbf24;
+  margin: 0 0 1rem;
+  text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
 }
 
 .subtitle {
-  margin-top: 1rem;
   font-size: 1.2rem;
-  color: #7dd3fc;
+  color: #fde68a;
+  margin: 0 0 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+.warningText {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #fecaca;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.warningText strong {
+  color: #f87171;
+  font-weight: 700;
+}
+
+/* ── Countdown state ── */
+
+.countdownHeading {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #ef4444;
+  margin: 0 0 0.75rem;
+  text-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+  animation: countdownPulse 1s ease-in-out infinite;
+}
+
+@keyframes countdownPulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.countdownSub {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #fca5a5;
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
 }
 
 .countdown {
-  margin-top: 1.5rem;
-  color: #fde68a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .countdownValue {
-  font-size: 2.2rem;
+  font-size: clamp(4rem, 10vw, 7rem);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  color: #fef2f2;
+  text-shadow: 0 0 60px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.3);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-.countdownText {
-  margin-top: 0.5rem;
+.countdownUnit {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #f87171;
+}
+
+.countdownBlame {
   font-size: 1rem;
+  font-style: italic;
+  color: #fecaca;
+  opacity: 0.75;
+  margin: 0;
 }
