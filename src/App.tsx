@@ -53,6 +53,7 @@ const App: React.FC = () => {
     setBestServiceSeconds,
     setIsMusicMuted,
     setShowIntro,
+    setCameraError,
     debugIgnoreAttention,
     setDebugIgnoreAttention,
     startMission,
@@ -68,7 +69,47 @@ const App: React.FC = () => {
     DEBUG_MODE,
   );
 
-  const handleSelectDestination = (selectedDestination: Destination) => {
+  const handleSelectDestination = async (selectedDestination: Destination) => {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+      setCameraError(
+        "A böngésződ nem támogatja a kamera hozzáférést. Próbálj másik böngészőt.",
+      );
+      return;
+    }
+
+    if (!window.FaceDetection) {
+      setCameraError(
+        "A gépi látás modell nem tölthető be. Próbáld meg frissíteni az oldalt.",
+      );
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((t) => t.stop());
+    } catch (err) {
+      let errorMessage =
+        "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.";
+      if (err instanceof DOMException) {
+        switch (err.name) {
+          case "NotAllowedError":
+            errorMessage =
+              "Kamera hozzáférés megtagadva. Kérjük, engedélyezd a kamerát a böngésző beállításaiban.";
+            break;
+          case "NotFoundError":
+            errorMessage =
+              "Nem található kamera. Csatlakoztass egy webkamerát és próbáld újra.";
+            break;
+          case "NotReadableError":
+            errorMessage =
+              "A kamera nem olvasható. Lehet, hogy egy másik alkalmazás használja.";
+            break;
+        }
+      }
+      setCameraError(errorMessage);
+      return;
+    }
+
     startMission(selectedDestination);
   };
 

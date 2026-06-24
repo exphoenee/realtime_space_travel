@@ -15,6 +15,12 @@ import {
   EYE_LEVEL_MAX_OFFSET_RATIO,
 } from "../constants/constants";
 
+declare global {
+  interface Window {
+    FaceDetection?: unknown;
+  }
+}
+
 export interface FaceAnalysis {
   forward: boolean;
   balanceRatio: number;
