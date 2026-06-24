@@ -1,0 +1,49 @@
+.overlay {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 100;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.canvas {
+  width: 100%;
+  border: 1px solid rgba(103, 232, 249, 0.6);
+  border-radius: 0.75rem;
+  background: rgba(2, 6, 23, 0.85);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+
+.info {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.75rem;
+  color: #cffafe;
+  text-align: left;
+}
+
+.info p {
+  margin: 0.15rem 0;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: #22c55e;
+}

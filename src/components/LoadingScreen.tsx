@@ -12,11 +12,16 @@ const STEPS = [
 const STEP_DELAYS = [1000, 2000, 3000]; // ms delays to advance step 0→1, 1→2, 2→3
 const READY_HOLD_MS = 1200; // how long to show the ready screen before transition
 
-const LoadingScreen: React.FC = () => {
+interface LoadingScreenProps {
+  onComplete: () => void;
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
   const isInitializing = useGameStore((s) => s.isInitializing);
   const [activeStep, setActiveStep] = useState(0);
   const [ready, setReady] = useState(false);
   const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Advance through steps on a timer
   useEffect(() => {
@@ -36,12 +41,17 @@ const LoadingScreen: React.FC = () => {
   // Show ready overlay once initializing is done + last step has appeared
   useEffect(() => {
     if (activeStep === STEPS.length - 1 && !isInitializing) {
-      readyTimerRef.current = setTimeout(() => setReady(true), READY_HOLD_MS);
+      readyTimerRef.current = setTimeout(() => {
+        setReady(true);
+        // Transition to playing after the ready card animation
+        transitionTimerRef.current = setTimeout(onComplete, 800);
+      }, READY_HOLD_MS);
       return () => {
         if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+        if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
       };
     }
-  }, [activeStep, isInitializing]);
+  }, [activeStep, isInitializing, onComplete]);
 
   return (
     <div className={styles.overlay}>

@@ -152,12 +152,6 @@ export const useFaceDetection = (
       );
       if (!isCancelled) {
         setIsInitializing(false);
-        // Transition from loading → playing once the model is ready.
-        // If the user isn't looking, the attention monitor will pause immediately.
-        const gameState = useGameStore.getState();
-        if (gameState.gamePhase === "loading") {
-          gameState.transitionTo("playing");
-        }
       }
     };
 

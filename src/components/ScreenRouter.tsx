@@ -8,6 +8,8 @@ interface ScreenRouterProps {
   phase: GamePhase;
   onSkipIntro: () => void;
   onSelectDestination: (destination: Destination) => Promise<void>;
+  /** Called when the LoadingScreen has completed its animation and is ready to start the game */
+  onLoadingComplete: () => void;
   /** Rendered when phase is a game-related phase (playing/paused/countdown/crewLost/missionComplete) */
   children?: React.ReactNode;
 }
@@ -23,6 +25,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
   phase,
   onSkipIntro,
   onSelectDestination,
+  onLoadingComplete,
   children,
 }) => {
   switch (phase) {
@@ -31,7 +34,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
     case "menu":
       return <MainMenu onSelectDestination={onSelectDestination} />;
     case "loading":
-      return <LoadingScreen />;
+      return <LoadingScreen onComplete={onLoadingComplete} />;
     default:
       return <>{children}</>;
   }

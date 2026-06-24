@@ -4,6 +4,7 @@ import ScreenRouter from "./components/ScreenRouter";
 import Starfield from "./components/Starfield";
 import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
+import DebugOverlay from "./components/DebugOverlay";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
@@ -177,6 +178,10 @@ const App: React.FC = () => {
     useGameStore.getState().transitionTo("menu");
   }, []);
 
+  const handleLoadingComplete = useCallback(() => {
+    useGameStore.getState().transitionTo("playing");
+  }, []);
+
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
   const crewLostMessage =
@@ -210,64 +215,6 @@ const App: React.FC = () => {
         >
           {isMusicMuted ? "🔕" : "🔔"}
         </button>
-      </div>
-    ) : null;
-
-  const videoElement = videoRef.current;
-  const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
-  const videoAspect =
-    videoElement && videoElement.videoHeight > 0
-      ? videoElement.videoWidth / videoElement.videoHeight
-      : 16 / 9;
-  const debugHeight = debugWidth / videoAspect;
-  const lastUpdateAgoSeconds = Math.max(
-    0,
-    (Date.now() - faceStatus.timestamp) / 1000,
-  );
-  const debugOverlay =
-    DEBUG_MODE && destination ? (
-      <div className={styles.debugOverlay}>
-        <canvas
-          ref={debugCanvasRef}
-          className={styles.debugCanvas}
-          style={{
-            width: `${debugWidth}px`,
-            height: `${debugHeight}px`,
-          }}
-        />
-        <div className={styles.debugInfo}>
-          <p>
-            Kamera állapot:{" "}
-            <span style={{ color: faceStatus.detected ? "#22c55e" : "#f87171" }}>
-              {faceStatus.detected ? "Arc érzékelve" : "Nincs arc"}
-            </span>
-          </p>
-          <p>Utolsó frissítés: {lastUpdateAgoSeconds.toFixed(1)}s</p>
-          <p>
-            Balance arány:{" "}
-            {debugMetrics
-              ? `${debugMetrics.balanceRatio.toFixed(2)}`
-              : "N/A"}
-          </p>
-          <p>
-            Szem döntés arány:{" "}
-            {debugMetrics
-              ? `${debugMetrics.eyeVerticalRatio.toFixed(2)}`
-              : "N/A"}
-          </p>
-          <p>
-            Szem-fül különbség:{" "}
-            {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"}
-          </p>
-          <label className={styles.debugToggle}>
-            <input
-              type="checkbox"
-              checked={debugIgnoreAttention}
-              onChange={(e) => setDebugIgnoreAttention(e.target.checked)}
-            />
-            <span>Figyelmen kívül hagyás</span>
-          </label>
-        </div>
       </div>
     ) : null;
 
@@ -431,6 +378,7 @@ const App: React.FC = () => {
             phase={gamePhase}
             onSkipIntro={handleSkipIntro}
             onSelectDestination={handleSelectDestination}
+            onLoadingComplete={handleLoadingComplete}
           />
           {bellOverlay}
         </main>
@@ -552,7 +500,18 @@ const App: React.FC = () => {
           ) : null}
 
           {bellOverlay}
-          {debugOverlay}
+          {DEBUG_MODE && (
+            <DebugOverlay
+              debugCanvasRef={debugCanvasRef}
+              faceStatus={faceStatus}
+              debugMetrics={debugMetrics}
+              debugIgnoreAttention={debugIgnoreAttention}
+              setDebugIgnoreAttention={setDebugIgnoreAttention}
+              canvasBounds={canvasBounds}
+              videoRef={videoRef}
+              destination={destination}
+            />
+          )}
         </main>
       )}
 
