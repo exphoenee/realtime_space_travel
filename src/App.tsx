@@ -6,9 +6,12 @@ import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
 
 import useGameStore from "./state/useGameStore";
+import useUIStore from "./state/useUIStore";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
+import { useFaceDetection } from "./hooks/useFaceDetection";
+import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
 
 import { Destination } from "./types";
 import {
@@ -29,8 +32,6 @@ const App: React.FC = () => {
     destination,
     remainingYears,
     isPaused,
-    cameraError,
-    showExitConfirm,
     isAttentionLost,
     inactivitySeconds,
     crewLost,
@@ -38,12 +39,9 @@ const App: React.FC = () => {
     missionComplete,
     serviceSeconds,
     bestServiceSeconds,
-    isMusicMuted,
-    isInitializing,
     showIntro,
     setRemainingYears,
     setIsPaused,
-    setShowExitConfirm,
     setIsAttentionLost,
     setInactivitySeconds,
     setCrewLost,
@@ -51,23 +49,34 @@ const App: React.FC = () => {
     setMissionComplete,
     setServiceSeconds,
     setBestServiceSeconds,
-    setIsMusicMuted,
     setShowIntro,
-    setCameraError,
     debugIgnoreAttention,
     setDebugIgnoreAttention,
     startMission,
     resetToMenu,
   } = useGameStore();
 
+  const {
+    cameraError,
+    showExitConfirm,
+    isMusicMuted,
+    setCameraError,
+    setShowExitConfirm,
+    setIsMusicMuted,
+  } = useUIStore();
+
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
 
   const { playMusic } = useAudio();
   const localWeather = useWeather(destination);
-  const { videoRef, debugCanvasRef, faceStatus, debugMetrics } = useCamera(
+  const { videoRef, isStreamReady } = useCamera(destination);
+  const { debugCanvasRef, faceStatus, debugMetrics } = useFaceDetection(
+    videoRef,
     destination,
+    isStreamReady,
     DEBUG_MODE,
   );
+  useAttentionMonitor(faceStatus, destination);
 
   const handleSelectDestination = async (selectedDestination: Destination) => {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
@@ -110,6 +119,8 @@ const App: React.FC = () => {
       return;
     }
 
+    setCameraError(null);
+    setShowExitConfirm(false);
     startMission(selectedDestination);
   };
 
@@ -128,6 +139,8 @@ const App: React.FC = () => {
 
   const handleConfirmExit = () => {
     updateBestServiceTime(serviceSeconds);
+    setShowExitConfirm(false);
+    setCameraError(null);
     resetToMenu();
   };
 
@@ -138,7 +151,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isPreGame = gamePhase === "intro" || gamePhase === "menu";
+  const isPreGame = gamePhase === "intro" || gamePhase === "menu" || gamePhase === "loading";
 
   const attentionCountdown =
     gamePhase === "countdown"
@@ -289,29 +302,23 @@ const App: React.FC = () => {
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       if (e.key === "Escape" || e.key === "Tab" || e.key.startsWith("F")) return;
 
-      const {
-        crewLost,
-        missionComplete,
-        showExitConfirm,
-        serviceSeconds,
-        setCrewLost,
-        setCrewLostReason,
-        setShowExitConfirm,
-        setIsPaused,
-        setIsAttentionLost,
-        setInactivitySeconds,
-      } = useGameStore.getState();
-      if (crewLost || missionComplete || showExitConfirm) {
+      const gameState = useGameStore.getState();
+      const uiState = useUIStore.getState();
+      if (
+        gameState.crewLost ||
+        gameState.missionComplete ||
+        uiState.showExitConfirm
+      ) {
         return;
       }
 
-      updateBestServiceTime(serviceSeconds);
-      setCrewLost(true);
-      setCrewLostReason("buttons");
-      setShowExitConfirm(false);
-      setIsPaused(true);
-      setIsAttentionLost(false);
-      setInactivitySeconds(0);
+      updateBestServiceTime(gameState.serviceSeconds);
+      gameState.setCrewLost(true);
+      gameState.setCrewLostReason("buttons");
+      uiState.setShowExitConfirm(false);
+      gameState.setIsPaused(true);
+      gameState.setIsAttentionLost(false);
+      gameState.setInactivitySeconds(0);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -368,14 +375,20 @@ const App: React.FC = () => {
     }
 
     const interval = window.setInterval(() => {
+      const state = useGameStore.getState();
+
+      // First tick: transition from paused → countdown
+      if (state.inactivitySeconds === 0 && state.gamePhase === "paused") {
+        state.transitionTo("countdown");
+      }
+
       setInactivitySeconds((prev) => {
         const next = prev + 1;
         if (next >= INACTIVITY_LIMIT_SECONDS) {
-          updateBestServiceTime(useGameStore.getState().serviceSeconds);
-          setCrewLost(true);
-          setCrewLostReason("attention");
-          setShowExitConfirm(false);
-          setIsPaused(true);
+          updateBestServiceTime(state.serviceSeconds);
+          state.transitionTo("crewLost");
+          state.setCrewLostReason("attention");
+          useUIStore.getState().setShowExitConfirm(false);
           return INACTIVITY_LIMIT_SECONDS;
         }
         return next;
@@ -412,148 +425,141 @@ const App: React.FC = () => {
     updateBestServiceTime,
   ]);
 
-  if (isPreGame) {
-    return (
-      <main className={styles.app}>
-        <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
-        <ScreenRouter
-          phase={gamePhase}
-          onSkipIntro={handleSkipIntro}
-          onSelectDestination={handleSelectDestination}
-        />
-        {bellOverlay}
-      </main>
-    );
-  }
-
-  // In game phases, destination is always set; guard for TypeScript narrowing
-  if (!destination) {
-    return null;
-  }
-
   return (
-    <main className={styles.app}>
-      <Starfield
-        onCanvasBoundsChange={handleCanvasBoundsChange}
-        isPaused={isPauseOverlayVisible}
-      />
-      {canvasBounds && (
-        <div
-          className={styles.canvasControls}
-          style={{
-            top: canvasBounds.top,
-            left: canvasBounds.left,
-            width: canvasBounds.width,
-            height: canvasBounds.height,
-          }}
-        >
-          <button onClick={handleRequestExit} className={styles.exitButton} aria-label="Kilépés a küldetésből">
-            Kilépés
-          </button>
-          <div className={styles.statsPanel}>
-            <p>Szolgálati idő: {serviceMinutes.toFixed(2)} perc</p>
-            <p className={styles.statsRecord}>
-              Rekord: {bestServiceMinutes.toFixed(2)} perc
-            </p>
+    <>
+      {isPreGame ? (
+        <main className={styles.app}>
+          <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
+          <ScreenRouter
+            phase={gamePhase}
+            onSkipIntro={handleSkipIntro}
+            onSelectDestination={handleSelectDestination}
+          />
+          {bellOverlay}
+        </main>
+      ) : !destination ? null : (
+        <main className={styles.app}>
+          <Starfield
+            onCanvasBoundsChange={handleCanvasBoundsChange}
+            isPaused={isPauseOverlayVisible}
+          />
+          {canvasBounds && (
+            <div
+              className={styles.canvasControls}
+              style={{
+                top: canvasBounds.top,
+                left: canvasBounds.left,
+                width: canvasBounds.width,
+                height: canvasBounds.height,
+              }}
+            >
+              <button onClick={handleRequestExit} className={styles.exitButton} aria-label="Kilépés a küldetésből">
+                Kilépés
+              </button>
+              <div className={styles.statsPanel}>
+                <p>Szolgálati idő: {serviceMinutes.toFixed(2)} perc</p>
+                <p className={styles.statsRecord}>
+                  Rekord: {bestServiceMinutes.toFixed(2)} perc
+                </p>
+              </div>
+            </div>
+          )}
+          <div className={styles.dashboardWrapper}>
+            <Dashboard
+              remainingYears={remainingYears}
+              destinationName={destination.name}
+              localWeather={localWeather}
+              currentSpeedKmPerSecond={SHIP_SPEED_KM_PER_SECOND}
+            />
           </div>
-        </div>
+
+          {missionComplete && (
+            <div className={styles.overlay}>
+              <div className={`${styles.overlayCard} ${styles.successCard}`}>
+                <h2 className={styles.overlayTitle}>Megérkeztél!</h2>
+                <p className={styles.overlayText}>
+                  Megérkeztél! Az uticélod a jobb oldalon van!
+                </p>
+                <div className={styles.overlayActions}>
+                  <button
+                    onClick={handleConfirmExit}
+                    className={`${styles.button} ${styles.successButton}`}
+                  >
+                    Vissza a főmenübe
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {crewLost && (
+            <div className={styles.overlay}>
+              <div className={`${styles.overlayCard} ${styles.dangerCard}`}>
+                <h2 className={styles.overlayTitle}>Vége a játéknak</h2>
+                <p className={styles.overlayText}>{crewLostMessage}</p>
+                <div className={styles.overlayActions}>
+                  <button
+                    onClick={handleConfirmExit}
+                    className={`${styles.button} ${styles.dangerButton}`}
+                  >
+                    Vissza a főmenübe
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showExitConfirm ? (
+            <div className={styles.overlay}>
+              <div className={`${styles.overlayCard} ${styles.neutralCard}`}>
+                <h2 className={styles.overlayTitle}>Biztosan kilépsz?</h2>
+                <p className={styles.overlayText}>
+                  A játék nem menti az eddigi elért eredményeidet!
+                </p>
+                <div className={styles.overlayActions}>
+                  <button
+                    onClick={handleConfirmExit}
+                    className={`${styles.button} ${styles.dangerButton}`}
+                  >
+                    Igen
+                  </button>
+                  <button
+                    onClick={handleCancelExit}
+                    className={`${styles.button} ${styles.neutralButton}`}
+                  >
+                    Nem
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : cameraError ? (
+            <div className={`${styles.overlay} ${styles.cameraError}`}>
+              <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
+                <h2 className={styles.cameraErrorTitle}>Hiba</h2>
+                <p className={styles.cameraErrorText}>{cameraError}</p>
+                <div className={styles.overlayActions}>
+                  <button
+                    onClick={() => {
+                      useUIStore.getState().setCameraError(null);
+                      useGameStore.getState().setIsPaused(false);
+                    }}
+                    className={`${styles.button} ${styles.neutralButton}`}
+                  >
+                    Próbáld újra
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : isPauseOverlayVisible ? (
+            <PauseMenu countdownSeconds={attentionCountdown} />
+          ) : null}
+
+          {bellOverlay}
+          {debugOverlay}
+        </main>
       )}
-      <div className={styles.dashboardWrapper}>
-        <Dashboard
-          remainingYears={remainingYears}
-          destinationName={destination.name}
-          localWeather={localWeather}
-          currentSpeedKmPerSecond={SHIP_SPEED_KM_PER_SECOND}
-        />
-      </div>
 
-      {missionComplete && (
-        <div className={styles.overlay}>
-          <div className={`${styles.overlayCard} ${styles.successCard}`}>
-            <h2 className={styles.overlayTitle}>Megérkeztél!</h2>
-            <p className={styles.overlayText}>
-              Megérkeztél! Az uticélod a jobb oldalon van!
-            </p>
-            <div className={styles.overlayActions}>
-              <button
-                onClick={handleConfirmExit}
-                className={`${styles.button} ${styles.successButton}`}
-              >
-                Vissza a főmenübe
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {crewLost && (
-        <div className={styles.overlay}>
-          <div className={`${styles.overlayCard} ${styles.dangerCard}`}>
-            <h2 className={styles.overlayTitle}>Vége a játéknak</h2>
-            <p className={styles.overlayText}>{crewLostMessage}</p>
-            <div className={styles.overlayActions}>
-              <button
-                onClick={handleConfirmExit}
-                className={`${styles.button} ${styles.dangerButton}`}
-              >
-                Vissza a főmenübe
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showExitConfirm ? (
-        <div className={styles.overlay}>
-          <div className={`${styles.overlayCard} ${styles.neutralCard}`}>
-            <h2 className={styles.overlayTitle}>Biztosan kilépsz?</h2>
-            <p className={styles.overlayText}>
-              A játék nem menti az eddigi elért eredményeidet!
-            </p>
-            <div className={styles.overlayActions}>
-              <button
-                onClick={handleConfirmExit}
-                className={`${styles.button} ${styles.dangerButton}`}
-              >
-                Igen
-              </button>
-              <button
-                onClick={handleCancelExit}
-                className={`${styles.button} ${styles.neutralButton}`}
-              >
-                Nem
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : cameraError ? (
-        <div className={`${styles.overlay} ${styles.cameraError}`}>
-          <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
-            <h2 className={styles.cameraErrorTitle}>Hiba</h2>
-            <p className={styles.cameraErrorText}>{cameraError}</p>
-            <div className={styles.overlayActions}>
-              <button
-                onClick={() => {
-                  useGameStore.getState().setCameraError(null);
-                  useGameStore.getState().setIsPaused(false);
-                }}
-                className={`${styles.button} ${styles.neutralButton}`}
-              >
-                Próbáld újra
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : isPauseOverlayVisible ? (
-        <PauseMenu
-          countdownSeconds={attentionCountdown}
-          isInitializing={isInitializing}
-        />
-      ) : null}
-
-      {bellOverlay}
-      {debugOverlay}
-
+      {/* Video element rendered unconditionally so the camera stream persists across phase changes */}
       <video
         ref={videoRef}
         autoPlay
@@ -561,7 +567,7 @@ const App: React.FC = () => {
         muted
         style={{ display: "none", position: "absolute" }}
       />
-    </main>
+    </>
   );
 };
 

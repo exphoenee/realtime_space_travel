@@ -20,8 +20,6 @@ interface GameState {
   destination: Destination | null;
   remainingYears: number;
   isPaused: boolean;
-  cameraError: string | null;
-  showExitConfirm: boolean;
   showIntro: boolean;
   isAttentionLost: boolean;
   inactivitySeconds: number;
@@ -30,7 +28,6 @@ interface GameState {
   missionComplete: boolean;
   serviceSeconds: number;
   bestServiceSeconds: number;
-  isMusicMuted: boolean;
   isInitializing: boolean;
   debugIgnoreAttention: boolean;
 
@@ -38,8 +35,6 @@ interface GameState {
   setDestination: (updater: StateUpdater<Destination | null>) => void;
   setRemainingYears: (updater: StateUpdater<number>) => void;
   setIsPaused: (updater: StateUpdater<boolean>) => void;
-  setCameraError: (updater: StateUpdater<string | null>) => void;
-  setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
   setShowIntro: (updater: StateUpdater<boolean>) => void;
   setIsAttentionLost: (updater: StateUpdater<boolean>) => void;
   setInactivitySeconds: (updater: StateUpdater<number>) => void;
@@ -48,21 +43,19 @@ interface GameState {
   setMissionComplete: (updater: StateUpdater<boolean>) => void;
   setServiceSeconds: (updater: StateUpdater<number>) => void;
   setBestServiceSeconds: (updater: StateUpdater<number>) => void;
-  setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setIsInitializing: (updater: StateUpdater<boolean>) => void;
   setDebugIgnoreAttention: (updater: StateUpdater<boolean>) => void;
 
-  // --- phase-based transitions (NEW) ---
+  // --- phase-based transitions ---
   transitionTo: (phase: GamePhase) => void;
 
-  // --- existing composite actions ---
+  // --- composite actions ---
   startMission: (destination: Destination) => void;
   resetToMenu: () => void;
 }
 
 /**
  * Maps a GamePhase to the corresponding boolean flags.
- * Unaffected overlay flags (cameraError, showExitConfirm) are NOT touched here.
  */
 const phaseToFlags = (phase: GamePhase) => {
   switch (phase) {
@@ -110,7 +103,7 @@ const phaseToFlags = (phase: GamePhase) => {
       return {
         showIntro: false,
         isPaused: true,
-        isAttentionLost: false,
+        isAttentionLost: true,
         crewLost: false,
         crewLostReason: null as CrewLostReason,
         missionComplete: false,
@@ -149,7 +142,6 @@ const phaseToFlags = (phase: GamePhase) => {
   }
 };
 
-// Derive initial gamePhase from init flags
 const initialPhase: GamePhase = "intro";
 
 const useGameStore = create<GameState>()(
@@ -161,12 +153,9 @@ const useGameStore = create<GameState>()(
       // Initial values
       destination: null,
       remainingYears: 0,
-      cameraError: null,
-      showExitConfirm: false,
       inactivitySeconds: 0,
       serviceSeconds: 0,
       bestServiceSeconds: 0,
-      isMusicMuted: false,
       debugIgnoreAttention: false,
 
       // Derived from gamePhase
@@ -184,14 +173,6 @@ const useGameStore = create<GameState>()(
       setIsPaused: (updater) =>
         set((state) => ({
           isPaused: resolveState(updater, state.isPaused),
-        })),
-      setCameraError: (updater) =>
-        set((state) => ({
-          cameraError: resolveState(updater, state.cameraError),
-        })),
-      setShowExitConfirm: (updater) =>
-        set((state) => ({
-          showExitConfirm: resolveState(updater, state.showExitConfirm),
         })),
       setShowIntro: (updater) =>
         set((state) => ({
@@ -225,10 +206,6 @@ const useGameStore = create<GameState>()(
         set((state) => ({
           bestServiceSeconds: resolveState(updater, state.bestServiceSeconds),
         })),
-      setIsMusicMuted: (updater) =>
-        set((state) => ({
-          isMusicMuted: resolveState(updater, state.isMusicMuted),
-        })),
       setIsInitializing: (updater) =>
         set((state) => ({
           isInitializing: resolveState(updater, state.isInitializing),
@@ -243,7 +220,6 @@ const useGameStore = create<GameState>()(
         set((state) => ({
           gamePhase: phase,
           ...phaseToFlags(phase),
-          // isAttentionLost can be set by the phase, but crewLostReason needs special handling
           crewLostReason:
             phase === "crewLost" ? state.crewLostReason : null,
         })),
@@ -254,8 +230,6 @@ const useGameStore = create<GameState>()(
           destination,
           remainingYears: destination.travelYears,
           gamePhase: "loading",
-          showExitConfirm: false,
-          cameraError: null,
           inactivitySeconds: 0,
           serviceSeconds: 0,
           ...phaseToFlags("loading"),
@@ -264,21 +238,17 @@ const useGameStore = create<GameState>()(
         set((state) => ({
           destination: null,
           remainingYears: 0,
-          cameraError: null,
-          showExitConfirm: false,
           inactivitySeconds: 0,
           serviceSeconds: 0,
           gamePhase: "menu",
           ...phaseToFlags("menu"),
           bestServiceSeconds: state.bestServiceSeconds,
-          isMusicMuted: state.isMusicMuted,
         })),
     }),
     {
       name: "space-travel-game",
       partialize: (state) => ({
         bestServiceSeconds: state.bestServiceSeconds,
-        isMusicMuted: state.isMusicMuted,
       }),
     },
   ),

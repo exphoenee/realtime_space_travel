@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import useGameStore from "../state/useGameStore";
+import useUIStore from "../state/useUIStore";
 
 describe("useGameStore", () => {
   beforeEach(() => {
@@ -7,8 +8,6 @@ describe("useGameStore", () => {
       destination: null,
       remainingYears: 0,
       isPaused: true,
-      cameraError: null,
-      showExitConfirm: false,
       showIntro: true,
       isAttentionLost: false,
       inactivitySeconds: 0,
@@ -17,8 +16,8 @@ describe("useGameStore", () => {
       missionComplete: false,
       serviceSeconds: 0,
       bestServiceSeconds: 0,
-      isMusicMuted: false,
       isInitializing: false,
+      debugIgnoreAttention: false,
     });
   });
 
@@ -82,11 +81,42 @@ describe("useGameStore", () => {
     const state = useGameStore.getState();
     expect(state.bestServiceSeconds).toBe(200);
   });
+});
+
+describe("useUIStore", () => {
+  beforeEach(() => {
+    useUIStore.setState({
+      cameraError: null,
+      showExitConfirm: false,
+      isMusicMuted: false,
+    });
+  });
+
+  it("should have correct initial state", () => {
+    const state = useUIStore.getState();
+    expect(state.cameraError).toBeNull();
+    expect(state.showExitConfirm).toBe(false);
+    expect(state.isMusicMuted).toBe(false);
+  });
 
   it("should toggle music mute", () => {
-    useGameStore.getState().setIsMusicMuted(true);
+    useUIStore.getState().setIsMusicMuted(true);
 
-    const state = useGameStore.getState();
+    const state = useUIStore.getState();
     expect(state.isMusicMuted).toBe(true);
+  });
+
+  it("should set camera error", () => {
+    useUIStore.getState().setCameraError("Camera not found");
+
+    const state = useUIStore.getState();
+    expect(state.cameraError).toBe("Camera not found");
+  });
+
+  it("should set exit confirm", () => {
+    useUIStore.getState().setShowExitConfirm(true);
+
+    const state = useUIStore.getState();
+    expect(state.showExitConfirm).toBe(true);
   });
 });
