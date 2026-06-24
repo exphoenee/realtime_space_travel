@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+import ScreenRouter from "./components/ScreenRouter";
 import Starfield from "./components/Starfield";
 import Dashboard from "./components/Dashboard";
 import PauseMenu from "./components/PauseMenu";
-import MainMenu from "./components/MainMenu";
-import IntroScreen from "./components/IntroScreen";
 
 import useGameStore from "./state/useGameStore";
 import { useAudio } from "./hooks/useAudio";
@@ -26,6 +25,7 @@ const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
 const App: React.FC = () => {
   const {
+    gamePhase,
     destination,
     remainingYears,
     isPaused,
@@ -138,8 +138,10 @@ const App: React.FC = () => {
     }
   };
 
+  const isPreGame = gamePhase === "intro" || gamePhase === "menu";
+
   const attentionCountdown =
-    isAttentionLost && !missionComplete
+    gamePhase === "countdown"
       ? Math.max(0, INACTIVITY_LIMIT_SECONDS - inactivitySeconds)
       : null;
 
@@ -155,8 +157,8 @@ const App: React.FC = () => {
   }, [setIsMusicMuted]);
 
   const handleSkipIntro = useCallback(() => {
-    setShowIntro(false);
-  }, [setShowIntro]);
+    useGameStore.getState().transitionTo("menu");
+  }, []);
 
   const serviceMinutes = serviceSeconds / 60;
   const bestServiceMinutes = bestServiceSeconds / 60;
@@ -164,14 +166,15 @@ const App: React.FC = () => {
     crewLostReason === "buttons"
       ? "Az egész hibernált legénység elpusztult, mert piszkáltad a gombokat!"
       : "Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.";
+
+  // Pause overlay visible when in paused/countdown phase and no blocking overlays
   const isPauseOverlayVisible =
-    !crewLost &&
-    !missionComplete &&
-    isPaused &&
+    (gamePhase === "paused" || gamePhase === "countdown") &&
     !cameraError &&
     !showExitConfirm;
+
   const showBellOverlay =
-    !!canvasBounds && (!destination || isPauseOverlayVisible);
+    !!canvasBounds && (isPreGame || isPauseOverlayVisible);
   const bellOverlay =
     showBellOverlay && canvasBounds ? (
       <div
@@ -409,20 +412,23 @@ const App: React.FC = () => {
     updateBestServiceTime,
   ]);
 
-  if (!destination) {
+  if (isPreGame) {
     return (
       <main className={styles.app}>
         <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
-        {showIntro ? (
-          <IntroScreen onSkip={handleSkipIntro} />
-        ) : (
-          <>
-            <MainMenu onSelectDestination={handleSelectDestination} />
-            {bellOverlay}
-          </>
-        )}
+        <ScreenRouter
+          phase={gamePhase}
+          onSkipIntro={handleSkipIntro}
+          onSelectDestination={handleSelectDestination}
+        />
+        {bellOverlay}
       </main>
     );
+  }
+
+  // In game phases, destination is always set; guard for TypeScript narrowing
+  if (!destination) {
+    return null;
   }
 
   return (
