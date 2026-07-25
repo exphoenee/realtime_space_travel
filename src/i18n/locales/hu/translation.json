@@ -129,7 +129,9 @@
     "back": "Vissza",
     "difficulty": "Nehézség",
     "musicTrack": "Zeneválasztás",
-    "musicDefault": "Alapértelmezett"
+    "musicDefault": "Alapértelmezett",
+    "signOut": "Kijelentkezés",
+    "authenticated": "Hitelesítve"
   },
   "shipSelect": {
     "title": "Válassz Űrhajót",

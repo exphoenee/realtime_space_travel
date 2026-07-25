@@ -129,7 +129,9 @@
     "back": "Retour",
     "difficulty": "Difficulté",
     "musicTrack": "Sélection musicale",
-    "musicDefault": "Par défaut"
+    "musicDefault": "Par défaut",
+    "signOut": "Déconnexion",
+    "authenticated": "Authentifié"
   },
   "shipSelect": {
     "title": "Choisissez votre vaisseau",

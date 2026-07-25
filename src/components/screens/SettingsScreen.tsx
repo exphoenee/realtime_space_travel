@@ -1,10 +1,13 @@
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, useCallback, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { Difficulty } from "../../types";
 import { SHOP_MUSIC } from "../../constants/shopCatalog";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
 import useShopStore from "../../state/useShopStore";
+import useAuthStore from "../../state/useAuthStore";
+import { signInWithGoogle, signOut, linkAnonymousToGoogle } from "../../firebase/auth";
+import { ensureUserNode } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./SettingsScreen.module.css";
 
@@ -20,6 +23,10 @@ const SettingsScreen = () => {
   const activeMusicId = useUIStore((s) => s.activeMusicId);
   const setActiveMusicId = useUIStore((s) => s.setActiveMusicId);
   const ownedMusicIds = useShopStore((s) => s.owned.music);
+  const authUser = useAuthStore((s) => s.user);
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const setUser = useAuthStore((s) => s.setUser);
 
   const ownedMusicTracks = useMemo(() => {
     return SHOP_MUSIC.filter((track) => ownedMusicIds.includes(track.id));
@@ -29,10 +36,64 @@ const SettingsScreen = () => {
 
   const handleBack = () => transitionTo("mainMenu");
 
+  const handleGoogleLogin = useCallback(async () => {
+    try {
+      const user = await (authUser?.isAnonymous ? linkAnonymousToGoogle() : signInWithGoogle());
+      setUser(user);
+      await ensureUserNode(user, "google");
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
+  }, [authUser, setUser]);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      setUser(null);
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    }
+  }, [setUser]);
+
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
         <h1 className={styles.title}>{t("settings.title")}</h1>
+
+        {/* Account Section */}
+        <div className={styles.row}>
+          <span className={styles.label}>
+            {t("mainMenu.login")}
+          </span>
+          <div>
+            {authUser && !isAnonymous ? (
+              <div className={styles.accountInfo}>
+                <span className={styles.accountName}>
+                  {authUser.displayName ?? "User"}
+                </span>
+                <span className={styles.accountBadge}>
+                  {t("settings.authenticated")}
+                </span>
+                <button
+                  type="button"
+                  className={`${styles.authBtn} ${styles.authBtnDanger}`}
+                  onClick={handleSignOut}
+                >
+                  {t("settings.signOut")}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={styles.authBtn}
+                onClick={handleGoogleLogin}
+                disabled={authStatus === "loading"}
+              >
+                {authStatus === "loading" ? "..." : t("mainMenu.login")}
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className={styles.row}>
           <label className={styles.label} htmlFor="music-volume">

@@ -4,7 +4,7 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/realtime_space_travel/",
+  base: process.env.VITE_BASE_PATH || "/realtime_space_travel/",
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",

@@ -9,11 +9,15 @@ import DebugOverlay from "./components/features/DebugOverlay";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
+import useAuthStore from "./state/useAuthStore";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
 import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
+import { initFirebase } from "./firebase/config";
+import { onAuthChange } from "./firebase/auth";
+import { ensureUserNode } from "./firebase/userData";
 
 import { Destination } from "./types";
 import {
@@ -81,6 +85,23 @@ const App: React.FC = () => {
     DEBUG_MODE,
   );
   useAttentionMonitor(faceStatus, destination);
+
+  // Initialize Firebase on mount + listen for auth state changes
+  useEffect(() => {
+    initFirebase();
+    const unsub = onAuthChange(async (user) => {
+      const setUser = useAuthStore.getState().setUser;
+      setUser(user);
+      if (user) {
+        try {
+          await ensureUserNode(user, user.isAnonymous ? "anonymous" : "google");
+        } catch (err) {
+          console.error("Failed to ensure user node:", err);
+        }
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const handleSelectDestination = async (selectedDestination: Destination) => {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {

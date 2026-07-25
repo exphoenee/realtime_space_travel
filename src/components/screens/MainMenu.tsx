@@ -1,19 +1,31 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
+import useAuthStore from "../../state/useAuthStore";
+import { signInWithGoogle } from "../../firebase/auth";
+import { ensureUserNode } from "../../firebase/userData";
 import styles from "./MainMenu.module.css";
 
 const MainMenu = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
-  // Melyik \"hamarosan\" értesítés látszik (login) — shop már implementálva.
-  const [notice, setNotice] = useState<null | "login">(null);
+  const authUser = useAuthStore((s) => s.user);
+  const authStatus = useAuthStore((s) => s.status);
+  const setUser = useAuthStore((s) => s.setUser);
 
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
   const handleIntro = () => transitionTo("intro");
-  const handleLogin = () => setNotice("login");
   const handleShop = () => transitionTo("shop");
+
+  const handleLogin = async () => {
+    try {
+      const user = await signInWithGoogle();
+      setUser(user);
+      await ensureUserNode(user, "google");
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
+  };
 
   return (
     <div className={styles.overlay}>
@@ -42,16 +54,17 @@ const MainMenu = () => {
           <button type="button" className={styles.button} onClick={handleIntro}>
             {t("mainMenu.intro")}
           </button>
-          <button type="button" className={styles.button} onClick={handleLogin}>
-            {t("mainMenu.login")}
+          <button
+            type="button"
+            className={styles.button}
+            onClick={handleLogin}
+            disabled={authStatus === "loading"}
+          >
+            {authUser && !authUser.isAnonymous
+              ? authUser.displayName ?? t("mainMenu.login")
+              : t("mainMenu.login")}
           </button>
         </div>
-
-        {notice && (
-          <p className={styles.notice} role="status">
-            {t("mainMenu.loginComingSoon")}
-          </p>
-        )}
       </div>
     </div>
   );

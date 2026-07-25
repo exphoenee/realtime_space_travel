@@ -129,7 +129,9 @@
     "back": "Back",
     "difficulty": "Difficulty",
     "musicTrack": "Music Selection",
-    "musicDefault": "Default"
+    "musicDefault": "Default",
+    "signOut": "Sign Out",
+    "authenticated": "Authenticated"
   },
   "shipSelect": {
     "title": "Choose Your Ship",

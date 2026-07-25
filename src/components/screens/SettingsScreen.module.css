@@ -235,6 +235,56 @@
   opacity: 0.3;
 }
 
+.accountInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  align-items: flex-end;
+}
+
+.accountName {
+  font-size: 0.9rem;
+  color: #e0f2fe;
+  font-weight: 500;
+}
+
+.accountBadge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.authBtn {
+  padding: 0.5rem 1rem;
+  background: rgba(103, 232, 249, 0.1);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  border-radius: 0.5rem;
+  color: #67e8f9;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.authBtn:hover {
+  background: rgba(103, 232, 249, 0.2);
+  border-color: rgba(103, 232, 249, 0.7);
+}
+
+.authBtnDanger {
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+.authBtnDanger:hover {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.7);
+}
+
 .backButton {
   margin-top: 2rem;
   width: 100%;

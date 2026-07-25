@@ -129,7 +129,9 @@
     "back": "Zurück",
     "difficulty": "Schwierigkeit",
     "musicTrack": "Musikauswahl",
-    "musicDefault": "Standard"
+    "musicDefault": "Standard",
+    "signOut": "Abmelden",
+    "authenticated": "Authentifiziert"
   },
   "shipSelect": {
     "title": "Wähle dein Raumschiff",
