@@ -131,6 +131,16 @@
     "musicTrack": "Sélection musicale",
     "musicDefault": "Par défaut"
   },
+  "shipSelect": {
+    "title": "Choisissez votre vaisseau",
+    "subtitle": "Destination: {{destination}} — Sélectionnez un vaisseau pour la mission",
+    "default": "Par défaut",
+    "info": "Info",
+    "launch": "Lancer",
+    "launchWith": "Lancer avec ceci",
+    "defaultDesc": "Le vaisseau par défaut fiable pour chaque mission.",
+    "owned": "Possédé"
+  },
   "difficulty": {
     "easy": "Facile",
     "medium": "Moyen",

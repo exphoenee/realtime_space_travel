@@ -20,7 +20,6 @@ import {
   ATTENTION_INTERVAL_MS,
   INACTIVITY_LIMIT_SECONDS,
   INTRO_AUTO_SKIP_TIMEOUT_MS,
-  SHIP_SPEED_KM_PER_SECOND,
   SERVICE_UPDATE_INTERVAL_MS,
   TRAVEL_YEARS_PER_SECOND,
 } from "./constants/constants";
@@ -34,6 +33,7 @@ const App: React.FC = () => {
     gamePhase,
     destination,
     remainingYears,
+    shipSpeedKmPerSecond,
     isPaused,
     isAttentionLost,
     inactivitySeconds,
@@ -117,7 +117,8 @@ const App: React.FC = () => {
 
     setCameraError(null);
     setShowExitConfirm(false);
-    startMission(selectedDestination);
+    // After camera check, go to ship selection
+    useGameStore.getState().selectDestinationForShip(selectedDestination);
   };
 
   const handleRequestExit = () => {
@@ -155,6 +156,7 @@ const App: React.FC = () => {
     gamePhase === "intro" ||
     gamePhase === "mainMenu" ||
     gamePhase === "missionSelect" ||
+    gamePhase === "shipSelect" ||
     gamePhase === "settings" ||
     gamePhase === "shop" ||
     gamePhase === "loading";
@@ -388,7 +390,7 @@ const App: React.FC = () => {
               remainingYears={remainingYears}
               destinationName={destination.name}
               localWeather={localWeather}
-              currentSpeedKmPerSecond={SHIP_SPEED_KM_PER_SECOND}
+              currentSpeedKmPerSecond={shipSpeedKmPerSecond}
             />
           </div>
 

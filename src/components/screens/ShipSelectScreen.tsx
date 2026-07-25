@@ -1,0 +1,144 @@
+import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { SHIP_SPEED_KM_PER_SECOND } from "../../constants/constants";
+import { SHOP_SHIPS } from "../../constants/shopCatalog";
+import type { ShipProduct } from "../../types";
+import useGameStore from "../../state/useGameStore";
+import useShopStore from "../../state/useShopStore";
+import ShipInfoModal from "./ShipInfoModal";
+import styles from "./ShipSelectScreen.module.css";
+
+interface ShipEntry {
+  ship: ShipProduct & { isDefault?: boolean };
+  isOwned: boolean;
+}
+
+const DEFAULT_SHIP: ShipProduct & { isDefault: boolean } = {
+  id: "ship-default",
+  category: "ship",
+  name: "Alap Hajó",
+  priceCredits: 0,
+  priceEur: 0,
+  speedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
+  manufacturer: "Standard",
+  capacity: 2,
+  rangeLy: 10,
+  descriptionKey: "ship.default.description",
+  isDefault: true,
+};
+
+const ShipSelectScreen = () => {
+  const { t } = useTranslation();
+  const pendingDestination = useGameStore((s) => s.pendingDestination);
+  const startMission = useGameStore((s) => s.startMission);
+  const transitionTo = useGameStore((s) => s.transitionTo);
+  const ownedShipIds = useShopStore((s) => s.owned.ships);
+  const [previewShip, setPreviewShip] = useState<ShipEntry | null>(null);
+
+  // Redirect to missionSelect if no pending destination
+  useEffect(() => {
+    if (!pendingDestination) {
+      transitionTo("missionSelect");
+    }
+  }, [pendingDestination, transitionTo]);
+
+  const availableShips: ShipEntry[] = useMemo(() => {
+    const ships: ShipEntry[] = [{ ship: DEFAULT_SHIP, isOwned: true }];
+    SHOP_SHIPS.forEach((shopShip) => {
+      if (ownedShipIds.includes(shopShip.id)) {
+        ships.push({ ship: shopShip, isOwned: true });
+      }
+    });
+    return ships;
+  }, [ownedShipIds]);
+
+  const handleSelectShip = (entry: ShipEntry) => {
+    if (!pendingDestination) return;
+    // Recalculate travel years: faster ship = shorter travel time
+    const travelYears =
+      pendingDestination.travelYears /
+      (entry.ship.speedKmPerSecond / SHIP_SPEED_KM_PER_SECOND);
+    startMission(
+      { name: pendingDestination.name, travelYears },
+      entry.ship.speedKmPerSecond,
+    );
+  };
+
+  if (!pendingDestination) return null;
+
+  return (
+    <div className={styles.overlay}>
+      <button
+        type="button"
+        className={styles.backButton}
+        onClick={() => transitionTo("missionSelect")}
+      >
+        ← {t("settings.back")}
+      </button>
+      <div className={styles.panel}>
+        <h1 className={styles.title}>{t("shipSelect.title")}</h1>
+        <p className={styles.subtitle}>
+          {t("shipSelect.subtitle", { destination: pendingDestination.name })}
+        </p>
+
+        <div className={styles.grid}>
+          {availableShips.map((entry) => (
+            <div key={entry.ship.id} className={styles.shipCard}>
+              <div className={styles.shipVisual}>
+                <span className={styles.shipEmoji}>🚀</span>
+              </div>
+              <div className={styles.shipInfo}>
+                <h3 className={styles.shipName}>{entry.ship.name}</h3>
+                {entry.ship.isDefault ? (
+                  <span className={styles.defaultBadge}>
+                    {t("shipSelect.default")}
+                  </span>
+                ) : entry.isOwned ? (
+                  <span className={styles.ownedBadge}>
+                    {t("shipSelect.owned")}
+                  </span>
+                ) : null}
+                <p className={styles.shipSpec}>
+                  ⚡ {entry.ship.speedKmPerSecond.toLocaleString()} km/s
+                </p>
+                <p className={styles.shipSpec}>
+                  🏭 {entry.ship.manufacturer}
+                </p>
+              </div>
+              <div className={styles.shipActions}>
+                <button
+                  type="button"
+                  className={styles.infoBtn}
+                  onClick={() => setPreviewShip(entry)}
+                  title={t("shipSelect.info")}
+                >
+                  ℹ {t("shipSelect.info")}
+                </button>
+                <button
+                  type="button"
+                  className={styles.selectBtn}
+                  onClick={() => handleSelectShip(entry)}
+                >
+                  {t("shipSelect.launch")}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {previewShip && (
+        <ShipInfoModal
+          ship={previewShip.ship}
+          onClose={() => setPreviewShip(null)}
+          onSelect={() => {
+            setPreviewShip(null);
+            handleSelectShip(previewShip);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default ShipSelectScreen;

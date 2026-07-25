@@ -6,6 +6,7 @@ export type GamePhase =
   | "intro"
   | "mainMenu"
   | "missionSelect"
+  | "shipSelect"
   | "settings"
   | "loading"
   | "playing"

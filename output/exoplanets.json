@@ -33,7 +33,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Proxima+Cen+d",
         "type": "artist_impression",
@@ -44,6 +49,12 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima Cen d",
       "ESA": "https://www.esa.int/Search?q=Proxima+Cen+d"
+    },
+    "visual": {
+      "url": "https://cdn.eso.org/images/screen/eso1629a.jpg",
+      "type": "artist_impression",
+      "source": "ESO",
+      "confidence": "high"
     }
   },
   {
@@ -80,7 +91,12 @@
       "facility": "European Southern Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Proxima+Cen+b",
         "type": "artist_impression",
@@ -91,6 +107,12 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima Cen b",
       "ESA": "https://www.esa.int/Search?q=Proxima+Cen+b"
+    },
+    "visual": {
+      "url": "https://cdn.eso.org/images/screen/eso1629a.jpg",
+      "type": "artist_impression",
+      "source": "ESO",
+      "confidence": "high"
     }
   },
   {
@@ -127,7 +149,12 @@
       "facility": "Gemini Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Barnard+e",
         "type": "artist_impression",
@@ -138,6 +165,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard e",
       "ESA": "https://www.esa.int/Search?q=Barnard+e"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -174,7 +208,12 @@
       "facility": "Gemini Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Barnard+d",
         "type": "artist_impression",
@@ -185,6 +224,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard d",
       "ESA": "https://www.esa.int/Search?q=Barnard+d"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -221,7 +267,12 @@
       "facility": "Gemini Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Barnard+c",
         "type": "artist_impression",
@@ -232,6 +283,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard c",
       "ESA": "https://www.esa.int/Search?q=Barnard+c"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -268,7 +326,12 @@
       "facility": "Paranal Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Barnard+b",
         "type": "artist_impression",
@@ -279,6 +342,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard b",
       "ESA": "https://www.esa.int/Search?q=Barnard+b"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -315,7 +385,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=eps+Eri+b",
         "type": "artist_impression",
@@ -326,6 +401,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/eps Eri b",
       "ESA": "https://www.esa.int/Search?q=eps+Eri+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=eps%20Eri%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -362,7 +444,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+887+c",
         "type": "artist_impression",
@@ -373,6 +460,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 c",
       "ESA": "https://www.esa.int/Search?q=GJ+887+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -409,7 +503,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+887+b",
         "type": "artist_impression",
@@ -420,6 +519,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 b",
       "ESA": "https://www.esa.int/Search?q=GJ+887+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -456,7 +562,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+887+d",
         "type": "artist_impression",
@@ -467,6 +578,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 d",
       "ESA": "https://www.esa.int/Search?q=GJ+887+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -503,7 +621,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+887+e",
         "type": "artist_impression",
@@ -514,6 +637,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 e",
       "ESA": "https://www.esa.int/Search?q=GJ+887+e"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20e",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -550,7 +680,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Ross+128+b",
         "type": "artist_impression",
@@ -561,6 +696,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross 128 b",
       "ESA": "https://www.esa.int/Search?q=Ross+128+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Ross%20128%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -597,7 +739,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Gl+725+A+b",
         "type": "artist_impression",
@@ -608,6 +755,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Gl 725 A b",
       "ESA": "https://www.esa.int/Search?q=Gl+725+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Gl%20725%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -644,7 +798,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+15+A+b",
         "type": "artist_impression",
@@ -655,6 +814,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 15 A b",
       "ESA": "https://www.esa.int/Search?q=GJ+15+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%2015%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -691,7 +857,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+15+A+c",
         "type": "artist_impression",
@@ -702,6 +873,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 15 A c",
       "ESA": "https://www.esa.int/Search?q=GJ+15+A+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%2015%20A%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -738,7 +916,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=tau+Cet+f",
         "type": "artist_impression",
@@ -749,6 +932,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet f",
       "ESA": "https://www.esa.int/Search?q=tau+Cet+f"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20f",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -785,7 +975,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=tau+Cet+g",
         "type": "artist_impression",
@@ -796,6 +991,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet g",
       "ESA": "https://www.esa.int/Search?q=tau+Cet+g"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20g",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -832,7 +1034,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=tau+Cet+h",
         "type": "artist_impression",
@@ -843,6 +1050,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet h",
       "ESA": "https://www.esa.int/Search?q=tau+Cet+h"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20h",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -879,7 +1093,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=eps+Ind+A+b",
         "type": "artist_impression",
@@ -890,6 +1109,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/eps Ind A b",
       "ESA": "https://www.esa.int/Search?q=eps+Ind+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=eps%20Ind%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -926,7 +1152,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1061+d",
         "type": "artist_impression",
@@ -937,6 +1168,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 d",
       "ESA": "https://www.esa.int/Search?q=GJ+1061+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -973,7 +1211,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1061+c",
         "type": "artist_impression",
@@ -984,6 +1227,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 c",
       "ESA": "https://www.esa.int/Search?q=GJ+1061+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1020,7 +1270,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1061+b",
         "type": "artist_impression",
@@ -1031,6 +1286,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 b",
       "ESA": "https://www.esa.int/Search?q=GJ+1061+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1067,7 +1329,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=YZ+Cet+c",
         "type": "artist_impression",
@@ -1078,6 +1345,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet c",
       "ESA": "https://www.esa.int/Search?q=YZ+Cet+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1114,7 +1388,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=YZ+Cet+d",
         "type": "artist_impression",
@@ -1125,6 +1404,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet d",
       "ESA": "https://www.esa.int/Search?q=YZ+Cet+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1161,7 +1447,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=YZ+Cet+b",
         "type": "artist_impression",
@@ -1172,6 +1463,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet b",
       "ESA": "https://www.esa.int/Search?q=YZ+Cet+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1208,7 +1506,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Teegarden's+Star+c",
         "type": "artist_impression",
@@ -1219,6 +1522,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star c",
       "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1255,7 +1565,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Teegarden's+Star+b",
         "type": "artist_impression",
@@ -1266,6 +1581,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star b",
       "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1302,7 +1624,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Teegarden's+Star+d",
         "type": "artist_impression",
@@ -1313,6 +1640,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star d",
       "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1349,7 +1683,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Kapteyn+c",
         "type": "artist_impression",
@@ -1360,6 +1699,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Kapteyn c",
       "ESA": "https://www.esa.int/Search?q=Kapteyn+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Kapteyn%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1396,7 +1742,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Wolf+1061+d",
         "type": "artist_impression",
@@ -1407,6 +1758,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 d",
       "ESA": "https://www.esa.int/Search?q=Wolf+1061+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Wolf%201061%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1443,7 +1801,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Wolf+1061+c",
         "type": "artist_impression",
@@ -1454,6 +1817,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 c",
       "ESA": "https://www.esa.int/Search?q=Wolf+1061+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Wolf%201061%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1490,7 +1860,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Wolf+1061+b",
         "type": "artist_impression",
@@ -1501,6 +1876,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 b",
       "ESA": "https://www.esa.int/Search?q=Wolf+1061+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Wolf%201061%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1537,7 +1919,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+9066+c",
         "type": "artist_impression",
@@ -1548,6 +1935,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 9066 c",
       "ESA": "https://www.esa.int/Search?q=GJ+9066+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%209066%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1584,7 +1978,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+674+b",
         "type": "artist_impression",
@@ -1595,6 +1994,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 674 b",
       "ESA": "https://www.esa.int/Search?q=GJ+674+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20674%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1631,7 +2037,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+687+c",
         "type": "artist_impression",
@@ -1642,6 +2053,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 687 c",
       "ESA": "https://www.esa.int/Search?q=GJ+687+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20687%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1678,7 +2096,12 @@
       "facility": "Lick Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+687+b",
         "type": "artist_impression",
@@ -1689,6 +2112,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 687 b",
       "ESA": "https://www.esa.int/Search?q=GJ+687+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20687%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1725,7 +2155,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+876+c",
         "type": "artist_impression",
@@ -1736,6 +2171,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 c",
       "ESA": "https://www.esa.int/Search?q=GJ+876+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20876%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1772,7 +2214,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+876+d",
         "type": "artist_impression",
@@ -1783,6 +2230,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 d",
       "ESA": "https://www.esa.int/Search?q=GJ+876+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20876%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1819,7 +2273,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+876+e",
         "type": "artist_impression",
@@ -1830,6 +2289,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 e",
       "ESA": "https://www.esa.int/Search?q=GJ+876+e"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20876%20e",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1866,7 +2332,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+876+b",
         "type": "artist_impression",
@@ -1877,6 +2348,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 b",
       "ESA": "https://www.esa.int/Search?q=GJ+876+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20876%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1913,7 +2391,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1002+b",
         "type": "artist_impression",
@@ -1924,6 +2407,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1002 b",
       "ESA": "https://www.esa.int/Search?q=GJ+1002+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201002%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -1960,7 +2450,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1002+c",
         "type": "artist_impression",
@@ -1971,6 +2466,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1002 c",
       "ESA": "https://www.esa.int/Search?q=GJ+1002+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201002%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2007,7 +2509,12 @@
       "facility": "Anglo-Australian Telescope"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+832+b",
         "type": "artist_impression",
@@ -2018,6 +2525,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 832 b",
       "ESA": "https://www.esa.int/Search?q=GJ+832+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20832%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2054,7 +2568,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+682+b",
         "type": "artist_impression",
@@ -2065,6 +2584,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 682 b",
       "ESA": "https://www.esa.int/Search?q=GJ+682+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20682%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2101,7 +2627,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+682+c",
         "type": "artist_impression",
@@ -2112,6 +2643,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 682 c",
       "ESA": "https://www.esa.int/Search?q=GJ+682+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20682%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2148,7 +2686,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+3323+c",
         "type": "artist_impression",
@@ -2159,6 +2702,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3323 c",
       "ESA": "https://www.esa.int/Search?q=GJ+3323+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%203323%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2195,7 +2745,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+3323+b",
         "type": "artist_impression",
@@ -2206,6 +2761,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3323 b",
       "ESA": "https://www.esa.int/Search?q=GJ+3323+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%203323%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2242,7 +2804,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+251+c",
         "type": "artist_impression",
@@ -2253,6 +2820,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 251 c",
       "ESA": "https://www.esa.int/Search?q=GJ+251+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20251%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2289,7 +2863,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+251+b",
         "type": "artist_impression",
@@ -2300,6 +2879,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 251 b",
       "ESA": "https://www.esa.int/Search?q=GJ+251+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20251%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2336,7 +2922,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+95735+c",
         "type": "artist_impression",
@@ -2347,6 +2938,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 95735 c",
       "ESA": "https://www.esa.int/Search?q=HD+95735+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%2095735%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2383,7 +2981,12 @@
       "facility": "Haute-Provence Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+411+b",
         "type": "artist_impression",
@@ -2394,6 +2997,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 411 b",
       "ESA": "https://www.esa.int/Search?q=GJ+411+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20411%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2430,7 +3040,12 @@
       "facility": "Multiple Facilities"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+229+A+c",
         "type": "artist_impression",
@@ -2441,6 +3056,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 229 A c",
       "ESA": "https://www.esa.int/Search?q=GJ+229+A+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20229%20A%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2477,7 +3099,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+229+b",
         "type": "artist_impression",
@@ -2488,6 +3115,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 229 b",
       "ESA": "https://www.esa.int/Search?q=GJ+229+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20229%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2524,7 +3158,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+180617+b",
         "type": "artist_impression",
@@ -2535,6 +3174,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 180617 b",
       "ESA": "https://www.esa.int/Search?q=HD+180617+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%20180617%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2571,7 +3217,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+273+c",
         "type": "artist_impression",
@@ -2582,6 +3233,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 273 c",
       "ESA": "https://www.esa.int/Search?q=GJ+273+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20273%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2618,7 +3276,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+273+b",
         "type": "artist_impression",
@@ -2629,6 +3292,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 273 b",
       "ESA": "https://www.esa.int/Search?q=GJ+273+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20273%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2665,7 +3335,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+20794+f",
         "type": "artist_impression",
@@ -2676,6 +3351,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 f",
       "ESA": "https://www.esa.int/Search?q=HD+20794+f"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%2020794%20f",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2712,7 +3394,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+20794+b",
         "type": "artist_impression",
@@ -2723,6 +3410,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 b",
       "ESA": "https://www.esa.int/Search?q=HD+20794+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%2020794%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2759,7 +3453,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+20794+d",
         "type": "artist_impression",
@@ -2770,6 +3469,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 d",
       "ESA": "https://www.esa.int/Search?q=HD+20794+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%2020794%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2806,7 +3512,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+20794+e",
         "type": "artist_impression",
@@ -2817,6 +3528,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 e",
       "ESA": "https://www.esa.int/Search?q=HD+20794+e"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%2020794%20e",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2853,7 +3571,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HN+Lib+b",
         "type": "artist_impression",
@@ -2864,6 +3587,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HN Lib b",
       "ESA": "https://www.esa.int/Search?q=HN+Lib+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HN%20Lib%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2900,7 +3630,12 @@
       "facility": "Very Long Baseline Array"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+896+A+b",
         "type": "artist_impression",
@@ -2911,6 +3646,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 896 A b",
       "ESA": "https://www.esa.int/Search?q=GJ+896+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20896%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2947,7 +3689,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+581+b",
         "type": "artist_impression",
@@ -2958,6 +3705,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 b",
       "ESA": "https://www.esa.int/Search?q=GJ+581+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20581%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -2994,7 +3748,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+581+c",
         "type": "artist_impression",
@@ -3005,6 +3764,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 c",
       "ESA": "https://www.esa.int/Search?q=GJ+581+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20581%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3041,7 +3807,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+581+e",
         "type": "artist_impression",
@@ -3052,6 +3823,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 e",
       "ESA": "https://www.esa.int/Search?q=GJ+581+e"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20581%20e",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3088,7 +3866,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+338+B+b",
         "type": "artist_impression",
@@ -3099,6 +3882,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 338 B b",
       "ESA": "https://www.esa.int/Search?q=GJ+338+B+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20338%20B%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3135,7 +3925,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+625+b",
         "type": "artist_impression",
@@ -3146,6 +3941,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 625 b",
       "ESA": "https://www.esa.int/Search?q=GJ+625+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20625%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3182,7 +3984,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+d",
         "type": "artist_impression",
@@ -3193,6 +4000,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 d",
       "ESA": "https://www.esa.int/Search?q=HD+219134+d"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -3229,7 +4043,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+c",
         "type": "artist_impression",
@@ -3240,6 +4059,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 c",
       "ESA": "https://www.esa.int/Search?q=HD+219134+c"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3276,7 +4102,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+b",
         "type": "artist_impression",
@@ -3287,6 +4118,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 b",
       "ESA": "https://www.esa.int/Search?q=HD+219134+b"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3323,7 +4161,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+f",
         "type": "artist_impression",
@@ -3334,6 +4177,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 f",
       "ESA": "https://www.esa.int/Search?q=HD+219134+f"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -3370,7 +4220,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+g",
         "type": "artist_impression",
@@ -3381,6 +4236,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 g",
       "ESA": "https://www.esa.int/Search?q=HD+219134+g"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -3417,7 +4279,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+219134+h",
         "type": "artist_impression",
@@ -3428,6 +4295,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 h",
       "ESA": "https://www.esa.int/Search?q=HD+219134+h"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-2-55-cancri-e-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -3464,7 +4338,12 @@
       "facility": "Transiting Exoplanet Survey Satellite (TESS)"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=LTT+1445+A+c",
         "type": "artist_impression",
@@ -3475,6 +4354,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/LTT 1445 A c",
       "ESA": "https://www.esa.int/Search?q=LTT+1445+A+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=LTT%201445%20A%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3511,7 +4397,12 @@
       "facility": "Transiting Exoplanet Survey Satellite (TESS)"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=LTT+1445+A+b",
         "type": "artist_impression",
@@ -3522,6 +4413,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/LTT 1445 A b",
       "ESA": "https://www.esa.int/Search?q=LTT+1445+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=LTT%201445%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3558,7 +4456,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+393+b",
         "type": "artist_impression",
@@ -3569,6 +4472,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 393 b",
       "ESA": "https://www.esa.int/Search?q=GJ+393+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20393%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3605,7 +4515,12 @@
       "facility": "Mauna Kea Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+4274+c",
         "type": "artist_impression",
@@ -3616,6 +4531,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 4274 c",
       "ESA": "https://www.esa.int/Search?q=GJ+4274+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%204274%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3652,7 +4574,12 @@
       "facility": "Mauna Kea Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+4274+b",
         "type": "artist_impression",
@@ -3663,6 +4590,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 4274 b",
       "ESA": "https://www.esa.int/Search?q=GJ+4274+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%204274%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3699,7 +4633,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+667+C+g",
         "type": "artist_impression",
@@ -3710,6 +4649,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C g",
       "ESA": "https://www.esa.int/Search?q=GJ+667+C+g"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-32-gj-667-c-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3746,7 +4692,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+667+C+c",
         "type": "artist_impression",
@@ -3757,6 +4708,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C c",
       "ESA": "https://www.esa.int/Search?q=GJ+667+C+c"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-32-gj-667-c-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
     }
   },
   {
@@ -3793,7 +4751,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+667+C+e",
         "type": "artist_impression",
@@ -3804,6 +4767,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C e",
       "ESA": "https://www.esa.int/Search?q=GJ+667+C+e"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-32-gj-667-c-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3840,7 +4810,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+667+C+f",
         "type": "artist_impression",
@@ -3851,6 +4826,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C f",
       "ESA": "https://www.esa.int/Search?q=GJ+667+C+f"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-32-gj-667-c-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3887,7 +4869,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+667+C+b",
         "type": "artist_impression",
@@ -3898,6 +4885,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C b",
       "ESA": "https://www.esa.int/Search?q=GJ+667+C+b"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-32-gj-667-c-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "high",
+      "direct": true
     }
   },
   {
@@ -3934,7 +4928,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+514+b",
         "type": "artist_impression",
@@ -3945,6 +4944,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 514 b",
       "ESA": "https://www.esa.int/Search?q=GJ+514+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20514%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -3981,7 +4987,12 @@
       "facility": "Mauna Kea Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+3378+b",
         "type": "artist_impression",
@@ -3992,6 +5003,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3378 b",
       "ESA": "https://www.esa.int/Search?q=GJ+3378+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%203378%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4028,7 +5046,12 @@
       "facility": "Multiple Facilities"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1151+c",
         "type": "artist_impression",
@@ -4039,6 +5062,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1151 c",
       "ESA": "https://www.esa.int/Search?q=GJ+1151+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201151%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4075,7 +5105,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+486+b",
         "type": "artist_impression",
@@ -4086,6 +5121,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 486 b",
       "ESA": "https://www.esa.int/Search?q=GJ+486+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20486%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4122,7 +5164,12 @@
       "facility": "Roque de los Muchachos Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=Gl+686+b",
         "type": "artist_impression",
@@ -4133,6 +5180,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Gl 686 b",
       "ESA": "https://www.esa.int/Search?q=Gl+686+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Gl%20686%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4169,7 +5223,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+1289+b",
         "type": "artist_impression",
@@ -4180,6 +5239,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1289 b",
       "ESA": "https://www.esa.int/Search?q=GJ+1289+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201289%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4216,7 +5282,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=61+Vir+d",
         "type": "artist_impression",
@@ -4227,6 +5298,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir d",
       "ESA": "https://www.esa.int/Search?q=61+Vir+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=61%20Vir%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4263,7 +5341,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=61+Vir+c",
         "type": "artist_impression",
@@ -4274,6 +5357,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir c",
       "ESA": "https://www.esa.int/Search?q=61+Vir+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=61%20Vir%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4310,7 +5400,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=61+Vir+b",
         "type": "artist_impression",
@@ -4321,6 +5416,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir b",
       "ESA": "https://www.esa.int/Search?q=61+Vir+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=61%20Vir%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4357,7 +5459,12 @@
       "facility": "Calar Alto Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=CD+Cet+b",
         "type": "artist_impression",
@@ -4368,6 +5475,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/CD Cet b",
       "ESA": "https://www.esa.int/Search?q=CD+Cet+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=CD%20Cet%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4404,7 +5518,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+192310+c",
         "type": "artist_impression",
@@ -4415,6 +5534,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 192310 c",
       "ESA": "https://www.esa.int/Search?q=HD+192310+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%20192310%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4451,7 +5577,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=HD+192310+b",
         "type": "artist_impression",
@@ -4462,6 +5593,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 192310 b",
       "ESA": "https://www.esa.int/Search?q=HD+192310+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=HD%20192310%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4498,7 +5636,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+849+c",
         "type": "artist_impression",
@@ -4509,6 +5652,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 849 c",
       "ESA": "https://www.esa.int/Search?q=GJ+849+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20849%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4545,7 +5695,12 @@
       "facility": "W. M. Keck Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+849+b",
         "type": "artist_impression",
@@ -4556,6 +5711,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 849 b",
       "ESA": "https://www.esa.int/Search?q=GJ+849+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20849%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4592,7 +5754,12 @@
       "facility": "La Silla Observatory"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+433+b",
         "type": "artist_impression",
@@ -4603,6 +5770,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 b",
       "ESA": "https://www.esa.int/Search?q=GJ+433+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20433%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4639,7 +5813,12 @@
       "facility": "Multiple Observatories"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+433+c",
         "type": "artist_impression",
@@ -4650,6 +5829,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 c",
       "ESA": "https://www.esa.int/Search?q=GJ+433+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20433%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   },
   {
@@ -4686,7 +5872,12 @@
       "facility": "Multiple Facilities"
     },
     "images": {
-      "NASA": null,
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
       "ESA": {
         "url": "https://www.esa.int/Search?q=GJ+433+d",
         "type": "artist_impression",
@@ -4697,6 +5888,13 @@
     "links": {
       "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 d",
       "ESA": "https://www.esa.int/Search?q=GJ+433+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20433%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
     }
   }
 ]

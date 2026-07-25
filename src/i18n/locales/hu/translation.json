@@ -131,6 +131,16 @@
     "musicTrack": "Zeneválasztás",
     "musicDefault": "Alapértelmezett"
   },
+  "shipSelect": {
+    "title": "Válassz Űrhajót",
+    "subtitle": "Cél: {{destination}} — Válaszd ki az űrhajót a küldetéshez",
+    "default": "Alap",
+    "info": "Info",
+    "launch": "Indítás",
+    "launchWith": "Ezzel indulok",
+    "defaultDesc": "A megbízható alap űrhajó minden küldetéshez.",
+    "owned": "Birtokolt"
+  },
   "difficulty": {
     "easy": "Könnyű",
     "medium": "Közepes",

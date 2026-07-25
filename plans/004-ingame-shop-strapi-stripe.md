@@ -1,5 +1,5 @@
 ---
-title: "Játékon belüli áruház terve – Strapi katalógus + Stripe fizetés"
+title: "Valós pénzes kredit vásárlás – Stripe + Firebase"
 slug: 004-ingame-shop-strapi-stripe
 type: plan
 category: shop
@@ -7,7 +7,7 @@ status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-25"
-updated_at: "2026-07-25"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 4
 phases:
@@ -16,290 +16,295 @@ phases:
 dependencies:
   - 003-firebase-auth-settings
 related_plans:
-  - 000-i18n-nyelvesites
-  - 001-main-menu-settings
-  - 003-firebase-auth-settings
   - 002-ingame-shop-frontend
+  - 003-firebase-auth-settings
+  - 000-i18n-nyelvesites
 tags:
-  - strapi
   - stripe
-  - shop
   - payments
   - cloud-functions
   - firebase-admin
 ---
 
-# Játékon belüli áruház terve – Strapi katalógus + Stripe fizetés (Firebase read-modellel)
+# Valós pénzes kredit vásárlás – Stripe + Firebase (nincs Strapi)
 
-**Cél:** játékon belüli bolt, ahol a játékos **űrhajókat**, **DLC csillagrendszereket/bolygókat** és **zenéket** (stb.) vásárolhat kreditből vagy valós pénzből.
+**Cél:** a játékos 4 féle kredit-pakkot vásárolhasson valós pénzért. **Nincs Strapi** — csak Stripe (fizetés) + Firebase Cloud Function (webhook + wallet írás) + Firebase RTDB (kredit tárolás).
 
-> ### 🔗 Architektúra-kánon (mindhárom terv erre épül)
-> A felelősség-határ a [[003-firebase-auth-settings]] tervben véglegesített:
-> - **Firebase = auth + a játék olvasási modellje.** A kliens **kizárólag a Firebase-ből olvas** minden felhasználói adatot: kredit-egyenleg, birtokolt hajók/zenék/DLC, beállítások, rekord. Az auth is Firebase (Google + Anonymous→fiók).
-> - **Strapi = katalógus + rendelés-nyilvántartás.** A termékadatok (ár, típus, payload) és a rendelési/pénzügyi rekordok itt élnek.
-> - **Stripe = valós pénzes fizetés.** A Stripe webhook → Strapi, és a Strapi a **Firebase Admin SDK**-val írja be a megvett tételt a felhasználó Firebase csomópontjába. Így a Firebase marad az egyetlen olvasási forrás a játéknak.
-> - **Kredit-műveletek (wage-jóváírás, kredites vásárlás) = Firebase Cloud Function** (nincs valós pénz, marad Firebase-en belül).
+> **Architektúra (egyszerűsített):**
+> - **Stripe Checkout** = fizetési felület (hosztolt oldal, nem kell hozzá saját backend)
+> - **Firebase Cloud Function** (`stripeWebhook`) = Stripe webhook fogadása → `wallet.credits` növelés Admin SDK-val
+> - **Firebase Cloud Function** (`createCheckoutSession`, callable) = Checkout Session létrehozása a klienstől hívva
+> - **Firebase RTDB** = a kredit-egyenleg (`wallet.credits`) egyetlen igazságforrása
+> - **A 4 CreditPack fix konstans** → `src/constants/shopCatalog.ts`-ban (már megvan)
 >
-> **Ez a terv a katalógust, a Stripe-fizetést és a bolt-UI-t részletezi.** Az auth, a kredit/inventory tárolás és a Security Rules a [[003-firebase-auth-settings]] tervben van.
->
-> **Épít a [[002-ingame-shop-frontend]] tervre:** a bolt-UI (`components/shop/ShopScreen`, `components/shop/ProductCard`, kosár, checkout) és a játékbeli bekötési pontok (hajó-sebesség, zeneválasztó, exobolygó-küldetések) **már ott elkészülnek** helyi mock-adattal és localStorage-perzisztenciával. Ez a terv **csak a forrást cseréli**: a mock katalógust (`src/constants/shopCatalog.ts`) a Strapi `useCatalog`-ra, a mock checkoutot (`useShopStore.checkout`) a Stripe→Strapi→Firebase útra. A [[002-ingame-shop-frontend]] determinisztikus ár-/wage-képletét a Strapi-seed reprodukálja, hogy ne ugorjanak az árak a backend bekötésekor.
+> **Épít a [[002-ingame-shop-frontend]] tervre:** a `CreditShopView` már mutatja a 4 pakkot mock gombokkal. Ez a terv ezt köti össze a Stripe-pal és a Firebase-szel.
 
 ## Döntések (egyeztetve)
 
 | Kérdés | Választás |
 |--------|-----------|
-| Fizetési átjáró | **Stripe Checkout** (hosztolt fizetőoldal + webhook) |
-| Pénznem-modell | **Hibrid**: küldetés-jutalom (`wage`) → játékbeli **kredit**; prémium tartalom valós pénzért |
-| Auth / vendég→fiók | **Firebase Auth** (Google + Anonymous→fiók) — lásd [[003-firebase-auth-settings]]. A Strapi **nem** kezel usert/guest-tokent, csak Firebase ID tokent ellenőriz. |
-| Kredit + birtoklás forrása | **Firebase RTDB** (szerver-írt), a Strapi Admin SDK-val ír bele fizetés után |
+| Strapi | ❌ **Nincs.** A 4 kredit-pakk fix konstans (`shopCatalog.ts`). |
+| Fizetési átjáró | **Stripe Checkout** (hosztolt fizetőoldal) |
+| Kredit-pakkok | 5€ → 100 kr · 10€ → 300 kr · 25€ → 700 kr · 100€ → 2000 kr |
+| Checkout hívás | **Firebase Callable Function** (`createCheckoutSession`) — nem kell saját szerver |
+| Webhook | **Firebase HTTPS Cloud Function** (`stripeWebhook`) — Stripe aláírás ellenőrzés |
+| Kredit írása fizetés után | **Firebase Admin SDK** a webhook CF-ben → `users/{uid}/wallet.credits` növelés (tranzakció) |
+| App-on belüli vásárlás | **Firebase Cloud Function** `purchaseWithCredits` (kreditből hajó/zene/exobolygó) |
+| Kredit forrása | Firebase RTDB `wallet.credits` (szerver-írt, Security Rules tiltja a kliens-írást) |
 
 ---
 
 ## ✅ Haladás (TODO)
 
-> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Implementáció közben itt vezetjük, hol tartunk, hogy félbeszakadás után folytatható legyen. Előfeltétel: a [[003-firebase-auth-settings]] Fázis 1 (auth + RTDB + Security Rules) áll. Részletek a lenti szekciókban.
+> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Előfeltétel: a [[003-firebase-auth-settings]] Fázis 1 (auth + RTDB + Security Rules).
 
-**A fázis — Strapi (katalógus + Stripe)**
-- [ ] Strapi projekt (külön repo vagy `/server`) + adatbázis
-- [ ] `Product` + `Order` content type-ok (i18n plugin a `name`/`description`-höz)
-- [ ] Firebase ID token ellenőrzés middleware (`verifyIdToken`)
-- [ ] `/api/checkout` (Session + uid metaadat)
-- [ ] `/api/webhooks/stripe` (aláírás → `Order` → **Admin SDK inventory-írás**)
-- [ ] Seed: 2-3 hajó, „Tejút DLC", 2-3 zene
+**A fázis — Stripe + Firebase Cloud Functions**
+- [ ] Stripe fiók + API kulcsok + 4 Price objektum (5€, 10€, 25€, 100€) a Stripe Dashboard-on
+- [ ] `createCheckoutSession` Firebase Callable Function (Stripe Checkout Session létrehozása, metaadat: `uid` + `credits`)
+- [ ] `stripeWebhook` Firebase HTTPS Cloud Function (Stripe aláírás ellenőrzés → `wallet.credits` tranzakció)
+- [ ] Idempotencia: webhook dupla hívás → ne növeljen kétszer (`walletWritten` kulcs)
+- [ ] Env változók: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`
 
-**B fázis — Firebase Cloud Functions**
-- [ ] `purchaseWithCredits` (kredites vétel, RTDB tranzakció)
-- [ ] `awardWage` (küldetés végi kredit) — **közös** [[003-firebase-auth-settings]]
+**B fázis — Firebase Cloud Functions (in-app vásárlások, közös [[003-firebase-auth-settings]])**
+- [ ] `purchaseWithCredits` (kredites vétel: hajó/zene/exobolygó, RTDB tranzakció)
+- [ ] `awardWage` (küldetés végi kredit)
 
 **C fázis — Frontend**
-- [ ] `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory)
-- [ ] `components/shop/ShopScreen` + `components/shop/ProductCard` + `components/shop/ShopTabs` + `components/shop/CreditBalance`
-- [ ] `GamePhase: "shop"` + `routing/ScreenRouter` ág + „Áruház" gomb a `screens/MainMenu`-be
-- [ ] DLC zárolt/feloldott logika (Firebase `inventory.dlc`)
-- [ ] Aktív hajó/zene integráció (**közös** [[003-firebase-auth-settings]])
-- [ ] `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`
-- [ ] Küldetés végén `wage` → `awardWage` bekötés
+- [x] `GamePhase: "shop"` + `ScreenRouter` ág + „Áruház" gomb — lásd [[002-ingame-shop-frontend]]
+- [x] `CreditShopView` mock (4 fix pakk) — lásd [[002-ingame-shop-frontend]]
+- [ ] `CreditShopView` élesítése: mock → `createCheckoutSession` callable hívás → Stripe redirect
+- [ ] `CheckoutReturn` komponens (success/cancel lap, Firebase listener-rel)
+- [ ] Küldetés végén wage → `functionsApi.awardWage()` bekötés
 
 **D fázis — Tesztelés / élesítés**
-- [ ] Stripe teszt-vásárlások (siker/megszakítás/visszatérítés) + webhook idempotencia
-- [ ] Anti-cheat ellenőrzés (kredit/inventory Firebase szerver-írt, Security Rules)
-- [ ] Vitest (`useCatalog`/`useEntitlements`) + e2e checkout happy-path
-- [ ] CORS + env kulcsok + `base href` a redirect URL-eknél
+- [ ] Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás, visszatérítés)
+- [ ] Webhook idempotencia teszt
+- [ ] Anti-cheat: Security Rules ellenőrzés
+- [ ] `base href` (`/realtime_space_travel/`) a Stripe redirect URL-eknél
 
 ---
 
-## 1. Architektúra áttekintés
+## 1. Architektúra
 
 ```
-┌────────────────────────┐   katalógus (GET)   ┌──────────────────────┐
-│    React SPA (Vite)    │ ──────────────────▶ │      Strapi CMS      │
-│  - Áruház UI           │ ◀────────────────── │  - Product katalógus │
-│  - kredit/inventory    │                     │  - Order (pénzügy)   │
-│    OLVASÁS: Firebase   │   checkout (POST)   │  - Stripe integráció │
-└───┬───────────────┬────┘ ──────────────────▶ └─────┬──────────┬─────┘
-    │ auth + adat   │ (Firebase ID token)             │ webhook  │ Admin SDK
-    │ (olvasás)     ▼                                 ▼ (fizetés)│ (inventory írás)
-    │        ┌─────────────┐  redirect  ┌──────────────────┐    │
-    │        │   Stripe    │ ◀───────── │ Stripe Checkout  │    │
-    │        │  Checkout   │ ─────────▶ │ (hosztolt oldal) │    │
-    │        └─────────────┘  webhook   └──────────────────┘    │
-    ▼                                                           ▼
-┌────────────────────────────────────────────────────────────────┐
-│  Firebase (Auth + Realtime DB)  ← a játék EGYETLEN olvasási forrása │
-│  users/{uid}/wallet.credits · inventory · settings · stats          │
-└────────────────────────────────────────────────────────────────┘
+┌──────────────────────┐    callable          ┌──────────────────────┐
+│  React SPA (Vite)    │ ──────────────────▶  │  Firebase Cloud      │
+│  - CreditShopView    │   createCheckout     │  Functions            │
+│  - CheckoutReturn    │   Session()          │  - createCheckout    │
+│  - Firebase listener  │ ◀────────────────── │    Session (callable)│
+│    (wallet.credits)   │   session.url        │  - stripeWebhook     │
+└──────┬───────────────┘                      │    (HTTPS)           │
+       │                                      │  - purchaseWithCredits│
+       │ Stripe redirect                      │  - awardWage         │
+       ▼ (session.url)                        └──────┬───────────────┘
+┌──────────────────────┐    webhook                  │ Admin SDK
+│  Stripe Checkout     │ ─────────────────────────▶  │ wallet.credits
+│  (hosztolt oldal)    │   checkout.session.         │ növelés
+│  5€ → 100 kr         │   completed                 ▼
+│  10€ → 300 kr        │                    ┌──────────────────────┐
+│  25€ → 700 kr        │                    │  Firebase RTDB       │
+│  100€ → 2000 kr      │                    │  users/{uid}/        │
+└──────────────────────┘                    │    wallet.credits    │
+                                            │    inventory/...     │
+                                            │    settings/...      │
+                                            └──────────────────────┘
 ```
 
-**Fizetési folyamat (valós pénz):**
-1. Játékos „Megvásárlás" gombra kattint az áruházban.
-2. Frontend hívja a Strapi custom endpointot: `POST /api/checkout` a **Firebase ID token**kel (`Authorization: Bearer <firebaseIdToken>`) + `productSlug`.
-3. Strapi ellenőrzi a Firebase ID tokent (Admin SDK `verifyIdToken`), majd létrehoz egy Stripe **Checkout Session**-t (szerveroldali titkos kulccsal), a metaadatba téve a `uid`-t és `productSlug`-ot; visszaadja a `session.url`-t.
-4. Frontend átirányít a Stripe hosztolt fizetőoldalra.
-5. Sikeres fizetés → Stripe **webhook** (`checkout.session.completed`) → Strapi ellenőrzi az aláírást, létrehoz egy `Order`-t (pénzügyi rekord), majd **Firebase Admin SDK**-val beírja a tételt a `users/{uid}/inventory`-ba.
-6. Frontend a `success_url`-ről visszatér; a Firebase real-time listener (lásd [[003-firebase-auth-settings]]) automatikusan frissíti az `inventory`-t → a termék feloldva.
-
-**Kredit-vásárlás (játékbeli valuta, nem valós pénz):**
-- **Nem érinti sem a Stripe-ot, sem a Strapit.** Egy **Firebase Cloud Function** (`purchaseWithCredits`, callable) **atomikusan** (RTDB tranzakció) ellenőrzi az egyenleget, levonja a kreditet, és hozzáadja az `inventory`-t. Az árat a függvény a Strapi katalógusból (vagy egy szinkronizált konfigból) olvassa — a kliens csak `productSlug`-ot küld.
-
----
-
-## 2. Miért kell backend + hol az igazságforrás
-
-A jelenlegi app **teljesen kliensoldali** (nincs backend/auth, minden `localStorage`-ban: `space-travel-game`, `space-travel-ui`). Valós fizetéshez és jogosultság-kezeléshez **szerveroldali igazságforrás kell**, különben a vásárlások hamisíthatók. A felelősség-megosztás:
-
-- A **kredit-egyenleg** és a **birtoklás (inventory)** mérvadó példánya a **Firebase RTDB**-ben él, **szerver-írt** csomópontként (`wallet`/`inventory` a Security Rules szerint kliensből nem írható — lásd [[003-firebase-auth-settings]] 2. pont).
-- A **termékkatalógus** és a **pénzügyi rendelés-rekord** a **Strapiban** él.
-- A kliens `localStorage` csak offline tükör; az élő adat a Firebase listenerből jön.
-- A `wage` jutalmat a küldetés végén **Cloud Function** írja jóvá (nem a kliens).
+**Fizetési folyamat:**
+1. Játékos → „Megveszem" a `CreditShopView`-ban
+2. Frontend → `createCheckoutSession({ creditPackId })` Firebase Callable Function
+3. CF → Stripe API: Checkout Session létrehozása (`uid`, `creditsAmount` metaadat)
+4. Frontend → `window.location.href = session.url` (Stripe hosztolt oldal)
+5. Játékos → fizetés a Stripe-on
+6. Stripe → `checkout.session.completed` webhook → `stripeWebhook` Cloud Function
+7. CF → `admin.database().ref(\`users/${uid}/wallet/credits\`).transaction(...)` növelés
+8. Frontend → Firebase real-time listener → kredit egyenleg frissül
 
 ---
 
-## 3. Strapi – Content Types (adatmodell)
+## 2. Adatmodell
 
-> A **kredit** és a **birtoklás (entitlement)** **NEM** Strapiban él, hanem a Firebase RTDB-ben (lásd [[003-firebase-auth-settings]]). A Strapi felhasználó-fogalma minimális: a rekordokat a **Firebase `uid`** azonosítja, nincs Strapi Users & Permissions login, nincs guest-token.
+### Kredit-pakkok (fix konstansok a kódban — nincs Strapi)
 
-### `Product` (termék) — a katalógus forrása
-| mező | típus | megjegyzés |
-|------|-------|-----------|
-| `slug` | UID | egyedi azonosító (`ship-nebula`, `dlc-milky-way`, `music-ambient-1`) |
-| `type` | enum | `ship` \| `dlc` \| `music` \| `cosmetic` |
-| `name` | i18n string | lokalizált (Strapi i18n plugin, lásd [[000-i18n-nyelvesites]]) |
-| `description` | i18n text | lokalizált |
-| `priceCredits` | integer\|null | ha kreditből vehető |
-| `priceStripeId` | string\|null | Stripe Price ID, ha valós pénzért |
-| `currency` | enum | `credits` \| `money` \| `both` |
-| `media` | media | ikon/kép/előnézet |
-| `payload` | JSON | típusfüggő adat (lásd lent) |
-| `active` | boolean | látható-e a boltban |
-| `sortOrder` | integer | rendezés |
+```ts
+// src/constants/shopCatalog.ts — már megvan!
+export const CREDIT_PACKS = [
+  { id: "pack-5eur",  priceEur: 5,  credits: 100, nameKey: "shop.credits.starter"  },
+  { id: "pack-10eur", priceEur: 10, credits: 300, nameKey: "shop.credits.advanced" },
+  { id: "pack-25eur", priceEur: 25, credits: 700, nameKey: "shop.credits.premium"  },
+  { id: "pack-100eur",priceEur: 100,credits: 2000,nameKey: "shop.credits.ultra"    },
+];
+```
 
-**`payload` típusonként:**
-- `ship`: `{ speedKmPerSecond, thumbnail, modelRef }` → felülírja a `SHIP_SPEED_KM_PER_SECOND`-t.
-- `dlc`: `{ destinations: [{ name, distanceLy, wage }] }` → új célállomások (a `baseDestinations` bővítése).
-- `music`: `{ trackUrl, loop, title }` → a `useAudio` betölthető sávjai.
+A Stripe Price ID-k nem a kódban, hanem a Firebase Cloud Function env-ben / konfigban élnek (vagy a Stripe API-ból lekérhetők `productId` alapján).
 
-### `Order` (rendelés) — pénzügyi rekord (csak valós pénz)
-`firebaseUid` (string) · `items` (rel Product) · `stripeSessionId` · `stripePaymentIntent` · `amountTotal` · `currency` · `status` (`pending`\|`paid`\|`failed`\|`refunded`) · `entitlementWritten` (boolean, jelzi hogy a Firebase inventory-írás megtörtént) · `createdAt`. **Csak könyvelési/audit célra** — a birtoklás forrása a Firebase.
+### Firebase RTDB séma (közös [[003-firebase-auth-settings]])
 
-> **Nincs** `Entitlement`, `User(credits/guestToken)`, `WalletTransaction` Strapi content type. Ezek Firebase-ben élnek:
-> - birtoklás → `users/{uid}/inventory` (RTDB),
-> - egyenleg → `users/{uid}/wallet.credits` (RTDB),
-> - kredit-napló → opcionálisan `users/{uid}/walletLog` (RTDB, szerver-írt) vagy Cloud Function log.
-
----
-
-## 4. Backend endpointok és függvények
-
-### Strapi (katalógus + Stripe)
-| Metódus | Útvonal | Feladat | Auth |
-|---------|---------|---------|------|
-| `GET` | `/api/products` | aktív katalógus (típus/pénznem szűrhető), lokalizált | publikus |
-| `POST` | `/api/checkout` | Stripe Checkout Session létrehozása egy termékre | Firebase ID token |
-| `POST` | `/api/webhooks/stripe` | Stripe webhook → `Order` + **Firebase inventory írás (Admin SDK)** | Stripe aláírás |
-
-### Firebase Cloud Functions (kredit-műveletek, nincs valós pénz)
-| Típus | Név | Feladat |
-|-------|-----|---------|
-| callable | `purchaseWithCredits` | egyenleg-ellenőrzés + levonás + inventory bővítés (RTDB tranzakció) |
-| callable | `awardWage` | küldetés lezárása → `wallet.credits` növelés (anti-cheat validáció) |
-
-> **Kliens olvasás:** az entitlementet és a kreditet a játék **közvetlenül a Firebase RTDB-ből** olvassa (real-time listener), nem Strapi endpointból. Ezért nincs `/api/me/entitlements` és `/api/me/wallet`.
-
-**Biztonság:**
-- A webhook **kötelezően** ellenőrizze a Stripe aláírást (`stripe.webhooks.constructEvent`).
-- A Stripe titkos kulcs **csak** a Strapi env-ben (`STRIPE_SECRET_KEY`); a Firebase Admin SDK service-account kulcs **csak** a Strapi/Functions env-ben.
-- Az árakat a szerver határozza meg a `Product`-ból; a kliens csak `productSlug`-ot küld.
-- Idempotencia: a webhook `checkout.session.id` / `Order.entitlementWritten` alapján ne írjon duplán a Firebase-be.
-- A `wallet`/`inventory` RTDB-írás **kizárólag** Admin SDK-ból (webhook) vagy Cloud Functionből történhet — kliensből a Security Rules tiltja.
+```json
+{
+  "users": {
+    "{uid}": {
+      "wallet": { "credits": 0 },          // CSAK szerver írhatja
+      "inventory": {
+        "ships": { "ship-id": true },
+        "music": { "music-id": true },
+        "exoplanets": { "exoplanet-id": true }
+      },                                     // CSAK szerver írhatja
+      "settings": { /* user írhatja */ },
+      "stats": { /* user írhatja */ }
+    }
+  }
+}
+```
 
 ---
 
-## 5. Frontend – React változtatások
+## 3. Firebase Cloud Functions
 
-### Új mappastruktúra
+### `createCheckoutSession` (Callable)
+
+```ts
+export const createCheckoutSession = functions.https.onCall(async (data, context) => {
+  // 1. Auth ellenőrzés
+  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "...");
+
+  // 2. CreditPack validálás a fix listából
+  const pack = CREDIT_PACKS.find(p => p.id === data.creditPackId);
+  if (!pack) throw new functions.https.HttpsError("not-found", "...");
+
+  // 3. Stripe Checkout Session
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [{ price_data: { currency: "eur", product_data: { name: pack.name }, unit_amount: pack.priceEur * 100 }, quantity: 1 }],
+    metadata: { uid: context.auth.uid, credits: pack.credits.toString() },
+    success_url: `${BASE_URL}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${BASE_URL}/shop/cancel`,
+  });
+
+  return { sessionUrl: session.url };
+});
+```
+
+### `stripeWebhook` (HTTPS)
+
+```ts
+export const stripeWebhook = functions.https.onRequest(async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  const event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const { uid, credits } = session.metadata;
+    const creditsAmount = parseInt(credits);
+
+    // Idempotencia: session.id alapján ne írjon duplán
+    const orderRef = admin.database().ref(`orders/${session.id}`);
+    const existing = await orderRef.once("value");
+    if (existing.exists()) return res.send("duplicate");
+
+    // Atomikus kredit növelés
+    const walletRef = admin.database().ref(`users/${uid}/wallet/credits`);
+    await walletRef.transaction(current => (current || 0) + creditsAmount);
+
+    // Idempotencia jelző
+    await orderRef.set({ uid, credits: creditsAmount, writtenAt: Date.now() });
+  }
+
+  res.json({ received: true });
+});
+```
+
+---
+
+## 4. Frontend változtatások
+
+### Már kész ([[002-ingame-shop-frontend]])
+- `CreditShopView` — 4 pakk kártya, név/ár/kredit kijelzés
+- `CreditBalance` — egyenleg kijelzés a shop fejlécében
+- `useShopStore` (localStorage) — kredit/birtoklás mock
+
+### Firebase bekötéskor új fájlok
 ```
 src/
+  services/
+    functionsApi.ts     # Cloud Functions hívások: createCheckoutSession, purchaseWithCredits, awardWage
   components/
     shop/
-      ShopScreen.tsx            # bolt fő nézet (fülek: Hajók / DLC / Zene)
-      ProductCard.tsx           # egy termék + ár (kredit / $ / mindkettő) + gomb
-      ShopTabs.tsx              # kategória fülek
-      CreditBalance.tsx         # fejléc kredit-kijelző (Firebase wallet-ből)
-      PurchaseModal.tsx         # megerősítés (kredit) / Stripe-átirányítás
-      CheckoutReturn.tsx        # success/cancel visszatérés kezelése
-      ShopScreen.module.css
-  services/
-    strapiApi.ts              # Strapi kliens: products, checkout (Firebase ID tokennel)
-    functionsApi.ts           # Cloud Functions hívások: purchaseWithCredits, awardWage
-  hooks/
-    useCatalog.ts             # Strapi katalógus lekérés + cache
-    useEntitlements.ts        # birtokolt termékek Firebase-ből + „owns(slug)" segéd
+      CheckoutReturn.tsx  # success/cancel lap Stripe fizetés után
 ```
 
-> **Nincs** külön `useAuthStore` és `useShopStore(credits/entitlements)` ebben a tervben — ezeket a [[003-firebase-auth-settings]] biztosítja (`useAuthStore`, `useInventoryStore`, `useSettingsStore`). A bolt ezekre épül; itt csak a **katalógus** (`useCatalog`) új.
-
-### Integráció a meglévő kóddal
-- **Belépési pont a boltba:** a `screens/MainMenu` már reklámozza a „Tejút DLC"-t → ide „Áruház" gomb, a `components/shop/ShopScreen`-t nyitja. Új `GamePhase: "shop"` (`src/types/index.ts` + `useGameStore` `phaseToFlags`), `routing/ScreenRouter` ág. (A Settings menüből is elérhető, lásd [[003-firebase-auth-settings]].)
-- **Célállomások (DLC):** a destinations = `baseDestinations` + a birtokolt `dlc` termékek `payload.destinations`. A birtoklást a **Firebase `inventory.dlc`** adja; a nem birtokolt DLC „zárolt" kártyaként → boltba visz.
-- **Űrhajók (sebesség):** **közös** a [[003-firebase-auth-settings]] „aktív hajó" integrációjával — **egyszer, egységesen** valósítandó meg. Az aktív hajót a Firebase `settings.activeShipId` tartja, a birtoklást az `inventory.ships`; a sebesség felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `startMission`/`features/Dashboard`/`screens/MainMenu` becslésben. A hajóválasztó képernyő a [[003-firebase-auth-settings]] `screens/ShipSelect`-je.
-- **Zenék:** a `useAudio` az **aktív zene** URL-jét kapja (Firebase `settings.activeMusicId` + `inventory.music`), alap = jelenlegi téma. A zeneválasztó a **Settings menüben** van (lásd [[003-firebase-auth-settings]]).
-- **Kredit forrása (wage):** a küldetés végén (`missionComplete`) a `wage` jóváírása a **`awardWage` Cloud Function**nel (a `handleConfirmExit`/`missionComplete` ágból).
-
-### Vásárlási folyamat a kliensen
-- **Kredites vétel:** `PurchaseModal` → `functionsApi.purchaseWithCredits(slug)` → siker esetén a Firebase listener frissíti az inventory-t/kreditet.
-- **Valós pénzes vétel:** `strapiApi.createCheckout(slug)` (Firebase ID tokennel) → `session.url`-re redirect → visszatéréskor `CheckoutReturn` megvárja a Firebase inventory frissülését.
+### Változtatások
+- **`CreditShopView`**: „Megveszem" gomb → `functionsApi.createCheckoutSession(packId)` → `sessionUrl` redirect
+- **`CheckoutReturn`** (új): `success_url` / `cancel_url` kezelése; Stripe-ról visszatérve a Firebase listener megvárja a wallet frissülést
+- **`useShopStore`** → a [[003-firebase-auth-settings]] Firebase listener-ére cserélve
 
 ---
 
-## 6. Stripe konfiguráció
+## 5. Stripe konfiguráció
 
-- Stripe Dashboard: minden valós pénzes `Product`-hoz **Price** objektum, a `priceStripeId` ezt tükrözi.
-- Módok: **egyszeri fizetés** (DLC, hajó, zene). Előfizetés jelenleg nem szükséges.
-- Env változók (Strapi oldalon): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`, **`FIREBASE_SERVICE_ACCOUNT`** (Admin SDK az inventory-íráshoz).
-- **Teszt mód:** Stripe test kulcsok + `stripe listen --forward-to localhost:1337/api/webhooks/stripe`.
-- `success_url` / `cancel_url` a frontend `CheckoutReturn` útvonalaira mutasson (a `base href` `/realtime_space_travel/`-t figyelembe véve), `session_id` query paraméterrel.
-
----
-
-## 7. Megvalósítási lépések (sorrend)
-
-> Előfeltétel: a [[003-firebase-auth-settings]] auth + RTDB séma + Security Rules már áll (a kredit/inventory oda íródik).
-
-**A fázis – Strapi (katalógus + Stripe)**
-1. Strapi projekt (külön repo vagy `/server`), Postgres/SQLite.
-2. `Product` + `Order` content type-ok (i18n plugin a `name`/`description`-höz).
-3. **Firebase ID token ellenőrzés** middleware (Admin SDK `verifyIdToken`) a védett endpointokhoz.
-4. `/api/checkout` (Session + uid metaadat) + `/api/webhooks/stripe` (aláírás-ellenőrzés → `Order` → **Admin SDK inventory írás**).
-5. Seed: 2-3 hajó, „Tejút DLC", 2-3 zene.
-
-**B fázis – Firebase Cloud Functions**
-6. `purchaseWithCredits` és `awardWage` callable függvények (RTDB tranzakció, ár a katalógusból).
-
-**C fázis – Frontend**
-7. `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory-ból).
-8. `components/shop/ShopScreen` + `components/shop/ProductCard` + `components/shop/ShopTabs` + `components/shop/CreditBalance`; `GamePhase: "shop"` + `routing/ScreenRouter` ág.
-9. „Áruház" gomb a `screens/MainMenu`-be; DLC zárolt/feloldott logika a Firebase inventory alapján.
-10. Aktív hajó/zene integráció (**közös** a [[003-firebase-auth-settings]] tervvel).
-11. `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`.
-12. Küldetés végén `wage` → `awardWage` bekötése.
-
-**D fázis – Tesztelés / élesítés**
-13. Stripe teszt-vásárlások (siker, megszakítás, visszatérítés), webhook újrapróbálkozás + idempotencia.
-14. Anti-cheat: kredit/inventory mindig Firebase szerver-írt; a Security Rules ellenőrzése.
-15. Vitest: `useCatalog`/`useEntitlements` logika, API-mock; e2e a checkout happy-path-ra.
-16. CORS + env kulcsok éles beállítása; `base href` a redirect URL-eknél.
+- Stripe Dashboard: 4 **Price** objektum (5€, 10€, 25€, 100€ — egyszeri fizetés)
+- Webhook endpoint: Firebase Functions URL (`stripeWebhook`)
+- Webhook események: `checkout.session.completed`
+- Env változók:
+  - `STRIPE_SECRET_KEY` — Stripe titkos kulcs
+  - `STRIPE_WEBHOOK_SECRET` — Webhook aláírás
+  - `STRIPE_PUBLISHABLE_KEY` — Publikus kulcs
+  - Firebase Admin SDK → automatikusan elérhető Functions környezetben (`firebase-functions` + `firebase-admin`)
+- Teszt mód: Stripe test kulcsok + `stripe listen --forward-to http://localhost:5001/...`
 
 ---
 
-## 8. Kockázatok / figyelmeztetések
+## 6. Megvalósítási lépések (sorrend)
 
-- **Két backend (Firebase + Strapi) szinkronban tartása** a fő komplexitás — a tiszta határ (Firebase olvas, Strapi/Stripe fizet, Admin SDK ír Firebase-be) elengedhetetlen. Lásd [[003-firebase-auth-settings]] 0. és 9. pont.
-- **Biztonság a legkritikusabb:** a birtoklás és a kredit **soha** ne legyen kliensoldalon mérvadó. Webhook-aláírás + Firebase Security Rules (wallet/inventory szerver-only) kötelező.
-- **Idempotencia:** a webhook duplán ne írjon a Firebase inventory-ba (`Order.entitlementWritten` / `session.id` kulcs).
-- **Vendég→fiók:** ezt a **Firebase Anonymous→Google linkelés** oldja meg (lásd [[003-firebase-auth-settings]]), **nem** Strapi guest-token — az kikerült.
-- **i18n:** a termékek nevei/leírásai a Strapi i18n pluginjén lokalizáltak, a felület nyelvét az [[000-i18n-nyelvesites]] adja; a felhasználó nyelvét a Firebase `settings.language` tartja.
-- **`base href` / útvonalak:** `/realtime_space_travel/` alatt fut, a Stripe redirect és a router ehhez igazodjon.
-- **Jog/pénzügy:** valós fizetésnél ÁFA/számla/visszatérítés/GDPR — merchant-of-record (Paddle/Lemon Squeezy) egyszerűsítheti később.
-- **Autoplay + fizetés-redirect:** a Stripe redirect elhagyja az oldalt; visszatéréskor a Firebase auth session és a játékállapot helyreáll.
+**A fázis — Stripe + Firebase CF**
+1. Stripe fiók + API kulcsok + 4 Price objektum
+2. `createCheckoutSession` Callable Function
+3. `stripeWebhook` HTTPS Function + idempotencia
+4. Webhook endpoint regisztráció a Stripe Dashboard-on
+5. Env változók beállítása
+
+**B fázis — Firebase Cloud Functions**
+6. `purchaseWithCredits` (in-app kredites vásárlás)
+7. `awardWage` (küldetés végi kredit)
+
+**C fázis — Frontend**
+8. `src/services/functionsApi.ts` — Cloud Functions hívások
+9. `CreditShopView` élesítése: mock → `createCheckoutSession`
+10. `CheckoutReturn` komponens
+11. Küldetés végén wage → `awardWage` bekötés
+
+**D fázis — Tesztelés**
+12. Stripe teszt-vásárlások (siker, megszakítás, dupla webhook)
+13. Anti-cheat, Security Rules
+14. `base href` redirect URL-ek
 
 ---
 
-## 9. Becsült ráfordítás (nagyságrend)
+## 7. Kockázatok
+
+- **Nincs Strapi** → nincs karbantartandó CMS, nincs extra backend, nincs CORS, nincs deploy komplexitás ✅
+- **Webhook idempotencia** kritikus: dupla fizetés → dupla kredit. Megoldás: `session.id` alapján `orders/{id}` lock.
+- **Stripe redirect** elhagyja az oldalt → visszatéréskor a Firebase auth session helyreáll (perzisztens auth).
+- **`base href`** (`/realtime_space_travel/`) — a Stripe `success_url` / `cancel_url` ehhez igazodjon.
+
+---
+
+## 8. Becsült ráfordítás
 
 | Fázis | Nagyságrend |
 |-------|-------------|
-| Strapi (Product/Order, Firebase ID token, Stripe, webhook→Admin SDK) | ~2–4 nap |
+| Stripe + Firebase CF (createCheckout, webhook) | ~1 nap |
 | Cloud Functions (purchaseWithCredits, awardWage) | ~1 nap |
-| Frontend áruház UI + katalógus | ~3–4 nap |
-| Integráció (hajó-sebesség, zene, DLC-célok — közös a Firebase-tervvel) | ~1–2 nap |
-| Tesztelés, biztonság, élesítés | ~2–3 nap |
+| Frontend (Stripe bekötés, CheckoutReturn) | ~0.5 nap |
+| Tesztelés | ~0.5 nap |
 
-**Kész definíció:** a játékos az áruházban hajót/DLC-t/zenét vehet kreditből (Cloud Function) vagy valós pénzből (Stripe→Strapi→Firebase); a birtoklás és a kredit a Firebase RTDB-ben rögzül és onnan tölt be; a DLC új célállomásokat ad, a hajó módosítja a sebességet, a zene a háttérzenét; a vendég (Anonymous) is vásárolhat, a haladat Google-fiókhoz köthető.
+**Kész definíció:** a játékos 4 féle kredit-pakkot vásárolhat Stripe-on keresztül; a kredit a Firebase RTDB `wallet.credits`-be íródik (szerver-írt); app-on belüli vásárlások Firebase Cloud Functions-en mennek; nincs Strapi.
 
 ---
 
-## 10. Kapcsolódó tervek
+## 9. Kapcsolódó tervek
 
-- [[002-ingame-shop-frontend]] – **előfeltétel**: a helyi (frontend-only) bolt-UI, adatmodell és játékbeli bekötés; ez a terv annak mock katalógusát/checkoutját cseréli Strapira/Stripe-ra.
-- [[003-firebase-auth-settings]] – **kánon**: auth, kredit/inventory RTDB tárolás, Security Rules, aktív hajó/zene, Settings menü, ship-select.
-- [[000-i18n-nyelvesites]] – a termékkatalógus és a bolt-UI szövegeinek nyelvi rétege.
+- [[002-ingame-shop-frontend]] – a shop UI (CreditShopView, CreditBalance) már készen van
+- [[003-firebase-auth-settings]] – auth, RTDB séma, Security Rules, Cloud Functions alapok
+- [[000-i18n-nyelvesites]] – a kredit-pakkok neveinek lokalizációja

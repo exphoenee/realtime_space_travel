@@ -7,9 +7,9 @@ export const DEBUG_STARTING_CREDITS = 9000;  // kezdő egyenleg VITE_DEBUG_MODE=
 export const eurFromCredits = (c: number) => Math.round((c / CREDITS_PER_EUR) * 100) / 100;
 
 export const CREDIT_PACKS: CreditPack[] = [
-  { id: "credits-starter",  nameKey: "shop.credits.starter",  priceEur: 10,  credits: 100  },
-  { id: "credits-advanced", nameKey: "shop.credits.advanced", priceEur: 25,  credits: 300  },
-  { id: "credits-premium",  nameKey: "shop.credits.premium",  priceEur: 50,  credits: 700  },
+  { id: "credits-starter",  nameKey: "shop.credits.starter",  priceEur: 5,   credits: 100  },
+  { id: "credits-advanced", nameKey: "shop.credits.advanced", priceEur: 10,  credits: 300  },
+  { id: "credits-premium",  nameKey: "shop.credits.premium",  priceEur: 25,  credits: 700  },
   { id: "credits-ultra",    nameKey: "shop.credits.ultra",    priceEur: 100, credits: 2000 },
 ];
 
@@ -18,8 +18,8 @@ export const SHOP_SHIPS: ShipProduct[] = [
     id: "ship-nomad-x1",
     category: "ship",
     name: "Nomad X1",
-    priceCredits: 1200,
-    priceEur: 12.00,
+    priceCredits: 150,
+    priceEur: 1.50,
     speedKmPerSecond: 380,
     manufacturer: "Orion Shipyards",
     capacity: 4,
@@ -30,8 +30,8 @@ export const SHOP_SHIPS: ShipProduct[] = [
     id: "ship-vega-runner",
     category: "ship",
     name: "Vega Runner",
-    priceCredits: 4500,
-    priceEur: 45.00,
+    priceCredits: 400,
+    priceEur: 4.00,
     speedKmPerSecond: 920,
     manufacturer: "Helios Dynamics",
     capacity: 8,
@@ -42,8 +42,8 @@ export const SHOP_SHIPS: ShipProduct[] = [
     id: "ship-aether-titan",
     category: "ship",
     name: "Aether Titan",
-    priceCredits: 12000,
-    priceEur: 120.00,
+    priceCredits: 1000,
+    priceEur: 10.00,
     speedKmPerSecond: 2400,
     manufacturer: "Nova Consortium",
     capacity: 20,
@@ -53,11 +53,11 @@ export const SHOP_SHIPS: ShipProduct[] = [
 ];
 
 export const SHOP_MUSIC: MusicProduct[] = [
-  { id: "music-dust-on-the-highway",   category: "music", name: "Dust on the Highway",   priceCredits: 300, priceEur: 3.00, file: "dust_on_the_highway.mp3", title: "Dust on the Highway" },
-  { id: "music-late-night-urgency",    category: "music", name: "Late Night Urgency",    priceCredits: 300, priceEur: 3.00, file: "late_night_urgency.mp3",  title: "Late Night Urgency" },
-  { id: "music-neon-heartbeat",        category: "music", name: "Neon Heartbeat",        priceCredits: 300, priceEur: 3.00, file: "neon_heartbeat.mp3",      title: "Neon Heartbeat" },
-  { id: "music-neon-static",           category: "music", name: "Neon Static",           priceCredits: 300, priceEur: 3.00, file: "neon_static.mp3",         title: "Neon Static" },
-  { id: "music-rust-in-the-gears",     category: "music", name: "Rust in the Gears",     priceCredits: 300, priceEur: 3.00, file: "rust_in_the_gears.mp3",   title: "Rust in the Gears" },
+  { id: "music-dust-on-the-highway",   category: "music", name: "Dust on the Highway",   priceCredits: 30, priceEur: 0.30, file: "dust_on_the_highway.mp3", title: "Dust on the Highway" },
+  { id: "music-late-night-urgency",    category: "music", name: "Late Night Urgency",    priceCredits: 30, priceEur: 0.30, file: "late_night_urgency.mp3",  title: "Late Night Urgency" },
+  { id: "music-neon-heartbeat",        category: "music", name: "Neon Heartbeat",        priceCredits: 30, priceEur: 0.30, file: "neon_heartbeat.mp3",      title: "Neon Heartbeat" },
+  { id: "music-neon-static",           category: "music", name: "Neon Static",           priceCredits: 30, priceEur: 0.30, file: "neon_static.mp3",         title: "Neon Static" },
+  { id: "music-rust-in-the-gears",     category: "music", name: "Rust in the Gears",     priceCredits: 30, priceEur: 0.30, file: "rust_in_the_gears.mp3",   title: "Rust in the Gears" },
 ];
 
 /** Exobolygó ár-képlet (determinisztikus, csak a bolygó-adatból) */
@@ -67,10 +67,10 @@ export const calcExoplanetPrice = (
   temperatureK: number | null,
 ): number => {
   return Math.round(
-    200
-    + distanceLy * 25
-    + (massEarth ?? 1) * 60
-    + Math.abs((temperatureK ?? 288) - 288) * 0.8
+    50
+    + distanceLy * 5
+    + (massEarth ?? 1) * 10
+    + Math.abs((temperatureK ?? 288) - 288) * 0.2
   );
 };
 
@@ -79,7 +79,7 @@ export const calcExoplanetWage = (
   distanceLy: number,
   massEarth: number | null,
 ): number => {
-  return Math.round(distanceLy * 15 + (massEarth ?? 1) * 5);
+  return Math.round(distanceLy * 3 + (massEarth ?? 1) * 2);
 };
 
 /** A 3 alap exobolygó — a játékos induláskor birtokolja őket */
@@ -91,7 +91,7 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
     priceCredits: 0,
     priceEur: 0,
     distanceLy: 4.24,
-    wage: 50,
+    wage: 15,
     starName: "Proxima Centauri",
     temperatureK: null,
     massEarth: null,
@@ -103,7 +103,7 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
     priceCredits: 0,
     priceEur: 0,
     distanceLy: 14.31,
-    wage: 250,
+    wage: 45,
     starName: "Wolf 424",
     temperatureK: null,
     massEarth: null,
@@ -115,7 +115,7 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
     priceCredits: 0,
     priceEur: 0,
     distanceLy: 15.34,
-    wage: 1000,
+    wage: 50,
     starName: "Ross 780",
     temperatureK: null,
     massEarth: null,

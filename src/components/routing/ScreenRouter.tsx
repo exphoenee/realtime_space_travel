@@ -6,6 +6,7 @@ import MissionSelector from "../screens/MissionSelector";
 import SettingsScreen from "../screens/SettingsScreen";
 import LoadingScreen from "../screens/LoadingScreen";
 import ShopScreen from "../shop/ShopScreen";
+import ShipSelectScreen from "../screens/ShipSelectScreen";
 
 interface ScreenRouterProps {
   phase: GamePhase;
@@ -22,6 +23,7 @@ interface ScreenRouterProps {
  * - 'intro'        → IntroScreen
  * - 'mainMenu'     → MainMenu (login / start game / shop / settings / intro)
  * - 'missionSelect'→ MissionSelector (mission selection)
+ * - 'shipSelect'  → ShipSelectScreen (ship selection before mission)
  * - 'settings'     → SettingsScreen (music volume, language, difficulty)
  * - 'shop'         → ShopScreen (in-game shop)
  * - 'loading'      → LoadingScreen (camera/model initialization)
@@ -41,6 +43,8 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
       return <MainMenu />;
     case "missionSelect":
       return <MissionSelector onSelectDestination={onSelectDestination} />;
+    case "shipSelect":
+      return <ShipSelectScreen />;
     case "settings":
       return <SettingsScreen />;
     case "shop":

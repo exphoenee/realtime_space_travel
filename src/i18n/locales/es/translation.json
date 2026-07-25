@@ -131,6 +131,16 @@
     "musicTrack": "Selección de música",
     "musicDefault": "Por defecto"
   },
+  "shipSelect": {
+    "title": "Elige tu nave",
+    "subtitle": "Destino: {{destination}} — Selecciona una nave para la misión",
+    "default": "Por defecto",
+    "info": "Info",
+    "launch": "Lanzar",
+    "launchWith": "Lanzar con esta",
+    "defaultDesc": "La nave predeterminada confiable para cada misión.",
+    "owned": "Propio"
+  },
   "difficulty": {
     "easy": "Fácil",
     "medium": "Media",

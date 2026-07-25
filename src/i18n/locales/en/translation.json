@@ -131,6 +131,16 @@
     "musicTrack": "Music Selection",
     "musicDefault": "Default"
   },
+  "shipSelect": {
+    "title": "Choose Your Ship",
+    "subtitle": "Destination: {{destination}} — Select a ship for the mission",
+    "default": "Default",
+    "info": "Info",
+    "launch": "Launch",
+    "launchWith": "Launch with this",
+    "defaultDesc": "The reliable default ship for every mission.",
+    "owned": "Owned"
+  },
   "difficulty": {
     "easy": "Easy",
     "medium": "Medium",

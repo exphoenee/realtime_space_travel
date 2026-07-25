@@ -131,6 +131,16 @@
     "musicTrack": "Musikauswahl",
     "musicDefault": "Standard"
   },
+  "shipSelect": {
+    "title": "Wähle dein Raumschiff",
+    "subtitle": "Ziel: {{destination}} — Wähle ein Raumschiff für die Mission",
+    "default": "Standard",
+    "info": "Info",
+    "launch": "Starten",
+    "launchWith": "Hiermit starten",
+    "defaultDesc": "Das zuverlässige Standardraumschiff für jede Mission.",
+    "owned": "Besitzt"
+  },
   "difficulty": {
     "easy": "Leicht",
     "medium": "Mittel",

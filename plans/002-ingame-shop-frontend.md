@@ -63,7 +63,7 @@ tags:
 | Katalógus (hajó+zene) helye | `src/constants/shopCatalog.ts` — kézzel írt statikus katalógus (a `universeData.ts` mintájára) |
 | Exobolygók | Mind a **100** a `src/data/exoplanets.json`-ból; görgethető rács + **keresőmező**; **procedurális, determinisztikus ár** |
 | Alap exobolygók (előre birtokolt) | **3 bolygó** (Proxima Centauri, Wolf 424, Ross 780) — a `BASE_EXOPLANETS` tömbben, `priceCredits: 0`, a shopban „Birtokolt" státusszal jelennek meg, a küldetésválasztóban is láthatók |
-| Űrhajók | **3 mock hajó** eltérő sebességgel — csak katalógus-adat (sebesség flavor); az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` **marad, nem módosul** |
+| Űrhajók | **3 mock hajó** eltérő sebességgel — csak katalógus-adat (sebesség flavor); az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` **alapként elérhető** |
 | Zenék | A meglévő **5** fájl `public/music`-ból, **kisbetűsre + `_`-re átnevezve**; boltban **belehallgatás** (preview) |
 | Háttérzene a boltban | **NEM szól** a háttérzene (`shouldPlayMusic` kizárja a `"shop"` fázist) |
 | Zenei előnézet | Egyszerre **csak 1 előnézet** szólhat (modul-szintű `globalStopPreview` singleton + store-beli `activePreviewId` követés) |
@@ -72,6 +72,7 @@ tags:
 | Keresés | **Minden** termék tabon (exobolygók, űrhajók, zenék) — név szerinti szűrés |
 | Kredit vásárlás layout | Azonos layout mint a többi tab: `productGrid` + `productCard` osztályok, arany border módosítóval |
 | Info gomb (küldetésválasztó) | `ℹ` gomb minden küldetéskártyán → `MissionExoplanetModal` (JSON bolygóknál teljes adat, alap bolygóknál név+táv+jutalom) |
+| Ship Select (küldetés után) | Küldetésválasztás után **ShipSelectScreen** (új `shipSelect` GamePhase): alap hajó (191 km/s) + birtokolt hajók a shopból listázva. Minden hajókártyán `ℹ Info` gomb → `ShipInfoModal` (műszaki adatok: sebesség, gyártó, kapacitás, hatótáv). Hajó kiválasztásakor az utazási idő újraszámolva: `travelYears = baseTravelYears / (shipSpeed / 191)`. Kamera ellenőrzés a destination kiválasztás után, de a `startMission` előtt történik (a shipSelect fázis előtt). |
 | Debug reset gomb | `↺ Reset` gomb az áruház fejlécében (csak `VITE_DEBUG_MODE=true`); kitörli a birtoklást és visszaállítja a 9000 kreditet, a localStorage-ból is törli a persist adatot |
 | Zeneválasztó (Settings) | A Beállítások menüben **zeneválasztó** (custom `<select>` dropdown): alap `main_theme` + birtokolt zeneszámok. **Letiltva** (`opacity`, `cursor: not-allowed`) ha nincs megvett zene. A kiválasztott track URL-je a `useAudio`-ba kerül, a `useAudio` dinamikusan váltja a lejátszott audio fájlt |
 
@@ -125,7 +126,9 @@ tags:
 - [x] **Exobolygó kép renderelés javítás** — `extractImageUrl()` helper (kezeli a JSON nested `{url, type, source}` objektumokat), `onError` handler 🌌 fallback placeholder. A links mező string URL-eket tartalmaz, nem objektumokat, így ott nincs hiba.
 - [x] **Python scraper dokumentálva** — a `exoplanets.py` NASA Images API + Wikimedia Commons hívásokkal próbál képeket keresni, de 0/100 találat (nincs artista koncepciórajz a 100 legközelebbi exobolygóra). ESA linkek is csak keresőoldalak, nem közvetlen képek.
 - [x] **MP3 fájlok átnevezése** — `public/music/*.mp3` fájlok kisbetűsre + `_`-re átnevezve (pl. `Dust on the Highway.mp3` → `dust_on_the_highway.mp3`), a kód hivatkozásai már az új nevekre mutattak
-- [ ] **Űrhajók bekötése** — hajóválasztó / sebesség módosítás (későbbi fázis)
+- [x] **Űrhajók bekötése (ShipSelectScreen)** — `shipSelect` GamePhase: alap hajó (191 km/s) + birtokolt shop hajók listája. `ShipSelectScreen` (grid layout, hajókártyák info gombbal + indítás gombbal). `ShipInfoModal` (read-only műszaki adatok: sebesség, gyártó, kapacitás, hatótáv). Hajó kiválasztásakor `travelYears` újraszámolva: gyorsabb hajó = rövidebb utazási idő.
+- [x] **i18n shipSelect kulcsok** — mind az 5 nyelvhez: `shipSelect.title`, `.subtitle`, `.default`, `.info`, `.launch`, `.launchWith`, `.defaultDesc`
+- [x] **Kamera ellenőrzés flow** — MissionSelector `onSelectDestination` prop → App.tsx `handleSelectDestination` (kamera check) → `selectDestinationForShip` → `shipSelect` fázis → hajó választás → `startMission` → `loading` |  
 
 **D rész — i18n + validáció**
 - [x] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt)
@@ -148,6 +151,17 @@ mainMenu ──(Áruház)────▶ shop
    └──(← Vissza)──────────┘  └─ view: "creditSuccess" (mock sikeres kreditvásárlás)
 
 MissionSelector ──(ℹ Info)──▶ MissionExoplanetModal (read-only exobolygó adatok)
+
+MissionSelector ──(cél kiválasztás)──▶ kamera ellenőrzés ──▶ shipSelect
+   ▲                                                              │
+   │                                              ┌─ Alap hajó (mindig)
+   │              ┌─ ShipInfoModal (ℹ) ──┐        ├─ Birtokolt hajó #1
+   │              │                      │        ├─ Birtokolt hajó #2
+   │              ▼                      ▼        └─ ...
+   │         shipCard ──(Indítás)──▶ startMission
+   │                                    │
+   └────────────────────────────────────┘
+                                       └──▶ loading → playing
 ```
 
 - `phaseToFlags("shop")` = **ugyanaz a szüneteltetett pre-game állapot**, mint `mainMenu`/`missionSelect`/`settings` (`showIntro:false, isPaused:true, …`).
@@ -185,6 +199,9 @@ src/
       MissionSelector.tsx                         # Küldetésválasztó (info gombbal + exobolygó modal)
       MissionSelector.module.css                  # (info gomb, info modal, missionCard wrapper)
       MissionExoplanetModal.tsx                   # Read-only exobolygó info modal (küldetésválasztóhoz)
+      ShipSelectScreen.tsx                        # Hajókiválasztó (alap hajó + birtokolt hajók)
+      ShipSelectScreen.module.css                 # (shipCard, info modal, grid layout)
+      ShipInfoModal.tsx                           # Read-only hajó info modal (küldetésválasztó stílusban)
 ```
 
 ### `ShopScreen.tsx`
@@ -491,7 +508,7 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - **✅ Exobolygók → küldetésválasztó (MEGVALÓSÍTVA):** a birtokolt exobolygók megjelennek a `MissionSelector`-ban, info modalban (`MissionExoplanetModal`) megtekinthetők képekkel és linkekkel.
 - **✅ Exobolygó kép renderelés (JAVÍTVA):** a JSON `images` mezői nested objektumok `{url, type, source}` formátumban → `extractImageUrl()` helper + `onError` 🌌 fallback. A `links` mező string URL-eket tartalmaz, ott nincs hiba.
 - **✅ Python scraper dokumentálva:** a NASA Images API + Wikimedia Commons hívások 0/100 találatot adtak a 100 legközelebbi exobolygóra. ESA linkek is keresőoldalak, nem közvetlen képfájlok.
-- **🔜 Űrhajók bekötése (későbbi fázis)** — hajóválasztó / küldetésindítás: az aktív hajó `speedKmPerSecond`-je felülírja a `SHIP_SPEED_KM_PER_SECOND`-t.
+- **✅ Űrhajók bekötése (MEGVALÓSÍTVA)** — `shipSelect` GamePhase: alap hajó (191 km/s) + birtokolt shop hajók. `ShipSelectScreen` grid layout, minden hajókártyán `ℹ` info gomb → `ShipInfoModal` (műszaki adatok). Hajó kiválasztáskor az utazási idő újraszámolva: `travelYears = baseTravelYears / (shipSpeed / SHIP_SPEED_KM_PER_SECOND)`. Kamera ellenőrzés a destination kiválasztás után történik (App.tsx `handleSelectDestination`), a `startMission` előtt.
 - **✅ Zenék bekötése (MEGVALÓSÍTVA)** — a Beállítások zene-lejátszója: a birtokolt sáv aktiválása → a `useAudio` háttérzene-URL cseréje. `useUIStore.activeMusicId` perszisztál, `useAudio(activeMusicId)` dinamikusan vált.
 - **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`).
 - **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás).
@@ -509,10 +526,10 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 | Generikus komponensek (Modal, Tabs) | ✅ Kész |
 | Játékmenet-bekötés (exobolygók a MissionSelector-ban + info modal) | ✅ Kész |
 | Zenék játékmenet-bekötése (SettingsScreen zeneválasztó) | ✅ Kész |
-| Űrhajók játékmenet-bekötése | ⬜ Tervezett (későbbi fázis) |
+| Űrhajók játékmenet-bekötése (ShipSelectScreen) | ✅ Kész |
 | i18n kulcsok (5 nyelv) + validáció | ✅ Kész (kivéve Vitest tesztek) |
 
-**Kész definíció elérve:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók + kereső, (2) Űrhajók + kereső, (3) Zenék + kereső, (4) **Kredit vásárlás** (azonos layout). 100 exobolygó (JSON) + 3 alap exobolygó (Birtokolt), 3 űrhajó preview-vel, 5 zene singleton-preview-val. Kosár „Eltávolítás" gombbal. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐, reset gombbal. Háttérzene nem szól a shopban. Csak a grid scrollázik. Birtokolt exobolygók a küldetésválasztóban, info gombbal (a kártya alján). Generikus Modal/Tabs komponensek `src/components/ui/`-ben. A Beállítások menüben **zeneválasztó** (alap + birtokolt zenék), letiltva ha nincs megvett zene. `useAudio` dinamikus track-váltással. ActiveMusicId perszisztálva `useUIStore`-ban.
+**Kész definíció elérve:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók + kereső, (2) Űrhajók + kereső, (3) Zenék + kereső, (4) **Kredit vásárlás** (azonos layout). 100 exobolygó (JSON) + 3 alap exobolygó (Birtokolt), 3 űrhajó preview-vel, 5 zene singleton-preview-val. Kosár „Eltávolítás" gombbal. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐, reset gombbal. Háttérzene nem szól a shopban. Csak a grid scrollázik. Birtokolt exobolygók a küldetésválasztóban, info gombbal (a kártya alján). Generikus Modal/Tabs komponensek `src/components/ui/`-ben. A Beállítások menüben **zeneválasztó** (alap + birtokolt zenék), letiltva ha nincs megvett zene. `useAudio` dinamikus track-váltással. ActiveMusicId perszisztálva `useUIStore`-ban. **Ship Select** (`shipSelect` GamePhase): küldetésválasztás után hajókiválasztás (alap hajó + birtokolt shop hajók), info modal műszaki adatokkal, sebesség alapján újraszámolt utazási idő. Kamera ellenőrzés a destination kiválasztás után történik.
 
 ---
 

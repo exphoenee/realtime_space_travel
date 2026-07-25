@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { Destination, GamePhase, CrewLostReason } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
+import { SHIP_SPEED_KM_PER_SECOND } from "../constants/constants";
 
 interface GameState {
   /** Primary state machine phase */
@@ -10,7 +11,11 @@ interface GameState {
 
   // --- legacy boolean flags (kept for backward compat, derived from gamePhase) ---
   destination: Destination | null;
+  /** Pending destination before ship is selected (shipSelect phase) */
+  pendingDestination: Destination | null;
   remainingYears: number;
+  /** The selected ship's speed in km/s — used by Dashboard for display */
+  shipSpeedKmPerSecond: number;
   isPaused: boolean;
   showIntro: boolean;
   isAttentionLost: boolean;
@@ -41,8 +46,11 @@ interface GameState {
   // --- phase-based transitions ---
   transitionTo: (phase: GamePhase) => void;
 
+  /** Set pending destination and transition to shipSelect */
+  selectDestinationForShip: (destination: Destination) => void;
+
   // --- composite actions ---
-  startMission: (destination: Destination) => void;
+  startMission: (destination: Destination, shipSpeedKmPerSecond?: number) => void;
   resetToMenu: () => void;
 }
 
@@ -63,6 +71,7 @@ const phaseToFlags = (phase: GamePhase) => {
       };
     case "mainMenu":
     case "missionSelect":
+    case "shipSelect":
     case "settings":
     case "shop":
       return {
@@ -147,7 +156,9 @@ const useGameStore = create<GameState>()(
 
       // Initial values
       destination: null,
+      pendingDestination: null,
       remainingYears: 0,
+      shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
       inactivitySeconds: 0,
       serviceSeconds: 0,
       bestServiceSeconds: 0,
@@ -219,11 +230,21 @@ const useGameStore = create<GameState>()(
             phase === "crewLost" ? state.crewLostReason : null,
         })),
 
+      // --- ship select ---
+      selectDestinationForShip: (destination) =>
+        set(() => ({
+          pendingDestination: destination,
+          gamePhase: "shipSelect",
+          ...phaseToFlags("shipSelect"),
+        })),
+
       // --- composite actions ---
-      startMission: (destination) =>
+      startMission: (destination, shipSpeedKmPerSecond) =>
         set(() => ({
           destination,
+          pendingDestination: null,
           remainingYears: destination.travelYears,
+          shipSpeedKmPerSecond: shipSpeedKmPerSecond ?? SHIP_SPEED_KM_PER_SECOND,
           gamePhase: "loading",
           inactivitySeconds: 0,
           serviceSeconds: 0,
@@ -232,7 +253,9 @@ const useGameStore = create<GameState>()(
       resetToMenu: () =>
         set((state) => ({
           destination: null,
+          pendingDestination: null,
           remainingYears: 0,
+          shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
           inactivitySeconds: 0,
           serviceSeconds: 0,
           gamePhase: "mainMenu",

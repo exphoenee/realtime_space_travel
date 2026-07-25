@@ -7,7 +7,7 @@ status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-25"
-updated_at: "2026-07-25"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 3
 phases:
@@ -75,11 +75,12 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [ ] Google-belépés + Anonymous→Google **linkelés**
 - [ ] Nyelv/rekord/némítás összefésülés a meglévő store-okkal ([[000-i18n-nyelvesites]])
 
-**Fázis 2 — hajóválasztó + sebesség**
-- [ ] `GamePhase: "shipSelect"` + `screens/MainMenu` pending destination + `routing/ScreenRouter` ág
-- [ ] `ShipSelect` komponens (alap hajó mindig; üres inventory → csak alap)
-- [ ] Sebesség-integráció (aktív hajó → `travelYears` / `Dashboard` / `MainMenu`) — **közös** [[004-ingame-shop-strapi-stripe]]
-- [ ] Zene-integráció: `useAudio` az aktív zene URL-jével
+**Fázis 2 — hajóválasztó + sebesség (✅ MEGVALÓSÍTVA a [[002-ingame-shop-frontend]]-ben)**
+- [x] `GamePhase: "shipSelect"` + `screens/MissionSelector` pending destination + `routing/ScreenRouter` ág
+- [x] `ShipSelectScreen` komponens (alap hajó mindig; birtokolt hajók `useShopStore.owned.ships`-ből)
+- [x] Sebesség-integráció (`shipSpeedKmPerSecond` a `useGameStore`-ban; `Dashboard` használja) — **közös** [[004-ingame-shop-strapi-stripe]]
+- [x] Zene-integráció: `useAudio` az aktív zene URL-jével; zeneválasztó a `SettingsScreen`-ben
+- [ ] **Firebase bekötéskor:** `useShopStore` → `useInventoryStore` (RTDB), `useGameStore.shipSpeedKmPerSecond` → `settings.activeShipId` validáció
 
 **Kredit-út (részben Fázis 3-mal közös)**
 - [ ] Cloud Function `awardWage` (küldetés végi kredit)
@@ -183,11 +184,10 @@ users/
 
 ## 4. Settings menü (a harang helyett)
 
-A jelenlegi **`bellOverlay`** (`App.tsx` 198–219. sor): egy 🔔/🔕 gomb a vászon fölött, `handleToggleMusic`-kal. **Lecseréljük** egy **⚙️ fogaskerék** gombra, ami megnyitja a **`SettingsMenu`** panelt.
+> **Jelenlegi állapot:** a `SettingsScreen` már létezik (zene hangerő, zeneválasztó, nehézség, nyelv) — lásd [[002-ingame-shop-frontend]]. Nincs külön `bellOverlay`; a zene némítás/hangerő az `App.tsx` `playMusic` hook-ján keresztül és a `SettingsScreen`-ből vezérelhető.
 
-### Csere részletei
-- Az `App.tsx`-ben a `bellOverlay` → `settingsOverlay`: ugyanaz a pozicionálás (canvas fölött, pre-game és pause állapotban látható), de a gomb a Settings panelt nyitja/zárja.
-- A zene némítás átkerül a Settings panelbe (megmarad az `isMusicMuted` logika, de a `useUIStore` helyett/mellett az RTDB `settings.musicMuted` a perzisztens forrás).
+### Firebase bekötéskor:
+- A zene némítás/aktív zene **mérvadó forrása** az RTDB `settings.musicMuted`/`settings.activeMusicId` lesz (jelenleg `useUIStore` persist).
 
 ### Settings panel tartalma
 1. **Fiók** (`AccountSection`): bejelentkezett felhasználó neve/avatarja; „Bejelentkezés Google-lel" (ha anonymous) / „Kijelentkezés". Kredit-egyenleg kijelzése.
@@ -202,22 +202,26 @@ A jelenlegi **`bellOverlay`** (`App.tsx` 198–219. sor): egy 🔔/🔕 gomb a v
 
 ## 5. Űrhajó-választó küldetés után
 
-### Jelenlegi flow
-`MainMenu` (célválasztás) → `handleSelectDestination` (kamera-ellenőrzés) → `startMission` → `loading` → `playing`.
+### ✅ Jelenlegi implementáció ([[002-ingame-shop-frontend]])
+`MissionSelector` (célválasztás) → `handleSelectDestination` (kamera-ellenőrzés) → `shipSelect` → hajó kiválasztása → `startMission(destination, shipSpeed)` → `loading` → `playing`.
 
-### Új flow
-`MainMenu` (célválasztás) → **`shipSelect` (ÚJ)** → hajó megerősítése → kamera-ellenőrzés → `startMission(destination, ship)` → `loading` → `playing`.
+### 🔄 Terv szerinti helyes flow (későbbi módosításkor)
+`MissionSelector` → **`shipSelect`** → hajó megerősítése → kamera-ellenőrzés → `startMission` → `loading` → `playing`.
 
-### Változtatások
-- **Új `GamePhase: "shipSelect"`** a `src/types/index.ts`-be + `phaseToFlags` a `useGameStore`-ban (paused-szerű állapot, mint a `menu`).
-- A `MainMenu` `onSelectDestination`-je már **nem** indít küldetést, hanem eltárolja a **függőben lévő célt** és `transitionTo("shipSelect")`.
-- **`routing/ScreenRouter`**: új `case "shipSelect": return <ShipSelect ... />`.
-- **`screens/ShipSelect` komponens:
-  - Listázza a választható hajókat: **alap hajó** (mindig) + `inventory.ships` birtokolt hajók.
-  - **Ha az `inventory.ships` üres → csak az alap hajó választható** (a többi „zárolt", boltba mutató kártyaként jelenhet meg — kapcsolódik a [[004-ingame-shop-strapi-stripe]] tervhez).
-  - Hajó adatai: név, **sebesség** (km/s), a célhoz számított **utazási idő** (a hajó sebességéből, lásd lent).
-  - „Indítás" gomb → beállítja `settings.activeShipId`-t, majd meghívja a kamera-ellenőrzést és a `startMission`-t a kiválasztott hajóval.
-- **Sebesség-integráció:** a `startMission` a **kiválasztott hajó** sebességéből számolja a `travelYears`-t (jelenleg a fix `SHIP_SPEED_LIGHTYEARS_PER_YEAR`-ből). A `features/Dashboard` sebesség-kijelzője és a `screens/MainMenu` utazásiidő-becslése is az aktív hajóból számol. (Ez a rész közös a [[004-ingame-shop-strapi-stripe]] „aktív hajó" integrációjával — érdemes egyszer, egységesen megvalósítani.)
+> **Megjegyzés:** a kamera-ellenőrzés jelenleg a hajóválasztás ELŐTT fut. A terv szerinti helyes sorrendben a hajó kiválasztása UTÁN kellene ellenőrizni a kamerát, hogy a hajóválasztás ne függjön a kamera rendelkezésre állásától. Ezt a [[003-firebase-auth-settings]] implementálásakor kell átszervezni.
+
+### Már megvalósított elemek ([[002-ingame-shop-frontend]]):
+- `GamePhase: "shipSelect"` — `src/types/index.ts` + `phaseToFlags` a `useGameStore`-ban ✅
+- `ShipSelectScreen` komponens: alap hajó + birtokolt hajók (`useShopStore.owned.ships`) ✅
+- `routing/ScreenRouter`: `case "shipSelect"` ✅
+- Sebesség-integráció: `shipSpeedKmPerSecond` a `useGameStore`-ban, `Dashboard` használja ✅
+- Info modal a hajókhoz (`ShipInfoModal`) ✅
+- Zeneválasztó a `SettingsScreen`-ben (birtokolt zenékből) ✅
+
+### Firebase bekötéskor változik:
+- `useShopStore.owned.ships` → `useInventoryStore` (Firebase RTDB `inventory.ships`)
+- `activeShipId` validáció: a Firestore-ból olvasott `inventory.ships` ellenében
+- Aktív hajó beállítása: `settings.activeShipId` írása az RTDB-be
 
 ---
 
@@ -241,20 +245,21 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 
 ## 8. Megvalósítási lépések (sorrend)
 
+> **✅ Már kész ([[002-ingame-shop-frontend]]):** 8-as (shipSelect GamePhase), 9-es (ShipSelect komponens), 10-es (sebesség-integráció), 11-es (zene-integráció). A Settings menü (zene hangerő, zeneválasztó, nehézség, nyelv) már létezik — de Firebase auth nélkül.
+> **🔄 Módosítás:** a kamera-ellenőrzés jelenleg a hajóválasztás ELŐTT fut; a helyes flow (shipSelect → kamera → startMission) bevezetése a Firebase implementáció részeként.
+
 1. Firebase projekt + Auth (Google, Anonymous) + Realtime Database létrehozása; env változók.
-2. `firebase/config.ts`, `firebase/auth.ts`, `firebase/userData.ts`.
+2. `src/firebase/config.ts`, `src/firebase/auth.ts`, `src/firebase/userData.ts`.
 3. **Security Rules** beállítása (wallet/inventory szerver-only; settings user-írható).
 4. `useAuthStore` + anonymous auto-login az app indulásakor; `onAuthStateChanged` bekötése.
 5. `ensureUserNode` + `subscribeUser` → `useSettingsStore` / `useInventoryStore` feltöltés bejelentkezéskor.
-6. **`SettingsMenu`** + `AccountSection`; az `App.tsx` `bellOverlay` → `settingsOverlay` csere; zene-némítás áthelyezése a panelbe.
+6. **`SettingsScreen` bővítése** `AccountSection`-nal (login/logout); zene-némítás RTDB `settings.musicMuted`-re átállítás.
 7. Google-bejelentkezés + anonymous→Google **linkelés** a Settings menüből.
-8. **`GamePhase: "shipSelect"`** bevezetése; `MainMenu` cél-választás → pending destination → `shipSelect`; `ScreenRouter` ág.
-9. **`ShipSelect`** komponens: alap hajó mindig + birtokolt hajók; üres inventory → csak alap; „Indítás" → `activeShipId` + kamera-ellenőrzés + `startMission(ship)`.
-10. **Sebesség-integráció**: aktív hajó sebessége → `travelYears` / `Dashboard` / `MainMenu` becslés.
-11. Zene-integráció: `useAudio` az aktív zene URL-jével (birtokolt zenékből).
-12. **Cloud Function** (`awardWage`) a wage → kredit jóváíráshoz; wallet/inventory szerver-írás.
-13. Nyelv/rekord/némítás összefésülés a meglévő store-okkal.
-14. **Strapi↔Firebase híd** (a bolt-tervből): Stripe webhook → Admin SDK → `inventory` írás.
+8. **`useShopStore` kiváltása:** `useInventoryStore` (RTDB read-only tükör) + `useSettingsStore` (aktív hajó/zene).
+9. **Flow átszervezés:** kamera-ellenőrzés áthelyezése a hajóválasztás UTÁN (`ShipSelectScreen.handleSelectShip` → kamera → `startMission`).
+10. **Cloud Function** (`awardWage`) a wage → kredit jóváíráshoz; wallet/inventory szerver-írás.
+11. Nyelv/rekord/némítás összefésülés a meglévő store-okkal.
+12. **Strapi↔Firebase híd** (a bolt-tervből): Stripe webhook → Admin SDK → `inventory` írás.
 
 ---
 
