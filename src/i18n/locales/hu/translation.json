@@ -1,0 +1,255 @@
+{
+  "menu": {
+    "title": "Válassz egy küldetést!",
+    "lightYears": "{{distance}} fényév",
+    "reward": "Jutalom {{amount}}$",
+    "dlcMilkyWay": "Vedd meg a <1>Tejút DLC</1>-t $19.99-ért további csillagrendszerekért!",
+    "dlcComingSoon": "Hamarosan további DLC-k érkeznek!"
+  },
+  "dashboard": {
+    "title": "Csillagközi Utazás",
+    "status": "Státusz: Minden rendszer működik",
+    "speed": "Sebesség: {{value}} km/s",
+    "destination": "Cél",
+    "localWeather": "Helyi időjárás",
+    "arrival": "Érkezés a célrendszerbe",
+    "earthYears": "Földi év"
+  },
+  "intro": {
+    "headline": "Realtime Space Travel",
+    "motto": "Az életedre szóló élmény!",
+    "paragraph1": "Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen reménye. Ez nem egy játék, a túlélésünk a tét. Ez az utolsó esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A bárka, amely az emberiség jövőjét hordozza, indulásra kész.",
+    "paragraph2": "A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói – mély, kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... Az emberiség sorsa most a te kezedben van. Te vagy az az élő, lélegző komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.",
+    "sectionTitle": "A Feladataid – A Küldetés Legszigorúbb Protokolljai",
+    "rule1": "<1>Az Éberség Protokollja</1> – folyamatos vizuális monitorozás szükséges a navigációs adatok stabilizálásához. Ha a figyelmed megszakad, a hajó vészleállást kezdeményez.",
+    "rule2": "<1>A Zéró Beavatkozás Elve</1> – a rendszerek önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!",
+    "rule3": "<1>Valós Idejű Utazás</1> – tapasztald meg a csillagközi utazás hiteles valóságát. A csillagok évezredek alatt mozdulnak el; a legnagyobb ellenség az idő.",
+    "rule4": "<1>A tét: Minden.</1> Nincs dicsőség, nincsenek harcok, nincsenek jutalmak – csak a csend, a végtelen kozmosz és a válladra nehezedő felelősség. A jövő a te szemedben tükröződik.",
+    "continue": "Kattints vagy nyomj meg bármilyen gombot a folytatáshoz."
+  },
+  "loading": {
+    "title": "Rendszerek inicializálása",
+    "subtitle": "A hajó fedélzeti számítógépe ellenőrzi a rendszereket",
+    "step": {
+      "camera": "Kamera csatlakoztatása...",
+      "model": "Mesterséges intelligencia modell betöltése...",
+      "calibration": "Arcfelismerő rendszer kalibrálása...",
+      "ready": "Minden rendszer üzemkész!"
+    },
+    "status": {
+      "done": "Kész",
+      "inProgress": "Folyamatban"
+    },
+    "readyTitle": "Minden készen áll",
+    "readySubtitle": "Nézz a képernyőre az utazás megkezdéséhez"
+  },
+  "pause": {
+    "attentionTitle": "Figyelem!",
+    "countdownSub": "Még {{seconds}} másodperced van visszanézni a képernyőre, különben a teljes hibernált legénység odavész!",
+    "seconds": "másodperc",
+    "blame": "Mert te nem végzed a feladatod...",
+    "disconnectedTitle": "Kapcsolat megszakadt",
+    "disconnectedSub": "A fedélzeti rendszerek nem érzékelik a jelenlétedet.",
+    "disconnectedWarning": "<1>60 másodperced</1> van visszatérni a képernyő elé, mielőtt a hajó vészprotokollt aktivál. A legénység sorsa a te figyelmeden múlik."
+  },
+  "app": {
+    "missionCompleteTitle": "Megérkeztél!",
+    "missionCompleteText": "Megérkeztél! Az uticélod a jobb oldalon van!",
+    "backToMenu": "Vissza a főmenübe",
+    "gameOverTitle": "Vége a játéknak",
+    "crewLostButtons": "Az egész hibernált legénység elpusztult, mert piszkáltad a gombokat!",
+    "crewLostAttention": "Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.",
+    "exitConfirmTitle": "Biztosan kilépsz?",
+    "exitConfirmText": "A játék nem menti az eddigi elért eredményeidet!",
+    "yes": "Igen",
+    "no": "Nem",
+    "errorTitle": "Hiba",
+    "retry": "Próbáld újra",
+    "exit": "Kilépés",
+    "exitAria": "Kilépés a küldetésből",
+    "serviceTime": "Szolgálati idő: {{minutes}} perc",
+    "record": "Rekord: {{minutes}} perc",
+    "musicMute": "Zene némítása",
+    "musicUnmute": "Zene bekapcsolása",
+    "camera": {
+      "noSupport": "A böngésződ nem támogatja a kamera hozzáférést. Próbálj másik böngészőt.",
+      "noModel": "A gépi látás modell nem tölthető be. Próbáld meg frissíteni az oldalt.",
+      "needAccess": "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.",
+      "denied": "Kamera hozzáférés megtagadva. Kérjük, engedélyezd a kamerát a böngésző beállításaiban.",
+      "notFound": "Nem található kamera. Csatlakoztass egy webkamerát és próbáld újra.",
+      "notReadable": "A kamera nem olvasható. Lehet, hogy egy másik alkalmazás használja."
+    }
+  },
+  "screenCheck": {
+    "portraitTitle": "Fekvő nézet szükséges",
+    "portraitText": "Kérjük, fordítsd el a készülékedet vízszintes helyzetbe a játék elindításához.",
+    "tooSmallTitle": "Túl kicsi képernyő",
+    "tooSmallText": "Legalább <1>900×530</1> felbontás szükséges.",
+    "current": "Jelenlegi: {{width}}×{{height}}"
+  },
+  "errorBoundary": {
+    "title": "Hiba történt",
+    "text": "Váratlan hiba történt az alkalmazásban.",
+    "reload": "Újratöltés"
+  },
+  "debug": {
+    "cameraStatus": "Kamera állapot:",
+    "faceDetected": "Arc érzékelve",
+    "noFace": "Nincs arc",
+    "lastUpdate": "Utolsó frissítés: {{value}}s",
+    "balanceRatio": "Balance arány:",
+    "eyeVerticalRatio": "Szem döntés arány:",
+    "eyeEarMargin": "Szem-fül különbség:",
+    "ignore": "Figyelmen kívül hagyás"
+  },
+  "weather": {
+    "sunny": "{{temp}} °C napsütés",
+    "rainy": "{{temp}} °C esős",
+    "snowy": "{{temp}} °C havazás",
+    "foggy": "{{temp}} °C ködös",
+    "tropicalStorm": "{{temp}} °C trópusi vihar",
+    "iceStorm": "{{temp}} °C jégvihar",
+    "breezy": "{{temp}} °C enyhe szél",
+    "sandStorm": "{{temp}} °C homokvihar",
+    "sleet": "{{temp}} °C jeges szitálás",
+    "clearSky": "{{temp}} °C kristálytiszta égbolt"
+  },
+  "mainMenu": {
+    "login": "Bejelentkezés",
+    "start": "Játék indítása",
+    "shop": "Áruház",
+    "settings": "Beállítások",
+    "intro": "Intro megtekintése",
+    "loginComingSoon": "A bejelentkezés hamarosan elérhető lesz.",
+    "shopComingSoon": "Az áruház hamarosan elérhető lesz."
+  },
+  "settings": {
+    "title": "Beállítások",
+    "musicVolume": "Zene hangereje",
+    "back": "Vissza",
+    "difficulty": "Nehézség",
+    "musicTrack": "Zeneválasztás",
+    "musicDefault": "Alapértelmezett",
+    "signOut": "Kijelentkezés",
+    "authenticated": "Hitelesítve"
+  },
+  "shipSelect": {
+    "title": "Válassz Űrhajót",
+    "subtitle": "Cél: {{destination}} — Válaszd ki az űrhajót a küldetéshez",
+    "default": "Alap",
+    "info": "Info",
+    "launch": "Indítás",
+    "launchWith": "Ezzel indulok",
+    "defaultDesc": "A megbízható alap űrhajó minden küldetéshez.",
+    "owned": "Birtokolt"
+  },
+  "difficulty": {
+    "easy": "Könnyű",
+    "medium": "Közepes",
+    "hard": "Nehéz"
+  },
+  "language": {
+    "label": "Nyelv",
+    "hu": "Magyar",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "es": "Español"
+  },
+  "shop": {
+    "title": "Áruház",
+    "back": "← Vissza",
+    "creditsLabel": "⭐ {{count}} kredit",
+    "balance": "Egyenleg: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exobolygók",
+      "ships": "Űrhajók",
+      "music": "Zenék"
+    },
+    "search": "Keresés név szerint…",
+    "searchNoResult": "Nincs találat",
+    "addToCart": "Kosárba",
+    "inCart": "Kosárban ✓",
+    "owned": "Birtokolt",
+    "remove": "Eltávolítás",
+    "cart": {
+      "title": "Kosár",
+      "empty": "A kosár üres",
+      "total": "Végösszeg",
+      "checkout": "Fizetés"
+    },
+    "notEnoughCredits": "Nincs elég kredit ehhez a vásárláshoz.",
+    "success": {
+      "title": "Sikeres vásárlás!",
+      "text": "A tételeket jóváírtuk. Jó utazást!",
+      "continue": "Vissza a boltba"
+    },
+    "cartCount": "{{count}} tétel",
+    "preview": {
+      "play": "Belehallgatás",
+      "stop": "Leállítás"
+    },
+    "ship": {
+      "preview": "🚀 Részletek",
+      "speed": "Sebesség: {{value}} km/s",
+      "capacity": "Kapacitás: {{count}} fő",
+      "range": "Hatótáv: {{value}} fényév",
+      "manufacturer": "Gyártó: {{name}}",
+      "speedLabel": "Sebesség",
+      "manufacturerLabel": "Gyártó",
+      "capacityLabel": "Legénység",
+      "rangeLabel": "Hatótáv",
+      "crew": "fő",
+      "ly": "fé",
+      "modal": {
+        "close": "Bezárás",
+        "specs": "Műszaki adatok"
+      },
+      "nomadX1": {
+        "desc": "A Nomad X1 egy megbízható, belépő szintű csillaghajó, amelyet az Orion Shipyards épített. Kompakt mérete ellenére meglepően gyors, ideális választás rövidebb küldetésekhez."
+      },
+      "vegaRunner": {
+        "desc": "A Vega Runner a Helios Dynamics mérnökeinek büszkesége. Kiegyensúlyozott teljesítmény és nagy hatótáv jellemzi, alkalmas közepes távolságú expedíciókra."
+      },
+      "aetherTitan": {
+        "desc": "Az Aether Titan a Nova Consortium csúcskategóriás csillaghajója. Hatalmas sebessége és kapacitása révén a legtávolabbi csillagrendszerek is elérhetővé válnak."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} fényév",
+      "star": "Csillag: {{name}}",
+      "preview": "🔍 Előnézet",
+      "modal": {
+        "close": "Bezárás",
+        "distance": "Távolság",
+        "coordinates": "Koordináták",
+        "temperature": "Hőmérséklet",
+        "mass": "Tömeg",
+        "radius": "Sugár",
+        "links": "Linkek",
+        "section": {
+          "star": "Csillag",
+          "planet": "Bolygó",
+          "discovery": "Felfedezés"
+        }
+      }
+    },
+    "credits": {
+      "title": "Kredit vásárlás",
+      "starter": "Kezdő csomag",
+      "advanced": "Haladó csomag",
+      "premium": "Prémium csomag",
+      "ultra": "Ultra csomag",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} kredit",
+      "buy": "Megveszem",
+      "successTitle": "Sikeres kreditvásárlás!",
+      "successText": "{{credits}} ⭐ kreditet vettél!",
+      "newBalance": "Új egyenleg: ⭐ {{balance}}",
+      "back": "Vissza a boltba",
+      "notEnoughCreditsHint": "Vegyél kreditet a 'Kredit vásárlás' fülön!"
+    }
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "menu": {
+    "title": "Wähle eine Mission!",
+    "lightYears": "{{distance}} Lichtjahre",
+    "reward": "Belohnung {{amount}}$",
+    "dlcMilkyWay": "Kaufe das <1>Milchstraßen-DLC</1> für 19,99 $, um weitere Sternensysteme freizuschalten!",
+    "dlcComingSoon": "Weitere DLCs folgen bald!"
+  },
+  "dashboard": {
+    "title": "Interstellare Reise",
+    "status": "Status: Alle Systeme betriebsbereit",
+    "speed": "Geschwindigkeit: {{value}} km/s",
+    "destination": "Ziel",
+    "localWeather": "Lokales Wetter",
+    "arrival": "Ankunft im Zielsystem",
+    "earthYears": "Erdenjahre"
+  },
+  "intro": {
+    "headline": "Realtime Space Travel",
+    "motto": "Das Erlebnis deines Lebens!",
+    "paragraph1": "Du bist der Auserwählte! Du bist die letzte und einzige Hoffnung der Menschheit. Dies ist kein Spiel — unser Überleben steht auf dem Spiel. Dies ist unsere letzte Chance: das Versprechen einer neuen Heimat in fernen Sternensystemen. Die Arche, die die Zukunft der Menschheit trägt, ist bereit zum Aufbruch.",
+    "paragraph2": "Die gesamte Besatzung – Wissenschaftler, Ingenieure, die Gründer einer neuen Zivilisation – ist in einen tiefen, kryogenen Schlaf gefallen. Ihr Schicksal, ihre Träume, unsere Zukunft... Das Schicksal der Menschheit liegt nun in deinen Händen. Du bist die lebende, atmende Komponente, die keine künstliche Intelligenz ersetzen kann.",
+    "sectionTitle": "Deine Aufgaben – Die strengsten Protokolle der Mission",
+    "rule1": "<1>Das Wachsamkeitsprotokoll</1> – eine kontinuierliche visuelle Überwachung ist erforderlich, um die Navigationsdaten zu stabilisieren. Wenn deine Aufmerksamkeit nachlässt, leitet das Schiff eine Notabschaltung ein.",
+    "rule2": "<1>Das Prinzip der Null-Intervention</1> – die Systeme sind selbsterhaltend; ein manueller Eingriff kann fatal sein. Deine wichtigste Fähigkeit ist Disziplin und Geduld. Handle nicht – überwache!",
+    "rule3": "<1>Reise in Echtzeit</1> – erlebe die authentische Realität der interstellaren Reise. Die Sterne bewegen sich über Jahrtausende; dein größter Feind ist die Zeit.",
+    "rule4": "<1>Der Einsatz: Alles.</1> Kein Ruhm, keine Kämpfe, keine Belohnungen – nur die Stille, der unendliche Kosmos und die Verantwortung, die auf deinen Schultern lastet. Die Zukunft spiegelt sich in deinen Augen.",
+    "continue": "Klicke oder drücke eine beliebige Taste, um fortzufahren."
+  },
+  "loading": {
+    "title": "Systeme werden initialisiert",
+    "subtitle": "Der Bordcomputer des Schiffs überprüft die Systeme",
+    "step": {
+      "camera": "Kamera wird verbunden...",
+      "model": "Modell der künstlichen Intelligenz wird geladen...",
+      "calibration": "Gesichtserkennungssystem wird kalibriert...",
+      "ready": "Alle Systeme bereit!"
+    },
+    "status": {
+      "done": "Fertig",
+      "inProgress": "In Bearbeitung"
+    },
+    "readyTitle": "Alles ist bereit",
+    "readySubtitle": "Schau auf den Bildschirm, um die Reise zu beginnen"
+  },
+  "pause": {
+    "attentionTitle": "Achtung!",
+    "countdownSub": "Du hast noch {{seconds}} Sekunden, um wieder auf den Bildschirm zu schauen, sonst geht die gesamte Besatzung im Kälteschlaf verloren!",
+    "seconds": "Sekunden",
+    "blame": "Weil du deine Aufgabe nicht erfüllst...",
+    "disconnectedTitle": "Verbindung unterbrochen",
+    "disconnectedSub": "Die Bordsysteme können deine Anwesenheit nicht erkennen.",
+    "disconnectedWarning": "Du hast <1>60 Sekunden</1>, um zum Bildschirm zurückzukehren, bevor das Schiff sein Notfallprotokoll aktiviert. Das Schicksal der Besatzung hängt von deiner Aufmerksamkeit ab."
+  },
+  "app": {
+    "missionCompleteTitle": "Du bist angekommen!",
+    "missionCompleteText": "Du bist angekommen! Dein Ziel befindet sich auf der rechten Seite!",
+    "backToMenu": "Zurück zum Hauptmenü",
+    "gameOverTitle": "Spiel vorbei",
+    "crewLostButtons": "Die gesamte Besatzung im Kälteschlaf ist umgekommen, weil du an den Knöpfen herumgespielt hast!",
+    "crewLostAttention": "Spiel vorbei — die gesamte Besatzung ist gestorben, weil du nicht aufgepasst hast.",
+    "exitConfirmTitle": "Möchtest du wirklich beenden?",
+    "exitConfirmText": "Das Spiel speichert deinen bisherigen Fortschritt nicht!",
+    "yes": "Ja",
+    "no": "Nein",
+    "errorTitle": "Fehler",
+    "retry": "Erneut versuchen",
+    "exit": "Beenden",
+    "exitAria": "Mission verlassen",
+    "serviceTime": "Dienstzeit: {{minutes}} Min.",
+    "record": "Rekord: {{minutes}} Min.",
+    "musicMute": "Musik stummschalten",
+    "musicUnmute": "Musik einschalten",
+    "camera": {
+      "noSupport": "Dein Browser unterstützt keinen Kamerazugriff. Versuche einen anderen Browser.",
+      "noModel": "Das Computer-Vision-Modell konnte nicht geladen werden. Versuche, die Seite neu zu laden.",
+      "needAccess": "Für das Spiel ist Kamerazugriff erforderlich. Erlaube die Kamera und lade die Seite neu.",
+      "denied": "Kamerazugriff verweigert. Bitte erlaube die Kamera in den Browsereinstellungen.",
+      "notFound": "Keine Kamera gefunden. Schließe eine Webcam an und versuche es erneut.",
+      "notReadable": "Die Kamera konnte nicht gelesen werden. Möglicherweise wird sie von einer anderen Anwendung verwendet."
+    }
+  },
+  "screenCheck": {
+    "portraitTitle": "Querformat erforderlich",
+    "portraitText": "Bitte drehe dein Gerät in die horizontale Position, um das Spiel zu starten.",
+    "tooSmallTitle": "Bildschirm zu klein",
+    "tooSmallText": "Es ist eine Auflösung von mindestens <1>900×530</1> erforderlich.",
+    "current": "Aktuell: {{width}}×{{height}}"
+  },
+  "errorBoundary": {
+    "title": "Ein Fehler ist aufgetreten",
+    "text": "In der Anwendung ist ein unerwarteter Fehler aufgetreten.",
+    "reload": "Neu laden"
+  },
+  "debug": {
+    "cameraStatus": "Kamerastatus:",
+    "faceDetected": "Gesicht erkannt",
+    "noFace": "Kein Gesicht",
+    "lastUpdate": "Letzte Aktualisierung: {{value}}s",
+    "balanceRatio": "Gleichgewichtsverhältnis:",
+    "eyeVerticalRatio": "Augenneigungsverhältnis:",
+    "eyeEarMargin": "Augen-Ohr-Abstand:",
+    "ignore": "Ignorieren"
+  },
+  "weather": {
+    "sunny": "{{temp}} °C sonnig",
+    "rainy": "{{temp}} °C regnerisch",
+    "snowy": "{{temp}} °C Schneefall",
+    "foggy": "{{temp}} °C neblig",
+    "tropicalStorm": "{{temp}} °C tropischer Sturm",
+    "iceStorm": "{{temp}} °C Eissturm",
+    "breezy": "{{temp}} °C leichter Wind",
+    "sandStorm": "{{temp}} °C Sandsturm",
+    "sleet": "{{temp}} °C eisiger Nieselregen",
+    "clearSky": "{{temp}} °C kristallklarer Himmel"
+  },
+  "mainMenu": {
+    "login": "Anmelden",
+    "start": "Spiel starten",
+    "shop": "Shop",
+    "settings": "Einstellungen",
+    "intro": "Intro ansehen",
+    "loginComingSoon": "Die Anmeldung wird bald verfügbar sein.",
+    "shopComingSoon": "Der Shop wird bald verfügbar sein."
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "musicVolume": "Musiklautstärke",
+    "back": "Zurück",
+    "difficulty": "Schwierigkeit",
+    "musicTrack": "Musikauswahl",
+    "musicDefault": "Standard",
+    "signOut": "Abmelden",
+    "authenticated": "Authentifiziert"
+  },
+  "shipSelect": {
+    "title": "Wähle dein Raumschiff",
+    "subtitle": "Ziel: {{destination}} — Wähle ein Raumschiff für die Mission",
+    "default": "Standard",
+    "info": "Info",
+    "launch": "Starten",
+    "launchWith": "Hiermit starten",
+    "defaultDesc": "Das zuverlässige Standardraumschiff für jede Mission.",
+    "owned": "Besitzt"
+  },
+  "difficulty": {
+    "easy": "Leicht",
+    "medium": "Mittel",
+    "hard": "Schwer"
+  },
+  "language": {
+    "label": "Sprache",
+    "hu": "Magyar",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "es": "Español"
+  }
+}

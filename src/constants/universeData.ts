@@ -16,15 +16,22 @@ export const baseDestinations = [
   },
 ];
 
-export const weatherConditions = [
-  "25 °C napsütés",
-  "20 °C esős",
-  "-12 °C havazás",
-  "5 °C ködös",
-  "32 °C trópusi vihar",
-  "-30 °C jégvihar",
-  "14 °C enyhe szél",
-  "40 °C homokvihar",
-  "0 °C jeges szitálás",
-  "-5 °C kristálytiszta égbolt",
+export interface WeatherCondition {
+  /** i18n kulcs a `weather` névtér alatt */
+  key: string;
+  /** hőmérséklet °C-ban (interpolációhoz) */
+  temp: number;
+}
+
+export const weatherConditions: WeatherCondition[] = [
+  { key: "sunny", temp: 25 },
+  { key: "rainy", temp: 20 },
+  { key: "snowy", temp: -12 },
+  { key: "foggy", temp: 5 },
+  { key: "tropicalStorm", temp: 32 },
+  { key: "iceStorm", temp: -30 },
+  { key: "breezy", temp: 14 },
+  { key: "sandStorm", temp: 40 },
+  { key: "sleet", temp: 0 },
+  { key: "clearSky", temp: -5 },
 ];

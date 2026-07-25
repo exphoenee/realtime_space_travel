@@ -1,0 +1,5410 @@
+[
+  {
+    "name": "Proxima Cen d",
+    "distance": {
+      "parsec": 1.30119,
+      "lightYears": 4.244
+    },
+    "coordinates": {
+      "ra": 217.3934657,
+      "dec": -62.6761821
+    },
+    "star": {
+      "name": "Proxima Cen",
+      "temperature": 2900.0,
+      "mass": 0.1221,
+      "radius": 0.141,
+      "age": null,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 0.26,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 5.12338,
+      "semiMajorAxisAU": 0.02881,
+      "eccentricity": 0.0,
+      "temperatureK": 282.0,
+      "insolationEarth": 1.814
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Proxima+Cen+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima Cen d",
+      "ESA": "https://www.esa.int/Search?q=Proxima+Cen+d"
+    },
+    "visual": {
+      "url": "https://cdn.eso.org/images/screen/eso1629a.jpg",
+      "type": "artist_impression",
+      "source": "ESO",
+      "confidence": "high"
+    }
+  },
+  {
+    "name": "Proxima Cen b",
+    "distance": {
+      "parsec": 1.30119,
+      "lightYears": 4.244
+    },
+    "coordinates": {
+      "ra": 217.3934657,
+      "dec": -62.6761821
+    },
+    "star": {
+      "name": "Proxima Cen",
+      "temperature": null,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.0,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 11.185,
+      "semiMajorAxisAU": 0.048,
+      "eccentricity": 0.0,
+      "temperatureK": 216.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2016,
+      "method": "Radial Velocity",
+      "facility": "European Southern Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Proxima+Cen+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima Cen b",
+      "ESA": "https://www.esa.int/Search?q=Proxima+Cen+b"
+    },
+    "visual": {
+      "url": "https://cdn.eso.org/images/screen/eso1629a.jpg",
+      "type": "artist_impression",
+      "source": "ESO",
+      "confidence": "high"
+    }
+  },
+  {
+    "name": "Barnard e",
+    "distance": {
+      "parsec": 1.82655,
+      "lightYears": 5.957
+    },
+    "coordinates": {
+      "ra": 269.4486144,
+      "dec": 4.7379808
+    },
+    "star": {
+      "name": "Barnard's star",
+      "temperature": 3195.0,
+      "mass": 0.162,
+      "radius": 0.185,
+      "age": null,
+      "spectralType": "M3.5-4 V"
+    },
+    "planet": {
+      "massEarth": 0.193,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 6.7392,
+      "semiMajorAxisAU": 0.0381,
+      "eccentricity": 0.04,
+      "temperatureK": 340.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Gemini Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Barnard+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard e",
+      "ESA": "https://www.esa.int/Search?q=Barnard+e"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
+    }
+  },
+  {
+    "name": "Barnard d",
+    "distance": {
+      "parsec": 1.82655,
+      "lightYears": 5.957
+    },
+    "coordinates": {
+      "ra": 269.4486144,
+      "dec": 4.7379808
+    },
+    "star": {
+      "name": "Barnard's star",
+      "temperature": 3195.0,
+      "mass": 0.162,
+      "radius": 0.185,
+      "age": null,
+      "spectralType": "M3.5-4 V"
+    },
+    "planet": {
+      "massEarth": 0.263,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 2.3402,
+      "semiMajorAxisAU": 0.0188,
+      "eccentricity": 0.04,
+      "temperatureK": 483.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Gemini Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Barnard+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard d",
+      "ESA": "https://www.esa.int/Search?q=Barnard+d"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
+    }
+  },
+  {
+    "name": "Barnard c",
+    "distance": {
+      "parsec": 1.82655,
+      "lightYears": 5.957
+    },
+    "coordinates": {
+      "ra": 269.4486144,
+      "dec": 4.7379808
+    },
+    "star": {
+      "name": "Barnard's star",
+      "temperature": 3195.0,
+      "mass": 0.162,
+      "radius": 0.185,
+      "age": null,
+      "spectralType": "M3.5-4 V"
+    },
+    "planet": {
+      "massEarth": 0.335,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.1244,
+      "semiMajorAxisAU": 0.0274,
+      "eccentricity": 0.08,
+      "temperatureK": 400.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Gemini Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Barnard+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard c",
+      "ESA": "https://www.esa.int/Search?q=Barnard+c"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
+    }
+  },
+  {
+    "name": "Barnard b",
+    "distance": {
+      "parsec": 1.82655,
+      "lightYears": 5.957
+    },
+    "coordinates": {
+      "ra": 269.4486144,
+      "dec": 4.7379808
+    },
+    "star": {
+      "name": "Barnard's star",
+      "temperature": 3195.0,
+      "mass": 0.162,
+      "radius": 0.185,
+      "age": null,
+      "spectralType": "M3.5-4 V"
+    },
+    "planet": {
+      "massEarth": 0.299,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3.1542,
+      "semiMajorAxisAU": 0.0229,
+      "eccentricity": 0.03,
+      "temperatureK": 438.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2024,
+      "method": "Radial Velocity",
+      "facility": "Paranal Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Barnard+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Barnard b",
+      "ESA": "https://www.esa.int/Search?q=Barnard+b"
+    },
+    "visual": {
+      "url": "https://science.nasa.gov/wp-content/uploads/2023/04/exoplanet-31-barnards-star-b-2400x1800-1.jpg",
+      "type": "artist_concept",
+      "source": "NASA Exoplanet Exploration",
+      "confidence": "medium",
+      "direct": true
+    }
+  },
+  {
+    "name": "eps Eri b",
+    "distance": {
+      "parsec": 3.2026,
+      "lightYears": 10.445
+    },
+    "coordinates": {
+      "ra": 53.2284306,
+      "dec": -9.4581715
+    },
+    "star": {
+      "name": "eps Eri",
+      "temperature": null,
+      "mass": 0.83,
+      "radius": null,
+      "age": 0.8,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 492.6365,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 2502.0,
+      "semiMajorAxisAU": 3.39,
+      "eccentricity": 0.702,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2000,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=eps+Eri+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/eps Eri b",
+      "ESA": "https://www.esa.int/Search?q=eps+Eri+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=eps%20Eri%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 887 c",
+    "distance": {
+      "parsec": 3.28679,
+      "lightYears": 10.72
+    },
+    "coordinates": {
+      "ra": 346.5027573,
+      "dec": -35.8473489
+    },
+    "star": {
+      "name": "GJ 887",
+      "temperature": 3680.0,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 10.2,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 21.7952,
+      "semiMajorAxisAU": 0.133,
+      "eccentricity": 0.265,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+887+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+887+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 887 b",
+    "distance": {
+      "parsec": 3.28679,
+      "lightYears": 10.72
+    },
+    "coordinates": {
+      "ra": 346.5027573,
+      "dec": -35.8473489
+    },
+    "star": {
+      "name": "GJ 887",
+      "temperature": 3680.0,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 6.9,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 9.26177,
+      "semiMajorAxisAU": 0.0751,
+      "eccentricity": 0.083,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+887+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+887+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 887 d",
+    "distance": {
+      "parsec": 3.28679,
+      "lightYears": 10.72
+    },
+    "coordinates": {
+      "ra": 346.5027573,
+      "dec": -35.8473489
+    },
+    "star": {
+      "name": "GJ 887",
+      "temperature": 3688.0,
+      "mass": 0.495,
+      "radius": 0.468,
+      "age": 2.9,
+      "spectralType": "M1 V"
+    },
+    "planet": {
+      "massEarth": 6.1,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 50.77,
+      "semiMajorAxisAU": 0.212,
+      "eccentricity": null,
+      "temperatureK": 241.0,
+      "insolationEarth": 0.81
+    },
+    "discovery": {
+      "year": 2026,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+887+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 d",
+      "ESA": "https://www.esa.int/Search?q=GJ+887+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 887 e",
+    "distance": {
+      "parsec": 3.28679,
+      "lightYears": 10.72
+    },
+    "coordinates": {
+      "ra": 346.5027573,
+      "dec": -35.8473489
+    },
+    "star": {
+      "name": "GJ 887",
+      "temperature": 3688.0,
+      "mass": 0.495,
+      "radius": 0.468,
+      "age": 2.9,
+      "spectralType": "M1 V"
+    },
+    "planet": {
+      "massEarth": 1.46,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.4249,
+      "semiMajorAxisAU": 0.0417,
+      "eccentricity": null,
+      "temperatureK": 544.0,
+      "insolationEarth": 20.9
+    },
+    "discovery": {
+      "year": 2026,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+887+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 887 e",
+      "ESA": "https://www.esa.int/Search?q=GJ+887+e"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%20887%20e",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Ross 128 b",
+    "distance": {
+      "parsec": 3.37454,
+      "lightYears": 11.006
+    },
+    "coordinates": {
+      "ra": 176.9376036,
+      "dec": 0.7992898
+    },
+    "star": {
+      "name": "Ross 128",
+      "temperature": 3192.0,
+      "mass": 0.168,
+      "radius": 0.1967,
+      "age": 5.0,
+      "spectralType": "M4"
+    },
+    "planet": {
+      "massEarth": 1.4,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 9.8658,
+      "semiMajorAxisAU": 0.0496,
+      "eccentricity": 0.116,
+      "temperatureK": 301.0,
+      "insolationEarth": 1.38
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Ross+128+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross 128 b",
+      "ESA": "https://www.esa.int/Search?q=Ross+128+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Ross%20128%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Gl 725 A b",
+    "distance": {
+      "parsec": 3.5214,
+      "lightYears": 11.485
+    },
+    "coordinates": {
+      "ra": 280.6834312,
+      "dec": 59.638109
+    },
+    "star": {
+      "name": "Gl 725 A",
+      "temperature": 3433.0,
+      "mass": 0.33,
+      "radius": 0.351,
+      "age": 6.2,
+      "spectralType": "M3"
+    },
+    "planet": {
+      "massEarth": 2.78,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 11.2201,
+      "semiMajorAxisAU": 0.068,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Gl+725+A+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Gl 725 A b",
+      "ESA": "https://www.esa.int/Search?q=Gl+725+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Gl%20725%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 15 A b",
+    "distance": {
+      "parsec": 3.56228,
+      "lightYears": 11.619
+    },
+    "coordinates": {
+      "ra": 4.6126677,
+      "dec": 44.0247296
+    },
+    "star": {
+      "name": "GJ 15 A",
+      "temperature": 3567.0,
+      "mass": 0.375,
+      "radius": 0.3863,
+      "age": null,
+      "spectralType": "M2 V"
+    },
+    "planet": {
+      "massEarth": 5.35,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 11.4433,
+      "semiMajorAxisAU": 0.0717,
+      "eccentricity": 0.0,
+      "temperatureK": 550.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+15+A+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 15 A b",
+      "ESA": "https://www.esa.int/Search?q=GJ+15+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%2015%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 15 A c",
+    "distance": {
+      "parsec": 3.56228,
+      "lightYears": 11.619
+    },
+    "coordinates": {
+      "ra": 4.6126677,
+      "dec": 44.0247296
+    },
+    "star": {
+      "name": "GJ 15 A",
+      "temperature": 3607.0,
+      "mass": 0.38,
+      "radius": 0.38,
+      "age": null,
+      "spectralType": "M1"
+    },
+    "planet": {
+      "massEarth": 36.0,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 7600.0,
+      "semiMajorAxisAU": 5.4,
+      "eccentricity": 0.27,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2018,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+15+A+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 15 A c",
+      "ESA": "https://www.esa.int/Search?q=GJ+15+A+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%2015%20A%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "tau Cet f",
+    "distance": {
+      "parsec": 3.60304,
+      "lightYears": 11.752
+    },
+    "coordinates": {
+      "ra": 26.0093029,
+      "dec": -15.9337987
+    },
+    "star": {
+      "name": "tau Cet",
+      "temperature": null,
+      "mass": 0.783,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 3.93,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 636.13,
+      "semiMajorAxisAU": 1.334,
+      "eccentricity": 0.16,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=tau+Cet+f",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet f",
+      "ESA": "https://www.esa.int/Search?q=tau+Cet+f"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20f",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "tau Cet g",
+    "distance": {
+      "parsec": 3.60304,
+      "lightYears": 11.752
+    },
+    "coordinates": {
+      "ra": 26.0093029,
+      "dec": -15.9337987
+    },
+    "star": {
+      "name": "tau Cet",
+      "temperature": null,
+      "mass": 0.783,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 1.75,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 20.0,
+      "semiMajorAxisAU": 0.133,
+      "eccentricity": 0.06,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=tau+Cet+g",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet g",
+      "ESA": "https://www.esa.int/Search?q=tau+Cet+g"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20g",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "tau Cet h",
+    "distance": {
+      "parsec": 3.60304,
+      "lightYears": 11.752
+    },
+    "coordinates": {
+      "ra": 26.0093029,
+      "dec": -15.9337987
+    },
+    "star": {
+      "name": "tau Cet",
+      "temperature": null,
+      "mass": 0.783,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 1.83,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 49.41,
+      "semiMajorAxisAU": 0.243,
+      "eccentricity": 0.23,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=tau+Cet+h",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/tau Cet h",
+      "ESA": "https://www.esa.int/Search?q=tau+Cet+h"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=tau%20Cet%20h",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "eps Ind A b",
+    "distance": {
+      "parsec": 3.63857,
+      "lightYears": 11.867
+    },
+    "coordinates": {
+      "ra": 330.8714021,
+      "dec": -56.7969023
+    },
+    "star": {
+      "name": "eps Ind A",
+      "temperature": null,
+      "mass": 0.754,
+      "radius": null,
+      "age": 4.7,
+      "spectralType": "K2 V"
+    },
+    "planet": {
+      "massEarth": 1032.9475,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 16510.0,
+      "semiMajorAxisAU": 11.55,
+      "eccentricity": 0.26,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2019,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=eps+Ind+A+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/eps Ind A b",
+      "ESA": "https://www.esa.int/Search?q=eps+Ind+A+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=eps%20Ind%20A%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 1061 d",
+    "distance": {
+      "parsec": 3.67278,
+      "lightYears": 11.979
+    },
+    "coordinates": {
+      "ra": 54.0032486,
+      "dec": -44.5143104
+    },
+    "star": {
+      "name": "GJ 1061",
+      "temperature": 2953.0,
+      "mass": 0.12,
+      "radius": 0.156,
+      "age": 7.0,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.67,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 13.066,
+      "semiMajorAxisAU": 0.054,
+      "eccentricity": 0.04,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1061+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 d",
+      "ESA": "https://www.esa.int/Search?q=GJ+1061+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 1061 c",
+    "distance": {
+      "parsec": 3.67278,
+      "lightYears": 11.979
+    },
+    "coordinates": {
+      "ra": 54.0032486,
+      "dec": -44.5143104
+    },
+    "star": {
+      "name": "GJ 1061",
+      "temperature": 2953.0,
+      "mass": 0.12,
+      "radius": 0.156,
+      "age": 7.0,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.81,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 6.6821,
+      "semiMajorAxisAU": 0.0342,
+      "eccentricity": 0.02,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1061+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+1061+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "GJ 1061 b",
+    "distance": {
+      "parsec": 3.67278,
+      "lightYears": 11.979
+    },
+    "coordinates": {
+      "ra": 54.0032486,
+      "dec": -44.5143104
+    },
+    "star": {
+      "name": "GJ 1061",
+      "temperature": 2953.0,
+      "mass": 0.12,
+      "radius": 0.156,
+      "age": 7.0,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.11,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3.2073,
+      "semiMajorAxisAU": 0.021,
+      "eccentricity": 0.05,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1061+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1061 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+1061+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=GJ%201061%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "YZ Cet c",
+    "distance": {
+      "parsec": 3.71207,
+      "lightYears": 12.107
+    },
+    "coordinates": {
+      "ra": 18.1330792,
+      "dec": -16.9962434
+    },
+    "star": {
+      "name": "YZ Cet",
+      "temperature": null,
+      "mass": 0.13,
+      "radius": 0.169,
+      "age": null,
+      "spectralType": "M4 V"
+    },
+    "planet": {
+      "massEarth": 0.58,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 0.75215,
+      "semiMajorAxisAU": 0.0082,
+      "eccentricity": 0.05,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=YZ+Cet+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet c",
+      "ESA": "https://www.esa.int/Search?q=YZ+Cet+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "YZ Cet d",
+    "distance": {
+      "parsec": 3.71207,
+      "lightYears": 12.107
+    },
+    "coordinates": {
+      "ra": 18.1330792,
+      "dec": -16.9962434
+    },
+    "star": {
+      "name": "YZ Cet",
+      "temperature": 3056.0,
+      "mass": 0.13,
+      "radius": 0.168,
+      "age": 5.0,
+      "spectralType": "M4.5"
+    },
+    "planet": {
+      "massEarth": 1.14,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.65627,
+      "semiMajorAxisAU": 0.02764,
+      "eccentricity": 0.129,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=YZ+Cet+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet d",
+      "ESA": "https://www.esa.int/Search?q=YZ+Cet+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "YZ Cet b",
+    "distance": {
+      "parsec": 3.71207,
+      "lightYears": 12.107
+    },
+    "coordinates": {
+      "ra": 18.1330792,
+      "dec": -16.9962434
+    },
+    "star": {
+      "name": "YZ Cet",
+      "temperature": 3056.0,
+      "mass": 0.13,
+      "radius": 0.168,
+      "age": 5.0,
+      "spectralType": "M4.5"
+    },
+    "planet": {
+      "massEarth": 0.75,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 1.96876,
+      "semiMajorAxisAU": 0.01557,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=YZ+Cet+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/YZ Cet b",
+      "ESA": "https://www.esa.int/Search?q=YZ+Cet+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=YZ%20Cet%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Teegarden's Star c",
+    "distance": {
+      "parsec": 3.83078,
+      "lightYears": 12.494
+    },
+    "coordinates": {
+      "ra": 43.2691449,
+      "dec": 16.8649024
+    },
+    "star": {
+      "name": "Teegarden's Star",
+      "temperature": 2904.0,
+      "mass": 0.089,
+      "radius": 0.107,
+      "age": 8.0,
+      "spectralType": "M7.0 V"
+    },
+    "planet": {
+      "massEarth": 1.11,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 11.409,
+      "semiMajorAxisAU": 0.0443,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": 0.37
+    },
+    "discovery": {
+      "year": 2019,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Teegarden's+Star+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star c",
+      "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Teegarden's Star b",
+    "distance": {
+      "parsec": 3.83078,
+      "lightYears": 12.494
+    },
+    "coordinates": {
+      "ra": 43.2691449,
+      "dec": 16.8649024
+    },
+    "star": {
+      "name": "Teegarden's Star",
+      "temperature": 2904.0,
+      "mass": 0.089,
+      "radius": 0.107,
+      "age": 8.0,
+      "spectralType": "M7.0 V"
+    },
+    "planet": {
+      "massEarth": 1.05,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.91,
+      "semiMajorAxisAU": 0.0252,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": 1.15
+    },
+    "discovery": {
+      "year": 2019,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Teegarden's+Star+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star b",
+      "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+b"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20b",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Teegarden's Star d",
+    "distance": {
+      "parsec": 3.83078,
+      "lightYears": 12.494
+    },
+    "coordinates": {
+      "ra": 43.2691449,
+      "dec": 16.8649024
+    },
+    "star": {
+      "name": "Teegarden's Star",
+      "temperature": 3034.0,
+      "mass": 0.097,
+      "radius": 0.12,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 0.82,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 26.13,
+      "semiMajorAxisAU": 0.0791,
+      "eccentricity": 0.07,
+      "temperatureK": 159.0,
+      "insolationEarth": 0.12
+    },
+    "discovery": {
+      "year": 2024,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Teegarden's+Star+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden's Star d",
+      "ESA": "https://www.esa.int/Search?q=Teegarden's+Star+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Teegarden%27s%20Star%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Kapteyn c",
+    "distance": {
+      "parsec": 3.93305,
+      "lightYears": 12.828
+    },
+    "coordinates": {
+      "ra": 77.9586613,
+      "dec": -45.0430198
+    },
+    "star": {
+      "name": "Kapteyn",
+      "temperature": 3550.0,
+      "mass": 0.281,
+      "radius": 0.291,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 7.0,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 121.54,
+      "semiMajorAxisAU": 0.311,
+      "eccentricity": 0.23,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Kapteyn+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Kapteyn c",
+      "ESA": "https://www.esa.int/Search?q=Kapteyn+c"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Kapteyn%20c",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Wolf 1061 d",
+    "distance": {
+      "parsec": 4.30592,
+      "lightYears": 14.044
+    },
+    "coordinates": {
+      "ra": 247.5748276,
+      "dec": -12.6676866
+    },
+    "star": {
+      "name": "Wolf 1061",
+      "temperature": 3393.0,
+      "mass": 0.25,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3/3.5 V"
+    },
+    "planet": {
+      "massEarth": 5.21,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 67.27,
+      "semiMajorAxisAU": 0.2039,
+      "eccentricity": 0.32,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Wolf+1061+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 d",
+      "ESA": "https://www.esa.int/Search?q=Wolf+1061+d"
+    },
+    "visual": {
+      "url": "https://www.esa.int/Search?q=Wolf%201061%20d",
+      "type": "artist_impression",
+      "source": "ESA",
+      "confidence": "low",
+      "search_link": true
+    }
+  },
+  {
+    "name": "Wolf 1061 c",
+    "distance": {
+      "parsec": 4.30592,
+      "lightYears": 14.044
+    },
+    "coordinates": {
+      "ra": 247.5748276,
+      "dec": -12.6676866
+    },
+    "star": {
+      "name": "Wolf 1061",
+      "temperature": 3393.0,
+      "mass": 0.25,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3/3.5 V"
+    },
+    "planet": {
+      "massEarth": 4.25,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 17.867,
+      "semiMajorAxisAU": 0.08427,
+      "eccentricity": 0.19,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Wolf+1061+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 c",
+      "ESA": "https://www.esa.int/Search?q=Wolf+1061+c"
+    }
+  },
+  {
+    "name": "Wolf 1061 b",
+    "distance": {
+      "parsec": 4.30592,
+      "lightYears": 14.044
+    },
+    "coordinates": {
+      "ra": 247.5748276,
+      "dec": -12.6676866
+    },
+    "star": {
+      "name": "Wolf 1061",
+      "temperature": 3393.0,
+      "mass": 0.25,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3/3.5 V"
+    },
+    "planet": {
+      "massEarth": 1.36,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.8876,
+      "semiMajorAxisAU": 0.035509,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Wolf+1061+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf 1061 b",
+      "ESA": "https://www.esa.int/Search?q=Wolf+1061+b"
+    }
+  },
+  {
+    "name": "GJ 9066 c",
+    "distance": {
+      "parsec": 4.471,
+      "lightYears": 14.582
+    },
+    "coordinates": {
+      "ra": 30.0588307,
+      "dec": 13.0443172
+    },
+    "star": {
+      "name": "GJ 9066",
+      "temperature": 3154.0,
+      "mass": 0.15,
+      "radius": 0.164,
+      "age": null,
+      "spectralType": "M5.0 V"
+    },
+    "planet": {
+      "massEarth": 66.74396547,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 771.36,
+      "semiMajorAxisAU": 0.88,
+      "eccentricity": 0.46,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+9066+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 9066 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+9066+c"
+    }
+  },
+  {
+    "name": "GJ 674 b",
+    "distance": {
+      "parsec": 4.54896,
+      "lightYears": 14.837
+    },
+    "coordinates": {
+      "ra": 262.1700476,
+      "dec": -46.8989826
+    },
+    "star": {
+      "name": "GJ 674",
+      "temperature": 3600.0,
+      "mass": 0.35,
+      "radius": null,
+      "age": 0.55,
+      "spectralType": "M2.5"
+    },
+    "planet": {
+      "massEarth": 11.09,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.6938,
+      "semiMajorAxisAU": 0.039,
+      "eccentricity": 0.2,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2007,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+674+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 674 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+674+b"
+    }
+  },
+  {
+    "name": "GJ 687 c",
+    "distance": {
+      "parsec": 4.54939,
+      "lightYears": 14.838
+    },
+    "coordinates": {
+      "ra": 264.1041731,
+      "dec": 68.3336741
+    },
+    "star": {
+      "name": "GJ 687",
+      "temperature": null,
+      "mass": 0.4,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 16.0,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 727.562,
+      "semiMajorAxisAU": 1.165,
+      "eccentricity": 0.4,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+687+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 687 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+687+c"
+    }
+  },
+  {
+    "name": "GJ 687 b",
+    "distance": {
+      "parsec": 4.54939,
+      "lightYears": 14.838
+    },
+    "coordinates": {
+      "ra": 264.1041731,
+      "dec": 68.3336741
+    },
+    "star": {
+      "name": "GJ 687",
+      "temperature": 3413.0,
+      "mass": 0.413,
+      "radius": 0.4183,
+      "age": null,
+      "spectralType": "M3 V"
+    },
+    "planet": {
+      "massEarth": 18.394,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 38.14,
+      "semiMajorAxisAU": 0.16353,
+      "eccentricity": 0.04,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Lick Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+687+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 687 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+687+b"
+    }
+  },
+  {
+    "name": "GJ 876 c",
+    "distance": {
+      "parsec": 4.67517,
+      "lightYears": 15.248
+    },
+    "coordinates": {
+      "ra": 343.3239737,
+      "dec": -14.2665958
+    },
+    "star": {
+      "name": "GJ 876",
+      "temperature": null,
+      "mass": 0.32,
+      "radius": 0.3,
+      "age": 1.0,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 226.9846,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 30.0881,
+      "semiMajorAxisAU": 0.12959,
+      "eccentricity": 0.25591,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2000,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+876+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+876+c"
+    }
+  },
+  {
+    "name": "GJ 876 d",
+    "distance": {
+      "parsec": 4.67517,
+      "lightYears": 15.248
+    },
+    "coordinates": {
+      "ra": 343.3239737,
+      "dec": -14.2665958
+    },
+    "star": {
+      "name": "GJ 876",
+      "temperature": 3271.0,
+      "mass": 0.336778,
+      "radius": 0.352224,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 7.53,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 1.93774,
+      "semiMajorAxisAU": 0.0208067,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2005,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+876+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 d",
+      "ESA": "https://www.esa.int/Search?q=GJ+876+d"
+    }
+  },
+  {
+    "name": "GJ 876 e",
+    "distance": {
+      "parsec": 4.67517,
+      "lightYears": 15.248
+    },
+    "coordinates": {
+      "ra": 343.3239737,
+      "dec": -14.2665958
+    },
+    "star": {
+      "name": "GJ 876",
+      "temperature": 3271.0,
+      "mass": 0.336778,
+      "radius": 0.352224,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 18.00115332,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 124.4,
+      "semiMajorAxisAU": 0.345,
+      "eccentricity": 0.04,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2010,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+876+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 e",
+      "ESA": "https://www.esa.int/Search?q=GJ+876+e"
+    }
+  },
+  {
+    "name": "GJ 876 b",
+    "distance": {
+      "parsec": 4.67517,
+      "lightYears": 15.248
+    },
+    "coordinates": {
+      "ra": 343.3239737,
+      "dec": -14.2665958
+    },
+    "star": {
+      "name": "GJ 876",
+      "temperature": 3271.0,
+      "mass": 0.336778,
+      "radius": 0.352224,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 600.67,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 61.02,
+      "semiMajorAxisAU": 0.208,
+      "eccentricity": 0.1,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 1998,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+876+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 876 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+876+b"
+    }
+  },
+  {
+    "name": "GJ 1002 b",
+    "distance": {
+      "parsec": 4.84867,
+      "lightYears": 15.814
+    },
+    "coordinates": {
+      "ra": 1.6764641,
+      "dec": -7.5462123
+    },
+    "star": {
+      "name": "GJ 1002",
+      "temperature": 3024.0,
+      "mass": 0.12,
+      "radius": 0.137,
+      "age": null,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.08,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 10.3465,
+      "semiMajorAxisAU": 0.0457,
+      "eccentricity": null,
+      "temperatureK": 230.9,
+      "insolationEarth": 0.67
+    },
+    "discovery": {
+      "year": 2022,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1002+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1002 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+1002+b"
+    }
+  },
+  {
+    "name": "GJ 1002 c",
+    "distance": {
+      "parsec": 4.84867,
+      "lightYears": 15.814
+    },
+    "coordinates": {
+      "ra": 1.6764641,
+      "dec": -7.5462123
+    },
+    "star": {
+      "name": "GJ 1002",
+      "temperature": 3024.0,
+      "mass": 0.12,
+      "radius": 0.137,
+      "age": null,
+      "spectralType": "M5.5 V"
+    },
+    "planet": {
+      "massEarth": 1.36,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 21.202,
+      "semiMajorAxisAU": 0.0738,
+      "eccentricity": null,
+      "temperatureK": 181.7,
+      "insolationEarth": 0.257
+    },
+    "discovery": {
+      "year": 2022,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1002+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1002 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+1002+c"
+    }
+  },
+  {
+    "name": "GJ 832 b",
+    "distance": {
+      "parsec": 4.96435,
+      "lightYears": 16.192
+    },
+    "coordinates": {
+      "ra": 323.3912616,
+      "dec": -49.0125169
+    },
+    "star": {
+      "name": "GJ 832",
+      "temperature": 3657.0,
+      "mass": 0.45,
+      "radius": 0.48,
+      "age": null,
+      "spectralType": "M1.5"
+    },
+    "planet": {
+      "massEarth": 203.4,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3416.0,
+      "semiMajorAxisAU": 3.4,
+      "eccentricity": 0.12,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2008,
+      "method": "Radial Velocity",
+      "facility": "Anglo-Australian Telescope"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+832+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 832 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+832+b"
+    }
+  },
+  {
+    "name": "GJ 682 b",
+    "distance": {
+      "parsec": 5.00671,
+      "lightYears": 16.33
+    },
+    "coordinates": {
+      "ra": 264.2610245,
+      "dec": -44.3232519
+    },
+    "star": {
+      "name": "GJ 682",
+      "temperature": 3028.0,
+      "mass": 0.27,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3.5 V"
+    },
+    "planet": {
+      "massEarth": 4.4,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 17.478,
+      "semiMajorAxisAU": 0.08,
+      "eccentricity": 0.08,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+682+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 682 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+682+b"
+    }
+  },
+  {
+    "name": "GJ 682 c",
+    "distance": {
+      "parsec": 5.00671,
+      "lightYears": 16.33
+    },
+    "coordinates": {
+      "ra": 264.2610245,
+      "dec": -44.3232519
+    },
+    "star": {
+      "name": "GJ 682",
+      "temperature": 3028.0,
+      "mass": 0.27,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3.5 V"
+    },
+    "planet": {
+      "massEarth": 8.7,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 57.32,
+      "semiMajorAxisAU": 0.176,
+      "eccentricity": 0.1,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+682+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 682 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+682+c"
+    }
+  },
+  {
+    "name": "GJ 3323 c",
+    "distance": {
+      "parsec": 5.37484,
+      "lightYears": 17.53
+    },
+    "coordinates": {
+      "ra": 75.4868824,
+      "dec": -6.9485133
+    },
+    "star": {
+      "name": "GJ 3323",
+      "temperature": 3159.0,
+      "mass": 0.164,
+      "radius": 0.119,
+      "age": null,
+      "spectralType": "M4"
+    },
+    "planet": {
+      "massEarth": 2.31,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 40.54,
+      "semiMajorAxisAU": 0.1264,
+      "eccentricity": 0.17,
+      "temperatureK": null,
+      "insolationEarth": 0.17
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+3323+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3323 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+3323+c"
+    }
+  },
+  {
+    "name": "GJ 3323 b",
+    "distance": {
+      "parsec": 5.37484,
+      "lightYears": 17.53
+    },
+    "coordinates": {
+      "ra": 75.4868824,
+      "dec": -6.9485133
+    },
+    "star": {
+      "name": "GJ 3323",
+      "temperature": 3159.0,
+      "mass": 0.164,
+      "radius": 0.119,
+      "age": null,
+      "spectralType": "M4"
+    },
+    "planet": {
+      "massEarth": 2.02,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 5.3636,
+      "semiMajorAxisAU": 0.03282,
+      "eccentricity": 0.23,
+      "temperatureK": null,
+      "insolationEarth": 2.58
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+3323+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3323 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+3323+b"
+    }
+  },
+  {
+    "name": "GJ 251 c",
+    "distance": {
+      "parsec": 5.58057,
+      "lightYears": 18.201
+    },
+    "coordinates": {
+      "ra": 103.7002499,
+      "dec": 33.2664632
+    },
+    "star": {
+      "name": "GJ 251",
+      "temperature": 3342.0,
+      "mass": 0.35,
+      "radius": 0.36,
+      "age": 6.8,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 3.88,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 53.647,
+      "semiMajorAxisAU": 0.196,
+      "eccentricity": 0.0,
+      "temperatureK": 216.0,
+      "insolationEarth": 0.404
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+251+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 251 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+251+c"
+    }
+  },
+  {
+    "name": "GJ 251 b",
+    "distance": {
+      "parsec": 5.58057,
+      "lightYears": 18.201
+    },
+    "coordinates": {
+      "ra": 103.7002499,
+      "dec": 33.2664632
+    },
+    "star": {
+      "name": "GJ 251",
+      "temperature": 3342.0,
+      "mass": 0.35,
+      "radius": 0.36,
+      "age": 6.8,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 3.85,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 14.237,
+      "semiMajorAxisAU": 0.0808,
+      "eccentricity": 0.0,
+      "temperatureK": 336.0,
+      "insolationEarth": 2.37
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+251+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 251 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+251+b"
+    }
+  },
+  {
+    "name": "HD 95735 c",
+    "distance": {
+      "parsec": 5.675773,
+      "lightYears": 18.512
+    },
+    "coordinates": {
+      "ra": 165.834471,
+      "dec": 35.972317
+    },
+    "star": {
+      "name": "GJ 411",
+      "temperature": 3719.95,
+      "mass": 0.391846,
+      "radius": 0.369083,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 18.05265352,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3190.0,
+      "semiMajorAxisAU": 3.1,
+      "eccentricity": 0.14,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2021,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+95735+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 95735 c",
+      "ESA": "https://www.esa.int/Search?q=HD+95735+c"
+    }
+  },
+  {
+    "name": "GJ 411 b",
+    "distance": {
+      "parsec": 5.675773,
+      "lightYears": 18.512
+    },
+    "coordinates": {
+      "ra": 165.834471,
+      "dec": 35.972317
+    },
+    "star": {
+      "name": "GJ 411",
+      "temperature": 3719.0,
+      "mass": 0.3899,
+      "radius": 0.3685,
+      "age": 8.047,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 2.69,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 12.9394,
+      "semiMajorAxisAU": 0.07879,
+      "eccentricity": 0.063,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2019,
+      "method": "Radial Velocity",
+      "facility": "Haute-Provence Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+411+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 411 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+411+b"
+    }
+  },
+  {
+    "name": "GJ 229 A c",
+    "distance": {
+      "parsec": 5.75624,
+      "lightYears": 18.774
+    },
+    "coordinates": {
+      "ra": 92.6435993,
+      "dec": -21.8677233
+    },
+    "star": {
+      "name": "GJ 229",
+      "temperature": null,
+      "mass": 0.58,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 7.268,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 121.995,
+      "semiMajorAxisAU": 0.339,
+      "eccentricity": 0.19,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Multiple Facilities"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+229+A+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 229 A c",
+      "ESA": "https://www.esa.int/Search?q=GJ+229+A+c"
+    }
+  },
+  {
+    "name": "GJ 229 b",
+    "distance": {
+      "parsec": 5.75624,
+      "lightYears": 18.774
+    },
+    "coordinates": {
+      "ra": 92.6435993,
+      "dec": -21.8677233
+    },
+    "star": {
+      "name": "GJ 229",
+      "temperature": null,
+      "mass": 0.58,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 8.478,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 526.115,
+      "semiMajorAxisAU": 0.898,
+      "eccentricity": 0.1,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+229+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 229 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+229+b"
+    }
+  },
+  {
+    "name": "HD 180617 b",
+    "distance": {
+      "parsec": 5.91059,
+      "lightYears": 19.278
+    },
+    "coordinates": {
+      "ra": 289.2277322,
+      "dec": 5.1631615
+    },
+    "star": {
+      "name": "HD 180617",
+      "temperature": 3557.0,
+      "mass": 0.45,
+      "radius": 0.453,
+      "age": null,
+      "spectralType": "M2.5 V"
+    },
+    "planet": {
+      "massEarth": 12.2,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 105.9,
+      "semiMajorAxisAU": 0.3357,
+      "eccentricity": 0.16,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2018,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+180617+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 180617 b",
+      "ESA": "https://www.esa.int/Search?q=HD+180617+b"
+    }
+  },
+  {
+    "name": "GJ 273 c",
+    "distance": {
+      "parsec": 5.921535,
+      "lightYears": 19.313
+    },
+    "coordinates": {
+      "ra": 111.852091,
+      "dec": 5.225807
+    },
+    "star": {
+      "name": "GJ 273",
+      "temperature": 3382.0,
+      "mass": 0.29,
+      "radius": 0.293,
+      "age": null,
+      "spectralType": "M3.5"
+    },
+    "planet": {
+      "massEarth": 1.18,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.7234,
+      "semiMajorAxisAU": 0.036467,
+      "eccentricity": 0.17,
+      "temperatureK": null,
+      "insolationEarth": 6.66
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+273+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 273 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+273+c"
+    }
+  },
+  {
+    "name": "GJ 273 b",
+    "distance": {
+      "parsec": 5.921535,
+      "lightYears": 19.313
+    },
+    "coordinates": {
+      "ra": 111.852091,
+      "dec": 5.225807
+    },
+    "star": {
+      "name": "GJ 273",
+      "temperature": 3382.0,
+      "mass": 0.29,
+      "radius": 0.293,
+      "age": null,
+      "spectralType": "M3.5"
+    },
+    "planet": {
+      "massEarth": 2.89,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 18.6498,
+      "semiMajorAxisAU": 0.091101,
+      "eccentricity": 0.1,
+      "temperatureK": null,
+      "insolationEarth": 1.06
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+273+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 273 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+273+b"
+    }
+  },
+  {
+    "name": "HD 20794 f",
+    "distance": {
+      "parsec": 6.00278,
+      "lightYears": 19.578
+    },
+    "coordinates": {
+      "ra": 49.9997666,
+      "dec": -43.0666533
+    },
+    "star": {
+      "name": "HD 20794",
+      "temperature": 5368.0,
+      "mass": 0.79,
+      "radius": 0.93,
+      "age": null,
+      "spectralType": "G6 V"
+    },
+    "planet": {
+      "massEarth": 5.82,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 647.6,
+      "semiMajorAxisAU": 1.3541,
+      "eccentricity": 0.45,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2025,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+20794+f",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 f",
+      "ESA": "https://www.esa.int/Search?q=HD+20794+f"
+    }
+  },
+  {
+    "name": "HD 20794 b",
+    "distance": {
+      "parsec": 6.00278,
+      "lightYears": 19.578
+    },
+    "coordinates": {
+      "ra": 49.9997666,
+      "dec": -43.0666533
+    },
+    "star": {
+      "name": "HD 20794",
+      "temperature": 5401.0,
+      "mass": 0.7,
+      "radius": null,
+      "age": 5.76,
+      "spectralType": "G8 V"
+    },
+    "planet": {
+      "massEarth": 2.7,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 18.315,
+      "semiMajorAxisAU": 0.1207,
+      "eccentricity": 0.0,
+      "temperatureK": 660.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2011,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+20794+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 b",
+      "ESA": "https://www.esa.int/Search?q=HD+20794+b"
+    }
+  },
+  {
+    "name": "HD 20794 d",
+    "distance": {
+      "parsec": 6.00278,
+      "lightYears": 19.578
+    },
+    "coordinates": {
+      "ra": 49.9997666,
+      "dec": -43.0666533
+    },
+    "star": {
+      "name": "HD 20794",
+      "temperature": 5368.0,
+      "mass": 0.79,
+      "radius": 0.93,
+      "age": null,
+      "spectralType": "G6 V"
+    },
+    "planet": {
+      "massEarth": 2.98,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 89.68,
+      "semiMajorAxisAU": 0.3625,
+      "eccentricity": 0.077,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2011,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+20794+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 d",
+      "ESA": "https://www.esa.int/Search?q=HD+20794+d"
+    }
+  },
+  {
+    "name": "HD 20794 e",
+    "distance": {
+      "parsec": 6.00278,
+      "lightYears": 19.578
+    },
+    "coordinates": {
+      "ra": 49.9997666,
+      "dec": -43.0666533
+    },
+    "star": {
+      "name": "HD 20794",
+      "temperature": null,
+      "mass": 0.813,
+      "radius": null,
+      "age": null,
+      "spectralType": "G8"
+    },
+    "planet": {
+      "massEarth": 4.77,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 147.02,
+      "semiMajorAxisAU": 0.509,
+      "eccentricity": 0.29,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+20794+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 20794 e",
+      "ESA": "https://www.esa.int/Search?q=HD+20794+e"
+    }
+  },
+  {
+    "name": "HN Lib b",
+    "distance": {
+      "parsec": 6.24442,
+      "lightYears": 20.367
+    },
+    "coordinates": {
+      "ra": 218.5684823,
+      "dec": -12.5170062
+    },
+    "star": {
+      "name": "HN Lib",
+      "temperature": 3347.0,
+      "mass": 0.291,
+      "radius": 0.299,
+      "age": 4.4,
+      "spectralType": "M4.0 V"
+    },
+    "planet": {
+      "massEarth": 5.46,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 36.116,
+      "semiMajorAxisAU": 0.1417,
+      "eccentricity": 0.079,
+      "temperatureK": 234.4,
+      "insolationEarth": 0.503
+    },
+    "discovery": {
+      "year": 2023,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HN+Lib+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HN Lib b",
+      "ESA": "https://www.esa.int/Search?q=HN+Lib+b"
+    }
+  },
+  {
+    "name": "GJ 896 A b",
+    "distance": {
+      "parsec": 6.26022,
+      "lightYears": 20.418
+    },
+    "coordinates": {
+      "ra": 352.9700384,
+      "dec": 19.9370011
+    },
+    "star": {
+      "name": "GJ 896 A",
+      "temperature": null,
+      "mass": 0.43599,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3.5 V"
+    },
+    "planet": {
+      "massEarth": 718.29219982,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 284.39,
+      "semiMajorAxisAU": 0.63965,
+      "eccentricity": 0.35,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2022,
+      "method": "Astrometry",
+      "facility": "Very Long Baseline Array"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+896+A+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 896 A b",
+      "ESA": "https://www.esa.int/Search?q=GJ+896+A+b"
+    }
+  },
+  {
+    "name": "GJ 581 b",
+    "distance": {
+      "parsec": 6.2981,
+      "lightYears": 20.542
+    },
+    "coordinates": {
+      "ra": 229.8564725,
+      "dec": -7.7226935
+    },
+    "star": {
+      "name": "GJ 581",
+      "temperature": null,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 15.65,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 5.36874,
+      "semiMajorAxisAU": 0.04,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2005,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+581+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+581+b"
+    }
+  },
+  {
+    "name": "GJ 581 c",
+    "distance": {
+      "parsec": 6.2981,
+      "lightYears": 20.542
+    },
+    "coordinates": {
+      "ra": 229.8564725,
+      "dec": -7.7226935
+    },
+    "star": {
+      "name": "GJ 581",
+      "temperature": 3490.39,
+      "mass": 0.318714,
+      "radius": 0.315254,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 5.05347167,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 12.9144,
+      "semiMajorAxisAU": 0.07359,
+      "eccentricity": 0.12,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2007,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+581+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+581+c"
+    }
+  },
+  {
+    "name": "GJ 581 e",
+    "distance": {
+      "parsec": 6.2981,
+      "lightYears": 20.542
+    },
+    "coordinates": {
+      "ra": 229.8564725,
+      "dec": -7.7226935
+    },
+    "star": {
+      "name": "GJ 581",
+      "temperature": 3500.0,
+      "mass": 0.295,
+      "radius": 0.302,
+      "age": null,
+      "spectralType": "M3.0 V"
+    },
+    "planet": {
+      "massEarth": 2.48,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3.1481,
+      "semiMajorAxisAU": 0.02799,
+      "eccentricity": 0.012,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2009,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+581+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 581 e",
+      "ESA": "https://www.esa.int/Search?q=GJ+581+e"
+    }
+  },
+  {
+    "name": "GJ 338 B b",
+    "distance": {
+      "parsec": 6.33256,
+      "lightYears": 20.654
+    },
+    "coordinates": {
+      "ra": 138.5916722,
+      "dec": 52.6835211
+    },
+    "star": {
+      "name": "GJ 338 B",
+      "temperature": 4005.0,
+      "mass": 0.64,
+      "radius": 0.58,
+      "age": 4.0,
+      "spectralType": "M0.0 V"
+    },
+    "planet": {
+      "massEarth": 10.27,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 24.45,
+      "semiMajorAxisAU": 0.141,
+      "eccentricity": 0.11,
+      "temperatureK": 391.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+338+B+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 338 B b",
+      "ESA": "https://www.esa.int/Search?q=GJ+338+B+b"
+    }
+  },
+  {
+    "name": "GJ 625 b",
+    "distance": {
+      "parsec": 6.47249,
+      "lightYears": 21.11
+    },
+    "coordinates": {
+      "ra": 246.3557854,
+      "dec": 54.3033625
+    },
+    "star": {
+      "name": "GJ 625",
+      "temperature": 3499.0,
+      "mass": 0.3,
+      "radius": 0.31,
+      "age": null,
+      "spectralType": "M2"
+    },
+    "planet": {
+      "massEarth": 2.82,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 14.628,
+      "semiMajorAxisAU": 0.078361,
+      "eccentricity": 0.13,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2017,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+625+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 625 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+625+b"
+    }
+  },
+  {
+    "name": "HD 219134 d",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4913.0,
+      "mass": 0.794,
+      "radius": 0.77,
+      "age": 12.46,
+      "spectralType": "K3 V"
+    },
+    "planet": {
+      "massEarth": 21.29461,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 46.71,
+      "semiMajorAxisAU": 0.23508,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 d",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+d"
+    }
+  },
+  {
+    "name": "HD 219134 c",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4699.0,
+      "mass": 0.78,
+      "radius": 0.778,
+      "age": null,
+      "spectralType": "K3 V"
+    },
+    "planet": {
+      "massEarth": 2.78,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 6.767,
+      "semiMajorAxisAU": 0.064,
+      "eccentricity": 0.08,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 c",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+c"
+    }
+  },
+  {
+    "name": "HD 219134 b",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4913.0,
+      "mass": 0.794,
+      "radius": 0.77,
+      "age": 12.46,
+      "spectralType": "K3 V"
+    },
+    "planet": {
+      "massEarth": 3.81396,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3.0931,
+      "semiMajorAxisAU": 0.038474,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 b",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+b"
+    }
+  },
+  {
+    "name": "HD 219134 f",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4817.14,
+      "mass": 0.788484,
+      "radius": 0.757466,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 7.72323029,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 22.7945,
+      "semiMajorAxisAU": 0.1453,
+      "eccentricity": 0.072,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+f",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 f",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+f"
+    }
+  },
+  {
+    "name": "HD 219134 g",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4913.0,
+      "mass": 0.794,
+      "radius": 0.77,
+      "age": 12.46,
+      "spectralType": "K3 V"
+    },
+    "planet": {
+      "massEarth": 10.80622,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 94.2,
+      "semiMajorAxisAU": 0.3753,
+      "eccentricity": 0.0,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+g",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 g",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+g"
+    }
+  },
+  {
+    "name": "HD 219134 h",
+    "distance": {
+      "parsec": 6.53127,
+      "lightYears": 21.302
+    },
+    "coordinates": {
+      "ra": 348.3372026,
+      "dec": 57.1696255
+    },
+    "star": {
+      "name": "HD 219134",
+      "temperature": 4913.0,
+      "mass": 0.794,
+      "radius": 0.77,
+      "age": 12.46,
+      "spectralType": "K3 V"
+    },
+    "planet": {
+      "massEarth": 108.0622,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 2247.0,
+      "semiMajorAxisAU": 3.11,
+      "eccentricity": 0.06,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2015,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+219134+h",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 219134 h",
+      "ESA": "https://www.esa.int/Search?q=HD+219134+h"
+    }
+  },
+  {
+    "name": "LTT 1445 A c",
+    "distance": {
+      "parsec": 6.86929,
+      "lightYears": 22.405
+    },
+    "coordinates": {
+      "ra": 45.4624781,
+      "dec": -16.5944956
+    },
+    "star": {
+      "name": "LTT 1445 A",
+      "temperature": null,
+      "mass": 0.249,
+      "radius": 0.276,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 1.0,
+      "radiusEarth": 1.6,
+      "density": null,
+      "orbitalPeriodDays": 3.123898,
+      "semiMajorAxisAU": 0.0226,
+      "eccentricity": 0.05,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2022,
+      "method": "Transit",
+      "facility": "Transiting Exoplanet Survey Satellite (TESS)"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=LTT+1445+A+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/LTT 1445 A c",
+      "ESA": "https://www.esa.int/Search?q=LTT+1445+A+c"
+    }
+  },
+  {
+    "name": "LTT 1445 A b",
+    "distance": {
+      "parsec": 6.86929,
+      "lightYears": 22.405
+    },
+    "coordinates": {
+      "ra": 45.4624781,
+      "dec": -16.5944956
+    },
+    "star": {
+      "name": "LTT 1445 A",
+      "temperature": 3340.0,
+      "mass": 0.257,
+      "radius": 0.265,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 2.87,
+      "radiusEarth": 1.305,
+      "density": 7.1,
+      "orbitalPeriodDays": 5.3587657,
+      "semiMajorAxisAU": 0.03813,
+      "eccentricity": 0.11,
+      "temperatureK": 424.0,
+      "insolationEarth": 5.4
+    },
+    "discovery": {
+      "year": 2019,
+      "method": "Transit",
+      "facility": "Transiting Exoplanet Survey Satellite (TESS)"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=LTT+1445+A+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/LTT 1445 A b",
+      "ESA": "https://www.esa.int/Search?q=LTT+1445+A+b"
+    }
+  },
+  {
+    "name": "GJ 393 b",
+    "distance": {
+      "parsec": 7.03149,
+      "lightYears": 22.934
+    },
+    "coordinates": {
+      "ra": 157.2288672,
+      "dec": 0.8378485
+    },
+    "star": {
+      "name": "GJ 393",
+      "temperature": 3579.0,
+      "mass": 0.426,
+      "radius": 0.426,
+      "age": null,
+      "spectralType": "M2.0 V"
+    },
+    "planet": {
+      "massEarth": 1.71,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 7.02679,
+      "semiMajorAxisAU": 0.05402,
+      "eccentricity": null,
+      "temperatureK": 485.0,
+      "insolationEarth": 9.21
+    },
+    "discovery": {
+      "year": 2021,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+393+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 393 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+393+b"
+    }
+  },
+  {
+    "name": "GJ 4274 c",
+    "distance": {
+      "parsec": 7.23556,
+      "lightYears": 23.599
+    },
+    "coordinates": {
+      "ra": 335.7805478,
+      "dec": -17.6104078
+    },
+    "star": {
+      "name": "GJ 4274",
+      "temperature": 3228.0,
+      "mass": 0.18,
+      "radius": 0.19,
+      "age": 0.12,
+      "spectralType": "M4.5 V"
+    },
+    "planet": {
+      "massEarth": 8.39,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 69.57,
+      "semiMajorAxisAU": 0.186,
+      "eccentricity": null,
+      "temperatureK": null,
+      "insolationEarth": 0.1
+    },
+    "discovery": {
+      "year": 2026,
+      "method": "Radial Velocity",
+      "facility": "Mauna Kea Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+4274+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 4274 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+4274+c"
+    }
+  },
+  {
+    "name": "GJ 4274 b",
+    "distance": {
+      "parsec": 7.23556,
+      "lightYears": 23.599
+    },
+    "coordinates": {
+      "ra": 335.7805478,
+      "dec": -17.6104078
+    },
+    "star": {
+      "name": "GJ 4274",
+      "temperature": 3228.0,
+      "mass": 0.18,
+      "radius": 0.19,
+      "age": 0.12,
+      "spectralType": "M4.5 V"
+    },
+    "planet": {
+      "massEarth": 2.97,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 1.6339,
+      "semiMajorAxisAU": 0.0153,
+      "eccentricity": null,
+      "temperatureK": null,
+      "insolationEarth": 14.7
+    },
+    "discovery": {
+      "year": 2026,
+      "method": "Radial Velocity",
+      "facility": "Mauna Kea Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+4274+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 4274 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+4274+b"
+    }
+  },
+  {
+    "name": "GJ 667 C g",
+    "distance": {
+      "parsec": 7.24396,
+      "lightYears": 23.627
+    },
+    "coordinates": {
+      "ra": 259.7510609,
+      "dec": -34.9977651
+    },
+    "star": {
+      "name": "GJ 667 C",
+      "temperature": 3350.0,
+      "mass": 0.33,
+      "radius": null,
+      "age": 2.0,
+      "spectralType": "M1.5 V"
+    },
+    "planet": {
+      "massEarth": 4.6,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 256.2,
+      "semiMajorAxisAU": 0.549,
+      "eccentricity": 0.08,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2013,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+667+C+g",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C g",
+      "ESA": "https://www.esa.int/Search?q=GJ+667+C+g"
+    }
+  },
+  {
+    "name": "GJ 667 C c",
+    "distance": {
+      "parsec": 7.24396,
+      "lightYears": 23.627
+    },
+    "coordinates": {
+      "ra": 259.7510609,
+      "dec": -34.9977651
+    },
+    "star": {
+      "name": "GJ 667 C",
+      "temperature": 3650.0,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 3.709,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 28.143,
+      "semiMajorAxisAU": 0.125,
+      "eccentricity": 0.133,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2013,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+667+C+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C c",
+      "ESA": "https://www.esa.int/Search?q=GJ+667+C+c"
+    }
+  },
+  {
+    "name": "GJ 667 C e",
+    "distance": {
+      "parsec": 7.24396,
+      "lightYears": 23.627
+    },
+    "coordinates": {
+      "ra": 259.7510609,
+      "dec": -34.9977651
+    },
+    "star": {
+      "name": "GJ 667 C",
+      "temperature": 3350.0,
+      "mass": 0.33,
+      "radius": null,
+      "age": 2.0,
+      "spectralType": "M1.5 V"
+    },
+    "planet": {
+      "massEarth": 2.7,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 62.24,
+      "semiMajorAxisAU": 0.213,
+      "eccentricity": 0.02,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2013,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+667+C+e",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C e",
+      "ESA": "https://www.esa.int/Search?q=GJ+667+C+e"
+    }
+  },
+  {
+    "name": "GJ 667 C f",
+    "distance": {
+      "parsec": 7.24396,
+      "lightYears": 23.627
+    },
+    "coordinates": {
+      "ra": 259.7510609,
+      "dec": -34.9977651
+    },
+    "star": {
+      "name": "GJ 667 C",
+      "temperature": 3350.0,
+      "mass": 0.33,
+      "radius": null,
+      "age": 2.0,
+      "spectralType": "M1.5 V"
+    },
+    "planet": {
+      "massEarth": 2.7,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 39.026,
+      "semiMajorAxisAU": 0.156,
+      "eccentricity": 0.03,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2013,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+667+C+f",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C f",
+      "ESA": "https://www.esa.int/Search?q=GJ+667+C+f"
+    }
+  },
+  {
+    "name": "GJ 667 C b",
+    "distance": {
+      "parsec": 7.24396,
+      "lightYears": 23.627
+    },
+    "coordinates": {
+      "ra": 259.7510609,
+      "dec": -34.9977651
+    },
+    "star": {
+      "name": "GJ 667 C",
+      "temperature": 3350.0,
+      "mass": 0.33,
+      "radius": null,
+      "age": 2.0,
+      "spectralType": "M1.5 V"
+    },
+    "planet": {
+      "massEarth": 5.6,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 7.2004,
+      "semiMajorAxisAU": 0.0505,
+      "eccentricity": 0.13,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2012,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+667+C+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 667 C b",
+      "ESA": "https://www.esa.int/Search?q=GJ+667+C+b"
+    }
+  },
+  {
+    "name": "GJ 514 b",
+    "distance": {
+      "parsec": 7.61778,
+      "lightYears": 24.846
+    },
+    "coordinates": {
+      "ra": 202.5040424,
+      "dec": 10.3725387
+    },
+    "star": {
+      "name": "GJ 514",
+      "temperature": 3728.0,
+      "mass": 0.51,
+      "radius": 0.5,
+      "age": 0.8,
+      "spectralType": "M0.5-1.0 V"
+    },
+    "planet": {
+      "massEarth": 5.2,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 140.43,
+      "semiMajorAxisAU": 0.422,
+      "eccentricity": 0.45,
+      "temperatureK": 202.0,
+      "insolationEarth": 0.28
+    },
+    "discovery": {
+      "year": 2022,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+514+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 514 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+514+b"
+    }
+  },
+  {
+    "name": "GJ 3378 b",
+    "distance": {
+      "parsec": 7.72274,
+      "lightYears": 25.188
+    },
+    "coordinates": {
+      "ra": 90.2951302,
+      "dec": 59.5931917
+    },
+    "star": {
+      "name": "GJ 3378",
+      "temperature": 3378.0,
+      "mass": 0.26,
+      "radius": null,
+      "age": null,
+      "spectralType": "M4 V"
+    },
+    "planet": {
+      "massEarth": 5.26,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 24.728,
+      "semiMajorAxisAU": 0.106,
+      "eccentricity": 0.36,
+      "temperatureK": 260.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2026,
+      "method": "Radial Velocity",
+      "facility": "Mauna Kea Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+3378+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 3378 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+3378+b"
+    }
+  },
+  {
+    "name": "GJ 1151 c",
+    "distance": {
+      "parsec": 8.03625,
+      "lightYears": 26.211
+    },
+    "coordinates": {
+      "ra": 177.7304866,
+      "dec": 48.3732334
+    },
+    "star": {
+      "name": "GJ 1151",
+      "temperature": 3280.0,
+      "mass": 0.1639,
+      "radius": 0.1781,
+      "age": null,
+      "spectralType": "M 4.5V"
+    },
+    "planet": {
+      "massEarth": 10.62,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 389.7,
+      "semiMajorAxisAU": 0.5714,
+      "eccentricity": null,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2023,
+      "method": "Radial Velocity",
+      "facility": "Multiple Facilities"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1151+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1151 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+1151+c"
+    }
+  },
+  {
+    "name": "GJ 486 b",
+    "distance": {
+      "parsec": 8.07426,
+      "lightYears": 26.335
+    },
+    "coordinates": {
+      "ra": 191.981531,
+      "dec": 9.7494181
+    },
+    "star": {
+      "name": "GJ 486",
+      "temperature": 3291.0,
+      "mass": 0.333,
+      "radius": 0.339,
+      "age": 4.0,
+      "spectralType": "M3.5 V"
+    },
+    "planet": {
+      "massEarth": 3.0,
+      "radiusEarth": 1.343,
+      "density": 6.79,
+      "orbitalPeriodDays": 1.4671205,
+      "semiMajorAxisAU": 0.01713,
+      "eccentricity": 0.0,
+      "temperatureK": 706.0,
+      "insolationEarth": 41.3
+    },
+    "discovery": {
+      "year": 2021,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+486+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 486 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+486+b"
+    }
+  },
+  {
+    "name": "Gl 686 b",
+    "distance": {
+      "parsec": 8.15728,
+      "lightYears": 26.605
+    },
+    "coordinates": {
+      "ra": 264.4764878,
+      "dec": 18.5959509
+    },
+    "star": {
+      "name": "Gl 686",
+      "temperature": 3663.0,
+      "mass": 0.42,
+      "radius": 0.42,
+      "age": null,
+      "spectralType": "M1"
+    },
+    "planet": {
+      "massEarth": 7.1,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 15.53209,
+      "semiMajorAxisAU": 0.091,
+      "eccentricity": 0.0,
+      "temperatureK": 379.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2018,
+      "method": "Radial Velocity",
+      "facility": "Roque de los Muchachos Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=Gl+686+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/Gl 686 b",
+      "ESA": "https://www.esa.int/Search?q=Gl+686+b"
+    }
+  },
+  {
+    "name": "GJ 1289 b",
+    "distance": {
+      "parsec": 8.35147,
+      "lightYears": 27.239
+    },
+    "coordinates": {
+      "ra": 355.7813464,
+      "dec": 36.5363314
+    },
+    "star": {
+      "name": "GJ 1289",
+      "temperature": 3296.0,
+      "mass": 0.21,
+      "radius": null,
+      "age": null,
+      "spectralType": "M4.5 Ve"
+    },
+    "planet": {
+      "massEarth": 6.27,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 111.74,
+      "semiMajorAxisAU": 0.27,
+      "eccentricity": 0.0,
+      "temperatureK": 150.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2024,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+1289+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 1289 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+1289+b"
+    }
+  },
+  {
+    "name": "61 Vir d",
+    "distance": {
+      "parsec": 8.50332,
+      "lightYears": 27.734
+    },
+    "coordinates": {
+      "ra": 199.596455,
+      "dec": -18.3157745
+    },
+    "star": {
+      "name": "61 Vir",
+      "temperature": 5577.0,
+      "mass": 0.942,
+      "radius": 0.963,
+      "age": 8.96,
+      "spectralType": "G5 V"
+    },
+    "planet": {
+      "massEarth": 22.9,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 123.01,
+      "semiMajorAxisAU": 0.476,
+      "eccentricity": 0.35,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2009,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=61+Vir+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir d",
+      "ESA": "https://www.esa.int/Search?q=61+Vir+d"
+    }
+  },
+  {
+    "name": "61 Vir c",
+    "distance": {
+      "parsec": 8.50332,
+      "lightYears": 27.734
+    },
+    "coordinates": {
+      "ra": 199.596455,
+      "dec": -18.3157745
+    },
+    "star": {
+      "name": "61 Vir",
+      "temperature": 5585.57,
+      "mass": 0.914072,
+      "radius": 1.03251,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 16.11390023,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 38.0957,
+      "semiMajorAxisAU": 0.2151,
+      "eccentricity": 0.068,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2009,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=61+Vir+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir c",
+      "ESA": "https://www.esa.int/Search?q=61+Vir+c"
+    }
+  },
+  {
+    "name": "61 Vir b",
+    "distance": {
+      "parsec": 8.50332,
+      "lightYears": 27.734
+    },
+    "coordinates": {
+      "ra": 199.596455,
+      "dec": -18.3157745
+    },
+    "star": {
+      "name": "61 Vir",
+      "temperature": 5577.0,
+      "mass": 0.942,
+      "radius": 0.963,
+      "age": 8.96,
+      "spectralType": "G5 V"
+    },
+    "planet": {
+      "massEarth": 5.1,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 4.215,
+      "semiMajorAxisAU": 0.050201,
+      "eccentricity": 0.12,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2009,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=61+Vir+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/61 Vir b",
+      "ESA": "https://www.esa.int/Search?q=61+Vir+b"
+    }
+  },
+  {
+    "name": "CD Cet b",
+    "distance": {
+      "parsec": 8.60715,
+      "lightYears": 28.073
+    },
+    "coordinates": {
+      "ra": 48.3530155,
+      "dec": 4.7751881
+    },
+    "star": {
+      "name": "CD Cet",
+      "temperature": 3130.0,
+      "mass": 0.161,
+      "radius": 0.175,
+      "age": 3.0,
+      "spectralType": "M5.0 V"
+    },
+    "planet": {
+      "massEarth": 3.95,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 2.2907,
+      "semiMajorAxisAU": 0.0185,
+      "eccentricity": null,
+      "temperatureK": 464.0,
+      "insolationEarth": 8.6
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Calar Alto Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=CD+Cet+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/CD Cet b",
+      "ESA": "https://www.esa.int/Search?q=CD+Cet+b"
+    }
+  },
+  {
+    "name": "HD 192310 c",
+    "distance": {
+      "parsec": 8.79687,
+      "lightYears": 28.692
+    },
+    "coordinates": {
+      "ra": 303.8284712,
+      "dec": -27.0337556
+    },
+    "star": {
+      "name": "HD 192310",
+      "temperature": 5087.0,
+      "mass": null,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 14.3,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 546.5,
+      "semiMajorAxisAU": 1.183,
+      "eccentricity": 0.053,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2011,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+192310+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 192310 c",
+      "ESA": "https://www.esa.int/Search?q=HD+192310+c"
+    }
+  },
+  {
+    "name": "HD 192310 b",
+    "distance": {
+      "parsec": 8.79687,
+      "lightYears": 28.692
+    },
+    "coordinates": {
+      "ra": 303.8284712,
+      "dec": -27.0337556
+    },
+    "star": {
+      "name": "HD 192310",
+      "temperature": 5166.0,
+      "mass": 0.8,
+      "radius": null,
+      "age": 7.81,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 16.9,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 74.72,
+      "semiMajorAxisAU": 0.32,
+      "eccentricity": 0.13,
+      "temperatureK": 355.0,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2011,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=HD+192310+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/HD 192310 b",
+      "ESA": "https://www.esa.int/Search?q=HD+192310+b"
+    }
+  },
+  {
+    "name": "GJ 849 c",
+    "distance": {
+      "parsec": 8.80058,
+      "lightYears": 28.704
+    },
+    "coordinates": {
+      "ra": 332.4229938,
+      "dec": -4.6408317
+    },
+    "star": {
+      "name": "GJ 849",
+      "temperature": null,
+      "mass": 0.49,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3.5"
+    },
+    "planet": {
+      "massEarth": 223.11554171,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 7068.0,
+      "semiMajorAxisAU": null,
+      "eccentricity": null,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+849+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 849 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+849+c"
+    }
+  },
+  {
+    "name": "GJ 849 b",
+    "distance": {
+      "parsec": 8.80058,
+      "lightYears": 28.704
+    },
+    "coordinates": {
+      "ra": 332.4229938,
+      "dec": -4.6408317
+    },
+    "star": {
+      "name": "GJ 849",
+      "temperature": null,
+      "mass": 0.49,
+      "radius": null,
+      "age": null,
+      "spectralType": "M3.5"
+    },
+    "planet": {
+      "massEarth": 286.0455663,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 1915.0,
+      "semiMajorAxisAU": null,
+      "eccentricity": null,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2006,
+      "method": "Radial Velocity",
+      "facility": "W. M. Keck Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+849+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 849 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+849+b"
+    }
+  },
+  {
+    "name": "GJ 433 b",
+    "distance": {
+      "parsec": 9.06456,
+      "lightYears": 29.565
+    },
+    "coordinates": {
+      "ra": 173.8619194,
+      "dec": -32.5436302
+    },
+    "star": {
+      "name": "GJ 433",
+      "temperature": 3600.0,
+      "mass": 0.48,
+      "radius": null,
+      "age": null,
+      "spectralType": "M1.5"
+    },
+    "planet": {
+      "massEarth": 5.79,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 7.3709,
+      "semiMajorAxisAU": 0.058,
+      "eccentricity": 0.08,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2013,
+      "method": "Radial Velocity",
+      "facility": "La Silla Observatory"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+433+b",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 b",
+      "ESA": "https://www.esa.int/Search?q=GJ+433+b"
+    }
+  },
+  {
+    "name": "GJ 433 c",
+    "distance": {
+      "parsec": 9.06456,
+      "lightYears": 29.565
+    },
+    "coordinates": {
+      "ra": 173.8619194,
+      "dec": -32.5436302
+    },
+    "star": {
+      "name": "GJ 433",
+      "temperature": 3472.0,
+      "mass": 0.48,
+      "radius": null,
+      "age": null,
+      "spectralType": "M1.5 V"
+    },
+    "planet": {
+      "massEarth": 45.0,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 3400.0,
+      "semiMajorAxisAU": 3.6,
+      "eccentricity": 0.08,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2014,
+      "method": "Radial Velocity",
+      "facility": "Multiple Observatories"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+433+c",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 c",
+      "ESA": "https://www.esa.int/Search?q=GJ+433+c"
+    }
+  },
+  {
+    "name": "GJ 433 d",
+    "distance": {
+      "parsec": 9.06456,
+      "lightYears": 29.565
+    },
+    "coordinates": {
+      "ra": 173.8619194,
+      "dec": -32.5436302
+    },
+    "star": {
+      "name": "GJ 433",
+      "temperature": null,
+      "mass": 0.48,
+      "radius": null,
+      "age": null,
+      "spectralType": null
+    },
+    "planet": {
+      "massEarth": 5.223,
+      "radiusEarth": null,
+      "density": null,
+      "orbitalPeriodDays": 36.059,
+      "semiMajorAxisAU": 0.178,
+      "eccentricity": 0.07,
+      "temperatureK": null,
+      "insolationEarth": null
+    },
+    "discovery": {
+      "year": 2020,
+      "method": "Radial Velocity",
+      "facility": "Multiple Facilities"
+    },
+    "images": {
+      "NASA": {
+        "url": "https://images-assets.nasa.gov/image/PIA26601/PIA26601~medium.jpg",
+        "type": "artist_concept",
+        "source": "NASA",
+        "title": "Young Exoplanet (Artist's Concept)"
+      },
+      "ESA": {
+        "url": "https://www.esa.int/Search?q=GJ+433+d",
+        "type": "artist_impression",
+        "source": "ESA"
+      },
+      "Wikipedia": null
+    },
+    "links": {
+      "NASA": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ 433 d",
+      "ESA": "https://www.esa.int/Search?q=GJ+433+d"
+    }
+  }
+]

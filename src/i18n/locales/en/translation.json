@@ -1,0 +1,255 @@
+{
+  "menu": {
+    "title": "Choose a mission!",
+    "lightYears": "{{distance}} light-years",
+    "reward": "Reward {{amount}}$",
+    "dlcMilkyWay": "Buy the <1>Milky Way DLC</1> for $19.99 to unlock more star systems!",
+    "dlcComingSoon": "More DLCs coming soon!"
+  },
+  "dashboard": {
+    "title": "Interstellar Travel",
+    "status": "Status: All systems operational",
+    "speed": "Speed: {{value}} km/s",
+    "destination": "Destination",
+    "localWeather": "Local weather",
+    "arrival": "Arrival at destination system",
+    "earthYears": "Earth years"
+  },
+  "intro": {
+    "headline": "Realtime Space Travel",
+    "motto": "The experience of a lifetime!",
+    "paragraph1": "You are the chosen one! You are humanity's last and only hope. This is not a game — our survival is at stake. This is our final chance: the promise of a new home in distant star systems. The ark carrying the future of humankind is ready to depart.",
+    "paragraph2": "The entire crew – scientists, engineers, the founders of a new civilization – has entered a deep, cryogenic sleep. Their fate, their dreams, our future... The fate of humanity now rests in your hands. You are the living, breathing component that no artificial intelligence can replace.",
+    "sectionTitle": "Your Duties – The Mission's Strictest Protocols",
+    "rule1": "<1>The Vigilance Protocol</1> – continuous visual monitoring is required to stabilize the navigation data. If your attention breaks, the ship initiates an emergency shutdown.",
+    "rule2": "<1>The Zero-Intervention Principle</1> – the systems are self-sustaining; manual intervention can be fatal. Your most important skill is discipline and patience. Do not act – supervise!",
+    "rule3": "<1>Real-Time Travel</1> – experience the authentic reality of interstellar travel. The stars shift over millennia; your greatest enemy is time.",
+    "rule4": "<1>The stakes: Everything.</1> No glory, no battles, no rewards – only silence, the infinite cosmos, and the responsibility resting on your shoulders. The future is reflected in your eyes.",
+    "continue": "Click or press any key to continue."
+  },
+  "loading": {
+    "title": "Initializing systems",
+    "subtitle": "The ship's onboard computer is checking the systems",
+    "step": {
+      "camera": "Connecting camera...",
+      "model": "Loading the artificial intelligence model...",
+      "calibration": "Calibrating the face recognition system...",
+      "ready": "All systems ready!"
+    },
+    "status": {
+      "done": "Done",
+      "inProgress": "In progress"
+    },
+    "readyTitle": "Everything is ready",
+    "readySubtitle": "Look at the screen to begin the journey"
+  },
+  "pause": {
+    "attentionTitle": "Attention!",
+    "countdownSub": "You have {{seconds}} more seconds to look back at the screen, or the entire hibernating crew is lost!",
+    "seconds": "seconds",
+    "blame": "Because you're not doing your job...",
+    "disconnectedTitle": "Connection lost",
+    "disconnectedSub": "The onboard systems cannot detect your presence.",
+    "disconnectedWarning": "You have <1>60 seconds</1> to return in front of the screen before the ship activates its emergency protocol. The fate of the crew depends on your attention."
+  },
+  "app": {
+    "missionCompleteTitle": "You have arrived!",
+    "missionCompleteText": "You have arrived! Your destination is on the right!",
+    "backToMenu": "Back to main menu",
+    "gameOverTitle": "Game over",
+    "crewLostButtons": "The entire hibernating crew perished because you tampered with the buttons!",
+    "crewLostAttention": "Game over — the entire crew died because you didn't pay attention.",
+    "exitConfirmTitle": "Are you sure you want to exit?",
+    "exitConfirmText": "The game does not save your progress so far!",
+    "yes": "Yes",
+    "no": "No",
+    "errorTitle": "Error",
+    "retry": "Try again",
+    "exit": "Exit",
+    "exitAria": "Exit the mission",
+    "serviceTime": "Service time: {{minutes}} min",
+    "record": "Record: {{minutes}} min",
+    "musicMute": "Mute music",
+    "musicUnmute": "Unmute music",
+    "camera": {
+      "noSupport": "Your browser does not support camera access. Try another browser.",
+      "noModel": "The computer vision model could not be loaded. Try refreshing the page.",
+      "needAccess": "Camera access is required to play. Allow the camera and refresh the page.",
+      "denied": "Camera access denied. Please allow the camera in your browser settings.",
+      "notFound": "No camera found. Connect a webcam and try again.",
+      "notReadable": "The camera could not be read. Another application may be using it."
+    }
+  },
+  "screenCheck": {
+    "portraitTitle": "Landscape orientation required",
+    "portraitText": "Please rotate your device to a horizontal position to start the game.",
+    "tooSmallTitle": "Screen too small",
+    "tooSmallText": "At least <1>900×530</1> resolution is required.",
+    "current": "Current: {{width}}×{{height}}"
+  },
+  "errorBoundary": {
+    "title": "An error occurred",
+    "text": "An unexpected error occurred in the application.",
+    "reload": "Reload"
+  },
+  "debug": {
+    "cameraStatus": "Camera status:",
+    "faceDetected": "Face detected",
+    "noFace": "No face",
+    "lastUpdate": "Last update: {{value}}s",
+    "balanceRatio": "Balance ratio:",
+    "eyeVerticalRatio": "Eye tilt ratio:",
+    "eyeEarMargin": "Eye-ear margin:",
+    "ignore": "Ignore"
+  },
+  "weather": {
+    "sunny": "{{temp}} °C sunny",
+    "rainy": "{{temp}} °C rainy",
+    "snowy": "{{temp}} °C snowing",
+    "foggy": "{{temp}} °C foggy",
+    "tropicalStorm": "{{temp}} °C tropical storm",
+    "iceStorm": "{{temp}} °C ice storm",
+    "breezy": "{{temp}} °C light breeze",
+    "sandStorm": "{{temp}} °C sandstorm",
+    "sleet": "{{temp}} °C icy drizzle",
+    "clearSky": "{{temp}} °C crystal-clear sky"
+  },
+  "mainMenu": {
+    "login": "Sign in",
+    "start": "Start game",
+    "shop": "Shop",
+    "settings": "Settings",
+    "intro": "Watch intro",
+    "loginComingSoon": "Sign-in will be available soon.",
+    "shopComingSoon": "The shop will be available soon."
+  },
+  "settings": {
+    "title": "Settings",
+    "musicVolume": "Music volume",
+    "back": "Back",
+    "difficulty": "Difficulty",
+    "musicTrack": "Music Selection",
+    "musicDefault": "Default",
+    "signOut": "Sign Out",
+    "authenticated": "Authenticated"
+  },
+  "shipSelect": {
+    "title": "Choose Your Ship",
+    "subtitle": "Destination: {{destination}} — Select a ship for the mission",
+    "default": "Default",
+    "info": "Info",
+    "launch": "Launch",
+    "launchWith": "Launch with this",
+    "defaultDesc": "The reliable default ship for every mission.",
+    "owned": "Owned"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "language": {
+    "label": "Language",
+    "hu": "Magyar",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "es": "Español"
+  },
+  "shop": {
+    "title": "Shop",
+    "back": "← Back",
+    "creditsLabel": "⭐ {{count}} credits",
+    "balance": "Balance: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exoplanets",
+      "ships": "Ships",
+      "music": "Music"
+    },
+    "search": "Search by name…",
+    "searchNoResult": "No results",
+    "addToCart": "Add to cart",
+    "inCart": "In cart ✓",
+    "owned": "Owned",
+    "remove": "Remove",
+    "cart": {
+      "title": "Cart",
+      "empty": "Your cart is empty",
+      "total": "Total",
+      "checkout": "Checkout"
+    },
+    "notEnoughCredits": "Not enough credits for this purchase.",
+    "success": {
+      "title": "Purchase successful!",
+      "text": "Items have been credited. Safe travels!",
+      "continue": "Back to shop"
+    },
+    "cartCount": "{{count}} item",
+    "preview": {
+      "play": "Preview",
+      "stop": "Stop"
+    },
+    "ship": {
+      "preview": "🚀 Details",
+      "speed": "Speed: {{value}} km/s",
+      "capacity": "Capacity: {{count}} crew",
+      "range": "Range: {{value}} light-years",
+      "manufacturer": "Manufacturer: {{name}}",
+      "speedLabel": "Speed",
+      "manufacturerLabel": "Manufacturer",
+      "capacityLabel": "Crew capacity",
+      "rangeLabel": "Range",
+      "crew": "crew",
+      "ly": "ly",
+      "modal": {
+        "close": "Close",
+        "specs": "Specifications"
+      },
+      "nomadX1": {
+        "desc": "The Nomad X1 is a reliable entry-level starship built by Orion Shipyards. Despite its compact size, it is surprisingly fast, ideal for shorter missions."
+      },
+      "vegaRunner": {
+        "desc": "The Vega Runner is the pride of Helios Dynamics' engineers. It offers balanced performance and long range, suitable for medium-distance expeditions."
+      },
+      "aetherTitan": {
+        "desc": "The Aether Titan is Nova Consortium's flagship starship. Its immense speed and capacity make even the most distant star systems accessible."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} light-years",
+      "star": "Star: {{name}}",
+      "preview": "🔍 Preview",
+      "modal": {
+        "close": "Close",
+        "distance": "Distance",
+        "coordinates": "Coordinates",
+        "temperature": "Temperature",
+        "mass": "Mass",
+        "radius": "Radius",
+        "links": "Links",
+        "section": {
+          "star": "Star",
+          "planet": "Planet",
+          "discovery": "Discovery"
+        }
+      }
+    },
+    "credits": {
+      "title": "Buy Credits",
+      "starter": "Starter Pack",
+      "advanced": "Advanced Pack",
+      "premium": "Premium Pack",
+      "ultra": "Ultra Pack",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} credits",
+      "buy": "Buy",
+      "successTitle": "Credits purchased!",
+      "successText": "You bought {{credits}} ⭐ credits!",
+      "newBalance": "New balance: ⭐ {{balance}}",
+      "back": "Back to shop",
+      "notEnoughCreditsHint": "Buy credits on the 'Buy Credits' tab!"
+    }
+  }
+}
