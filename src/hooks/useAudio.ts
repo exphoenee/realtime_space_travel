@@ -3,19 +3,41 @@ import {
   AUDIO_FADE_INTERVAL_MS,
   AUDIO_FADE_STEP,
 } from "../constants/constants";
+import { SHOP_MUSIC } from "../constants/shopCatalog";
 
-export const useAudio = () => {
+const getTrackUrl = (musicId: string | null): string => {
+  if (!musicId) return `${import.meta.env.BASE_URL}music/main_theme.mp3`;
+  const product = SHOP_MUSIC.find((p) => p.id === musicId);
+  if (!product) return `${import.meta.env.BASE_URL}music/main_theme.mp3`;
+  return `${import.meta.env.BASE_URL}music/${product.file}`;
+};
+
+export const useAudio = (activeMusicId?: string | null) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const volumeIntervalRef = useRef<number | null>(null);
+  const currentTrackRef = useRef<string>("");
 
   const ensureAudio = useCallback(() => {
-    if (audioRef.current) return audioRef.current;
-    const audio = new Audio(`${import.meta.env.BASE_URL}main_theme.mp3`);
+    const url = getTrackUrl(activeMusicId ?? null);
+
+    // If we already have an audio element for this track, reuse it
+    if (audioRef.current && currentTrackRef.current === url) {
+      return audioRef.current;
+    }
+
+    // Track changed — destroy old audio, create new one
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    currentTrackRef.current = url;
+    const audio = new Audio(url);
     audio.loop = true;
     audio.volume = 0;
     audioRef.current = audio;
     return audio;
-  }, []);
+  }, [activeMusicId]);
 
   useEffect(() => {
     return () => {

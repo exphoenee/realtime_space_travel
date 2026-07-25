@@ -6,15 +6,14 @@ import styles from "./MainMenu.module.css";
 const MainMenu = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
-  // Melyik "hamarosan" értesítés látszik (login / shop) — még nincs implementálva.
-  const [notice, setNotice] = useState<null | "login" | "shop">(null);
+  // Melyik \"hamarosan\" értesítés látszik (login) — shop már implementálva.
+  const [notice, setNotice] = useState<null | "login">(null);
 
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
   const handleIntro = () => transitionTo("intro");
-  // A bejelentkezés és az áruház a későbbi fázisokban kerül bekötésre.
   const handleLogin = () => setNotice("login");
-  const handleShop = () => setNotice("shop");
+  const handleShop = () => transitionTo("shop");
 
   return (
     <div className={styles.overlay}>
@@ -50,9 +49,7 @@ const MainMenu = () => {
 
         {notice && (
           <p className={styles.notice} role="status">
-            {notice === "login"
-              ? t("mainMenu.loginComingSoon")
-              : t("mainMenu.shopComingSoon")}
+            {t("mainMenu.loginComingSoon")}
           </p>
         )}
       </div>

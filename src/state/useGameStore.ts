@@ -64,6 +64,7 @@ const phaseToFlags = (phase: GamePhase) => {
     case "mainMenu":
     case "missionSelect":
     case "settings":
+    case "shop":
       return {
         showIntro: false,
         isPaused: true,

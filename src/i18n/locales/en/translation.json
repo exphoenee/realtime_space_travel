@@ -127,7 +127,9 @@
     "title": "Settings",
     "musicVolume": "Music volume",
     "back": "Back",
-    "difficulty": "Difficulty"
+    "difficulty": "Difficulty",
+    "musicTrack": "Music Selection",
+    "musicDefault": "Default"
   },
   "difficulty": {
     "easy": "Easy",
@@ -141,5 +143,101 @@
     "fr": "Français",
     "de": "Deutsch",
     "es": "Español"
+  },
+  "shop": {
+    "title": "Shop",
+    "back": "← Back",
+    "creditsLabel": "⭐ {{count}} credits",
+    "balance": "Balance: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exoplanets",
+      "ships": "Ships",
+      "music": "Music"
+    },
+    "search": "Search by name…",
+    "searchNoResult": "No results",
+    "addToCart": "Add to cart",
+    "inCart": "In cart ✓",
+    "owned": "Owned",
+    "remove": "Remove",
+    "cart": {
+      "title": "Cart",
+      "empty": "Your cart is empty",
+      "total": "Total",
+      "checkout": "Checkout"
+    },
+    "notEnoughCredits": "Not enough credits for this purchase.",
+    "success": {
+      "title": "Purchase successful!",
+      "text": "Items have been credited. Safe travels!",
+      "continue": "Back to shop"
+    },
+    "cartCount": "{{count}} item",
+    "preview": {
+      "play": "Preview",
+      "stop": "Stop"
+    },
+    "ship": {
+      "preview": "🚀 Details",
+      "speed": "Speed: {{value}} km/s",
+      "capacity": "Capacity: {{count}} crew",
+      "range": "Range: {{value}} light-years",
+      "manufacturer": "Manufacturer: {{name}}",
+      "speedLabel": "Speed",
+      "manufacturerLabel": "Manufacturer",
+      "capacityLabel": "Crew capacity",
+      "rangeLabel": "Range",
+      "crew": "crew",
+      "ly": "ly",
+      "modal": {
+        "close": "Close",
+        "specs": "Specifications"
+      },
+      "nomadX1": {
+        "desc": "The Nomad X1 is a reliable entry-level starship built by Orion Shipyards. Despite its compact size, it is surprisingly fast, ideal for shorter missions."
+      },
+      "vegaRunner": {
+        "desc": "The Vega Runner is the pride of Helios Dynamics' engineers. It offers balanced performance and long range, suitable for medium-distance expeditions."
+      },
+      "aetherTitan": {
+        "desc": "The Aether Titan is Nova Consortium's flagship starship. Its immense speed and capacity make even the most distant star systems accessible."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} light-years",
+      "star": "Star: {{name}}",
+      "preview": "🔍 Preview",
+      "modal": {
+        "close": "Close",
+        "distance": "Distance",
+        "coordinates": "Coordinates",
+        "temperature": "Temperature",
+        "mass": "Mass",
+        "radius": "Radius",
+        "links": "Links",
+        "section": {
+          "star": "Star",
+          "planet": "Planet",
+          "discovery": "Discovery"
+        }
+      }
+    },
+    "credits": {
+      "title": "Buy Credits",
+      "starter": "Starter Pack",
+      "advanced": "Advanced Pack",
+      "premium": "Premium Pack",
+      "ultra": "Ultra Pack",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} credits",
+      "buy": "Buy",
+      "successTitle": "Credits purchased!",
+      "successText": "You bought {{credits}} ⭐ credits!",
+      "newBalance": "New balance: ⭐ {{balance}}",
+      "back": "Back to shop",
+      "notEnoughCreditsHint": "Buy credits on the 'Buy Credits' tab!"
+    }
   }
 }

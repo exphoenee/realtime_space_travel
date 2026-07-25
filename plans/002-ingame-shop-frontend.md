@@ -3,9 +3,9 @@ title: "Helyi működésű áruház (frontend-only) terve – mock katalógus + 
 slug: 002-ingame-shop-frontend
 type: plan
 category: shop
-status: not-started
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-25"
 created_at: "2026-07-25"
 updated_at: "2026-07-25"
 author: exphoenee
@@ -31,14 +31,14 @@ tags:
 
 # Helyi működésű áruház (frontend-only) terve – mock katalógus + localStorage
 
-**Cél:** a Főmenü „Áruház" gombja mögé egy **teljesen kliensoldali** (backend nélküli) webshop, ahol a játékos **kreditcsomagokat** (valós pénz → in-game kredit), valamint **exobolygókat**, **űrhajókat** és **zenéket** vásárolhat **in-game kreditből**. A katalógus **mock-adat**, a kredit-egyenleg és a birtoklás **localStorage-ban** perzisztál (Zustand `persist`). **Ebben a fázisban a vásárlás CSAK a birtoklást menti** (a tétel „birtokolt" állapotba kerül, kosárba nem tehető újra); a **játékmenetbe kötés** (megvett hajó a küldetésindításban, zene a lejátszóban, exobolygó mint küldetés) **szándékosan NEM része** ennek a fázisnak — az egy **későbbi fázis** feladata (lásd 9. szekció).
+**Cél:** a Főmenü „Áruház" gombja mögé egy **teljesen kliensoldali** (backend nélküli) webshop, ahol a játékos **kreditcsomagokat** (valós pénz → in-game kredit), valamint **exobolygókat**, **űrhajókat** és **zenéket** vásárolhat **in-game kreditből**. A katalógus **mock-adat**, a kredit-egyenleg és a birtoklás **localStorage-ban** perzisztál (Zustand `persist`).
 
 > ### 🔗 Fázis-sorrend (fontos)
-> Ez a fázis a Firebase ([[003-firebase-auth-settings]]) és a Strapi+Stripe ([[004-ingame-shop-strapi-stripe]]) bekötése **ELŐTT** valósul meg, **tisztán helyi** mock-adattal és localStorage-perzisztenciával. A későbbi fázisok **erre a frontendre épülnek**:
+> Ez a fázis a Firebase ([[003-firebase-auth-settings]]) és a Strapi+Stripe ([[004-ingame-shop-strapi-stripe]]) bekötése **ELŐTT** valósult meg, **tisztán helyi** mock-adattal és localStorage-perzisztenciával. A későbbi fázisok **erre a frontendre épülnek**:
 > - **[[003-firebase-auth-settings]]** — a helyi kredit + birtoklás + beállítások **per-felhasználós Firebase-mentése** (a localStorage csak offline tükör lesz). **A kredit-egyenleg forrása a Firebase RTDB lesz.**
 > - **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi hook-kal); a mock katalógus és kosár (termékekre) **megmarad**; a bolt-UI és a bekötési pontok megmaradnak.
 >
-> Vagyis ez a terv **egyszer** megépíti a bolt-UI-t, az adatmodellt és a tulajdon-perzisztenciát; a következő két fázis csak az adat- és fizetési **forrást** cseréli le mögötte. A **birtokolt tartalmak játékmenetbe kötése** (hajó-sebesség, zene-lejátszó, exobolygó-küldetés) **külön, későbbi fázis** — itt nincs scope-ban.
+> Vagyis ez a terv **egyszer** megépíti a bolt-UI-t, az adatmodellt és a tulajdon-perzisztenciát; a következő két fázis csak az adat- és fizetési **forrást** cseréli le mögötte. A **birtokolt tartalmak játékmenetbe kötése** (hajó-sebesség, zene-lejátszó, exobolygó-küldetés) — lásd a 9. szekciót.
 
 ## Döntések (egyeztetve)
 
@@ -53,66 +53,105 @@ tags:
 | Kategóriák | **4**: exobolygók · űrhajók · zenék · **kreditvásárlás** |
 | Mennyiség | **Csak 1 db** minden termékből (nincs mennyiség — a user 1-et birtokolhat). Kreditcsomagokból **korlátlanul** lehet venni. |
 | Kosár / checkout (termék) | Kosár-ikon a fejlécben tételszámmal → kosár nézet (tétel-lista + végösszeg) → **Fizetés** → mock siker |
-| Fizetés hatása (termék) | Kredit levonása, tételek **birtokoltra** állítása (localStorage), kosár ürítése, „sikeres vásárlás" képernyő. **Játékmenetbe kötés NINCS** (későbbi fázis) |
+| Fizetés hatása (termék) | Kredit levonása, tételek **birtokoltra** állítása (localStorage), kosár ürítése, „sikeres vásárlás" képernyő |
 | Fizetés hatása (kredit) | Kredit **hozzáadása** az egyenleghez (nincs levonás, nincs birtoklás). Mock „sikeres fizetés" → egyenleg frissül. |
-| Játékmenet-bekötés | **NINCS ebben a fázisban** — a megvett hajó/zene/exobolygó egyelőre csak birtokolt tétel a boltban; a tényleges használat (hajóválasztó, zene-lejátszó, küldetés) **későbbi fázis** |
+| Kosárban lévő tétel gombja | **„Eltávolítás"** (piros gomb) — a tétel eltávolítása a kosárból (korábban „Kosárban ✓" zöld gomb) |
 | Kredithiány (termék) | „Fizetés" letiltva + figyelmeztetés; birtokolt tétel „Birtokolt" jelzéssel, nem tehető kosárba |
 | Perzisztencia | **`useShopStore`** (Zustand `persist`), kulcs: **`space-travel-shop`** (nem ütközik: `space-travel-game/ui/lang`) |
 | Kredit forrása | Ebben a fázisban `localStorage`. A [[003-firebase-auth-settings]] után a **Firebase RTDB a mérvadó** (a store csak offline tükör). |
 | Exobolygó adat helye | `src/data/exoplanets.json` (a `output/exoplanets.json` generátor-kimenet másolata) — Vite JSON-import `src/`-ből; mapper alakítja tétellé + procedurális ár |
 | Katalógus (hajó+zene) helye | `src/constants/shopCatalog.ts` — kézzel írt statikus katalógus (a `universeData.ts` mintájára) |
-| Exobolygók | Mind a **100** a `src/data/exoplanets.json`-ból; görgethető rács + keresőmező; **procedurális, determinisztikus ár** |
+| Exobolygók | Mind a **100** a `src/data/exoplanets.json`-ból; görgethető rács + **keresőmező**; **procedurális, determinisztikus ár** |
+| Alap exobolygók (előre birtokolt) | **3 bolygó** (Proxima Centauri, Wolf 424, Ross 780) — a `BASE_EXOPLANETS` tömbben, `priceCredits: 0`, a shopban „Birtokolt" státusszal jelennek meg, a küldetésválasztóban is láthatók |
 | Űrhajók | **3 mock hajó** eltérő sebességgel — csak katalógus-adat (sebesség flavor); az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` **marad, nem módosul** |
 | Zenék | A meglévő **5** fájl `public/music`-ból, **kisbetűsre + `_`-re átnevezve**; boltban **belehallgatás** (preview) |
+| Háttérzene a boltban | **NEM szól** a háttérzene (`shouldPlayMusic` kizárja a `"shop"` fázist) |
+| Zenei előnézet | Egyszerre **csak 1 előnézet** szólhat (modul-szintű `globalStopPreview` singleton + store-beli `activePreviewId` követés) |
+| Generikus komponensek | `Modal` és `Tabs` kiszervezve `src/components/ui/`-be, újrahasznosítható, shop ezeket használja |
+| Grid scroll | Csak a `.productGrid` container scrollázik — a fülek + kereső fixek maradnak (flex scroll chain) |
+| Keresés | **Minden** termék tabon (exobolygók, űrhajók, zenék) — név szerinti szűrés |
+| Kredit vásárlás layout | Azonos layout mint a többi tab: `productGrid` + `productCard` osztályok, arany border módosítóval |
+| Info gomb (küldetésválasztó) | `ℹ` gomb minden küldetéskártyán → `MissionExoplanetModal` (JSON bolygóknál teljes adat, alap bolygóknál név+táv+jutalom) |
+| Debug reset gomb | `↺ Reset` gomb az áruház fejlécében (csak `VITE_DEBUG_MODE=true`); kitörli a birtoklást és visszaállítja a 9000 kreditet, a localStorage-ból is törli a persist adatot |
+| Zeneválasztó (Settings) | A Beállítások menüben **zeneválasztó** (custom `<select>` dropdown): alap `main_theme` + birtokolt zeneszámok. **Letiltva** (`opacity`, `cursor: not-allowed`) ha nincs megvett zene. A kiválasztott track URL-je a `useAudio`-ba kerül, a `useAudio` dinamikusan váltja a lejátszott audio fájlt |
 
 ---
 
 ## ✅ Haladás (TODO)
 
-> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Implementáció közben itt vezetjük, hol tartunk, hogy félbeszakadás után folytatható legyen. Részletek a lenti szekciókban.
+> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A rész — adat + állapot**
-- [ ] `output/exoplanets.json` bemásolása `src/data/exoplanets.json`-ba (100 elem, Vite JSON-import) + típus (`ExoplanetRaw`)
-- [ ] `src/constants/shopCatalog.ts`: `CREDITS_PER_EUR`, `CREDIT_PACKS` (4 csomag), `STARTING_CREDITS` (0), `DEBUG_STARTING_CREDITS` (9000), `SHOP_SHIPS` (3 mock hajó), `SHOP_MUSIC` (5 sáv), ár-/wage-képletek, `mapExoplanet`
-- [ ] Termék-típusok a `src/types/index.ts`-be (`ShopCategory` bővítve `"credits"`-szel, `CreditPack`, `ShopProduct`, `ShipProduct`, `MusicProduct`, `ExoplanetProduct`, `CartItem`, `OwnedItems`)
-- [ ] `useShopStore` (Zustand + persist `space-travel-shop`): `credits` (kezdő: 0 normál / 9000 debug), `owned`, `cart`, `isPreviewing` + akciók (`addToCart`, `removeFromCart`, `checkout`, `isOwned`, `buyCredits`)
-- [ ] **Debug-kredit:** a kezdő egyenleg `VITE_DEBUG_MODE=true` esetén `DEBUG_STARTING_CREDITS` (9000 ⭐), különben `STARTING_CREDITS` (**0 ⭐**) — a `useShopStore` inicializálásában
+- [x] `output/exoplanets.json` bemásolása `src/data/exoplanets.json`-ba (100 elem, Vite JSON-import) + típus (`ExoplanetRaw`)
+- [x] `src/constants/shopCatalog.ts`: `CREDITS_PER_EUR`, `CREDIT_PACKS` (4 csomag), `STARTING_CREDITS` (0), `DEBUG_STARTING_CREDITS` (9000), `SHOP_SHIPS` (3 mock hajó), `SHOP_MUSIC` (5 sáv), ár-/wage-képletek, `mapExoplanet`
+- [x] `BASE_EXOPLANETS` + `BASE_EXOPLANET_IDS`: 3 alap exobolygó (Proxima Centauri, Wolf 424, Ross 780) előre birtokoltként
+- [x] Termék-típusok a `src/types/index.ts`-be (`ShopCategory` bővítve `"credits"`-szel, `CreditPack`, `ShopProduct`, `ShipProduct`, `MusicProduct`, `ExoplanetProduct`, `CartItem`, `OwnedItems`)
+- [x] `useShopStore` (Zustand + persist `space-travel-shop`): `credits` (kezdő: 0 normál / 9000 debug), `owned` (alap exobolygók előre betöltve), `cart`, `isPreviewing`, `activePreviewId` + akciók (`addToCart`, `removeFromCart`, `checkout`, `isOwned`, `buyCredits`, `setActivePreviewId`)
+- [x] **Debug-kredit:** a kezdő egyenleg `VITE_DEBUG_MODE=true` esetén `DEBUG_STARTING_CREDITS` (9000 ⭐), különben `STARTING_CREDITS` (**0 ⭐**) — a `useShopStore` inicializálásában
 
 **B rész — bolt-UI + navigáció**
-- [ ] `GamePhase: "shop"` a `types/index.ts`-be + `phaseToFlags` (pre-game, szüneteltetett — mint `mainMenu`/`settings`) + `App.isPreGame`
-- [ ] `ScreenRouter` új ág: `shop → ShopScreen`
-- [ ] `MainMenu` „Áruház" gomb: `mainMenu.shopComingSoon` placeholder helyett `transitionTo("shop")`
-- [ ] `ShopScreen` (fejléc: cím, kredit-egyenleg, kosár-ikon+tételszám, „← Vissza"; belső nézet-váltó: böngészés/kosár/siker/kreditvásárlás)
-- [ ] `ShopTabs` (Exobolygók / Űrhajók / Zenék / **Kredit vásárlás**) + `ProductGrid` + `ProductCard` (kép/név/ár ⭐ (€), „Kosárba" / „Birtokolt")
-- [ ] Exobolygó fül: görgethető rács + **keresőmező** (név szerinti szűrés)
-- [ ] Zenék átnevezése kisbetűsre `_`-rel a `public/music`-ban + a `shopCatalog.ts` metaadat az új nevekre mutat
-- [ ] `MusicPreviewButton` (play/pause) — a háttérzene szüneteltetése preview alatt (`isPreviewing` flag → `App`)
-- [ ] `CartView` (tétel-lista, eltávolítás, végösszeg ⭐+€, „Fizetés" gomb, kredithiány-állapot)
-- [ ] `CheckoutSuccess` (mock siker; kredit-levonás + birtoklás + kosár-ürítés a store-ban)
-- [ ] **`CreditShopView`** — új komponens a 4. fülhöz: kreditcsomagok listája (€ ár, ⭐ mennyiség), mindegyiknél „Megveszem" gomb → mock fizetés → kredit jóváírás
+- [x] `GamePhase: "shop"` a `types/index.ts`-be + `phaseToFlags` (pre-game, szüneteltetett — mint `mainMenu`/`settings`) + `App.isPreGame`
+- [x] `ScreenRouter` új ág: `shop → ShopScreen`
+- [x] `MainMenu` „Áruház" gomb: `mainMenu.shopComingSoon` placeholder helyett `transitionTo("shop")`
+- [x] `ShopScreen` (fejléc: cím, kredit-egyenleg, kosár-ikon+tételszám, „← Vissza"; belső nézet-váltó: böngészés/kosár/siker/kreditvásárlás)
+- [x] `ShopTabs` generikus `Tabs` komponenssel (Exobolygók / Űrhajók / Zenék / **Kredit vásárlás**)
+- [x] `ProductGrid` + `ProductCard` (kép/név/ár ⭐ (€), „Kosárba" / „Birtokolt" / „Eltávolítás")
+- [x] Kereső mező **minden** termék tabon (exobolygók, űrhajók, zenék)
+- [x] Exobolygó preview modal (`ExoplanetPreviewModal`) — képek, csillag info, bolygó info, felfedezés, linkek
+- [x] Űrhajó preview modal (`ShipPreviewModal`) — specifikációk (sebesség, gyártó, kapacitás, hatótáv), leírás
+- [x] Alap exobolygók (3 db) a shop ProductGrid-ben lapos elemként, „Birtokolt" státusszal
+- [x] Zenék átnevezése kisbetűsre `_`-rel a `public/music`-ban + a `shopCatalog.ts` metaadat az új nevekre mutat
+- [x] `MusicPreviewButton` (play/pause) — singleton `globalStopPreview`, store `activePreviewId` követés, **egyszerre csak 1 előnézet**
+- [x] Háttérzene szüneteltetése a shopban (`shouldPlayMusic` kizárja a `"shop"` fázist)
+- [x] `CartView` (tétel-lista, „Eltávolítás" piros gomb, végösszeg ⭐+€, „Fizetés" gomb, kredithiány-állapot)
+- [x] `CheckoutSuccess` (mock siker; kredit-levonás + birtoklás + kosár-ürítés a store-ban)
+- [x] `CreditShopView` — **azonos layout** mint a termék tabok (`productGrid` + `productCard`), arany border módosító, középre igazított tartalom
+- [x] `CreditSuccess` — mock „sikeres kreditvásárlás" képernyő
+- [x] **Dupla ⭐ javítás:** `CreditBalance`-ben eltávolítva a hardcodeolt ⭐ (a fordítási kulcs már tartalmazza)
+- [x] **Kártya magasság javítás:** `grid-auto-rows: min-content` + `align-items: start` a `.productGrid`-ben
+- [x] **Kredit kártya magasság javítás:** `justify-content: center`, `gap: 0.75rem`, `margin-top: 0` override a `.productCardActions`-on
+- [x] **Scroll javítás:** flex scroll chain — csak a `.productGrid` scrollázik, fülek + kereső fixek
+- [x] **Generikus komponensek kiszervezése:** `Modal` + `Tabs` → `src/components/ui/`, shop ezeket használja
+- [x] **`project-conventions.md` frissítése** az új mappastruktúrával (`ui/`, `screens/`, `shop/`)
 
-**C rész — i18n + validáció**
-- [ ] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt) (a fordítást az `i18n` agent végzi a /dev fázisban)
-- [ ] Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás
-- [ ] Ellenőrzés: `tsc`, tesztek, `build`, kulcs-paritás (5 nyelv)
+**C rész — játékmenet-bekötés (részben megvalósítva)**
+- [x] **Birtokolt exobolygók a küldetésválasztóban:** `MissionSelector` most olvassa a `useShopStore.owned.exoplanets`-et, és a JSON adatokból `mapExoplanet`-tel képzett célokat jeleníti meg az alap 3 mellett
+- [x] **Info gomb a küldetéskártyákon:** `ℹ` gomb → `MissionExoplanetModal` (JSON bolygóknál teljes adat képekkel/linkekkel, alap bolygóknál név+táv+jutalom)
+- [x] **Debug reset gomb** — `↺ Reset` az áruház fejlécében (csak debug módban); `resetShop` akció + localStorage törlés + persist újramentés
+- [x] **Info gomb pozíció javítás** — a kártya tetejéről (ahol rálógott a névre) a kártya aljára, teljes szélességű sávként
+- [x] **Zenék bekötése (SettingsScreen)** — `useUIStore.activeMusicId` perszisztált állapot; `useAudio(activeMusicId)` paraméterrel dinamikus track-váltás; SettingsScreen-ben custom `<select>` dropdown (alap + birtokolt zenék), letiltva ha nincs megvett zene
+- [x] **Settings zeneválasztó custom select dropdown** — `appearance:none` stílusos dark `<select>` (segmented gombsor helyett, ami 4+ gombbal lelógott a panelről). `__default__` sentinel érték a null kezelésére
+- [x] **i18n settings.musicTrack + settings.musicDefault kulcsok** — mind az 5 nyelvhez hozzáadva (hu: Zeneválasztás/Alapértelmezett, en: Music Selection/Default, stb.)
+- [x] **Exobolygó kép renderelés javítás** — `extractImageUrl()` helper (kezeli a JSON nested `{url, type, source}` objektumokat), `onError` handler 🌌 fallback placeholder. A links mező string URL-eket tartalmaz, nem objektumokat, így ott nincs hiba.
+- [x] **Python scraper dokumentálva** — a `exoplanets.py` NASA Images API + Wikimedia Commons hívásokkal próbál képeket keresni, de 0/100 találat (nincs artista koncepciórajz a 100 legközelebbi exobolygóra). ESA linkek is csak keresőoldalak, nem közvetlen képek.
+- [x] **MP3 fájlok átnevezése** — `public/music/*.mp3` fájlok kisbetűsre + `_`-re átnevezve (pl. `Dust on the Highway.mp3` → `dust_on_the_highway.mp3`), a kód hivatkozásai már az új nevekre mutattak
+- [ ] **Űrhajók bekötése** — hajóválasztó / sebesség módosítás (későbbi fázis)
+
+**D rész — i18n + validáció**
+- [x] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt)
+- [x] Ellenőrzés: `tsc`, `build` — tiszta
+- [ ] Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 
 ---
 
 ## 1. Képernyő-folyamat (GamePhase)
 
-Új fázis a `src/types/index.ts` `GamePhase`-be: **`shop`**. A bolton belüli al-nézetek (böngészés / kosár / sikeres fizetés) **nem** külön `GamePhase`-ek, hanem a `ShopScreen` belső nézet-állapota (`useShopStore.view` vagy helyi `useState`) — így a `ScreenRouter` és a `phaseToFlags` egyszerű marad, és a bolt egyetlen pre-game overlay.
+Új fázis a `src/types/index.ts` `GamePhase`-be: **`shop`**. A bolton belüli al-nézetek (böngészés / kosár / sikeres fizetés) **nem** külön `GamePhase`-ek, hanem a `ShopScreen` belső nézet-állapota (`useState`).
 
 ```
-mainMenu ──(Áruház)──▶ shop
-   ▲                    │  ├─ view: "browse"    (fülek: Exobolygók / Űrhajók / Zenék / Kredit vásárlás)
-   │                    │  │   └─ "Kredit vásárlás" fül → CreditShopView (csomagok listája)
-   │                    │  ├─ view: "cart"      (kosár tételek + végösszeg + Fizetés)
-   │                    │  ├─ view: "success"   (mock sikeres termék-fizetés)
-   └──(← Vissza)────────┘  └─ view: "creditSuccess" (mock sikeres kreditvásárlás)
+mainMenu ──(Áruház)────▶ shop
+   ▲                      │  ├─ view: "browse"    (fülek: Exobolygók / Űrhajók / Zenék / Kredit vásárlás)
+   │                      │  │   └─ minden fülön keresőmező (exobolygók, űrhajók, zenék)
+   │                      │  │   └─ "Kredit vásárlás" fül → CreditShopView (azonos layout)
+   │                      │  ├─ view: "cart"      (kosár tételek + "Eltávolítás" + végösszeg + Fizetés)
+   │                      │  ├─ view: "success"   (mock sikeres termék-fizetés)
+   └──(← Vissza)──────────┘  └─ view: "creditSuccess" (mock sikeres kreditvásárlás)
+
+MissionSelector ──(ℹ Info)──▶ MissionExoplanetModal (read-only exobolygó adatok)
 ```
 
-- `phaseToFlags("shop")` = **ugyanaz a szüneteltetett pre-game állapot**, mint `mainMenu`/`missionSelect`/`settings` (`showIntro:false, isPaused:true, …`). A `useGameStore` `phaseToFlags` `case`-ébe a `shop` a `mainMenu`/`missionSelect`/`settings` mellé kerül.
-- `App.isPreGame` bővül a `shop` fázissal (a `MissionSelector`/`SettingsScreen` mintájára — háttérzene szól, kamera nem kell).
+- `phaseToFlags("shop")` = **ugyanaz a szüneteltetett pre-game állapot**, mint `mainMenu`/`missionSelect`/`settings` (`showIntro:false, isPaused:true, …`).
+- `App.isPreGame` bővül a `shop` fázissal. A háttérzene **NEM szól** a shopban (`shouldPlayMusic` kizárja).
 - „← Vissza" a boltból → `transitionTo("mainMenu")`.
 
 ---
@@ -122,20 +161,30 @@ mainMenu ──(Áruház)──▶ shop
 ```
 src/
   components/
-    shop/
-      ShopScreen.tsx         # fő nézet: fejléc + fülek/kosár/siker/kredit váltó
+    ui/                                           # Generikus, újrahasznosítható komponensek
+      Modal.tsx                                   # Modál: overlay, header (cím+bezárás), body (scroll), footer; Escape
+      Modal.module.css
+      Tabs.tsx                                    # Tab komponens: TabDefinition[], activeKey, onChange
+      Tabs.module.css
+    shop/                                         # Shop-specifikus komponensek
+      ShopScreen.tsx                              # Fő nézet: fejléc + fülek/kosár/siker/kredit váltó
       ShopScreen.module.css
-      ShopTabs.tsx           # kategória-fülek (Exobolygók / Űrhajók / Zenék / Kredit vásárlás)
-      ProductGrid.tsx        # görgethető rács (+ exobolygóknál keresőmező)
-      ProductCard.tsx        # egy termék: kép/név/ár ⭐(€) + gomb (Kosárba / Birtokolt / Kosárban)
-      CartButton.tsx         # fejléc kosár-ikon + tételszám badge
-      CartView.tsx           # kosár: tétel-lista + eltávolítás + végösszeg + Fizetés
-      CheckoutSuccess.tsx    # mock „sikeres fizetés" képernyő
-      MusicPreviewButton.tsx # play/pause belehallgatás (háttérzenét szünetelteti)
-      CreditBalance.tsx      # kredit-egyenleg kijelző (⭐ N)
-      CreditShopView.tsx     # kreditcsomagok: €-ár, ⭐ mennyiség, "Megveszem" gomb
-      CreditShopView.module.css
-      CreditSuccess.tsx      # mock „sikeres kreditvásárlás" képernyő
+      ShopTabs.tsx                                # Kategória-fülek (generikus Tabs-ra építve)
+      ProductGrid.tsx                             # Görgethető rács (keresőmező MINDEN tabon) + exobolygó + hajó preview modal
+      ProductCard.tsx                             # Egy termék: kép/név/ár + gomb (Kosárba / Birtokolt / Eltávolítás)
+      ExoplanetPreviewModal.tsx                   # Exobolygó preview (képek, csillag, bolygó, felfedezés, linkek)
+      ShipPreviewModal.tsx                        # Űrhajó preview (specifikációk)
+      CartButton.tsx                              # Fejléc kosár-ikon + tételszám badge
+      CartView.tsx                                # Kosár: tétel-lista + "Eltávolítás" + végösszeg + Fizetés
+      CheckoutSuccess.tsx                         # Mock „sikeres fizetés" képernyő
+      MusicPreviewButton.tsx                      # Play/pause belehallgatás (singleton, 1 előnézet egyszerre)
+      CreditBalance.tsx                           # Kredit-egyenleg kijelző (⭐ N)
+      CreditShopView.tsx                          # Kreditcsomagok (productGrid + productCard layout)
+      CreditSuccess.tsx                           # Mock „sikeres kreditvásárlás" képernyő
+    screens/                                      # Képernyő-szintű komponensek
+      MissionSelector.tsx                         # Küldetésválasztó (info gombbal + exobolygó modal)
+      MissionSelector.module.css                  # (info gomb, info modal, missionCard wrapper)
+      MissionExoplanetModal.tsx                   # Read-only exobolygó info modal (küldetésválasztóhoz)
 ```
 
 ### `ShopScreen.tsx`
@@ -145,51 +194,54 @@ src/
   - `"cart"` → `CartView`
   - `"success"` → `CheckoutSuccess`
   - `"creditSuccess"` → kreditvásárlás siker képernyő
-- Navigáció közvetlenül a `useShopStore`-ból + `useGameStore.transitionTo`.
+
+### `ProductGrid.tsx`
+- **Keresőmező:** MINDEN termék tabon (exobolygók, űrhajók, zenék) — név szerinti szűrés. A kredit tabon nincs kereső.
+- **Exobolygók:** 100 JSON-ból + 3 alap bolygó (`BASE_EXOPLANETS`) lapos elemként
+- **Scroll chain:** `.productGridWrapper` (flex column) → kereső (flex-shrink: 0) → `.productGrid` (flex:1, overflow-y:auto)
+- **Preview modal-ok:** `ExoplanetPreviewModal` (JSON bolygók) + `ShipPreviewModal` (hajók). Alap bolygóknak nincs preview.
 
 ### `ProductCard.tsx`
 - Kép/ikon, név, leírás/meta, ár **⭐ `priceCredits`** és zárójelben **`(€ priceEur)`**.
-- Gomb-állapotok: **„Kosárba"** (alap) · **„Kosárban ✓"** (már a kosárban, eltávolítható) · **„Birtokolt"** (letiltva, ha `isOwned`).
+- Gomb-állapotok: **„Kosárba"** (alap) · **„Eltávolítás"** (piros gomb, ha már kosárban) · **„Birtokolt"** (letiltva, ha `isOwned`).
 - Zenekártyán ezen felül `MusicPreviewButton`.
 
 ### `CartView.tsx`
-- Tétel-lista (kép/név/ár, „Eltávolítás").
+- Tétel-lista (kép/név/ár, **„Eltávolítás"** piros gomb).
 - **Végösszeg:** ⭐ összeg + `(€ összeg)`.
 - **„Fizetés"** gomb → `useShopStore.checkout()` → `view: "success"`.
-- **Kredithiány:** ha `cartTotalCredits > credits` → a „Fizetés" letiltva + `shop.notEnoughCredits` figyelmeztetés + javaslat: „Vegyél kreditet a Kredit vásárlás fülön!".
+- **Kredithiány:** ha `cartTotalCredits > credits` → a „Fizetés" letiltva + figyelmeztetés.
 
 ### `CreditShopView.tsx`
 - A **4. fül** tartalma („Kredit vásárlás").
-- Megjeleníti a 4 kreditcsomagot kártyákon:
-  - Csomag név (pl. „Kezdő csomag", „Haladó csomag")
-  - **€-ár** (10 / 25 / 50 / 100)
-  - **⭐ mennyiség** (100 / 300 / 700 / 2000)
-  - **„Megveszem"** gomb
+- **Azonos layout** mint a termék tabok: `styles.productGrid` + `styles.productCard` (+ `.creditCard` módosító arany border).
+- 4 kreditcsomag kártyákon, középre igazított tartalom, „Megveszem" gomb `width: 100%`.
 - **„Megveszem"** gomb → `useShopStore.buyCredits(packId)` → mock fizetés:
   1. Kredit hozzáadása az egyenleghez (`credits += pack.credits`)
   2. `view: "creditSuccess"`
-- Nincs kosár, nincs birtoklás — a kredit azonnal jóváíródik.
-
-### `CreditSuccess.tsx`
-- Mock „sikeres kreditvásárlás" képernyő.
-- Mutatja: mennyi kreditet vettél, új egyenleg.
-- **„Vissza a boltba"** gomb → `view: "browse"`.
 
 ### `MusicPreviewButton.tsx`
-- Saját `HTMLAudioElement` a `${BASE_URL}music/<fájl>.mp3` sávra (a `base href` `/realtime_space_travel/`).
-- **Ütközés-kezelés a háttérzenével:** preview indításakor a háttérzenét **szüneteltetni** kell. Mivel a `useAudio` hangereje az `App`-ból jön (pre-game alatt szól), a preview idejére egy egyszerű megoldás: a `ShopScreen` a preview alatt `musicVolume`-ot 0-ra fade-eli (vagy egy `previewActive` flaget állít, amit az `App` figyel), leállás után visszaáll. A terv a **flag-alapú** megoldást javasolja (`useShopStore.isPreviewing` → `App` a háttérzenét szünetelteti), hogy ne csússzon szét a két audio-forrás.
+- Saját `HTMLAudioElement` a `${BASE_URL}music/<fájl>.mp3` sávra.
+- **Egyszerre csak 1 előnézet:** modul-szintű `globalStopPreview` singleton + store-beli `activePreviewId` követés.
+- Ha másik gombra kattintasz, az előző előnézet leáll.
+- **Háttérzene:** a shopban NEM szól (`shouldPlayMusic` kizárja a `"shop"` fázist).
+
+### `MissionExoplanetModal.tsx` (új)
+- Read-only exobolygó info modal (nincs kosár/vásárlás akció).
+- **JSON exobolygók:** teljes adat (képek, koordináták, csillag info, bolygó info, felfedezés, linkek).
+- **Alap bolygók** (Proxima Centauri, Wolf 424, Ross 780): név, távolság, jutalom (kevesebb adat).
 
 ---
 
 ## 3. Állapot (`useShopStore`)
 
-Új Zustand store `persist`-tel, **`space-travel-shop`** kulccsal (nem ütközik: `space-travel-game`, `space-travel-ui`, `space-travel-lang`).
+Új Zustand store `persist`-tel, **`space-travel-shop`** kulccsal.
 
 ```ts
 interface OwnedItems {
-  ships: string[];       // birtokolt hajó-id-k (az alap hajó nincs benne – mindig elérhető)
-  music: string[];       // birtokolt zene-id-k
-  exoplanets: string[];  // birtokolt exobolygó-id-k (küldetésként választhatók)
+  ships: string[];        // birtokolt hajó-id-k
+  music: string[];        // birtokolt zene-id-k
+  exoplanets: string[];   // birtokolt exobolygó-id-k (induláskor BASE_EXOPLANET_IDS-el töltve)
 }
 
 interface CartItem {
@@ -199,40 +251,38 @@ interface CartItem {
 }
 
 interface CreditPack {
-  id: string;               // "credits-starter" | "credits-advanced" | "credits-premium" | "credits-ultra"
-  name: string;             // i18n kulcs vagy nyers név
-  priceEur: number;         // €-ban kifejezett ár (valós pénz)
-  credits: number;          // kapott kredit mennyiség
+  id: string;
+  nameKey: string;
+  priceEur: number;
+  credits: number;
 }
 
 interface ShopState {
-  credits: number;              // kezdő: debug módban DEBUG_STARTING_CREDITS (9000), különben STARTING_CREDITS (0)
+  credits: number;
   owned: OwnedItems;
   cart: CartItem[];
-  isPreviewing: boolean;        // belehallgatás fut-e (háttérzene szüneteltetéshez)
+  isPreviewing: boolean;        // belehallgatás fut-e
+  activePreviewId: string | null;  // melyik zene játszik (globális követéshez)
 
   isOwned: (category: ShopCategory, id: string) => boolean;
   isInCart: (id: string) => boolean;
-  addToCart: (item: CartItem) => void;      // csak ha nincs birtokolva és nincs a kosárban (1 db)
+  addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   cartTotalCredits: () => number;
-  checkout: () => { ok: boolean };          // ha credits >= összeg: levon + birtoklásba tesz + üríti a kosarat
-  buyCredits: (packId: string) => void;     // kreditcsomag vétele: credits += pack.credits (mock, nincs valós fizetés)
+  checkout: () => { ok: boolean };
+  buyCredits: (packId: string) => void;
   setPreviewing: (v: boolean) => void;
+  setActivePreviewId: (id: string | null) => void;
 }
 ```
 
-- **Kezdő egyenleg:** a `credits` kezdőértéke a `VITE_DEBUG_MODE` env-változóból:
-  ```ts
-  const initialCredits =
-    import.meta.env.VITE_DEBUG_MODE === "true" ? DEBUG_STARTING_CREDITS : STARTING_CREDITS;
-  ```
-  **Normál módban 0 ⭐** — a játékosnak kreditet kell vennie, mielőtt bármit vásárolhat. Debug módban 9000 ⭐. (Ha persist-elt egyenleg létezik, az felülírja a kezdőértéket.)
-- `checkout()`: ha `credits >= cartTotalCredits()`, akkor `credits -= összeg`, a kosár tételeit a `owned` megfelelő kategóriájába teszi, `cart = []`, visszaad `{ ok: true }`; különben `{ ok: false }` (a UI kredithiányt jelez).
-- `buyCredits(packId)`: megkeresi a `CREDIT_PACKS`-ban a csomagot, `credits += pack.credits`. **Maga a fizetés mock** (nincs Stripe, nincs valós pénz). Ez a későbbi [[004-ingame-shop-strapi-stripe]] fázisban kap valós Stripe-integrációt.
-- `persist.partialize`: `credits`, `owned` (a `cart`, `isPreviewing` **nem** perzisztált — munkamenet-állapot).
-
-> **Migrációs megjegyzés ([[003-firebase-auth-settings]] + [[004-ingame-shop-strapi-stripe]]):** a Firebase-fázisban a `credits` + `owned` mérvadó forrása az RTDB `wallet`/`inventory` lesz (szerver-írt), a `useShopStore` localStorage pedig offline tükör. A `checkout` kredit-levonása akkor **Cloud Functionre** (`purchaseWithCredits`) cserélődik. A `buyCredits` a [[004-ingame-shop-strapi-stripe]] fázisban kap valós Stripe fizetést (Strapi webhook → Firebase kredit hozzáadás). A store publikus API-ja úgy tervezendő, hogy a forrás lecserélhető legyen.
+- **Kezdő egyenleg:** `import.meta.env.VITE_DEBUG_MODE === "true"` esetén `DEBUG_STARTING_CREDITS` (9000 ⭐), különben `STARTING_CREDITS` (**0 ⭐**).
+- **Kezdő birtoklás:** `owned.exoplanets: [...BASE_EXOPLANET_IDS]` — a 3 alap exobolygó induláskor birtokolt.
+- **Kosárból eltávolítás:** a `removeFromCart` eltávolítja a tételt a kosárból. A UI gombja piros „Eltávolítás".
+- `checkout()`: ha `credits >= cartTotalCredits()`, kredit levonás, tételek a `owned`-ba, kosár ürítés.
+- `buyCredits(packId)`: `credits += pack.credits` (mock fizetés).
+- `persist.partialize`: `credits`, `owned` (`cart`, `isPreviewing`, `activePreviewId` **nem** perzisztált).
+- `activePreviewId` és `setActivePreviewId`: **nem perzisztált** — munkamenet-állapot. A `MusicPreviewButton` ezt használja a globális előnézet-követéshez.
 
 ---
 
@@ -242,14 +292,14 @@ interface ShopState {
 
 | Adat | Hely | Forma | Megjegyzés |
 |------|------|-------|-----------|
-| **Exobolygó nyers adat** (100) | `src/data/exoplanets.json` | JSON (Vite JSON-import) | Az `output/exoplanets.json` generátor-kimenet **másolata**; a shop `src/`-ből importál, egy `mapExoplanet` alakítja tétellé + procedurális ár |
-| **Űrhajó katalógus** (3 mock) | `src/constants/shopCatalog.ts` | Kézzel írt statikus TS | Név, ár, sebesség/kapacitás/hatótáv/gyártó flavor (a `universeData.ts` mintájára) |
+| **Exobolygó nyers adat** (100) | `src/data/exoplanets.json` | JSON (Vite JSON-import) | Az `output/exoplanets.json` generátor-kimenet **másolata** |
+| **Alap exobolygók** (3) | `src/constants/shopCatalog.ts` | `BASE_EXOPLANETS: ExoplanetProduct[]` | Proxima Centauri, Wolf 424, Ross 780; `priceCredits: 0` |
+| **Űrhajó katalógus** (3 mock) | `src/constants/shopCatalog.ts` | Kézzel írt statikus TS | Név, ár, sebesség/kapacitás/hatótáv/gyártó flavor |
 | **Zene metaadat** (5 sáv) | `src/constants/shopCatalog.ts` | Kézzel írt statikus TS | Név, ár, **fájlnév** (a `public/music/` audiofájlra mutat) |
-| **Zene audiofájlok** (5) | `public/music/*.mp3` | Bináris | Kisbetűsre + `_`-re átnevezve; a metaadat hivatkozza `${BASE_URL}music/<fájl>.mp3` |
+| **Zene audiofájlok** (5) | `public/music/*.mp3` | Bináris | Kisbetűsre + `_`-re átnevezve |
 | **Birtoklás + kredit-egyenleg** | `useShopStore` | Zustand + `persist` | Kulcs: `space-travel-shop` (localStorage) |
 | **Konstansok / képletek** | `src/constants/shopCatalog.ts` | TS | `CREDITS_PER_EUR`, `STARTING_CREDITS`, `DEBUG_STARTING_CREDITS`, ár-/wage-képlet, `mapExoplanet` |
-
-> **Miért `src/data/` az exobolygóknak és `src/constants/` a katalógusnak?** Az `output/exoplanets.json` egy generátor **kimenete** (nem forrás), ezért a shop egy verziózott `src/data/` másolatból importál (statikus Vite JSON-import, nem futásidejű `fetch`). A kézzel karbantartott hajó-/zene-katalógus a meglévő `constants/universeData.ts` mintáját követi.
+| **Generikus UI** | `src/components/ui/` | `Modal.tsx`, `Tabs.tsx` | Újrahasznosítható, független a feature-öktől |
 
 ### 4.1 Termék-típusok (`src/types/index.ts`)
 
@@ -259,151 +309,89 @@ export type ShopCategory = "exoplanet" | "ship" | "music" | "credits";
 export interface ShopProductBase {
   id: string;
   category: ShopCategory;
-  /** i18n kulcs vagy nyers név (bolygó/hajó/zene) */
   name: string;
   priceCredits: number;
-  /** priceCredits / CREDITS_PER_EUR – megjelenítéshez */
   priceEur: number;
 }
 
 export interface CreditPack {
-  id: string;               // "credits-starter" | "credits-advanced" | "credits-premium" | "credits-ultra"
-  nameKey: string;          // i18n kulcs a csomag nevéhez
-  priceEur: number;         // €-ban kifejezett valós ár
-  credits: number;          // kapott kredit mennyiség ⭐
+  id: string;
+  nameKey: string;
+  priceEur: number;
+  credits: number;
 }
 
 export interface ShipProduct extends ShopProductBase {
   category: "ship";
-  speedKmPerSecond: number;   // csak katalógus-flavor ebben a fázisban (nem hat a játékra)
-  manufacturer: string;       // flavor
-  capacity: number;           // fő
-  rangeLy: number;            // hatótáv (flavor)
-  descriptionKey: string;     // i18n kulcs a leíráshoz
+  speedKmPerSecond: number;
+  manufacturer: string;
+  capacity: number;
+  rangeLy: number;
+  descriptionKey: string;
 }
 
 export interface MusicProduct extends ShopProductBase {
   category: "music";
-  file: string;               // pl. "neon_heartbeat.mp3" (public/music/ alatt)
-  title: string;              // megjelenített cím
+  file: string;
+  title: string;
 }
 
 export interface ExoplanetProduct extends ShopProductBase {
   category: "exoplanet";
-  distanceLy: number;         // distance.lightYears
-  wage: number;               // procedurális jutalom-mező (jövőbeli küldetés-bekötéshez, most csak adat)
+  distanceLy: number;
+  wage: number;
   starName: string;
   temperatureK: number | null;
   massEarth: number | null;
 }
 ```
 
-### 4.2 Konstansok és képletek (`src/constants/shopCatalog.ts`)
+### 4.2 A 3 alap exobolygó (`BASE_EXOPLANETS`)
 
-```ts
-export const CREDITS_PER_EUR = 100;          // 100 ⭐ = 1 € (tájékoztató jellegű)
-export const STARTING_CREDITS = 0;           // kezdő egyenleg normál módban — nulláról indul!
-export const DEBUG_STARTING_CREDITS = 9000;  // kezdő egyenleg VITE_DEBUG_MODE=true esetén (teszteléshez)
+A játékos induláskor birtokolja őket. A shopban „Birtokolt" státusszal jelennek meg, nem vásárolhatók. A küldetésválasztóban az alap 3 célállomásként jelennek meg.
 
-export const eurFromCredits = (c: number) => Math.round((c / CREDITS_PER_EUR) * 100) / 100;
-
-export const CREDIT_PACKS: CreditPack[] = [
-  { id: "credits-starter",  nameKey: "shop.credits.starter",  priceEur: 10,  credits: 100  },
-  { id: "credits-advanced", nameKey: "shop.credits.advanced", priceEur: 25,  credits: 300  },
-  { id: "credits-premium",  nameKey: "shop.credits.premium",  priceEur: 50,  credits: 700  },
-  { id: "credits-ultra",    nameKey: "shop.credits.ultra",    priceEur: 100, credits: 2000 },
-];
-```
-
-**Exobolygó ár-képlet (determinisztikus, csak a bolygó-adatból):**
-
-```ts
-// distanceLy = distance.lightYears; massEarth ?? 1; temperatureK ?? 288 (földi átlag)
-priceCredits = Math.round(
-  200                                   // alap
-  + distanceLy * 25                     // távolság-prémium
-  + (massEarth ?? 1) * 60               // tömeg-prémium
-  + Math.abs((temperatureK ?? 288) - 288) * 0.8  // szélsőséges hőmérséklet-prémium
-);
-```
-
-**Exobolygó wage (küldetés-jutalom, determinisztikus):**
-
-```ts
-wage = Math.round(distanceLy * 15 + (massEarth ?? 1) * 5);
-```
-
-> A képletek **tiszta függvények** a bolygó-adatból → stabil, reprodukálható ár (nincs random). Ugyanez a determinizmus teszi lehetővé, hogy a [[004-ingame-shop-strapi-stripe]] fázisban a Strapi-katalógusba **ugyanazokat az árakat** seedeljük.
-
-### 4.3 A 3 mock űrhajó (`SHOP_SHIPS`)
-
-> A `speedKmPerSecond` ebben a fázisban **csak megjelenített katalógus-adat / flavor** (a kártyán látszik) — **NEM** hat a játékmenetre. Az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` km/s konstans **változatlan** marad; a bolti hajók sebességének tényleges bekötése a küldetésindításba **későbbi fázis** (lásd 9. szekció). Így a CLAUDE.md figyelmeztetése (`SHIP_SPEED_KM_PER_SECOND` + `Dashboard`/`MissionSelector`) ebben a fázisban **nem érintett**.
-
-| id | Név | Gyártó | Sebesség (km/s) | Kapacitás | Hatótáv (LY) | Ár ⭐ | € |
-|----|-----|--------|-----------------|-----------|--------------|------|---|
-| `ship-nomad-x1` | Nomad X1 | Orion Shipyards | **380** | 4 | 20 | **1200** | 12.00 |
-| `ship-vega-runner` | Vega Runner | Helios Dynamics | **920** | 8 | 60 | **4500** | 45.00 |
-| `ship-aether-titan` | Aether Titan | Nova Consortium | **2400** | 20 | 200 | **12000** | 120.00 |
-
-Flavor-leírások i18n kulccsal (`shop.ship.nomadX1.desc`, stb.). A `priceEur` a `CREDITS_PER_EUR`-ból számolt.
-
-### 4.4 A 5 zene (`SHOP_MUSIC`)
-
-A meglévő fájlok `public/music`-ban **átnevezendők** kisbetűsre, szóköz → `_`:
-
-| Régi fájlnév | Új fájlnév | id | Ár ⭐ | € |
-|--------------|-----------|----|------|---|
-| `Dust on the Highway.mp3` | `dust_on_the_highway.mp3` | `music-dust-on-the-highway` | 300 | 3.00 |
-| `Late Night Urgency.mp3` | `late_night_urgency.mp3` | `music-late-night-urgency` | 300 | 3.00 |
-| `Neon Heartbeat.mp3` | `neon_heartbeat.mp3` | `music-neon-heartbeat` | 300 | 3.00 |
-| `Neon Static.mp3` | `neon_static.mp3` | `music-neon-static` | 300 | 3.00 |
-| `Rust in the Gears.mp3` | `rust_in_the_gears.mp3` | `music-rust-in-the-gears` | 300 | 3.00 |
-
-> **Fájlnév-hivatkozások:** a `public/music` fájlokat a bolt-preview (`MusicPreviewButton`) és a háttérzene-választó (`useAudio` aktív zene URL) hivatkozza `${import.meta.env.BASE_URL}music/<fájl>.mp3` formában (base href `/realtime_space_travel/`). Az alap háttérzene továbbra is a `${BASE_URL}main_theme.mp3` (a `useAudio`-ban jelenleg hardcode-olt) — a bolti sávok ezt **egészítik ki**, nem cserélik.
-
-### 4.5 Exobolygó adat (`src/data/exoplanets.json`)
-
-- Az `E:\Projects\realtime_space_travel\output\exoplanets.json` (100 elem) **bemásolandó** a `src/data/exoplanets.json`-ba. Az `output/` egy generátor-kimenet; a shop a verziózott `src/data/` másolatból importál **statikus Vite JSON-importtal** (nem futásidejű `fetch`, nem `public/`), a bundle-méret elhanyagolható.
-- Szerkezet (a JSON szerint): `name`, `distance.{parsec,lightYears}`, `coordinates`, `star.{name,temperature,mass,radius,age,spectralType}`, `planet.{massEarth,radiusEarth,density,orbitalPeriodDays,semiMajorAxisAU,eccentricity,temperatureK,insolationEarth}`, `discovery.{year,method,facility}`, `images`, `links`.
-- Egy `mapExoplanet(raw, index)` segédfüggvény alakítja `ExoplanetProduct`-tá: `id = "exo-" + slug(name)` (ütközésnél `+ index`), `distanceLy = distance.lightYears`, ár/wage a 4.2 képletekből, `name`/`starName`/`temperatureK`/`massEarth` a nyers adatból.
-- **Kép:** ha `images.ESA/NASA/Wikipedia` URL létezik → azt használjuk; egyébként **procedurális placeholder** (pl. a `spectralType`/`temperatureK` alapján színezett CSS-gradiens „bolygó-korong"). A terv a placeholder-fallbacket javasolja, hogy ne függjünk külső képek elérhetőségétől.
-- **Nem fordítjuk** a bolygó- és csillagneveket (tulajdonnevek — összhangban a [[000-i18n-nyelvesites]] „Nem fordítandó" szakaszával).
+| id | Név | Távolság (ly) | Jutalom (⭐) | Ár |
+|----|-----|--------------|-------------|-----|
+| `exo-proxima-centauri` | Proxima Centauri | 4.24 | 50 | 0 (birtokolt) |
+| `exo-wolf-424` | Wolf 424 | 14.31 | 250 | 0 (birtokolt) |
+| `exo-ross-780` | Ross 780 | 15.34 | 1000 | 0 (birtokolt) |
 
 ---
 
-## 5. A vásárlás hatása — CSAK birtoklás (nincs játékmenet-bekötés)
+## 5. A vásárlás hatása — birtoklás + exobolygók bekötése
 
-Ebben a fázisban a `checkout` **kizárólag**:
+A `checkout` ebben a fázisban:
 1. levonja a kreditet (`useShopStore.credits`),
-2. a megvett tételt a `useShopStore.owned` megfelelő listájába teszi (`ships` / `music` / `exoplanets`) — localStorage-ban perzisztálva,
+2. a megvett tételt a `useShopStore.owned` megfelelő listájába teszi — localStorage-ban perzisztálva,
 3. üríti a kosarat, és megjeleníti a „sikeres vásárlás" képernyőt.
 
-A birtokolt tétel a boltban **„Birtokolt"** jelzést kap és nem tehető újra kosárba. **Ezen túl semmi nem történik** — a megvett hajó/zene/exobolygó egyelőre **nem** hat a játékmenetre:
+**Exobolygók → küldetésválasztó (MEGVALÓSÍTVA):** a `MissionSelector` most beolvassa a `useShopStore.owned.exoplanets`-et, és a birtokolt JSON exobolygókat (`mapExoplanet` + `exoplanetsData`) megjeleníti az alap 3 mellett. Minden küldetéskártyán van egy `ℹ` info gomb, ami a `MissionExoplanetModal`-ban mutatja a bolygó adatait (képek, csillag info, bolygó info, felfedezés, linkek). A JSON `images` mezői nested objektumok `{url, type, source}` formátumban — az `extractImageUrl()` helper kezeli ezt, `onError` fallback 🌌 placeholderekkel.
 
-- **NINCS** hajóválasztóba / küldetésindításba kötés (a hajó `speedKmPerSecond` csak katalógus-flavor; a `SHIP_SPEED_KM_PER_SECOND` konstans, a `Dashboard` és a `MissionSelector` számítása **érintetlen**).
-- **NINCS** zene a Beállítások lejátszójában (a boltban csak **belehallgatás/preview** van, ami nem állítja át a háttérzenét; a `SettingsScreen` és a `useAudio` háttérzene-logikája **érintetlen**).
-- **NINCS** exobolygó mint választható küldetés (a `MissionSelector`, a `universeData` és a `baseDestinations` **érintetlen** marad).
+**Python scraper dokumentálva:** a NASA Images API + Wikimedia Commons hívások 0/100 találatot adtak a 100 legközelebbi exobolygóra. ESA linkek is keresőoldalak, nem közvetlen képfájlok.
 
-> A `MusicPreviewButton` **kivétel** a „nincs hatás" alól, de az is csak ideiglenes, izolált előnézet-lejátszás (a preview idejére a háttérzene szünetel az `isPreviewing` flag alapján), **nem** a játék háttérzenéjét cseréli.
+**MEGVALÓSÍTVA:**
+- **Zenék bekötése a SettingsScreen-be:** `useUIStore.activeMusicId` (perszisztált állapot) tárolja a kiválasztott zenét (`null` = `main_theme.mp3`, különben a shopban vett zeneszám ID-ja). A `useAudio(activeMusicId)` paramétere dinamikusan váltja a lejátszott audio fájlt (`getTrackUrl` helper → `SHOP_MUSIC` katalógusból). A Beállítások menüben egy új sor jelenik meg a hangerőcsúszka alatt: **custom `<select>` dropdown** az alapértelmezett és a birtokolt zeneszámok között. A segmented gombsor 4+ gombbal lelógott a panelről, ezért lett select-re cserélve. Ha nincs megvásárolt zene, a dropdown **letiltva** (`opacity: 0.4`, `cursor: not-allowed`).
+- **i18n kulcsok:** `settings.musicTrack` („Zeneválasztás") és `settings.musicDefault` („Alapértelmezett") — mind az 5 nyelvre.
+- **MP3 fájlok átnevezése:** `public/music/*.mp3` fájlok kisbetűsre + `_`-re (pl. `Dust on the Highway.mp3` → `dust_on_the_highway.mp3`).
 
-A **birtokolt tartalmak tényleges játékmenetbe kötése** (hajó-sebesség a küldetésindításban, zene-sáv a lejátszóban, exobolygó mint küldetés) **külön, későbbi fázis** feladata — lásd a 9. szekciót. Ezért az adatmodellben már megvannak a szükséges mezők (`speedKmPerSecond`, `file`, `distanceLy`, `wage`), hogy a jövőbeli bekötés adat-oldalról előkészített legyen.
+**NINCS még megvalósítva:**
+- Űrhajók bekötése (hajóválasztó / sebesség módosítás)
 
 ---
 
 ## 6. i18n kulcslista (`shop.*`)
 
-Mind az 5 nyelven (hu, en, fr, de, es). **Az itt felsorolt a kulcslista; a tényleges fordítást az `i18n` agent végzi a /dev fázisban.** A bolygó-/csillag-/hajó-tulajdonnevek nem fordítandók (lásd [[000-i18n-nyelvesites]]).
+Mind az 5 nyelven (hu, en, fr, de, es). A tényleges fordítások a `src/i18n/locales/{en,hu,fr,de,es}/translation.json`-ben.
 
 ```
 shop.title                    # „Áruház"
 shop.back                     # „← Vissza"
-shop.credits                  # „⭐ {{count}} kredit"
+shop.creditsLabel             # „⭐ {{count}} kredit" (string, nem ütközik a shop.credits object namespace-szel)
 shop.balance                  # „Egyenleg: ⭐ {{count}}"
-shop.priceCredits             # „⭐ {{credits}}"
-shop.priceEur                 # „(€ {{eur}})"
 shop.tab.exoplanets           # „Exobolygók"
 shop.tab.ships                # „Űrhajók"
 shop.tab.music                # „Zenék"
+shop.tab.credits              # „Kredit vásárlás"
 shop.search                   # „Keresés név szerint…"
 shop.searchNoResult           # „Nincs találat"
 shop.addToCart                # „Kosárba"
@@ -419,24 +407,27 @@ shop.success.title            # „Sikeres vásárlás!"
 shop.success.text             # „A tételeket jóváírtuk. Jó utazást!"
 shop.success.continue         # „Vissza a boltba"
 shop.cartCount                # „{{count}} tétel"
-shop.preview.play             # „Belehallgatás" (aria)
-shop.preview.stop             # „Leállítás" (aria)
-shop.ship.speed               # „Sebesség: {{value}} km/s"
-shop.ship.capacity            # „Kapacitás: {{count}} fő"
-shop.ship.range               # „Hatótáv: {{value}} fényév"
-shop.ship.manufacturer        # „Gyártó: {{name}}"
-shop.ship.nomadX1.desc        # a Nomad X1 leírása
-shop.ship.vegaRunner.desc     # a Vega Runner leírása
-shop.ship.aetherTitan.desc    # az Aether Titan leírása
-shop.exoplanet.distance       # „{{value}} fényév"
-shop.exoplanet.star           # „Csillag: {{name}}"
-```
+shop.preview.play             # „Belehallgatás"
+shop.preview.stop             # „Leállítás"
+shop.ship.speedLabel          # Sebesség
+shop.ship.manufacturerLabel   # Gyártó
+shop.ship.capacityLabel       # Kapacitás
+shop.ship.rangeLabel          # Hatótáv
+shop.ship.crew                # fő
+shop.ship.ly                  # fényév
+shop.ship.modal.close         # Bezárás
+shop.ship.modal.specs         # Specifikációk
+shop.exoplanet.modal.close    # Bezárás
+shop.exoplanet.modal.distance # Távolság
+shop.exoplanet.modal.coordinates # Koordináták
+shop.exoplanet.modal.temperature # Hőmérséklet
+shop.exoplanet.modal.mass     # Tömeg
+shop.exoplanet.modal.radius   # Sugár
+shop.exoplanet.modal.links    # Külső linkek
+shop.exoplanet.modal.section.star     # Csillag adatai
+shop.exoplanet.modal.section.planet   # Bolygó adatai
+shop.exoplanet.modal.section.discovery # Felfedezés
 
-> **Elmaradó kulcsok:** a hajó-aktiválás (`shop.activeShip`/`baseShip`/`selectShip`), a Beállítások-zeneválasztó (`settings.musicTrack`/`defaultTrack`) és az exobolygó-jutalom (`shop.exoplanet.wage`) kulcsokra **ebben a fázisban nincs szükség**, mert nincs játékmenet-bekötés — ezek a jövőbeli bekötési fázishoz tartoznak (9. szekció).
-
-### Kreditcsomag i18n kulcsok
-
-```
 shop.credits.title            # „Kredit vásárlás"
 shop.credits.starter          # „Kezdő csomag"
 shop.credits.advanced         # „Haladó csomag"
@@ -452,59 +443,60 @@ shop.credits.back             # „Vissza a boltba"
 shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a 'Kredit vásárlás' fülön!"
 ```
 
-> A `mainMenu.shopComingSoon` kulcs **megmarad** (visszafelé kompatibilitás), de a „Áruház" gomb már nem ezt használja — a placeholder helyett `transitionTo("shop")`.
+> **Figyelem:** a `shop.credits` kulcs **nem használható stringként**, mert object namespace (`shop.credits.title`, `shop.credits.starter`, stb.). A kredit-egyenleg kijelző a `shop.creditsLabel` kulcsot használja.
 
 ---
 
 ## 7. Érintett / új fájlok
 
 **Új:**
-- `src/components/shop/ShopScreen.tsx (+.module.css)`, `ShopTabs.tsx`, `ProductGrid.tsx`, `ProductCard.tsx (+.module.css)`, `CartButton.tsx`, `CartView.tsx`, `CheckoutSuccess.tsx`, `MusicPreviewButton.tsx`, `CreditBalance.tsx (+.module.css)`
-- `src/components/shop/CreditShopView.tsx (+.module.css)` — **új**: kreditcsomagok listája
-- `src/components/shop/CreditSuccess.tsx` — **új**: sikeres kreditvásárlás képernyő
+- `src/components/shop/*.tsx` (ShopScreen, ShopTabs, ProductGrid, ProductCard, CartButton, CartView, CheckoutSuccess, MusicPreviewButton, CreditBalance, CreditShopView, CreditSuccess, ExoplanetPreviewModal, ShipPreviewModal)
+- `src/components/ui/Modal.tsx` (+.module.css) — **generikus** modál komponens
+- `src/components/ui/Tabs.tsx` (+.module.css) — **generikus** tab komponens
+- `src/components/screens/MissionExoplanetModal.tsx` — read-only exobolygó info modal
 - `src/state/useShopStore.ts` (+ `useShopStore.test.ts`)
-- `src/constants/shopCatalog.ts` (konstansok, `CREDIT_PACKS` (4 csomag), debug-kredit, 3 hajó, 5 zene, ár-/wage-képletek, `mapExoplanet`)
+- `src/constants/shopCatalog.ts` (konstansok, CREDIT_PACKS, BASE_EXOPLANETS, debug-kredit, 3 hajó, 5 zene, ár-/wage-képletek, mapExoplanet)
 - `src/data/exoplanets.json` (a `output/exoplanets.json` másolata, 100 elem)
 
 **Módosított:**
 - `src/types/index.ts` — `GamePhase` (`shop`), `ShopCategory`, `ShopProduct*`, `CartItem`, `OwnedItems`
 - `src/state/useGameStore.ts` — `phaseToFlags` (`shop` a pre-game `case`-hez)
-- `src/App.tsx` — `isPreGame` bővítés (`shop`) + a preview-flag (`isPreviewing`) figyelése a háttérzene szüneteltetéséhez
+- `src/App.tsx` — `isPreGame` bővítés (`shop`) + `shouldPlayMusic` kizárja a shopot
 - `src/components/routing/ScreenRouter.tsx` — új `case "shop": return <ShopScreen />`
 - `src/components/screens/MainMenu.tsx` — „Áruház" gomb: placeholder helyett `transitionTo("shop")`
+- `src/components/screens/MissionSelector.tsx` — birtokolt exobolygók megjelenítése + info gomb
+- `src/components/screens/MissionSelector.module.css` — info gomb + info modal stílusok
 - `public/music/*` — 5 fájl átnevezése kisbetűsre `_`-rel
 - `src/i18n/locales/{en,hu,fr,de,es}/translation.json` — `shop.*` kulcsok
-
-> **Érintetlen (nincs játékmenet-bekötés ebben a fázisban):** `screens/MissionSelector.tsx`, `features/Dashboard.tsx`, `screens/SettingsScreen.tsx`, `useAudio.ts`, `constants.ts` (`SHIP_SPEED_KM_PER_SECOND`), `universeData.ts`. Ezek módosítása a **jövőbeli bekötési fázishoz** tartozik (9. szekció).
+- `.claude/references/project-conventions.md` — új mappastruktúra (`ui/`, `screens/`, `shop/`)
 
 ---
 
 ## 8. Kockázatok / figyelmeztetések
 
-- **`SHIP_SPEED_KM_PER_SECOND` (CLAUDE.md):** a konstans **nem módosul**, és mivel ebben a fázisban **nincs hajó-sebesség bekötés**, a `Dashboard`/`MissionSelector` számítása is **érintetlen**. A hajó `speedKmPerSecond` csak megjelenített katalógus-flavor. (A tényleges sebesség-integráció a jövőbeli bekötési fázisban, a CLAUDE.md figyelmeztetését betartva történik.)
-- **Preview vs. háttérzene:** a belehallgatás és a `useAudio` háttérzene **ne szóljon egyszerre** — `isPreviewing` flag alapján az `App` szünetelteti a háttérzenét, preview leállásakor visszaáll.
-- **Fájl-átnevezés:** a `public/music` átnevezés után **minden** hivatkozásnak (preview, aktív zene URL) az új, kisbetűs `_`-es névre kell mutatnia; a régi nevekre nincs több hivatkozás. A `base href` (`/realtime_space_travel/`) miatt az URL `${BASE_URL}music/<fájl>.mp3`.
-- **Persist-kulcs:** `space-travel-shop` — nem ütközhet a `space-travel-game/ui/lang` (és a tervezett Firebase-cache) kulcsokkal.
-- **Adatméret:** a 100 exobolygó statikus importja elhanyagolható a bundle-ben; a rács **virtualizáció nélkül** is elbírja, de nagy lista esetén érdemes lazy/paginált renderre figyelni (első körben egyszerű görgetés + keresőszűrés elég).
-- **Determinisztikus ár:** az ár-/wage-képlet tiszta függvény — a [[004-ingame-shop-strapi-stripe]] Strapi-seed ugyanezt reprodukálja, hogy ne ugorjanak az árak a backend bekötésekor.
-- **Debug-kredit:** a `DEBUG_STARTING_CREDITS` (9000 ⭐) csak `VITE_DEBUG_MODE=true` esetén az induló egyenleg. Normál módban **0 ⭐** — első látogatáskor a bolt üres egyenleggel vár. A felhasználónak a Kredit vásárlás fülön kell induló kreditet vennie.
-- **Migráció Firebase-re:** a `useShopStore` API-ja (isOwned/checkout/credits/owned/buyCredits) úgy tervezendő, hogy a [[003-firebase-auth-settings]] a **forrást** cserélje (localStorage → RTDB), ne az UI-t. A kredit-levonás és -jóváírás akkor Cloud Functionre vált.
-- **Anti-cheat:** ebben a fázisban a kredit/birtoklás **kliensoldali** (localStorage) → hamisítható. Ez **tudatos, ideiglenes** kompromisszum; a mérvadó, szerver-írt forrást a [[003-firebase-auth-settings]] + [[004-ingame-shop-strapi-stripe]] hozza. A bolt-UI nem feltételezhet szerveroldali igazságot itt.
-- **Kreditcsomag árazás:** a 4 csomag aránya tudatosan nem lineáris (10€→100⭐ = 10⭐/€, 100€→2000⭐ = 20⭐/€) — ösztönzi a nagyobb csomag vásárlását. Ez a mock adatban is így marad, a Strapi ugyanezeket az árakat használja majd.
+- **`SHIP_SPEED_KM_PER_SECOND` (CLAUDE.md):** a konstans **nem módosul** ebben a fázisban. A hajó `speedKmPerSecond` csak katalógus-flavor. A tényleges sebesség-integráció a jövőbeli bekötési fázisban történik.
+- **Preview vs. háttérzene:** a shopban a háttérzene NEM szól (`shouldPlayMusic` kizárja a `"shop"` fázist). A zenei előnézet singleton `globalStopPreview`-t használ — egyszerre csak 1 előnézet.
+- **Fájl-átnevezés:** a `public/music` fájlok kisbetűs `_`-es nevekre lettek átnevezve; minden hivatkozás az új névre mutat.
+- **Persist-kulcs:** `space-travel-shop` — nem ütközik a `space-travel-game/ui/lang` kulcsokkal.
+- **Determinisztikus ár:** az ár-/wage-képlet tiszta függvény — a Strapi-seed ugyanezt reprodukálja.
+- **Debug-kredit:** `DEBUG_STARTING_CREDITS` (9000 ⭐) csak `VITE_DEBUG_MODE=true` esetén. Normál módban **0 ⭐**.
+- **Anti-cheat:** a kredit/birtoklás kliensoldali (localStorage) — ez tudatos, ideiglenes kompromisszum. A Firebase-fázis hozza a szerver-írt forrást.
+- **`shop.credits` kulcsütközés:** a `shop.credits` egyszerre volt string és object namespace — megoldva: a string kulcs `shop.creditsLabel`-re lett nevezve.
+- **Grid scroll:** a `.productGrid` flex scroll chain segítségével csak a grid scrollázik, a fülek és kereső fixek maradnak.
 
 ---
 
 ## 9. Kapcsolat a következő fázisokkal
 
-- **🔜 Birtokolt tartalmak játékmenetbe kötése (későbbi, külön fázis)** — ez a fázis **csak a birtoklást** menti; a tényleges bekötés **jövőbeli lépés**:
-  - **Űrhajók** → hajóválasztó / küldetésindítás: az aktív hajó `speedKmPerSecond`-je felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `travelYears`/`features/Dashboard`/`screens/MissionSelector` számításban (a CLAUDE.md figyelmeztetését betartva). Ez összefügg a [[003-firebase-auth-settings]] `shipSelect` fázisával.
-  - **Zenék** → a Beállítások zene-lejátszója: a birtokolt sáv aktiválása → a `useAudio` háttérzene-URL cseréje (az alap `main_theme.mp3` helyett).
-  - **Exobolygók** → küldetésválasztó: a birtokolt bolygók megjelennek a `screens/MissionSelector`-ban választható úticélként (`baseDestinations` + birtokolt bolygók), a `wage`/`distanceLy` mezőkkel.
-  - Az adatmodell ezt **előkészíti** (a mezők már megvannak), de a bekötő kód (`activeShipId`/`activeMusicId`, `screens/MissionSelector`/`features/Dashboard`/`useAudio`/`screens/SettingsScreen` módosítás) **nem** ebben a fázisban készül.
-- **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`); a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function; a localStorage offline tükörré válik. A fenti játékmenet-bekötés (aktív hajó/zene) itt/ezután kap Firebase-forrást (`settings`).
-- **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás). A **mock katalógus és kosár** (termékekre) **megmarad** (a Strapi csak a fizetési utat kezeli). A `ShopScreen`/`ProductCard`/`CartView`/`CreditShopView` UI **megmarad**; a `CreditShopView` „Megveszem" gombja valós Stripe fizetésre vált (Strapi Checkout Session → webhook → Firebase `wallet.credits` növelés). A termék-katalógus (hajók, zenék, exobolygók) továbbra is mock marad — a Strapi **nem** a termék-katalógust, hanem **kizárólag a kreditfeltöltést** végzi.
-- **[[000-i18n-nyelvesites]]** — a `shop.*` kulcsok a meglévő nyelvi rétegbe illeszkednek; a tulajdonnevek (bolygó/csillag/hajó) nem fordítandók.
-- **[[001-main-menu-settings]]** — a „Áruház" gomb (eddig placeholder) most valódi `shop` fázisra visz; a `GamePhase`/`ScreenRouter`/`phaseToFlags` mintát innen örökli. (A `SettingsScreen` zeneválasztó-bővítése a jövőbeli bekötési fázis.)
+- **✅ Exobolygók → küldetésválasztó (MEGVALÓSÍTVA):** a birtokolt exobolygók megjelennek a `MissionSelector`-ban, info modalban (`MissionExoplanetModal`) megtekinthetők képekkel és linkekkel.
+- **✅ Exobolygó kép renderelés (JAVÍTVA):** a JSON `images` mezői nested objektumok `{url, type, source}` formátumban → `extractImageUrl()` helper + `onError` 🌌 fallback. A `links` mező string URL-eket tartalmaz, ott nincs hiba.
+- **✅ Python scraper dokumentálva:** a NASA Images API + Wikimedia Commons hívások 0/100 találatot adtak a 100 legközelebbi exobolygóra. ESA linkek is keresőoldalak, nem közvetlen képfájlok.
+- **🔜 Űrhajók bekötése (későbbi fázis)** — hajóválasztó / küldetésindítás: az aktív hajó `speedKmPerSecond`-je felülírja a `SHIP_SPEED_KM_PER_SECOND`-t.
+- **✅ Zenék bekötése (MEGVALÓSÍTVA)** — a Beállítások zene-lejátszója: a birtokolt sáv aktiválása → a `useAudio` háttérzene-URL cseréje. `useUIStore.activeMusicId` perszisztál, `useAudio(activeMusicId)` dinamikusan vált.
+- **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`).
+- **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás).
+- **[[000-i18n-nyelvesites]]** — a `shop.*` kulcsok a meglévő nyelvi rétegbe illeszkednek.
+- **[[001-main-menu-settings]]** — a „Áruház" gomb most valódi `shop` fázisra visz.
 
 ---
 
@@ -512,17 +504,20 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 
 | Rész | Nagyságrend |
 |------|-------------|
-| Adat + állapot (`useShopStore`, `CREDIT_PACKS`, `shopData.ts`, exoplanets import, típusok) | ~1 nap |
-| Bolt-UI (ShopScreen + fülek + kártyák + kosár + checkout + preview + **CreditShopView + CreditSuccess**) | ~2–3 nap |
-| Bekötés a játékba (hajó-sebesség, zeneválasztó, exobolygó-küldetések, fájl-átnevezés) | ~1–2 nap |
-| i18n kulcsok (5 nyelv) + Vitest + validáció | ~1 nap |
+| Adat + állapot (`useShopStore`, `CREDIT_PACKS`, `BASE_EXOPLANETS`, exoplanets import, típusok) | ✅ Kész |
+| Bolt-UI (ShopScreen + fülek + kártyák + kosár + checkout + preview + CreditShopView + CreditSuccess) | ✅ Kész |
+| Generikus komponensek (Modal, Tabs) | ✅ Kész |
+| Játékmenet-bekötés (exobolygók a MissionSelector-ban + info modal) | ✅ Kész |
+| Zenék játékmenet-bekötése (SettingsScreen zeneválasztó) | ✅ Kész |
+| Űrhajók játékmenet-bekötése | ⬜ Tervezett (későbbi fázis) |
+| i18n kulcsok (5 nyelv) + validáció | ✅ Kész (kivéve Vitest tesztek) |
 
-**Kész definíció:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók, (2) Űrhajók, (3) Zenék, (4) **Kredit vásárlás**. A termékfülekben 100 exobolygó keresővel, 3 űrhajó, 5 zene böngészhető; egyenként 1 db kosárba tehető, majd in-game kreditből fizethető. A **Kredit vásárlás** fülön 4 kreditcsomag (10€→100⭐, 25€→300⭐, 50€→700⭐, 100€→2000⭐) vehető mock fizetéssel — a kredit azonnal jóváíródik. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐. A mock checkout levonja a kreditet, birtokoltra állítja a tételeket és üríti a kosarat. Minden birtoklás és a kredit-egyenleg `localStorage`-ban (`space-travel-shop`) perzisztál. A `SHIP_SPEED_KM_PER_SECOND` konstans változatlan.
+**Kész definíció elérve:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók + kereső, (2) Űrhajók + kereső, (3) Zenék + kereső, (4) **Kredit vásárlás** (azonos layout). 100 exobolygó (JSON) + 3 alap exobolygó (Birtokolt), 3 űrhajó preview-vel, 5 zene singleton-preview-val. Kosár „Eltávolítás" gombbal. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐, reset gombbal. Háttérzene nem szól a shopban. Csak a grid scrollázik. Birtokolt exobolygók a küldetésválasztóban, info gombbal (a kártya alján). Generikus Modal/Tabs komponensek `src/components/ui/`-ben. A Beállítások menüben **zeneválasztó** (alap + birtokolt zenék), letiltva ha nincs megvett zene. `useAudio` dinamikus track-váltással. ActiveMusicId perszisztálva `useUIStore`-ban.
 
 ---
 
 ## 11. Kapcsolódó tervek
-- [[001-main-menu-settings]] – az „Áruház" gomb, a `GamePhase`/`ScreenRouter`/`phaseToFlags` minta, a `SettingsScreen`.
-- [[003-firebase-auth-settings]] – a kredit/birtoklás/beállítás per-felhasználós Firebase-mentése; közös hajó-sebesség és zeneválasztó integráció.
-- [[004-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe; erre a frontend-fázisra épül.
+- [[001-main-menu-settings]] – az „Áruház" gomb, a `GamePhase`/`ScreenRouter`/`phaseToFlags` minta.
+- [[003-firebase-auth-settings]] – a kredit/birtoklás/beállítás per-felhasználós Firebase-mentése.
+- [[004-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
 - [[000-i18n-nyelvesites]] – a `shop.*` nyelvi réteg; a tulajdonnevek nem fordítandók.

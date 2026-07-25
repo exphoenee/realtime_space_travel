@@ -1,8 +1,10 @@
-import { type CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { Difficulty } from "../../types";
+import { SHOP_MUSIC } from "../../constants/shopCatalog";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
+import useShopStore from "../../state/useShopStore";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./SettingsScreen.module.css";
 
@@ -15,6 +17,15 @@ const SettingsScreen = () => {
   const setMusicVolume = useUIStore((s) => s.setMusicVolume);
   const difficulty = useUIStore((s) => s.difficulty);
   const setDifficulty = useUIStore((s) => s.setDifficulty);
+  const activeMusicId = useUIStore((s) => s.activeMusicId);
+  const setActiveMusicId = useUIStore((s) => s.setActiveMusicId);
+  const ownedMusicIds = useShopStore((s) => s.owned.music);
+
+  const ownedMusicTracks = useMemo(() => {
+    return SHOP_MUSIC.filter((track) => ownedMusicIds.includes(track.id));
+  }, [ownedMusicIds]);
+
+  const hasOwnedMusic = ownedMusicTracks.length > 0;
 
   const handleBack = () => transitionTo("mainMenu");
 
@@ -46,6 +57,33 @@ const SettingsScreen = () => {
               aria-valuetext={`${Math.round(musicVolume * 100)}%`}
             />
             <span className={styles.value}>{Math.round(musicVolume * 100)}%</span>
+          </div>
+        </div>
+
+        {/* Music track selector — custom select dropdown */}
+        <div className={styles.row}>
+          <label className={`${styles.label}${!hasOwnedMusic ? ` ${styles.labelDisabled}` : ""}`} htmlFor="music-track">
+            {t("settings.musicTrack")}
+          </label>
+          <div className={styles.selectWrapper}>
+            <select
+              id="music-track"
+              className={`${styles.select}${!hasOwnedMusic ? ` ${styles.selectDisabled}` : ""}`}
+              value={activeMusicId ?? "__default__"}
+              onChange={(e) => {
+                const val = e.target.value;
+                setActiveMusicId(val === "__default__" ? null : val);
+              }}
+              disabled={!hasOwnedMusic}
+            >
+              <option value="__default__">{t("settings.musicDefault")}</option>
+              {ownedMusicTracks.map((track) => (
+                <option key={track.id} value={track.id}>
+                  {track.title}
+                </option>
+              ))}
+            </select>
+            <span className={styles.selectArrow} aria-hidden="true">▼</span>
           </div>
         </div>
 

@@ -11,7 +11,7 @@ src/
 │   ├── screens/             # Full-page GamePhase views (IntroScreen, MainMenu, MissionSelector, SettingsScreen, LoadingScreen)
 │   ├── features/            # In-game feature components (Dashboard, PauseMenu, DebugOverlay)
 │   ├── shop/                # Shop feature (ShopScreen, ProductCard, CartView, CreditShopView, ...)
-│   ├── ui/                  # Reusable UI primitives (LanguageSwitcher, Starfield, ScreenCheck, ErrorBoundary)
+│   ├── ui/                  # Reusable generic UI components (Modal, Tabs, LanguageSwitcher, Starfield, ScreenCheck, ErrorBoundary)
 │   └── routing/             # Screen phase router (ScreenRouter)
 ├── hooks/                   # Custom React hooks (use* prefix)
 ├── services/                # External service integrations
@@ -30,10 +30,12 @@ src/
 | `screens/` | Egy-egy GamePhase-hez tartozó teljes képernyős nézet | `IntroScreen.tsx`, `MainMenu.tsx` |
 | `features/` | Játék közben használt funkció-komponensek | `Dashboard.tsx`, `PauseMenu.tsx` |
 | `shop/` | Bolt funkció összes komponense (saját mappa, mert 10+ fájl) | `ShopScreen.tsx`, `ProductCard.tsx` |
-| `ui/` | Újrahasználható, apró UI elemek | `LanguageSwitcher.tsx`, `Starfield.tsx` |
+| `ui/` | **Generikus, újrahasznosítható UI komponensek.** Bármely feature használhatja őket. | `Modal.tsx`, `Tabs.tsx`, `LanguageSwitcher.tsx`, `Starfield.tsx` |
 | `routing/` | Navigációs / fázis-orchestrációs komponens | `ScreenRouter.tsx` |
 
 Ha egy feature 5+ komponensné nagyobbra nő, kapjon saját mappát (`features/<feature>/`).
+
+**Generikus → feature irány:** a `ui/`-beli komponensek SOHA nem importálhatnak shop-specifikus modulokat (pl. `shopCatalog`, `useShopStore`). Csak props-on keresztül kapnak adatot. A feature-k (pl. shop) importálják a `ui/` komponenseket, nem fordítva.
 
 ## File Naming Conventions
 

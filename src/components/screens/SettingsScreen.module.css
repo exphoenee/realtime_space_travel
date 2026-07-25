@@ -165,6 +165,76 @@
   background: #67e8f9;
 }
 
+.segment:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.segment:disabled:hover {
+  color: #7dd3fc;
+  border-color: transparent;
+  background: transparent;
+}
+
+.labelDisabled {
+  opacity: 0.4;
+}
+
+/* Custom select dropdown */
+.selectWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 240px;
+}
+
+.select {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  background: rgba(3, 7, 18, 0.7);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 0.5rem;
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.select:focus-visible {
+  border-color: #67e8f9;
+  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.25);
+}
+
+.select:hover:not(:disabled) {
+  border-color: rgba(103, 232, 249, 0.7);
+}
+
+.selectDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.selectArrow {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  color: #67e8f9;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.select:disabled + .selectArrow {
+  opacity: 0.3;
+}
+
 .backButton {
   margin-top: 2rem;
   width: 100%;

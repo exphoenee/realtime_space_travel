@@ -70,7 +70,8 @@ const App: React.FC = () => {
 
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
 
-  const { playMusic } = useAudio();
+  const activeMusicId = useUIStore((s) => s.activeMusicId);
+  const { playMusic } = useAudio(activeMusicId);
   const localWeather = useWeather(destination);
   const { videoRef, isStreamReady } = useCamera(destination);
   const { debugCanvasRef, faceStatus, debugMetrics } = useFaceDetection(
@@ -155,6 +156,7 @@ const App: React.FC = () => {
     gamePhase === "mainMenu" ||
     gamePhase === "missionSelect" ||
     gamePhase === "settings" ||
+    gamePhase === "shop" ||
     gamePhase === "loading";
 
   const attentionCountdown =
@@ -244,12 +246,13 @@ const App: React.FC = () => {
   }, [destination, updateBestServiceTime]);
 
   const shouldPlayMusic =
-    !destination ||
-    (!showExitConfirm &&
-      !cameraError &&
-      !crewLost &&
-      !missionComplete &&
-      isPaused);
+    gamePhase !== "shop" &&
+    (!destination ||
+      (!showExitConfirm &&
+        !cameraError &&
+        !crewLost &&
+        !missionComplete &&
+        isPaused));
 
   useEffect(() => {
     playMusic(shouldPlayMusic, isMusicMuted, musicVolume);

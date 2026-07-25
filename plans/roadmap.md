@@ -4,11 +4,11 @@
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-25"
 total_plans: 5
-implemented: 2
+implemented: 3
 in_progress: 0
-not_started: 3
-tasks_done: 29
-tasks_total: 86
+not_started: 2
+tasks_done: 70
+tasks_total: 110
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -26,10 +26,10 @@ plans:
     dependencies: [000-i18n-nyelvesites]
   - step: 2
     slug: "002-ingame-shop-frontend"
-    status: "not-started"
+    status: "implemented"
     category: "shop"
-    tasks_done: 0
-    tasks_total: 19
+    tasks_done: 41
+    tasks_total: 43
     dependencies: [001-main-menu-settings]
   - step: 3
     slug: "003-firebase-auth-settings"
@@ -55,8 +55,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 2 implemented · 0 in progress · 3 not started (of 5)
-- **Tasks:** 29/86 done (34%)
+- **Plans:** 3 implemented · 0 in progress · 2 not started (of 5)
+- **Tasks:** 70/110 done (64%)
 
 ## Overview
 
@@ -64,7 +64,7 @@ plans:
 |------|------|--------|----------|-------|----------|-----------|
 | 0 | Nyelvesítési terv | ✅ Implemented | 20/21 | 0 | i18n | — |
 | 1 | Főmenü + Beállítások képernyő terve | ✅ Implemented | 9/13 | — | ui | 0 |
-| 2 | Helyi működésű áruház (frontend-only) terve | ⬜ Not started | 0/19 | — | shop | 1 |
+| 2 | Helyi működésű áruház (frontend-only) terve | ✅ Implemented | 41/43 | — | shop | 1 |
 | 3 | Firebase bejelentkezés + perzisztens felhasználói beállítások terve | ⬜ Not started | 0/14 | 1–2 | auth | 0, 1 |
 | 4 | Játékon belüli áruház terve | ⬜ Not started | 0/19 | 3–4 | shop | 3 |
 
@@ -74,7 +74,7 @@ plans:
 
 - **Step 0 — Nyelvesítési terv** (20/21): Firebase `settings.language` szinkron bekötése (Fázis 1 után — lásd [[003-firebase-auth-settings]])
 - **Step 1 — Főmenü + Beállítások képernyő terve** (9/13): **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
-- **Step 2 — Helyi működésű áruház (frontend-only) terve** (0/19): `output/exoplanets.json` bemásolása `src/data/exoplanets.json`-ba (100 elem, Vite JSON-import) + típus (`ExoplanetRaw`)
+- **Step 2 — Helyi működésű áruház (frontend-only) terve** (41/43): **Űrhajók bekötése** — hajóválasztó / sebesség módosítás (későbbi fázis)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (0/14): Firebase projekt + Auth (Google, Anonymous) + Realtime Database + env változók
 - **Step 4 — Játékon belüli áruház terve** (0/19): Strapi projekt (külön repo vagy `/server`) + adatbázis
 

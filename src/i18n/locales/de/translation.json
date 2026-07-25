@@ -127,7 +127,9 @@
     "title": "Einstellungen",
     "musicVolume": "Musiklautstärke",
     "back": "Zurück",
-    "difficulty": "Schwierigkeit"
+    "difficulty": "Schwierigkeit",
+    "musicTrack": "Musikauswahl",
+    "musicDefault": "Standard"
   },
   "difficulty": {
     "easy": "Leicht",

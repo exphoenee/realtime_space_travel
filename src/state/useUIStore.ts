@@ -16,12 +16,15 @@ interface UIState {
   musicVolume: number;
   /** Kiválasztott nehézség (a játékmenetbe később kötjük be) */
   difficulty: Difficulty;
+  /** Aktív zene azonosítója (null = main_theme, különben shop zenék) */
+  activeMusicId: string | null;
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
   setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setMusicVolume: (updater: StateUpdater<number>) => void;
   setDifficulty: (updater: StateUpdater<Difficulty>) => void;
+  setActiveMusicId: (id: string | null) => void;
 }
 
 const useUIStore = create<UIState>()(
@@ -32,6 +35,9 @@ const useUIStore = create<UIState>()(
       isMusicMuted: false,
       musicVolume: MUSIC_ACTIVE_VOLUME,
       difficulty: "medium",
+      activeMusicId: null,
+
+      setActiveMusicId: (id) => set({ activeMusicId: id }),
 
       setCameraError: (updater) =>
         set((state) => ({
@@ -61,6 +67,7 @@ const useUIStore = create<UIState>()(
         isMusicMuted: state.isMusicMuted,
         musicVolume: state.musicVolume,
         difficulty: state.difficulty,
+        activeMusicId: state.activeMusicId,
       }),
     },
   ),

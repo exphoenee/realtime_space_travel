@@ -127,7 +127,9 @@
     "title": "Beállítások",
     "musicVolume": "Zene hangereje",
     "back": "Vissza",
-    "difficulty": "Nehézség"
+    "difficulty": "Nehézség",
+    "musicTrack": "Zeneválasztás",
+    "musicDefault": "Alapértelmezett"
   },
   "difficulty": {
     "easy": "Könnyű",
@@ -141,5 +143,101 @@
     "fr": "Français",
     "de": "Deutsch",
     "es": "Español"
+  },
+  "shop": {
+    "title": "Áruház",
+    "back": "← Vissza",
+    "creditsLabel": "⭐ {{count}} kredit",
+    "balance": "Egyenleg: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exobolygók",
+      "ships": "Űrhajók",
+      "music": "Zenék"
+    },
+    "search": "Keresés név szerint…",
+    "searchNoResult": "Nincs találat",
+    "addToCart": "Kosárba",
+    "inCart": "Kosárban ✓",
+    "owned": "Birtokolt",
+    "remove": "Eltávolítás",
+    "cart": {
+      "title": "Kosár",
+      "empty": "A kosár üres",
+      "total": "Végösszeg",
+      "checkout": "Fizetés"
+    },
+    "notEnoughCredits": "Nincs elég kredit ehhez a vásárláshoz.",
+    "success": {
+      "title": "Sikeres vásárlás!",
+      "text": "A tételeket jóváírtuk. Jó utazást!",
+      "continue": "Vissza a boltba"
+    },
+    "cartCount": "{{count}} tétel",
+    "preview": {
+      "play": "Belehallgatás",
+      "stop": "Leállítás"
+    },
+    "ship": {
+      "preview": "🚀 Részletek",
+      "speed": "Sebesség: {{value}} km/s",
+      "capacity": "Kapacitás: {{count}} fő",
+      "range": "Hatótáv: {{value}} fényév",
+      "manufacturer": "Gyártó: {{name}}",
+      "speedLabel": "Sebesség",
+      "manufacturerLabel": "Gyártó",
+      "capacityLabel": "Legénység",
+      "rangeLabel": "Hatótáv",
+      "crew": "fő",
+      "ly": "fé",
+      "modal": {
+        "close": "Bezárás",
+        "specs": "Műszaki adatok"
+      },
+      "nomadX1": {
+        "desc": "A Nomad X1 egy megbízható, belépő szintű csillaghajó, amelyet az Orion Shipyards épített. Kompakt mérete ellenére meglepően gyors, ideális választás rövidebb küldetésekhez."
+      },
+      "vegaRunner": {
+        "desc": "A Vega Runner a Helios Dynamics mérnökeinek büszkesége. Kiegyensúlyozott teljesítmény és nagy hatótáv jellemzi, alkalmas közepes távolságú expedíciókra."
+      },
+      "aetherTitan": {
+        "desc": "Az Aether Titan a Nova Consortium csúcskategóriás csillaghajója. Hatalmas sebessége és kapacitása révén a legtávolabbi csillagrendszerek is elérhetővé válnak."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} fényév",
+      "star": "Csillag: {{name}}",
+      "preview": "🔍 Előnézet",
+      "modal": {
+        "close": "Bezárás",
+        "distance": "Távolság",
+        "coordinates": "Koordináták",
+        "temperature": "Hőmérséklet",
+        "mass": "Tömeg",
+        "radius": "Sugár",
+        "links": "Linkek",
+        "section": {
+          "star": "Csillag",
+          "planet": "Bolygó",
+          "discovery": "Felfedezés"
+        }
+      }
+    },
+    "credits": {
+      "title": "Kredit vásárlás",
+      "starter": "Kezdő csomag",
+      "advanced": "Haladó csomag",
+      "premium": "Prémium csomag",
+      "ultra": "Ultra csomag",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} kredit",
+      "buy": "Megveszem",
+      "successTitle": "Sikeres kreditvásárlás!",
+      "successText": "{{credits}} ⭐ kreditet vettél!",
+      "newBalance": "Új egyenleg: ⭐ {{balance}}",
+      "back": "Vissza a boltba",
+      "notEnoughCreditsHint": "Vegyél kreditet a 'Kredit vásárlás' fülön!"
+    }
   }
 }
