@@ -475,7 +475,7 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - `public/music/*` — 5 fájl átnevezése kisbetűsre `_`-rel
 - `src/i18n/locales/{en,hu,fr,de,es}/translation.json` — `shop.*` kulcsok
 
-> **Érintetlen (nincs játékmenet-bekötés ebben a fázisban):** `MissionSelector.tsx`, `Dashboard.tsx`, `SettingsScreen.tsx`, `useAudio.ts`, `constants.ts` (`SHIP_SPEED_KM_PER_SECOND`), `universeData.ts`. Ezek módosítása a **jövőbeli bekötési fázishoz** tartozik (9. szekció).
+> **Érintetlen (nincs játékmenet-bekötés ebben a fázisban):** `screens/MissionSelector.tsx`, `features/Dashboard.tsx`, `screens/SettingsScreen.tsx`, `useAudio.ts`, `constants.ts` (`SHIP_SPEED_KM_PER_SECOND`), `universeData.ts`. Ezek módosítása a **jövőbeli bekötési fázishoz** tartozik (9. szekció).
 
 ---
 
@@ -497,10 +497,10 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 ## 9. Kapcsolat a következő fázisokkal
 
 - **🔜 Birtokolt tartalmak játékmenetbe kötése (későbbi, külön fázis)** — ez a fázis **csak a birtoklást** menti; a tényleges bekötés **jövőbeli lépés**:
-  - **Űrhajók** → hajóválasztó / küldetésindítás: az aktív hajó `speedKmPerSecond`-je felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `travelYears`/`Dashboard`/`MissionSelector` számításban (a CLAUDE.md figyelmeztetését betartva). Ez összefügg a [[003-firebase-auth-settings]] `shipSelect` fázisával.
+  - **Űrhajók** → hajóválasztó / küldetésindítás: az aktív hajó `speedKmPerSecond`-je felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `travelYears`/`features/Dashboard`/`screens/MissionSelector` számításban (a CLAUDE.md figyelmeztetését betartva). Ez összefügg a [[003-firebase-auth-settings]] `shipSelect` fázisával.
   - **Zenék** → a Beállítások zene-lejátszója: a birtokolt sáv aktiválása → a `useAudio` háttérzene-URL cseréje (az alap `main_theme.mp3` helyett).
-  - **Exobolygók** → küldetésválasztó: a birtokolt bolygók megjelennek a `MissionSelector`-ban választható úticélként (`baseDestinations` + birtokolt bolygók), a `wage`/`distanceLy` mezőkkel.
-  - Az adatmodell ezt **előkészíti** (a mezők már megvannak), de a bekötő kód (`activeShipId`/`activeMusicId`, `MissionSelector`/`Dashboard`/`useAudio`/`SettingsScreen` módosítás) **nem** ebben a fázisban készül.
+  - **Exobolygók** → küldetésválasztó: a birtokolt bolygók megjelennek a `screens/MissionSelector`-ban választható úticélként (`baseDestinations` + birtokolt bolygók), a `wage`/`distanceLy` mezőkkel.
+  - Az adatmodell ezt **előkészíti** (a mezők már megvannak), de a bekötő kód (`activeShipId`/`activeMusicId`, `screens/MissionSelector`/`features/Dashboard`/`useAudio`/`screens/SettingsScreen` módosítás) **nem** ebben a fázisban készül.
 - **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`); a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function; a localStorage offline tükörré válik. A fenti játékmenet-bekötés (aktív hajó/zene) itt/ezután kap Firebase-forrást (`settings`).
 - **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás). A **mock katalógus és kosár** (termékekre) **megmarad** (a Strapi csak a fizetési utat kezeli). A `ShopScreen`/`ProductCard`/`CartView`/`CreditShopView` UI **megmarad**; a `CreditShopView` „Megveszem" gombja valós Stripe fizetésre vált (Strapi Checkout Session → webhook → Firebase `wallet.credits` növelés). A termék-katalógus (hajók, zenék, exobolygók) továbbra is mock marad — a Strapi **nem** a termék-katalógust, hanem **kizárólag a kreditfeltöltést** végzi.
 - **[[000-i18n-nyelvesites]]** — a `shop.*` kulcsok a meglévő nyelvi rétegbe illeszkednek; a tulajdonnevek (bolygó/csillag/hajó) nem fordítandók.

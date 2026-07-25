@@ -76,7 +76,7 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [ ] Nyelv/rekord/némítás összefésülés a meglévő store-okkal ([[000-i18n-nyelvesites]])
 
 **Fázis 2 — hajóválasztó + sebesség**
-- [ ] `GamePhase: "shipSelect"` + `MainMenu` pending destination + `ScreenRouter` ág
+- [ ] `GamePhase: "shipSelect"` + `screens/MainMenu` pending destination + `routing/ScreenRouter` ág
 - [ ] `ShipSelect` komponens (alap hajó mindig; üres inventory → csak alap)
 - [ ] Sebesség-integráció (aktív hajó → `travelYears` / `Dashboard` / `MainMenu`) — **közös** [[004-ingame-shop-strapi-stripe]]
 - [ ] Zene-integráció: `useAudio` az aktív zene URL-jével
@@ -110,11 +110,13 @@ src/
     useSettingsStore.ts  # activeShipId, activeMusicId, musicMuted, language (RTDB-vel szinkronban)
     useInventoryStore.ts # ownedShips, ownedMusic, ownedDlc, credits, bestServiceSeconds (RTDB read-only tükör)
   components/
-    SettingsMenu.tsx     # a harang helyett: fogaskerék gomb + panel
-    SettingsMenu.module.css
-    AccountSection.tsx   # login/logout/link Google, felhasználó kijelzés
-    ShipSelect.tsx       # küldetés utáni hajóválasztó képernyő
-    ShipSelect.module.css
+    features/
+      SettingsMenu.tsx     # a harang helyett: fogaskerék gomb + panel
+      SettingsMenu.module.css
+      AccountSection.tsx   # login/logout/link Google, felhasználó kijelzés
+    screens/
+      ShipSelect.tsx       # küldetés utáni hajóválasztó képernyő
+      ShipSelect.module.css
 ```
 
 ---
@@ -209,13 +211,13 @@ A jelenlegi **`bellOverlay`** (`App.tsx` 198–219. sor): egy 🔔/🔕 gomb a v
 ### Változtatások
 - **Új `GamePhase: "shipSelect"`** a `src/types/index.ts`-be + `phaseToFlags` a `useGameStore`-ban (paused-szerű állapot, mint a `menu`).
 - A `MainMenu` `onSelectDestination`-je már **nem** indít küldetést, hanem eltárolja a **függőben lévő célt** és `transitionTo("shipSelect")`.
-- **`ScreenRouter`**: új `case "shipSelect": return <ShipSelect ... />`.
-- **`ShipSelect` komponens:**
+- **`routing/ScreenRouter`**: új `case "shipSelect": return <ShipSelect ... />`.
+- **`screens/ShipSelect` komponens:
   - Listázza a választható hajókat: **alap hajó** (mindig) + `inventory.ships` birtokolt hajók.
   - **Ha az `inventory.ships` üres → csak az alap hajó választható** (a többi „zárolt", boltba mutató kártyaként jelenhet meg — kapcsolódik a [[004-ingame-shop-strapi-stripe]] tervhez).
   - Hajó adatai: név, **sebesség** (km/s), a célhoz számított **utazási idő** (a hajó sebességéből, lásd lent).
   - „Indítás" gomb → beállítja `settings.activeShipId`-t, majd meghívja a kamera-ellenőrzést és a `startMission`-t a kiválasztott hajóval.
-- **Sebesség-integráció:** a `startMission` a **kiválasztott hajó** sebességéből számolja a `travelYears`-t (jelenleg a fix `SHIP_SPEED_LIGHTYEARS_PER_YEAR`-ből). A `Dashboard` sebesség-kijelzője és a `MainMenu` utazásiidő-becslése is az aktív hajóból számol. (Ez a rész közös a [[004-ingame-shop-strapi-stripe]] „aktív hajó" integrációjával — érdemes egyszer, egységesen megvalósítani.)
+- **Sebesség-integráció:** a `startMission` a **kiválasztott hajó** sebességéből számolja a `travelYears`-t (jelenleg a fix `SHIP_SPEED_LIGHTYEARS_PER_YEAR`-ből). A `features/Dashboard` sebesség-kijelzője és a `screens/MainMenu` utazásiidő-becslése is az aktív hajóból számol. (Ez a rész közös a [[004-ingame-shop-strapi-stripe]] „aktív hajó" integrációjával — érdemes egyszer, egységesen megvalósítani.)
 
 ---
 

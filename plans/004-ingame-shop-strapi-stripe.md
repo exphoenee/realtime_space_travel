@@ -42,7 +42,7 @@ tags:
 >
 > **Ez a terv a katalógust, a Stripe-fizetést és a bolt-UI-t részletezi.** Az auth, a kredit/inventory tárolás és a Security Rules a [[003-firebase-auth-settings]] tervben van.
 >
-> **Épít a [[002-ingame-shop-frontend]] tervre:** a bolt-UI (`ShopScreen`, `ProductCard`, kosár, checkout) és a játékbeli bekötési pontok (hajó-sebesség, zeneválasztó, exobolygó-küldetések) **már ott elkészülnek** helyi mock-adattal és localStorage-perzisztenciával. Ez a terv **csak a forrást cseréli**: a mock katalógust (`shopData.ts`) a Strapi `useCatalog`-ra, a mock checkoutot (`useShopStore.checkout`) a Stripe→Strapi→Firebase útra. A [[002-ingame-shop-frontend]] determinisztikus ár-/wage-képletét a Strapi-seed reprodukálja, hogy ne ugorjanak az árak a backend bekötésekor.
+> **Épít a [[002-ingame-shop-frontend]] tervre:** a bolt-UI (`components/shop/ShopScreen`, `components/shop/ProductCard`, kosár, checkout) és a játékbeli bekötési pontok (hajó-sebesség, zeneválasztó, exobolygó-küldetések) **már ott elkészülnek** helyi mock-adattal és localStorage-perzisztenciával. Ez a terv **csak a forrást cseréli**: a mock katalógust (`src/constants/shopCatalog.ts`) a Strapi `useCatalog`-ra, a mock checkoutot (`useShopStore.checkout`) a Stripe→Strapi→Firebase útra. A [[002-ingame-shop-frontend]] determinisztikus ár-/wage-képletét a Strapi-seed reprodukálja, hogy ne ugorjanak az árak a backend bekötésekor.
 
 ## Döntések (egyeztetve)
 
@@ -73,8 +73,8 @@ tags:
 
 **C fázis — Frontend**
 - [ ] `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory)
-- [ ] `ShopScreen` + `ProductCard` + `ShopTabs` + `CreditBalance`
-- [ ] `GamePhase: "shop"` + `ScreenRouter` ág + „Áruház" gomb a `MainMenu`-be
+- [ ] `components/shop/ShopScreen` + `components/shop/ProductCard` + `components/shop/ShopTabs` + `components/shop/CreditBalance`
+- [ ] `GamePhase: "shop"` + `routing/ScreenRouter` ág + „Áruház" gomb a `screens/MainMenu`-be
 - [ ] DLC zárolt/feloldott logika (Firebase `inventory.dlc`)
 - [ ] Aktív hajó/zene integráció (**közös** [[003-firebase-auth-settings]])
 - [ ] `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`
@@ -199,14 +199,15 @@ A jelenlegi app **teljesen kliensoldali** (nincs backend/auth, minden `localStor
 ### Új mappastruktúra
 ```
 src/
-  shop/
-    ShopScreen.tsx            # bolt fő nézet (fülek: Hajók / DLC / Zene)
-    ProductCard.tsx           # egy termék + ár (kredit / $ / mindkettő) + gomb
-    ShopTabs.tsx              # kategória fülek
-    CreditBalance.tsx         # fejléc kredit-kijelző (Firebase wallet-ből)
-    PurchaseModal.tsx         # megerősítés (kredit) / Stripe-átirányítás
-    CheckoutReturn.tsx        # success/cancel visszatérés kezelése
-    ShopScreen.module.css
+  components/
+    shop/
+      ShopScreen.tsx            # bolt fő nézet (fülek: Hajók / DLC / Zene)
+      ProductCard.tsx           # egy termék + ár (kredit / $ / mindkettő) + gomb
+      ShopTabs.tsx              # kategória fülek
+      CreditBalance.tsx         # fejléc kredit-kijelző (Firebase wallet-ből)
+      PurchaseModal.tsx         # megerősítés (kredit) / Stripe-átirányítás
+      CheckoutReturn.tsx        # success/cancel visszatérés kezelése
+      ShopScreen.module.css
   services/
     strapiApi.ts              # Strapi kliens: products, checkout (Firebase ID tokennel)
     functionsApi.ts           # Cloud Functions hívások: purchaseWithCredits, awardWage
@@ -218,9 +219,9 @@ src/
 > **Nincs** külön `useAuthStore` és `useShopStore(credits/entitlements)` ebben a tervben — ezeket a [[003-firebase-auth-settings]] biztosítja (`useAuthStore`, `useInventoryStore`, `useSettingsStore`). A bolt ezekre épül; itt csak a **katalógus** (`useCatalog`) új.
 
 ### Integráció a meglévő kóddal
-- **Belépési pont a boltba:** a `MainMenu.tsx` már reklámozza a „Tejút DLC"-t → ide „Áruház" gomb, a `ShopScreen`-t nyitja. Új `GamePhase: "shop"` (`src/types/index.ts` + `useGameStore` `phaseToFlags`), `ScreenRouter` ág. (A Settings menüből is elérhető, lásd [[003-firebase-auth-settings]].)
+- **Belépési pont a boltba:** a `screens/MainMenu` már reklámozza a „Tejút DLC"-t → ide „Áruház" gomb, a `components/shop/ShopScreen`-t nyitja. Új `GamePhase: "shop"` (`src/types/index.ts` + `useGameStore` `phaseToFlags`), `routing/ScreenRouter` ág. (A Settings menüből is elérhető, lásd [[003-firebase-auth-settings]].)
 - **Célállomások (DLC):** a destinations = `baseDestinations` + a birtokolt `dlc` termékek `payload.destinations`. A birtoklást a **Firebase `inventory.dlc`** adja; a nem birtokolt DLC „zárolt" kártyaként → boltba visz.
-- **Űrhajók (sebesség):** **közös** a [[003-firebase-auth-settings]] „aktív hajó" integrációjával — **egyszer, egységesen** valósítandó meg. Az aktív hajót a Firebase `settings.activeShipId` tartja, a birtoklást az `inventory.ships`; a sebesség felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `startMission`/`Dashboard`/`MainMenu` becslésben. A hajóválasztó képernyő a [[003-firebase-auth-settings]] `ShipSelect`-je.
+- **Űrhajók (sebesség):** **közös** a [[003-firebase-auth-settings]] „aktív hajó" integrációjával — **egyszer, egységesen** valósítandó meg. Az aktív hajót a Firebase `settings.activeShipId` tartja, a birtoklást az `inventory.ships`; a sebesség felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `startMission`/`features/Dashboard`/`screens/MainMenu` becslésben. A hajóválasztó képernyő a [[003-firebase-auth-settings]] `screens/ShipSelect`-je.
 - **Zenék:** a `useAudio` az **aktív zene** URL-jét kapja (Firebase `settings.activeMusicId` + `inventory.music`), alap = jelenlegi téma. A zeneválasztó a **Settings menüben** van (lásd [[003-firebase-auth-settings]]).
 - **Kredit forrása (wage):** a küldetés végén (`missionComplete`) a `wage` jóváírása a **`awardWage` Cloud Function**nel (a `handleConfirmExit`/`missionComplete` ágból).
 
@@ -256,8 +257,8 @@ src/
 
 **C fázis – Frontend**
 7. `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory-ból).
-8. `ShopScreen` + `ProductCard` + `ShopTabs` + `CreditBalance`; `GamePhase: "shop"` + `ScreenRouter` ág.
-9. „Áruház" gomb a `MainMenu`-be; DLC zárolt/feloldott logika a Firebase inventory alapján.
+8. `components/shop/ShopScreen` + `components/shop/ProductCard` + `components/shop/ShopTabs` + `components/shop/CreditBalance`; `GamePhase: "shop"` + `routing/ScreenRouter` ág.
+9. „Áruház" gomb a `screens/MainMenu`-be; DLC zárolt/feloldott logika a Firebase inventory alapján.
 10. Aktív hajó/zene integráció (**közös** a [[003-firebase-auth-settings]] tervvel).
 11. `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`.
 12. Küldetés végén `wage` → `awardWage` bekötése.
