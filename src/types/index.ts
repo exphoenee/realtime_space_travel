@@ -1,9 +1,13 @@
 
 export type CrewLostReason = "attention" | "buttons" | null;
 
+export type Difficulty = "easy" | "medium" | "hard";
+
 export type GamePhase =
   | "intro"
-  | "menu"
+  | "mainMenu"
+  | "missionSelect"
+  | "settings"
   | "loading"
   | "playing"
   | "paused"

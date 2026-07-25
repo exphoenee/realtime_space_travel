@@ -1,0 +1,104 @@
+# 100 Nearest Confirmed Exoplanets
+
+|     | Planet             | Star             |   Distance (pc) |   Distance (ly) |   Discovery | Method          |   Mass (Earth) |   Radius (Earth) |   Orbital Period (days) |   Equilibrium Temp (K) |
+|----:|:-------------------|:-----------------|----------------:|----------------:|------------:|:----------------|---------------:|-----------------:|------------------------:|-----------------------:|
+|   0 | Proxima Cen d      | Proxima Cen      |         1.30119 |            4.24 |        2025 | Radial Velocity |        0.26    |          nan     |                 5.12338 |                  282   |
+|   1 | Proxima Cen b      | Proxima Cen      |         1.30119 |            4.24 |        2016 | Radial Velocity |        1       |          nan     |                11.185   |                  216   |
+|   7 | Barnard e          | Barnard's star   |         1.82655 |            5.96 |        2025 | Radial Velocity |        0.193   |          nan     |                 6.7392  |                  340   |
+|   8 | Barnard d          | Barnard's star   |         1.82655 |            5.96 |        2025 | Radial Velocity |        0.263   |          nan     |                 2.3402  |                  483   |
+|   9 | Barnard c          | Barnard's star   |         1.82655 |            5.96 |        2025 | Radial Velocity |        0.335   |          nan     |                 4.1244  |                  400   |
+|  10 | Barnard b          | Barnard's star   |         1.82655 |            5.96 |        2024 | Radial Velocity |        0.299   |          nan     |                 3.1542  |                  438   |
+|  12 | eps Eri b          | eps Eri          |         3.2026  |           10.45 |        2000 | Radial Velocity |      492.637   |          nan     |              2502       |                  nan   |
+|  19 | GJ 887 c           | GJ 887           |         3.28679 |           10.72 |        2020 | Radial Velocity |       10.2     |          nan     |                21.7952  |                  nan   |
+|  21 | GJ 887 b           | GJ 887           |         3.28679 |           10.72 |        2020 | Radial Velocity |        6.9     |          nan     |                 9.26177 |                  nan   |
+|  23 | GJ 887 d           | GJ 887           |         3.28679 |           10.72 |        2026 | Radial Velocity |        6.1     |          nan     |                50.77    |                  241   |
+|  24 | GJ 887 e           | GJ 887           |         3.28679 |           10.72 |        2026 | Radial Velocity |        1.46    |          nan     |                 4.4249  |                  544   |
+|  27 | Ross 128 b         | Ross 128         |         3.37454 |           11.01 |        2017 | Radial Velocity |        1.4     |          nan     |                 9.8658  |                  301   |
+|  28 | Gl 725 A b         | Gl 725 A         |         3.5214  |           11.49 |        2025 | Radial Velocity |        2.78    |          nan     |                11.2201  |                  nan   |
+|  29 | GJ 15 A b          | GJ 15 A          |         3.56228 |           11.62 |        2014 | Radial Velocity |        5.35    |          nan     |                11.4433  |                  550   |
+|  32 | GJ 15 A c          | GJ 15 A          |         3.56228 |           11.62 |        2018 | Radial Velocity |       36       |          nan     |              7600       |                  nan   |
+|  33 | tau Cet f          | tau Cet          |         3.60304 |           11.75 |        2017 | Radial Velocity |        3.93    |          nan     |               636.13    |                  nan   |
+|  34 | tau Cet g          | tau Cet          |         3.60304 |           11.75 |        2017 | Radial Velocity |        1.75    |          nan     |                20       |                  nan   |
+|  35 | tau Cet h          | tau Cet          |         3.60304 |           11.75 |        2017 | Radial Velocity |        1.83    |          nan     |                49.41    |                  nan   |
+|  36 | eps Ind A b        | eps Ind A        |         3.63857 |           11.87 |        2019 | Radial Velocity |     1032.95    |          nan     |             16510       |                  nan   |
+|  40 | GJ 1061 d          | GJ 1061          |         3.67278 |           11.98 |        2020 | Radial Velocity |        1.67    |          nan     |                13.066   |                  nan   |
+|  42 | GJ 1061 c          | GJ 1061          |         3.67278 |           11.98 |        2020 | Radial Velocity |        1.81    |          nan     |                 6.6821  |                  nan   |
+|  44 | GJ 1061 b          | GJ 1061          |         3.67278 |           11.98 |        2020 | Radial Velocity |        1.11    |          nan     |                 3.2073  |                  nan   |
+|  46 | YZ Cet c           | YZ Cet           |         3.71207 |           12.11 |        2017 | Radial Velocity |        0.58    |          nan     |                 0.75215 |                  nan   |
+|  48 | YZ Cet d           | YZ Cet           |         3.71207 |           12.11 |        2017 | Radial Velocity |        1.14    |          nan     |                 4.65627 |                  nan   |
+|  52 | YZ Cet b           | YZ Cet           |         3.71207 |           12.11 |        2017 | Radial Velocity |        0.75    |          nan     |                 1.96876 |                  nan   |
+|  55 | Teegarden's Star c | Teegarden's Star |         3.83078 |           12.49 |        2019 | Radial Velocity |        1.11    |          nan     |                11.409   |                  nan   |
+|  57 | Teegarden's Star b | Teegarden's Star |         3.83078 |           12.49 |        2019 | Radial Velocity |        1.05    |          nan     |                 4.91    |                  nan   |
+|  58 | Teegarden's Star d | Teegarden's Star |         3.83078 |           12.49 |        2024 | Radial Velocity |        0.82    |          nan     |                26.13    |                  159   |
+|  60 | Kapteyn c          | Kapteyn          |         3.93305 |           12.83 |        2014 | Radial Velocity |        7       |          nan     |               121.54    |                  nan   |
+|  61 | Wolf 1061 d        | Wolf 1061        |         4.30592 |           14.04 |        2015 | Radial Velocity |        5.21    |          nan     |                67.27    |                  nan   |
+|  63 | Wolf 1061 c        | Wolf 1061        |         4.30592 |           14.04 |        2015 | Radial Velocity |        4.25    |          nan     |                17.867   |                  nan   |
+|  65 | Wolf 1061 b        | Wolf 1061        |         4.30592 |           14.04 |        2015 | Radial Velocity |        1.36    |          nan     |                 4.8876  |                  nan   |
+|  67 | GJ 9066 c          | GJ 9066          |         4.471   |           14.58 |        2020 | Radial Velocity |       66.744   |          nan     |               771.36    |                  nan   |
+|  69 | GJ 674 b           | GJ 674           |         4.54896 |           14.84 |        2007 | Radial Velocity |       11.09    |          nan     |                 4.6938  |                  nan   |
+|  70 | GJ 687 c           | GJ 687           |         4.54939 |           14.84 |        2020 | Radial Velocity |       16       |          nan     |               727.562   |                  nan   |
+|  71 | GJ 687 b           | GJ 687           |         4.54939 |           14.84 |        2014 | Radial Velocity |       18.394   |          nan     |                38.14    |                  nan   |
+|  75 | GJ 876 c           | GJ 876           |         4.67517 |           15.25 |        2000 | Radial Velocity |      226.985   |          nan     |                30.0881  |                  nan   |
+|  78 | GJ 876 d           | GJ 876           |         4.67517 |           15.25 |        2005 | Radial Velocity |        7.53    |          nan     |                 1.93774 |                  nan   |
+|  85 | GJ 876 e           | GJ 876           |         4.67517 |           15.25 |        2010 | Radial Velocity |       18.0012  |          nan     |               124.4     |                  nan   |
+|  90 | GJ 876 b           | GJ 876           |         4.67517 |           15.25 |        1998 | Radial Velocity |      600.67    |          nan     |                61.02    |                  nan   |
+| 101 | GJ 1002 b          | GJ 1002          |         4.84867 |           15.81 |        2022 | Radial Velocity |        1.08    |          nan     |                10.3465  |                  230.9 |
+| 102 | GJ 1002 c          | GJ 1002          |         4.84867 |           15.81 |        2022 | Radial Velocity |        1.36    |          nan     |                21.202   |                  181.7 |
+| 103 | GJ 832 b           | GJ 832           |         4.96435 |           16.19 |        2008 | Radial Velocity |      203.4     |          nan     |              3416       |                  nan   |
+| 109 | GJ 682 b           | GJ 682           |         5.00671 |           16.33 |        2014 | Radial Velocity |        4.4     |          nan     |                17.478   |                  nan   |
+| 110 | GJ 682 c           | GJ 682           |         5.00671 |           16.33 |        2014 | Radial Velocity |        8.7     |          nan     |                57.32    |                  nan   |
+| 111 | GJ 3323 c          | GJ 3323          |         5.37484 |           17.53 |        2017 | Radial Velocity |        2.31    |          nan     |                40.54    |                  nan   |
+| 112 | GJ 3323 b          | GJ 3323          |         5.37484 |           17.53 |        2017 | Radial Velocity |        2.02    |          nan     |                 5.3636  |                  nan   |
+| 113 | GJ 251 c           | GJ 251           |         5.58057 |           18.2  |        2025 | Radial Velocity |        3.88    |          nan     |                53.647   |                  216   |
+| 114 | GJ 251 b           | GJ 251           |         5.58057 |           18.2  |        2020 | Radial Velocity |        3.85    |          nan     |                14.237   |                  336   |
+| 116 | HD 95735 c         | GJ 411           |         5.67577 |           18.51 |        2021 | Radial Velocity |       18.0527  |          nan     |              3190       |                  nan   |
+| 119 | GJ 411 b           | GJ 411           |         5.67577 |           18.51 |        2019 | Radial Velocity |        2.69    |          nan     |                12.9394  |                  nan   |
+| 124 | GJ 229 A c         | GJ 229           |         5.75624 |           18.77 |        2020 | Radial Velocity |        7.268   |          nan     |               121.995   |                  nan   |
+| 125 | GJ 229 b           | GJ 229           |         5.75624 |           18.77 |        2014 | Radial Velocity |        8.478   |          nan     |               526.115   |                  nan   |
+| 129 | HD 180617 b        | HD 180617        |         5.91059 |           19.28 |        2018 | Radial Velocity |       12.2     |          nan     |               105.9     |                  nan   |
+| 131 | GJ 273 c           | GJ 273           |         5.92154 |           19.31 |        2017 | Radial Velocity |        1.18    |          nan     |                 4.7234  |                  nan   |
+| 132 | GJ 273 b           | GJ 273           |         5.92154 |           19.31 |        2017 | Radial Velocity |        2.89    |          nan     |                18.6498  |                  nan   |
+| 133 | HD 20794 f         | HD 20794         |         6.00278 |           19.58 |        2025 | Radial Velocity |        5.82    |          nan     |               647.6     |                  nan   |
+| 134 | HD 20794 b         | HD 20794         |         6.00278 |           19.58 |        2011 | Radial Velocity |        2.7     |          nan     |                18.315   |                  660   |
+| 135 | HD 20794 d         | HD 20794         |         6.00278 |           19.58 |        2011 | Radial Velocity |        2.98    |          nan     |                89.68    |                  nan   |
+| 136 | HD 20794 e         | HD 20794         |         6.00278 |           19.58 |        2017 | Radial Velocity |        4.77    |          nan     |               147.02    |                  nan   |
+| 143 | HN Lib b           | HN Lib           |         6.24442 |           20.37 |        2023 | Radial Velocity |        5.46    |          nan     |                36.116   |                  234.4 |
+| 144 | GJ 896 A b         | GJ 896 A         |         6.26022 |           20.42 |        2022 | Astrometry      |      718.292   |          nan     |               284.39    |                  nan   |
+| 145 | GJ 581 b           | GJ 581           |         6.2981  |           20.54 |        2005 | Radial Velocity |       15.65    |          nan     |                 5.36874 |                  nan   |
+| 149 | GJ 581 c           | GJ 581           |         6.2981  |           20.54 |        2007 | Radial Velocity |        5.05347 |          nan     |                12.9144  |                  nan   |
+| 155 | GJ 581 e           | GJ 581           |         6.2981  |           20.54 |        2009 | Radial Velocity |        2.48    |          nan     |                 3.1481  |                  nan   |
+| 163 | GJ 338 B b         | GJ 338 B         |         6.33256 |           20.65 |        2020 | Radial Velocity |       10.27    |          nan     |                24.45    |                  391   |
+| 165 | GJ 625 b           | GJ 625           |         6.47249 |           21.11 |        2017 | Radial Velocity |        2.82    |          nan     |                14.628   |                  nan   |
+| 166 | HD 219134 d        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |       21.2946  |          nan     |                46.71    |                  nan   |
+| 167 | HD 219134 c        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |        2.78    |          nan     |                 6.767   |                  nan   |
+| 169 | HD 219134 b        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |        3.81396 |          nan     |                 3.0931  |                  nan   |
+| 185 | HD 219134 f        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |        7.72323 |          nan     |                22.7945  |                  nan   |
+| 189 | HD 219134 g        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |       10.8062  |          nan     |                94.2     |                  nan   |
+| 190 | HD 219134 h        | HD 219134        |         6.53127 |           21.3  |        2015 | Radial Velocity |      108.062   |          nan     |              2247       |                  nan   |
+| 196 | LTT 1445 A c       | LTT 1445 A       |         6.86929 |           22.4  |        2022 | Transit         |        1       |            1.6   |                 3.1239  |                  nan   |
+| 197 | LTT 1445 A b       | LTT 1445 A       |         6.86929 |           22.4  |        2019 | Transit         |        2.87    |            1.305 |                 5.35877 |                  424   |
+| 206 | GJ 393 b           | GJ 393           |         7.03149 |           22.93 |        2021 | Radial Velocity |        1.71    |          nan     |                 7.02679 |                  485   |
+| 207 | GJ 4274 c          | GJ 4274          |         7.23556 |           23.6  |        2026 | Radial Velocity |        8.39    |          nan     |                69.57    |                  nan   |
+| 208 | GJ 4274 b          | GJ 4274          |         7.23556 |           23.6  |        2026 | Radial Velocity |        2.97    |          nan     |                 1.6339  |                  nan   |
+| 209 | GJ 667 C g         | GJ 667 C         |         7.24396 |           23.63 |        2013 | Radial Velocity |        4.6     |          nan     |               256.2     |                  nan   |
+| 210 | GJ 667 C c         | GJ 667 C         |         7.24396 |           23.63 |        2013 | Radial Velocity |        3.709   |          nan     |                28.143   |                  nan   |
+| 212 | GJ 667 C e         | GJ 667 C         |         7.24396 |           23.63 |        2013 | Radial Velocity |        2.7     |          nan     |                62.24    |                  nan   |
+| 213 | GJ 667 C f         | GJ 667 C         |         7.24396 |           23.63 |        2013 | Radial Velocity |        2.7     |          nan     |                39.026   |                  nan   |
+| 215 | GJ 667 C b         | GJ 667 C         |         7.24396 |           23.63 |        2012 | Radial Velocity |        5.6     |          nan     |                 7.2004  |                  nan   |
+| 221 | GJ 514 b           | GJ 514           |         7.61778 |           24.85 |        2022 | Radial Velocity |        5.2     |          nan     |               140.43    |                  202   |
+| 222 | GJ 3378 b          | GJ 3378          |         7.72274 |           25.19 |        2026 | Radial Velocity |        5.26    |          nan     |                24.728   |                  260   |
+| 224 | GJ 1151 c          | GJ 1151          |         8.03625 |           26.21 |        2023 | Radial Velocity |       10.62    |          nan     |               389.7     |                  nan   |
+| 225 | GJ 486 b           | GJ 486           |         8.07426 |           26.33 |        2021 | Radial Velocity |        3       |            1.343 |                 1.46712 |                  706   |
+| 229 | Gl 686 b           | Gl 686           |         8.15728 |           26.61 |        2018 | Radial Velocity |        7.1     |          nan     |                15.5321  |                  379   |
+| 232 | GJ 1289 b          | GJ 1289          |         8.35147 |           27.24 |        2024 | Radial Velocity |        6.27    |          nan     |               111.74    |                  150   |
+| 233 | 61 Vir d           | 61 Vir           |         8.50332 |           27.73 |        2009 | Radial Velocity |       22.9     |          nan     |               123.01    |                  nan   |
+| 235 | 61 Vir c           | 61 Vir           |         8.50332 |           27.73 |        2009 | Radial Velocity |       16.1139  |          nan     |                38.0957  |                  nan   |
+| 238 | 61 Vir b           | 61 Vir           |         8.50332 |           27.73 |        2009 | Radial Velocity |        5.1     |          nan     |                 4.215   |                  nan   |
+| 241 | CD Cet b           | CD Cet           |         8.60715 |           28.07 |        2020 | Radial Velocity |        3.95    |          nan     |                 2.2907  |                  464   |
+| 242 | HD 192310 c        | HD 192310        |         8.79687 |           28.69 |        2011 | Radial Velocity |       14.3     |          nan     |               546.5     |                  nan   |
+| 244 | HD 192310 b        | HD 192310        |         8.79687 |           28.69 |        2011 | Radial Velocity |       16.9     |          nan     |                74.72    |                  355   |
+| 248 | GJ 849 c           | GJ 849           |         8.80058 |           28.7  |        2014 | Radial Velocity |      223.116   |          nan     |              7068       |                  nan   |
+| 251 | GJ 849 b           | GJ 849           |         8.80058 |           28.7  |        2006 | Radial Velocity |      286.046   |          nan     |              1915       |                  nan   |
+| 258 | GJ 433 b           | GJ 433           |         9.06456 |           29.56 |        2013 | Radial Velocity |        5.79    |          nan     |                 7.3709  |                  nan   |
+| 262 | GJ 433 c           | GJ 433           |         9.06456 |           29.56 |        2014 | Radial Velocity |       45       |          nan     |              3400       |                  nan   |
+| 264 | GJ 433 d           | GJ 433           |         9.06456 |           29.56 |        2020 | Radial Velocity |        5.223   |          nan     |                36.059   |                  nan   |

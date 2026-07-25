@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import styles from "./IntroScreen.module.css";
 
 interface IntroScreenProps {
@@ -6,8 +7,10 @@ interface IntroScreenProps {
 }
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+const INTRO_SCROLL_DURATION = "210s";
 
 const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [instructionsVisible, setInstructionsVisible] = useState(false);
 
@@ -57,14 +60,17 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
       }
     };
 
-    const onScroll = () => {
+    // A háttér-szöveg CSS transform-animációval mozog, ami nem vált ki scroll
+    // eseményt, ezért requestAnimationFrame-mel pollozzuk a blokkok pozícióját,
+    // és úgy fedjük fel őket, ahogy a kioldási vonal fölé érnek.
+    let rafId = 0;
+    const tick = () => {
       checkBlocks();
+      rafId = window.requestAnimationFrame(tick);
     };
+    rafId = window.requestAnimationFrame(tick);
 
-    root.addEventListener("scroll", onScroll, { passive: true });
-    checkBlocks();
-
-    return () => root.removeEventListener("scroll", onScroll);
+    return () => window.cancelAnimationFrame(rafId);
   }, []);
 
   return (
@@ -76,7 +82,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
           style={
             DEBUG_MODE
               ? ({
-                  ["--intro-scroll-duration" as string]: "60s",
+                  ["--intro-scroll-duration" as string]: INTRO_SCROLL_DURATION,
                 } as React.CSSProperties)
               : undefined
           }
@@ -86,7 +92,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
             data-intro-block="true"
             data-timed-block="true"
           >
-            <h1 className={styles.headline}>Realtime Space Travel</h1>
+            <h1 className={styles.headline}>{t("intro.headline")}</h1>
           </div>
 
           <div
@@ -94,7 +100,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
             data-intro-block="true"
             data-timed-block="true"
           >
-            <p className={styles.motto}>Az életedre szóló élmény!</p>
+            <p className={styles.motto}>{t("intro.motto")}</p>
           </div>
 
           <p
@@ -102,68 +108,70 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
             data-intro-block="true"
             data-timed-block="true"
           >
-            Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen
-            reménye. Ez nem egy játék, a túlélésünk a tét. Ez az utolsó
-            esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A
-            bárka, amely az emberiség jövőjét hordozza, indulásra kész.
+            {t("intro.paragraph1")}
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói –
-            mély, kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... Az
-            emberiség sorsa most a te kezedben van. Te vagy az az élő, lélegző
-            komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.
+            {t("intro.paragraph2")}
           </p>
 
           <p
             className={`${styles.sectionTitle} ${styles.block}`}
             data-intro-block="true"
           >
-            A Feladataid – A Küldetés Legszigorúbb Protokolljai
+            {t("intro.sectionTitle")}
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <strong>Az Éberség Protokollja</strong> – folyamatos vizuális
-            monitorozás szükséges a navigációs adatok stabilizálásához. Ha a
-            figyelmed megszakad, a hajó vészleállást kezdeményez.
+            <Trans i18nKey="intro.rule1">
+              <strong>Az Éberség Protokollja</strong> – folyamatos vizuális
+              monitorozás szükséges a navigációs adatok stabilizálásához. Ha a
+              figyelmed megszakad, a hajó vészleállást kezdeményez.
+            </Trans>
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <strong>A Zéró Beavatkozás Elve</strong> – a rendszerek
-            önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb
-            képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!
+            <Trans i18nKey="intro.rule2">
+              <strong>A Zéró Beavatkozás Elve</strong> – a rendszerek
+              önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb
+              képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!
+            </Trans>
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <strong>Valós Idejű Utazás</strong> – tapasztald meg a csillagközi
-            utazás hiteles valóságát. A csillagok évezredek alatt mozdulnak el;
-            a legnagyobb ellenség az idő.
+            <Trans i18nKey="intro.rule3">
+              <strong>Valós Idejű Utazás</strong> – tapasztald meg a csillagközi
+              utazás hiteles valóságát. A csillagok évezredek alatt mozdulnak el;
+              a legnagyobb ellenség az idő.
+            </Trans>
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <strong>A tét: Minden.</strong> Nincs dicsőség, nincsenek harcok,
-            nincsenek jutalmak – csak a csend, a végtelen kozmosz és a válladra
-            nehezedő felelősség. A jövő a te szemedben tükröződik.
+            <Trans i18nKey="intro.rule4">
+              <strong>A tét: Minden.</strong> Nincs dicsőség, nincsenek harcok,
+              nincsenek jutalmak – csak a csend, a végtelen kozmosz és a válladra
+              nehezedő felelősség. A jövő a te szemedben tükröződik.
+            </Trans>
           </p>
         </div>
         {instructionsVisible && (
           <div className={styles.finalInstruction}>
-            Kattints vagy nyomj meg bármilyen gombot a folytatáshoz.
+            {t("intro.continue")}
           </div>
         )}
       </div>

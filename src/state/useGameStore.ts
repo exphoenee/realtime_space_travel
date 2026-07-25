@@ -61,7 +61,9 @@ const phaseToFlags = (phase: GamePhase) => {
         missionComplete: false,
         isInitializing: false,
       };
-    case "menu":
+    case "mainMenu":
+    case "missionSelect":
+    case "settings":
       return {
         showIntro: false,
         isPaused: true,
@@ -232,8 +234,8 @@ const useGameStore = create<GameState>()(
           remainingYears: 0,
           inactivitySeconds: 0,
           serviceSeconds: 0,
-          gamePhase: "menu",
-          ...phaseToFlags("menu"),
+          gamePhase: "mainMenu",
+          ...phaseToFlags("mainMenu"),
           bestServiceSeconds: state.bestServiceSeconds,
         })),
     }),

@@ -1,0 +1,145 @@
+{
+  "menu": {
+    "title": "¡Elige una misión!",
+    "lightYears": "{{distance}} años luz",
+    "reward": "Recompensa {{amount}}$",
+    "dlcMilkyWay": "¡Compra el <1>DLC Vía Láctea</1> por 19,99 $ para desbloquear más sistemas estelares!",
+    "dlcComingSoon": "¡Pronto llegarán más DLC!"
+  },
+  "dashboard": {
+    "title": "Viaje interestelar",
+    "status": "Estado: Todos los sistemas operativos",
+    "speed": "Velocidad: {{value}} km/s",
+    "destination": "Destino",
+    "localWeather": "Clima local",
+    "arrival": "Llegada al sistema de destino",
+    "earthYears": "años terrestres"
+  },
+  "intro": {
+    "headline": "Realtime Space Travel",
+    "motto": "¡La experiencia de tu vida!",
+    "paragraph1": "¡Eres el elegido! Eres la última y única esperanza de la humanidad. Esto no es un juego: nuestra supervivencia está en juego. Esta es nuestra última oportunidad: la promesa de un nuevo hogar en sistemas estelares lejanos. El arca que lleva el futuro de la humanidad está lista para partir.",
+    "paragraph2": "Toda la tripulación –científicos, ingenieros, los fundadores de una nueva civilización– ha entrado en un sueño criogénico profundo. Su destino, sus sueños, nuestro futuro... El destino de la humanidad está ahora en tus manos. Eres el componente vivo que respira, que ninguna inteligencia artificial puede reemplazar.",
+    "sectionTitle": "Tus tareas – Los protocolos más estrictos de la misión",
+    "rule1": "<1>El Protocolo de Vigilancia</1> – se requiere una supervisión visual continua para estabilizar los datos de navegación. Si tu atención se interrumpe, la nave inicia una parada de emergencia.",
+    "rule2": "<1>El Principio de Cero Intervención</1> – los sistemas son autosuficientes; la intervención manual puede ser fatal. Tu habilidad más importante es la disciplina y la paciencia. ¡No actúes, supervisa!",
+    "rule3": "<1>Viaje en Tiempo Real</1> – experimenta la realidad auténtica del viaje interestelar. Las estrellas se desplazan a lo largo de milenios; tu mayor enemigo es el tiempo.",
+    "rule4": "<1>Lo que está en juego: Todo.</1> Sin gloria, sin batallas, sin recompensas: solo el silencio, el cosmos infinito y la responsabilidad que recae sobre tus hombros. El futuro se refleja en tus ojos.",
+    "continue": "Haz clic o pulsa cualquier tecla para continuar."
+  },
+  "loading": {
+    "title": "Inicializando sistemas",
+    "subtitle": "El ordenador de a bordo de la nave está comprobando los sistemas",
+    "step": {
+      "camera": "Conectando la cámara...",
+      "model": "Cargando el modelo de inteligencia artificial...",
+      "calibration": "Calibrando el sistema de reconocimiento facial...",
+      "ready": "¡Todos los sistemas listos!"
+    },
+    "status": {
+      "done": "Listo",
+      "inProgress": "En curso"
+    },
+    "readyTitle": "Todo está listo",
+    "readySubtitle": "Mira la pantalla para comenzar el viaje"
+  },
+  "pause": {
+    "attentionTitle": "¡Atención!",
+    "countdownSub": "Te quedan {{seconds}} segundos para volver a mirar la pantalla, ¡o toda la tripulación en hibernación se perderá!",
+    "seconds": "segundos",
+    "blame": "Porque no estás haciendo tu trabajo...",
+    "disconnectedTitle": "Conexión perdida",
+    "disconnectedSub": "Los sistemas de a bordo no detectan tu presencia.",
+    "disconnectedWarning": "Tienes <1>60 segundos</1> para volver frente a la pantalla antes de que la nave active su protocolo de emergencia. El destino de la tripulación depende de tu atención."
+  },
+  "app": {
+    "missionCompleteTitle": "¡Has llegado!",
+    "missionCompleteText": "¡Has llegado! ¡Tu destino está a la derecha!",
+    "backToMenu": "Volver al menú principal",
+    "gameOverTitle": "Fin del juego",
+    "crewLostButtons": "¡Toda la tripulación en hibernación pereció porque manipulaste los botones!",
+    "crewLostAttention": "Fin del juego: toda la tripulación murió porque no prestaste atención.",
+    "exitConfirmTitle": "¿Seguro que quieres salir?",
+    "exitConfirmText": "¡El juego no guarda tu progreso actual!",
+    "yes": "Sí",
+    "no": "No",
+    "errorTitle": "Error",
+    "retry": "Inténtalo de nuevo",
+    "exit": "Salir",
+    "exitAria": "Salir de la misión",
+    "serviceTime": "Tiempo de servicio: {{minutes}} min",
+    "record": "Récord: {{minutes}} min",
+    "musicMute": "Silenciar música",
+    "musicUnmute": "Activar música",
+    "camera": {
+      "noSupport": "Tu navegador no admite el acceso a la cámara. Prueba con otro navegador.",
+      "noModel": "No se pudo cargar el modelo de visión por ordenador. Intenta actualizar la página.",
+      "needAccess": "Se requiere acceso a la cámara para jugar. Permite la cámara y actualiza la página.",
+      "denied": "Acceso a la cámara denegado. Permite la cámara en la configuración de tu navegador.",
+      "notFound": "No se encontró ninguna cámara. Conecta una cámara web e inténtalo de nuevo.",
+      "notReadable": "No se pudo leer la cámara. Es posible que otra aplicación la esté usando."
+    }
+  },
+  "screenCheck": {
+    "portraitTitle": "Se requiere orientación horizontal",
+    "portraitText": "Gira tu dispositivo a la posición horizontal para iniciar el juego.",
+    "tooSmallTitle": "Pantalla demasiado pequeña",
+    "tooSmallText": "Se requiere una resolución de al menos <1>900×530</1>.",
+    "current": "Actual: {{width}}×{{height}}"
+  },
+  "errorBoundary": {
+    "title": "Se ha producido un error",
+    "text": "Se ha producido un error inesperado en la aplicación.",
+    "reload": "Recargar"
+  },
+  "debug": {
+    "cameraStatus": "Estado de la cámara:",
+    "faceDetected": "Rostro detectado",
+    "noFace": "Sin rostro",
+    "lastUpdate": "Última actualización: {{value}}s",
+    "balanceRatio": "Relación de equilibrio:",
+    "eyeVerticalRatio": "Relación de inclinación ocular:",
+    "eyeEarMargin": "Margen ojo-oreja:",
+    "ignore": "Ignorar"
+  },
+  "weather": {
+    "sunny": "{{temp}} °C soleado",
+    "rainy": "{{temp}} °C lluvioso",
+    "snowy": "{{temp}} °C nevando",
+    "foggy": "{{temp}} °C con niebla",
+    "tropicalStorm": "{{temp}} °C tormenta tropical",
+    "iceStorm": "{{temp}} °C tormenta de hielo",
+    "breezy": "{{temp}} °C brisa ligera",
+    "sandStorm": "{{temp}} °C tormenta de arena",
+    "sleet": "{{temp}} °C aguanieve",
+    "clearSky": "{{temp}} °C cielo despejado"
+  },
+  "mainMenu": {
+    "login": "Iniciar sesión",
+    "start": "Iniciar juego",
+    "shop": "Tienda",
+    "settings": "Ajustes",
+    "intro": "Ver la introducción",
+    "loginComingSoon": "El inicio de sesión estará disponible pronto.",
+    "shopComingSoon": "La tienda estará disponible pronto."
+  },
+  "settings": {
+    "title": "Ajustes",
+    "musicVolume": "Volumen de la música",
+    "back": "Volver",
+    "difficulty": "Dificultad"
+  },
+  "difficulty": {
+    "easy": "Fácil",
+    "medium": "Media",
+    "hard": "Difícil"
+  },
+  "language": {
+    "label": "Idioma",
+    "hu": "Magyar",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "es": "Español"
+  }
+}

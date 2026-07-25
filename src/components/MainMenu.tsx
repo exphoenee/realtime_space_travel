@@ -1,52 +1,60 @@
-import { useMemo } from "react";
-import { Destination } from "../types";
-import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../constants/constants";
-import { baseDestinations } from "../constants/universeData";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import useGameStore from "../state/useGameStore";
 import styles from "./MainMenu.module.css";
 
-interface MainMenuProps {
-  onSelectDestination: (destination: Destination) => void;
-}
+const MainMenu = () => {
+  const { t } = useTranslation();
+  const transitionTo = useGameStore((s) => s.transitionTo);
+  // Melyik "hamarosan" értesítés látszik (login / shop) — még nincs implementálva.
+  const [notice, setNotice] = useState<null | "login" | "shop">(null);
 
-const MainMenu = ({ onSelectDestination }: MainMenuProps) => {
-  const destinations = useMemo(
-    () =>
-      baseDestinations.map((dest) => ({
-        ...dest,
-        travelYears: dest.distanceLy / SHIP_SPEED_LIGHTYEARS_PER_YEAR,
-      })),
-    [],
-  );
+  const handleStart = () => transitionTo("missionSelect");
+  const handleSettings = () => transitionTo("settings");
+  const handleIntro = () => transitionTo("intro");
+  // A bejelentkezés és az áruház a későbbi fázisokban kerül bekötésre.
+  const handleLogin = () => setNotice("login");
+  const handleShop = () => setNotice("shop");
 
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
-        <h1 className={styles.title}>Válassz egy küldetést!</h1>
+        <h1 className={styles.title}>{t("intro.headline")}</h1>
+        <p className={styles.motto}>{t("intro.motto")}</p>
 
-        <div className={styles.grid}>
-          {destinations.map((dest) => (
-            <button
-              key={dest.name}
-              onClick={() =>
-                onSelectDestination({
-                  name: dest.name,
-                  travelYears: dest.travelYears,
-                })
-              }
-              className={styles.missionButton}
-            >
-              <h2 className={styles.missionName}>{dest.name}</h2>
-              <p className={styles.missionMeta}>{dest.distanceLy} fényév</p>
-              <p className={styles.missionMeta}>Jutalom {dest.wage}$</p>
-            </button>
-          ))}
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={`${styles.button} ${styles.primary}`}
+            onClick={handleStart}
+          >
+            {t("mainMenu.start")}
+          </button>
+          <button type="button" className={styles.button} onClick={handleShop}>
+            {t("mainMenu.shop")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={handleSettings}
+          >
+            {t("mainMenu.settings")}
+          </button>
+          <button type="button" className={styles.button} onClick={handleIntro}>
+            {t("mainMenu.intro")}
+          </button>
+          <button type="button" className={styles.button} onClick={handleLogin}>
+            {t("mainMenu.login")}
+          </button>
         </div>
 
-        <h2 className={styles.dlcText}>
-          Vedd meg a <span>Tejút DLC</span>-t $19.99-ért további
-          csillagrendszerekért!
-        </h2>
-        <h2 className={styles.dlcText}>Hamarosan további DLC-k érkeznek!</h2>
+        {notice && (
+          <p className={styles.notice} role="status">
+            {notice === "login"
+              ? t("mainMenu.loginComingSoon")
+              : t("mainMenu.shopComingSoon")}
+          </p>
+        )}
       </div>
     </div>
   );
