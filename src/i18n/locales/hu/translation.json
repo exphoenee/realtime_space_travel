@@ -131,7 +131,18 @@
     "musicTrack": "Zeneválasztás",
     "musicDefault": "Alapértelmezett",
     "signOut": "Kijelentkezés",
-    "authenticated": "Hitelesítve"
+    "authenticated": "Hitelesítve",
+    "userId": "Felhasználói azonosító"
+  },
+  "login": {
+    "error": {
+      "popupBlocked": "A bejelentkezési felugró ablakot letiltotta a böngésző. Engedélyezd az előugró ablakokat ehhez az oldalhoz, majd próbáld újra.",
+      "alreadyInUse": "Ez a Google fiók már másik profilhoz van kapcsolva.",
+      "accountExists": "Már létezik fiók ezzel az email címmel.",
+      "cancelled": "A bejelentkezés megszakítva.",
+      "network": "Hálózati hiba. Ellenőrizd a kapcsolatot és próbáld újra.",
+      "generic": "A bejelentkezés sikertelen. Próbáld újra."
+    }
   },
   "shipSelect": {
     "title": "Válassz Űrhajót",
@@ -158,7 +169,7 @@
   },
   "shop": {
     "title": "Áruház",
-    "back": "← Vissza",
+    "back": "Vissza",
     "creditsLabel": "⭐ {{count}} kredit",
     "balance": "Egyenleg: ⭐ {{count}}",
     "priceCredits": "⭐ {{credits}}",

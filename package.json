@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node -e \"let h=require('fs').readFileSync('dist/index.html','utf-8');require('fs').writeFileSync('dist/index.html',h.replace(/__BASE_HREF__/g,process.env.VITE_BASE_PATH||'/realtime_space_travel/'))\"",
-    "build:firebase": "VITE_BASE_PATH=/ npm run build",
-    "build:gh-pages": "VITE_BASE_PATH=/realtime_space_travel/ npm run build",
+    "build": "tsc && vite build",
+    "build:firebase": "VITE_BASE_PATH=/ tsc && vite build",
+    "build:gh-pages": "VITE_BASE_PATH=/realtime_space_travel/ tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

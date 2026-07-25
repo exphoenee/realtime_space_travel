@@ -131,7 +131,18 @@
     "musicTrack": "Musikauswahl",
     "musicDefault": "Standard",
     "signOut": "Abmelden",
-    "authenticated": "Authentifiziert"
+    "authenticated": "Authentifiziert",
+    "userId": "Benutzer-ID"
+  },
+  "login": {
+    "error": {
+      "popupBlocked": "Das Anmelde-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite und versuchen Sie es erneut.",
+      "alreadyInUse": "Dieses Google-Konto ist bereits mit einem anderen Profil verknüpft.",
+      "accountExists": "Ein Konto mit dieser E-Mail existiert bereits.",
+      "cancelled": "Anmeldung abgebrochen.",
+      "network": "Netzwerkfehler. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    }
   },
   "shipSelect": {
     "title": "Wähle dein Raumschiff",

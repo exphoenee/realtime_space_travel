@@ -131,7 +131,18 @@
     "musicTrack": "Music Selection",
     "musicDefault": "Default",
     "signOut": "Sign Out",
-    "authenticated": "Authenticated"
+    "authenticated": "Authenticated",
+    "userId": "User ID"
+  },
+  "login": {
+    "error": {
+      "popupBlocked": "Sign-in popup was blocked. Please allow popups for this site and try again.",
+      "alreadyInUse": "This Google account is already linked to another profile.",
+      "accountExists": "An account with this email already exists.",
+      "cancelled": "Sign-in was cancelled.",
+      "network": "Network error. Check your connection and try again.",
+      "generic": "Sign-in failed. Please try again."
+    }
   },
   "shipSelect": {
     "title": "Choose Your Ship",
@@ -158,7 +169,7 @@
   },
   "shop": {
     "title": "Shop",
-    "back": "← Back",
+    "back": "Back",
     "creditsLabel": "⭐ {{count}} credits",
     "balance": "Balance: ⭐ {{count}}",
     "priceCredits": "⭐ {{credits}}",

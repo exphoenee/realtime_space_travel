@@ -14,6 +14,8 @@ interface ScreenRouterProps {
   onSelectDestination: (destination: Destination) => Promise<void>;
   /** Called when the LoadingScreen has completed its animation and is ready to start the game */
   onLoadingComplete: () => void;
+  /** Camera check before mission start (called from ShipSelectScreen) */
+  onCheckCamera?: () => Promise<boolean>;
   /** Rendered when phase is a game-related phase (playing/paused/countdown/crewLost/missionComplete) */
   children?: React.ReactNode;
 }
@@ -34,6 +36,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
   onSkipIntro,
   onSelectDestination,
   onLoadingComplete,
+  onCheckCamera,
   children,
 }) => {
   switch (phase) {
@@ -44,7 +47,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
     case "missionSelect":
       return <MissionSelector onSelectDestination={onSelectDestination} />;
     case "shipSelect":
-      return <ShipSelectScreen />;
+      return <ShipSelectScreen onCheckCamera={onCheckCamera} />;
     case "settings":
       return <SettingsScreen />;
     case "shop":

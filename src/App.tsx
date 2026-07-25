@@ -10,14 +10,17 @@ import DebugOverlay from "./components/features/DebugOverlay";
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
 import useAuthStore from "./state/useAuthStore";
+import useShopStore from "./state/useShopStore";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
 import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
+import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
-import { onAuthChange } from "./firebase/auth";
-import { ensureUserNode } from "./firebase/userData";
+import { onAuthChange, signInAnonymous, checkRedirectResult } from "./firebase/auth";
+import { ensureUserNode, subscribeUser, updateUserSettings } from "./firebase/userData";
+import type { UserNode } from "./firebase/userData";
 
 import { Destination } from "./types";
 import {
@@ -86,37 +89,195 @@ const App: React.FC = () => {
   );
   useAttentionMonitor(faceStatus, destination);
 
+  // Watch isMusicMuted changes → persist to RTDB
+  useEffect(() => {
+    const { uid } = useAuthStore.getState();
+    if (uid) {
+      updateUserSettings(uid, { musicMuted: isMusicMuted }).catch(console.error);
+    }
+  }, [isMusicMuted]);
+
   // Initialize Firebase on mount + listen for auth state changes
   useEffect(() => {
     initFirebase();
+
+    let unsubUser: (() => void) | null = null;
+    let anonInit = false;
+    let redirectCheckDone = false;
+
+    // Process redirect result FIRST, before onAuthChange fires
+    // getRedirectResult must be called to "consume" the OAuth response
+    checkRedirectResult().then((redirectUser) => {
+      if (redirectUser) {
+        const { setUser } = useAuthStore.getState();
+        setUser(redirectUser);
+        ensureUserNode(redirectUser, "google").catch(console.error);
+        // Skip intro on OAuth return — go straight to main menu
+        useGameStore.getState().transitionTo("mainMenu");
+      }
+      redirectCheckDone = true;
+
+      // If onAuthChange already fired with null and we returned early,
+      // trigger anonymous auto-login now that redirect check is done
+      if (!redirectUser && !anonInit && !useAuthStore.getState().user) {
+        anonInit = true;
+        signInAnonymous().catch(console.error);
+      }
+    });
+
     const unsub = onAuthChange(async (user) => {
-      const setUser = useAuthStore.getState().setUser;
+      const { setUser } = useAuthStore.getState();
       setUser(user);
+
+      // Only auto-login anonymously if:
+      // 1. No user from auth
+      // 2. We haven't already auto-logged in
+      // 3. No redirect result is pending (wait for checkRedirectResult to complete)
+      if (!user && !anonInit) {
+        if (!redirectCheckDone) {
+          // Redirect check still in progress — wait for it, then decide
+          return;
+        }
+        anonInit = true;
+        try {
+          await signInAnonymous();
+        } catch (err) {
+          console.error("Anonymous auto-login failed:", err);
+        }
+        return;
+      }
+
+      // Clean up previous subscription
+      if (unsubUser) {
+        unsubUser();
+        unsubUser = null;
+      }
+
       if (user) {
         try {
           await ensureUserNode(user, user.isAnonymous ? "anonymous" : "google");
+          // Subscribe to RTDB user data
+          unsubUser = subscribeUser(user.uid, handleUserData);
         } catch (err) {
-          console.error("Failed to ensure user node:", err);
+          console.error("Firebase sync failed:", err);
         }
       }
     });
-    return () => unsub();
+
+    /** Sync RTDB user data into local stores. */
+    const handleUserData = (data: UserNode | null) => {
+      if (!data) return;
+
+      const ui = useUIStore.getState();
+      const shop = useShopStore.getState();
+
+      // Settings → useUIStore
+      if (data.settings) {
+        const s = data.settings;
+        if (s.musicMuted !== undefined && s.musicMuted !== ui.isMusicMuted) {
+          ui.setIsMusicMuted(s.musicMuted);
+        }
+        if (s.activeMusicId !== undefined && s.activeMusicId !== ui.activeMusicId) {
+          ui.setActiveMusicId(s.activeMusicId);
+        }
+        if (s.activeShipId !== undefined && s.activeShipId !== ui.activeShipId) {
+          // Validate against RTDB snapshot inventory (not store, which may not be synced yet)
+          const ownedShipsFromSnapshot = data.inventory?.ships
+            ? Object.keys(data.inventory.ships).filter((k) => data.inventory.ships![k])
+            : shop.owned.ships;
+          if (s.activeShipId === null || ownedShipsFromSnapshot.includes(s.activeShipId)) {
+            ui.setActiveShipId(s.activeShipId);
+          } else {
+            // Not owned anymore — reset to null and write back to RTDB
+            ui.setActiveShipId(null);
+            const authState = useAuthStore.getState();
+            if (authState.uid) {
+              updateUserSettings(authState.uid, { activeShipId: null }).catch(console.error);
+            }
+          }
+        }
+        if (s.musicVolume !== undefined && s.musicVolume !== ui.musicVolume) {
+          ui.setMusicVolume(s.musicVolume);
+        }
+        if (s.difficulty !== undefined && s.difficulty !== ui.difficulty) {
+          ui.setDifficulty(s.difficulty as any);
+        }
+        if (s.language && s.language !== i18n.language) {
+          i18n.changeLanguage(s.language);
+        }
+      }
+
+      // Stats → useGameStore
+      if (data.stats?.bestServiceSeconds !== undefined) {
+        const gs = useGameStore.getState();
+        const rtdb = data.stats.bestServiceSeconds;
+        const local = gs.bestServiceSeconds;
+        if (rtdb > local) {
+          gs.setBestServiceSeconds(rtdb);
+        }
+      }
+
+      // Wallet + Inventory → useShopStore (source of truth when signed in)
+      if (data.wallet?.credits !== undefined) {
+        // Only overwrite if RTDB has a different value to avoid loops
+        if (data.wallet.credits !== shop.credits) {
+          shop.setCredits(data.wallet.credits);
+        }
+      }
+      if (data.inventory) {
+        const inv = data.inventory;
+        const mergeInventory = (
+          rtdbItems: Record<string, boolean> | undefined,
+          localItems: string[],
+        ): string[] => {
+          if (!rtdbItems) return localItems;
+          return Object.keys(rtdbItems).filter((k) => rtdbItems[k]);
+        };
+        const newShips = mergeInventory(inv.ships, shop.owned.ships);
+        const newMusic = mergeInventory(inv.music, shop.owned.music);
+        const newExos = mergeInventory(inv.exoplanets, shop.owned.exoplanets);
+        if (
+          JSON.stringify(newShips) !== JSON.stringify(shop.owned.ships) ||
+          JSON.stringify(newMusic) !== JSON.stringify(shop.owned.music) ||
+          JSON.stringify(newExos) !== JSON.stringify(shop.owned.exoplanets)
+        ) {
+          shop.setOwned({ ships: newShips, music: newMusic, exoplanets: newExos });
+        }
+      }
+    };
+
+    // Listen for language changes → persist to RTDB
+    const handleLanguageChange = (lng: string) => {
+      const { uid } = useAuthStore.getState();
+      if (uid) {
+        updateUserSettings(uid, { language: lng }).catch(console.error);
+      }
+    };
+    i18n.on("languageChanged", handleLanguageChange);
+
+    return () => {
+      unsub();
+      if (unsubUser) unsubUser();
+      i18n.off("languageChanged", handleLanguageChange);
+    };
   }, []);
 
-  const handleSelectDestination = async (selectedDestination: Destination) => {
+  const checkCamera = useCallback(async (): Promise<boolean> => {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
       setCameraError(t("app.camera.noSupport"));
-      return;
+      return false;
     }
 
     if (!window.FaceDetection) {
       setCameraError(t("app.camera.noModel"));
-      return;
+      return false;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       stream.getTracks().forEach((track) => track.stop());
+      setCameraError(null);
+      return true;
     } catch (err) {
       let errorMessage = t("app.camera.needAccess");
       if (err instanceof DOMException) {
@@ -133,12 +294,13 @@ const App: React.FC = () => {
         }
       }
       setCameraError(errorMessage);
-      return;
+      return false;
     }
+  }, [setCameraError, t]);
 
-    setCameraError(null);
+  const handleSelectDestination = async (selectedDestination: Destination) => {
     setShowExitConfirm(false);
-    // After camera check, go to ship selection
+    // Go to ship selection directly (camera check happens after ship select)
     useGameStore.getState().selectDestinationForShip(selectedDestination);
   };
 
@@ -377,6 +539,7 @@ const App: React.FC = () => {
             onSkipIntro={handleSkipIntro}
             onSelectDestination={handleSelectDestination}
             onLoadingComplete={handleLoadingComplete}
+            onCheckCamera={checkCamera}
           />
         </main>
       ) : !destination ? null : (

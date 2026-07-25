@@ -131,7 +131,18 @@
     "musicTrack": "Sélection musicale",
     "musicDefault": "Par défaut",
     "signOut": "Déconnexion",
-    "authenticated": "Authentifié"
+    "authenticated": "Authentifié",
+    "userId": "Identifiant utilisateur"
+  },
+  "login": {
+    "error": {
+      "popupBlocked": "La fenêtre de connexion a été bloquée. Autorisez les popups pour ce site et réessayez.",
+      "alreadyInUse": "Ce compte Google est déjà lié à un autre profil.",
+      "accountExists": "Un compte avec cet email existe déjà.",
+      "cancelled": "Connexion annulée.",
+      "network": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+      "generic": "Échec de la connexion. Veuillez réessayer."
+    }
   },
   "shipSelect": {
     "title": "Choisissez votre vaisseau",

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { Destination, GamePhase, CrewLostReason } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
@@ -148,128 +147,118 @@ const phaseToFlags = (phase: GamePhase) => {
 
 const initialPhase: GamePhase = "intro";
 
-const useGameStore = create<GameState>()(
-  persist(
-    (set) => ({
-      // Phase
-      gamePhase: initialPhase,
+const useGameStore = create<GameState>()((set) => ({
+  // Phase
+  gamePhase: initialPhase,
 
-      // Initial values
+  // Initial values
+  destination: null,
+  pendingDestination: null,
+  remainingYears: 0,
+  shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
+  inactivitySeconds: 0,
+  serviceSeconds: 0,
+  bestServiceSeconds: 0,
+  debugIgnoreAttention: false,
+
+  // Derived from gamePhase
+  ...phaseToFlags(initialPhase),
+
+  // --- legacy setters (kept for backward compat) ---
+  setDestination: (updater) =>
+    set((state) => ({
+      destination: resolveState(updater, state.destination),
+    })),
+  setRemainingYears: (updater) =>
+    set((state) => ({
+      remainingYears: resolveState(updater, state.remainingYears),
+    })),
+  setIsPaused: (updater) =>
+    set((state) => ({
+      isPaused: resolveState(updater, state.isPaused),
+    })),
+  setShowIntro: (updater) =>
+    set((state) => ({
+      showIntro: resolveState(updater, state.showIntro),
+    })),
+  setIsAttentionLost: (updater) =>
+    set((state) => ({
+      isAttentionLost: resolveState(updater, state.isAttentionLost),
+    })),
+  setInactivitySeconds: (updater) =>
+    set((state) => ({
+      inactivitySeconds: resolveState(updater, state.inactivitySeconds),
+    })),
+  setCrewLost: (updater) =>
+    set((state) => ({
+      crewLost: resolveState(updater, state.crewLost),
+    })),
+  setCrewLostReason: (updater) =>
+    set((state) => ({
+      crewLostReason: resolveState(updater, state.crewLostReason),
+    })),
+  setMissionComplete: (updater) =>
+    set((state) => ({
+      missionComplete: resolveState(updater, state.missionComplete),
+    })),
+  setServiceSeconds: (updater) =>
+    set((state) => ({
+      serviceSeconds: resolveState(updater, state.serviceSeconds),
+    })),
+  setBestServiceSeconds: (updater) =>
+    set((state) => ({
+      bestServiceSeconds: resolveState(updater, state.bestServiceSeconds),
+    })),
+  setIsInitializing: (updater) =>
+    set((state) => ({
+      isInitializing: resolveState(updater, state.isInitializing),
+    })),
+  setDebugIgnoreAttention: (updater) =>
+    set((state) => ({
+      debugIgnoreAttention: resolveState(updater, state.debugIgnoreAttention),
+    })),
+
+  // --- phase-based transition ---
+  transitionTo: (phase) =>
+    set((state) => ({
+      gamePhase: phase,
+      ...phaseToFlags(phase),
+      crewLostReason:
+        phase === "crewLost" ? state.crewLostReason : null,
+    })),
+
+  // --- ship select ---
+  selectDestinationForShip: (destination) =>
+    set(() => ({
+      pendingDestination: destination,
+      gamePhase: "shipSelect",
+      ...phaseToFlags("shipSelect"),
+    })),
+
+  // --- composite actions ---
+  startMission: (destination, shipSpeedKmPerSecond) =>
+    set(() => ({
+      destination,
+      pendingDestination: null,
+      remainingYears: destination.travelYears,
+      shipSpeedKmPerSecond: shipSpeedKmPerSecond ?? SHIP_SPEED_KM_PER_SECOND,
+      gamePhase: "loading",
+      inactivitySeconds: 0,
+      serviceSeconds: 0,
+      ...phaseToFlags("loading"),
+    })),
+  resetToMenu: () =>
+    set((state) => ({
       destination: null,
       pendingDestination: null,
       remainingYears: 0,
       shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
       inactivitySeconds: 0,
       serviceSeconds: 0,
-      bestServiceSeconds: 0,
-      debugIgnoreAttention: false,
-
-      // Derived from gamePhase
-      ...phaseToFlags(initialPhase),
-
-      // --- legacy setters (kept for backward compat) ---
-      setDestination: (updater) =>
-        set((state) => ({
-          destination: resolveState(updater, state.destination),
-        })),
-      setRemainingYears: (updater) =>
-        set((state) => ({
-          remainingYears: resolveState(updater, state.remainingYears),
-        })),
-      setIsPaused: (updater) =>
-        set((state) => ({
-          isPaused: resolveState(updater, state.isPaused),
-        })),
-      setShowIntro: (updater) =>
-        set((state) => ({
-          showIntro: resolveState(updater, state.showIntro),
-        })),
-      setIsAttentionLost: (updater) =>
-        set((state) => ({
-          isAttentionLost: resolveState(updater, state.isAttentionLost),
-        })),
-      setInactivitySeconds: (updater) =>
-        set((state) => ({
-          inactivitySeconds: resolveState(updater, state.inactivitySeconds),
-        })),
-      setCrewLost: (updater) =>
-        set((state) => ({
-          crewLost: resolveState(updater, state.crewLost),
-        })),
-      setCrewLostReason: (updater) =>
-        set((state) => ({
-          crewLostReason: resolveState(updater, state.crewLostReason),
-        })),
-      setMissionComplete: (updater) =>
-        set((state) => ({
-          missionComplete: resolveState(updater, state.missionComplete),
-        })),
-      setServiceSeconds: (updater) =>
-        set((state) => ({
-          serviceSeconds: resolveState(updater, state.serviceSeconds),
-        })),
-      setBestServiceSeconds: (updater) =>
-        set((state) => ({
-          bestServiceSeconds: resolveState(updater, state.bestServiceSeconds),
-        })),
-      setIsInitializing: (updater) =>
-        set((state) => ({
-          isInitializing: resolveState(updater, state.isInitializing),
-        })),
-      setDebugIgnoreAttention: (updater) =>
-        set((state) => ({
-          debugIgnoreAttention: resolveState(updater, state.debugIgnoreAttention),
-        })),
-
-      // --- phase-based transition ---
-      transitionTo: (phase) =>
-        set((state) => ({
-          gamePhase: phase,
-          ...phaseToFlags(phase),
-          crewLostReason:
-            phase === "crewLost" ? state.crewLostReason : null,
-        })),
-
-      // --- ship select ---
-      selectDestinationForShip: (destination) =>
-        set(() => ({
-          pendingDestination: destination,
-          gamePhase: "shipSelect",
-          ...phaseToFlags("shipSelect"),
-        })),
-
-      // --- composite actions ---
-      startMission: (destination, shipSpeedKmPerSecond) =>
-        set(() => ({
-          destination,
-          pendingDestination: null,
-          remainingYears: destination.travelYears,
-          shipSpeedKmPerSecond: shipSpeedKmPerSecond ?? SHIP_SPEED_KM_PER_SECOND,
-          gamePhase: "loading",
-          inactivitySeconds: 0,
-          serviceSeconds: 0,
-          ...phaseToFlags("loading"),
-        })),
-      resetToMenu: () =>
-        set((state) => ({
-          destination: null,
-          pendingDestination: null,
-          remainingYears: 0,
-          shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
-          inactivitySeconds: 0,
-          serviceSeconds: 0,
-          gamePhase: "mainMenu",
-          ...phaseToFlags("mainMenu"),
-          bestServiceSeconds: state.bestServiceSeconds,
-        })),
-    }),
-    {
-      name: "space-travel-game",
-      partialize: (state) => ({
-        bestServiceSeconds: state.bestServiceSeconds,
-      }),
-    },
-  ),
-);
+      gamePhase: "mainMenu",
+      ...phaseToFlags("mainMenu"),
+      bestServiceSeconds: state.bestServiceSeconds,
+    })),
+}));
 
 export default useGameStore;

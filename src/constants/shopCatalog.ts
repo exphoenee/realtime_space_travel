@@ -15,7 +15,7 @@ export const CREDIT_PACKS: CreditPack[] = [
 
 export const SHOP_SHIPS: ShipProduct[] = [
   {
-    id: "ship-nomad-x1",
+    id: "ship-0",
     category: "ship",
     name: "Nomad X1",
     priceCredits: 150,
@@ -27,7 +27,7 @@ export const SHOP_SHIPS: ShipProduct[] = [
     descriptionKey: "shop.ship.nomadX1.desc",
   },
   {
-    id: "ship-vega-runner",
+    id: "ship-1",
     category: "ship",
     name: "Vega Runner",
     priceCredits: 400,
@@ -39,7 +39,7 @@ export const SHOP_SHIPS: ShipProduct[] = [
     descriptionKey: "shop.ship.vegaRunner.desc",
   },
   {
-    id: "ship-aether-titan",
+    id: "ship-2",
     category: "ship",
     name: "Aether Titan",
     priceCredits: 1000,
@@ -53,11 +53,11 @@ export const SHOP_SHIPS: ShipProduct[] = [
 ];
 
 export const SHOP_MUSIC: MusicProduct[] = [
-  { id: "music-dust-on-the-highway",   category: "music", name: "Dust on the Highway",   priceCredits: 30, priceEur: 0.30, file: "dust_on_the_highway.mp3", title: "Dust on the Highway" },
-  { id: "music-late-night-urgency",    category: "music", name: "Late Night Urgency",    priceCredits: 30, priceEur: 0.30, file: "late_night_urgency.mp3",  title: "Late Night Urgency" },
-  { id: "music-neon-heartbeat",        category: "music", name: "Neon Heartbeat",        priceCredits: 30, priceEur: 0.30, file: "neon_heartbeat.mp3",      title: "Neon Heartbeat" },
-  { id: "music-neon-static",           category: "music", name: "Neon Static",           priceCredits: 30, priceEur: 0.30, file: "neon_static.mp3",         title: "Neon Static" },
-  { id: "music-rust-in-the-gears",     category: "music", name: "Rust in the Gears",     priceCredits: 30, priceEur: 0.30, file: "rust_in_the_gears.mp3",   title: "Rust in the Gears" },
+  { id: "music-0", category: "music", name: "Dust on the Highway",   priceCredits: 30, priceEur: 0.30, file: "dust_on_the_highway.mp3", title: "Dust on the Highway" },
+  { id: "music-1", category: "music", name: "Late Night Urgency",    priceCredits: 30, priceEur: 0.30, file: "late_night_urgency.mp3",  title: "Late Night Urgency" },
+  { id: "music-2", category: "music", name: "Neon Heartbeat",        priceCredits: 30, priceEur: 0.30, file: "neon_heartbeat.mp3",      title: "Neon Heartbeat" },
+  { id: "music-3", category: "music", name: "Neon Static",           priceCredits: 30, priceEur: 0.30, file: "neon_static.mp3",         title: "Neon Static" },
+  { id: "music-4", category: "music", name: "Rust in the Gears",     priceCredits: 30, priceEur: 0.30, file: "rust_in_the_gears.mp3",   title: "Rust in the Gears" },
 ];
 
 /** Exobolygó ár-képlet (determinisztikus, csak a bolygó-adatból) */
@@ -85,7 +85,7 @@ export const calcExoplanetWage = (
 /** A 3 alap exobolygó — a játékos induláskor birtokolja őket */
 export const BASE_EXOPLANETS: ExoplanetProduct[] = [
   {
-    id: "exo-proxima-centauri",
+    id: "exo-0",
     category: "exoplanet",
     name: "Proxima Centauri",
     priceCredits: 0,
@@ -97,7 +97,7 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
     massEarth: null,
   },
   {
-    id: "exo-wolf-424",
+    id: "exo-1",
     category: "exoplanet",
     name: "Wolf 424",
     priceCredits: 0,
@@ -109,7 +109,7 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
     massEarth: null,
   },
   {
-    id: "exo-ross-780",
+    id: "exo-2",
     category: "exoplanet",
     name: "Ross 780",
     priceCredits: 0,
@@ -123,13 +123,6 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
 ];
 
 export const BASE_EXOPLANET_IDS = BASE_EXOPLANETS.map((e) => e.id);
-
-/** slug helper: bolygónév → azonosító */
-const slugify = (name: string): string =>
-  name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
 /** Nyers exobolygó JSON struktúra */
 export interface ExoplanetRaw {
@@ -183,7 +176,7 @@ export const mapExoplanet = (raw: ExoplanetRaw, index: number): ExoplanetProduct
   const temperatureK = raw.planet?.temperatureK ?? null;
 
   return {
-    id: "exo-" + slugify(raw.name) + (index > 0 ? `-${index}` : ""),
+    id: `exo-${BASE_EXOPLANETS.length + index}`,
     category: "exoplanet",
     name: raw.name,
     priceCredits: calcExoplanetPrice(distanceLy, massEarth, temperatureK),

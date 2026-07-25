@@ -27,7 +27,11 @@ const DEFAULT_SHIP: ShipProduct & { isDefault: boolean } = {
   isDefault: true,
 };
 
-const ShipSelectScreen = () => {
+interface ShipSelectScreenProps {
+  onCheckCamera?: () => Promise<boolean>;
+}
+
+const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
   const { t } = useTranslation();
   const pendingDestination = useGameStore((s) => s.pendingDestination);
   const startMission = useGameStore((s) => s.startMission);
@@ -52,8 +56,15 @@ const ShipSelectScreen = () => {
     return ships;
   }, [ownedShipIds]);
 
-  const handleSelectShip = (entry: ShipEntry) => {
+  const handleSelectShip = async (entry: ShipEntry) => {
     if (!pendingDestination) return;
+
+    // Camera check before mission start
+    if (onCheckCamera) {
+      const ok = await onCheckCamera();
+      if (!ok) return;
+    }
+
     // Recalculate travel years: faster ship = shorter travel time
     const travelYears =
       pendingDestination.travelYears /

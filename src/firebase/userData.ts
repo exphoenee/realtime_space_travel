@@ -16,6 +16,8 @@ export interface UserNode {
     activeShipId: string | null;
     activeMusicId: string | null;
     musicMuted: boolean;
+    musicVolume: number;
+    difficulty: string;
     language: string;
   };
   wallet: {
@@ -44,6 +46,8 @@ const getDefaultUserNode = (user: User, provider: "anonymous" | "google"): UserN
     activeShipId: null,
     activeMusicId: null,
     musicMuted: false,
+    musicVolume: 0.5,
+    difficulty: "medium",
     language: navigator.language?.split("-")[0] ?? "en",
   },
   wallet: {
@@ -71,10 +75,15 @@ export const ensureUserNode = async (user: User, provider: "anonymous" | "google
   const { get } = await import("firebase/database");
   const snapshot = await get(userRef);
   if (snapshot.exists()) {
-    // Update lastLoginAt
-    await update(userRef, {
+    // Always update profile + lastLoginAt (handles anonymous→Google upgrade)
+    const updates: Record<string, unknown> = {
       "profile/lastLoginAt": Date.now(),
-    });
+      "profile/provider": provider,
+      "profile/displayName": user.displayName ?? (provider === "google" ? user.email ?? "Google User" : "Anonymous Traveler"),
+      "profile/photoURL": user.photoURL,
+      "profile/isAnonymous": user.isAnonymous,
+    };
+    await update(userRef, updates);
     return;
   }
 
@@ -122,6 +131,8 @@ export const updateUserSettings = async (
   if (settings.activeShipId !== undefined) updates.activeShipId = settings.activeShipId;
   if (settings.activeMusicId !== undefined) updates.activeMusicId = settings.activeMusicId;
   if (settings.musicMuted !== undefined) updates.musicMuted = settings.musicMuted;
+  if (settings.musicVolume !== undefined) updates.musicVolume = settings.musicVolume;
+  if (settings.difficulty !== undefined) updates.difficulty = settings.difficulty;
   if (settings.language !== undefined) updates.language = settings.language;
 
   await update(settingsRef, updates);
@@ -137,4 +148,30 @@ export const updateUserStats = async (
   const db = getFirebaseDB();
   const statsRef = ref(db, `users/${uid}/stats`);
   await update(statsRef, stats);
+};
+
+/**
+ * Update the user's credit balance in RTDB.
+ */
+export const updateUserWallet = async (
+  uid: string,
+  credits: number,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const walletRef = ref(db, `users/${uid}/wallet`);
+  await set(walletRef, { credits });
+};
+
+/**
+ * Update the user's inventory in RTDB.
+ * Merges with existing inventory for the given category.
+ */
+export const updateUserInventory = async (
+  uid: string,
+  category: "ships" | "music" | "exoplanets",
+  items: Record<string, boolean>,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const invRef = ref(db, `users/${uid}/inventory/${category}`);
+  await set(invRef, items);
 };

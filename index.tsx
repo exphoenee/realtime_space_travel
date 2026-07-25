@@ -1,3 +1,17 @@
+/** Set the <base href> dynamically based on the deployment path. */
+const setBaseHref = () => {
+  const path = window.location.pathname;
+  // GitHub Pages serves under /realtime_space_travel/, Firebase serves from root /
+  const base = path.startsWith("/realtime_space_travel/")
+    ? "/realtime_space_travel/"
+    : "/";
+  const el = document.querySelector("base");
+  if (el && el.getAttribute("href") !== base) {
+    el.setAttribute("href", base);
+  }
+};
+setBaseHref();
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./src/App";
