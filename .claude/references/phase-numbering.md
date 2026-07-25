@@ -2,30 +2,43 @@
 
 > Shared reference for all skills and agents. Defines how roadmap phases are numbered and ordered.
 
+## `step` vs `phase` — two different things
+
+| | `step` (+ filename prefix) | `phase` / `phases` |
+|---|---|---|
+| Means | **Implementation order** in `plans/` | A stable **label** for a body of work ("Fázis 3") |
+| Changes? | **Renumbered** whenever a plan is inserted | **Never** — once assigned, it stays |
+| Owner | `manage-roadmap` agent | The plan author |
+| Nullable? | **No** — every plan must have an integer `step` | Yes (`null`) — not every plan belongs to a numbered phase |
+
+A plan may therefore sit at `step: 2` with `phase: null` while `step: 3` carries `phases: [1, 2]`.
+That is **not** an inconsistency: steps say *when we build it*, phases say *what we call it*.
+
 ## Rules
 
 1. **Fázis 0** is always i18n (step 0, never changes)
-2. **Fázis 1–4** are the core roadmap (Firebase → Ship → Shop Backend → Shop Frontend)
-3. **main-menu-settings** is a foundational plan at step 1 (never renumbered)
-4. **New phases** can be inserted between existing phases or appended after Fázis 4
-5. **Phase numbers are stable** — once assigned, don't renumber existing phases
-6. **Use "Fázis X" notation** consistently in all plan files
+2. **step 0 and step 1** are stable foundations (i18n, main-menu-settings) — never renumbered
+3. **Every other step is renumberable.** Inserting a plan shifts the steps after it; that is
+   the normal, expected cost of insertion — do not avoid it by appending to the end.
+4. **Phase numbers are stable** — never renumber an existing phase
+5. **Use "Fázis X" notation** consistently in all plan files
 
 ## Current Phases
 
-| Phase | Name | Plan Step | Status |
-|-------|------|-----------|--------|
-| 0 | i18n alapréteg | 0 — `000-i18n-nyelvesites` | ✅ Implemented |
-| 1 | Firebase auth + beállítások + Settings menü | 2 — `002-firebase-auth-settings` | ⬜ Not started |
-| 2 | Hajóválasztó + sebesség | 2 — `002-firebase-auth-settings` | ⬜ Not started |
-| 3 | Bolt backend (Strapi + Functions) | 3 — `003-ingame-shop-strapi-stripe` | ⬜ Not started |
-| 4 | Bolt frontend + Stripe + fordítások | 3 — `003-ingame-shop-strapi-stripe` | ⬜ Not started |
+> ⚠️ **Deliberately not listed here** — a hand-maintained table drifts from the plan files on
+> every renumbering. The live phase↔step mapping is the **Overview** table of the generated
+> `plans/roadmap.md` (`python .claude/scripts/generate_roadmap.py`).
 
 ## Adding New Plans
 
 New plans should either:
 - Extend an existing phase (add to its TODO)
 - Insert as a new phase between existing ones
-- Append as a new phase after Fázis 4
+- Append as a new phase at the end
+
+**Insertion is placement by dependency, not by "next free number":** a plan goes *after the
+highest step of its dependencies* and *before the lowest step of anything that must depend on
+it*. If its own text says it is a prerequisite of an existing plan, it belongs **before** that
+plan — even though that means renumbering.
 
 > 🔄 Renumbering and roadmap regeneration are handled by the `manage-roadmap` agent (`.claude/agents/manage-roadmap.md`), which runs `python .claude/scripts/generate_roadmap.py` to rebuild `roadmap.md` from the plan files.

@@ -119,8 +119,64 @@ def load_plans() -> list[dict]:
         fm["_path"] = path
         fm["_todo"] = parse_todo(text)
         plans.append(fm)
-    plans.sort(key=lambda p: int(p.get("step") or 0))
+    plans.sort(key=lambda p: (p.get("step") is None, int(p.get("step") or 0)))
     return plans
+
+
+def validate_plans(plans: list[dict]) -> list[str]:
+    """Structural checks that must never silently pass.
+
+    A plan with `step: null` used to sort as step 0 and collide with the real step 0 —
+    the roadmap looked fine while the plan was effectively unplaced. Surface it instead.
+    """
+    issues: list[str] = []
+    seen_steps: dict[int, str] = {}
+
+    for p in plans:
+        name = p["_path"].name
+        stem = name[:-3]
+        step = p.get("step")
+        prefix = int(name[:3]) if name[:3].isdigit() else None
+
+        if step is None:
+            issues.append(
+                f"`{name}` has **`step: null`** — unplaced. The `manage-roadmap` agent must "
+                f"assign a step (and rename the file to match) before this plan can be worked on."
+            )
+        else:
+            step = int(step)
+            if prefix is not None and prefix != step:
+                issues.append(
+                    f"`{name}` — filename prefix `{prefix:03d}` != YAML `step: {step}`. "
+                    f"The prefix defines implementation order; rename or fix the step."
+                )
+            if step in seen_steps:
+                issues.append(f"duplicate `step: {step}` — `{seen_steps[step]}` and `{name}`")
+            else:
+                seen_steps[step] = name
+
+        if p.get("slug") != stem:
+            issues.append(f"`{name}` — YAML `slug: {p.get('slug')}` != filename `{stem}`")
+
+    steps = sorted(seen_steps)
+    expected = list(range(len(steps)))
+    if steps and steps != expected:
+        issues.append(f"steps are not contiguous from 0: {steps} (expected {expected})")
+
+    # dependency direction: a plan must come after everything it depends on
+    step_by_slug = {p.get("slug"): p.get("step") for p in plans}
+    for p in plans:
+        if p.get("step") is None:
+            continue
+        for d in dep_slugs(p):
+            if d not in step_by_slug:
+                issues.append(f"`{p['_path'].name}` depends on unknown plan `{d}`")
+            elif step_by_slug[d] is not None and int(step_by_slug[d]) >= int(p["step"]):
+                issues.append(
+                    f"`{p['_path'].name}` (step {p['step']}) depends on `{d}` "
+                    f"(step {step_by_slug[d]}) — a dependency must have a LOWER step"
+                )
+    return issues
 
 
 def short_title(title: str | None, slug: str) -> str:
@@ -156,7 +212,7 @@ def render_dep_steps(fm: dict, step_by_slug: dict) -> str:
     return ", ".join(str(s) for s in steps) if steps else "—"
 
 
-def build_roadmap(plans: list[dict]) -> str:
+def build_roadmap(plans: list[dict], issues: list[str] | None = None) -> str:
     today = dt.date.today().isoformat()
     step_by_slug = {p.get("slug"): int(p.get("step") or 0) for p in plans}
 
@@ -203,6 +259,14 @@ def build_roadmap(plans: list[dict]) -> str:
          "> Auto-generated from `./plans/` — **do not edit by hand**. Regenerate before reading:",
          "> `python .claude/scripts/generate_roadmap.py`",
          f"> Last generated: {today}", ""]
+
+    # --- Consistency issues (must be impossible to miss) ---
+    if issues:
+        b += ["## ⚠️ Consistency Issues", "",
+              "> The plan files are inconsistent. **Fix these before implementing anything** —",
+              "> the numbers below cannot be trusted until they are resolved.", ""]
+        b += [f"- {i}" for i in issues]
+        b += [""]
 
     # --- Project status ---
     b += ["## Project Status", "",
@@ -272,9 +336,16 @@ def main() -> int:
     if not plans:
         print("error: no plan files with YAML front matter found", file=sys.stderr)
         return 1
-    (PLANS_DIR / "roadmap.md").write_text(build_roadmap(plans), encoding="utf-8")
+    issues = validate_plans(plans)
+    (PLANS_DIR / "roadmap.md").write_text(build_roadmap(plans, issues), encoding="utf-8")
     impl = sum(1 for p in plans if normalize_status(p.get("status")) == "implemented")
     print(f"[ok] roadmap.md regenerated from {len(plans)} plan(s) - {impl} implemented")
+    if issues:
+        print(f"[error] {len(issues)} consistency issue(s) - see 'Consistency Issues' "
+              f"in roadmap.md:", file=sys.stderr)
+        for i in issues:
+            print(f"  - {i}", file=sys.stderr)
+        return 2
     return 0
 
 

@@ -14,8 +14,8 @@ phase: 0
 dependencies: []
 related_plans:
   - 001-main-menu-settings
-  - 002-firebase-auth-settings
-  - 003-ingame-shop-strapi-stripe
+  - 003-firebase-auth-settings
+  - 004-ingame-shop-strapi-stripe
 tags:
   - i18n
   - localization
@@ -35,10 +35,10 @@ tags:
 |--------|-----------|
 | i18n eszköz | **react-i18next** (i18next + react-i18next + i18next-browser-languagedetector) |
 | Alapértelmezett nyelv | **Böngésző-felismerés** (`navigator.language`), fallback: **angol** |
-| Nyelvváltó | Látható **nyelvváltó UI**: bejelentkezés előtt a főmenüben/introban, valamint a **Settings menüben** (lásd [[002-firebase-auth-settings]]) |
+| Nyelvváltó | Látható **nyelvváltó UI**: bejelentkezés előtt a főmenüben/introban, valamint a **Settings menüben** (lásd [[003-firebase-auth-settings]]) |
 | Perzisztálás | Kijelentkezve `localStorage` (`space-travel-lang`); **bejelentkezve a Firebase `settings.language` a mérvadó** |
 
-> **Kánon-illeszkedés:** ez a terv a felület nyelvi rétegét adja. A **felhasználóhoz kötött nyelv** a [[002-firebase-auth-settings]] `settings.language` mezőjében perzisztál; a Strapi katalógus szövegeit a Strapi i18n plugin lokalizálja (lásd [[003-ingame-shop-strapi-stripe]]).
+> **Kánon-illeszkedés:** ez a terv a felület nyelvi rétegét adja. A **felhasználóhoz kötött nyelv** a [[003-firebase-auth-settings]] `settings.language` mezőjében perzisztál; a Strapi katalógus szövegeit a Strapi i18n plugin lokalizálja (lásd [[004-ingame-shop-strapi-stripe]]).
 
 ---
 
@@ -62,7 +62,7 @@ tags:
 - [x] `useWeather` / `universeData` kulcsalapúvá alakítása (`WeatherCondition {key,temp}`)
 - [x] `LanguageSwitcher` komponens + beépítés (főmenü/intro)
 - [x] Tesztek igazítása (Vitest setup i18n init) — 14/14 zöld, tsc+build tiszta
-- [ ] Firebase `settings.language` szinkron bekötése (Fázis 1 után — lásd [[002-firebase-auth-settings]])
+- [ ] Firebase `settings.language` szinkron bekötése (Fázis 1 után — lásd [[003-firebase-auth-settings]])
 - [x] **Fordítások:** `en` (teljes — a fallback nyelve)
 - [x] **Fordítások:** `fr` (teljes, 95 kulcs, helyőrző-paritás ✓)
 - [x] **Fordítások:** `de` (teljes, 95 kulcs, helyőrző-paritás ✓)
@@ -245,8 +245,8 @@ Az összes lefordítandó string az alábbi komponensekben található. Javasolt
 
 - Gombsor: `[HU] [EN] [FR] [DE] [ES]` (zászló emoji vagy nyelvkód).
 - Aktív nyelv kiemelve.
-- Kattintásra `i18n.changeLanguage(code)` → **kijelentkezve** a detector `localStorage`-ba menti (`space-travel-lang`); **bejelentkezve** a Firebase `settings.language`-be is íródik (lásd [[002-firebase-auth-settings]]), és a real-time listener onnan állítja vissza más eszközön.
-- Elhelyezés: bejelentkezés előtt a **főmenü** (`MainMenu`) és az **intro** sarka; a játékon belül a **Settings menü** „Nyelv" szekciójában (a Settings menü a korábbi harang gomb helyén — lásd [[002-firebase-auth-settings]] 4. pont).
+- Kattintásra `i18n.changeLanguage(code)` → **kijelentkezve** a detector `localStorage`-ba menti (`space-travel-lang`); **bejelentkezve** a Firebase `settings.language`-be is íródik (lásd [[003-firebase-auth-settings]]), és a real-time listener onnan állítja vissza más eszközön.
+- Elhelyezés: bejelentkezés előtt a **főmenü** (`MainMenu`) és az **intro** sarka; a játékon belül a **Settings menü** „Nyelv" szekciójában (a Settings menü a korábbi harang gomb helyén — lásd [[003-firebase-auth-settings]] 4. pont).
 - Stílus: a projekt `*.module.css` konvenciója szerint.
 
 > **Nyelv-forrás prioritás:** (1) Firebase `settings.language`, ha bejelentkezett; (2) `localStorage` `space-travel-lang`; (3) `navigator.language`; (4) `en` fallback. Bejelentkezéskor az RTDB nyelv felülírja a helyit; a `LanguageSwitcher` mindkét helyre ír, hogy konzisztens maradjon.
@@ -291,15 +291,15 @@ Az összes lefordítandó string az alábbi komponensekben található. Javasolt
 - **`ErrorBoundary` (class)** és **`ScreenCheck` inline stílusok**: hook helyett HOC / `i18n.t()`.
 - **Statikus import** a fordításokhoz → nincs késleltetett betöltés, de a bundle-méret nő (~kis JSON-ok, elhanyagolható).
 - **Persist-ütközés:** a nyelv `localStorage` kulcsa (`space-travel-lang`) különbözzön a meglévő `space-travel-ui` / `space-travel-game` (és a tervezett `space-travel-shop` / Firebase-cache) kulcsoktól — nincs ütközés.
-- **Firebase-szinkron sorrend:** bejelentkezéskor az RTDB `settings.language` felülírja a helyi nyelvet; kerülendő a „villódzás", ha az auth-betöltés a render után fut — érdemes a nyelvet az auth-listener első adatával beállítani (lásd [[002-firebase-auth-settings]] 3. pont).
+- **Firebase-szinkron sorrend:** bejelentkezéskor az RTDB `settings.language` felülírja a helyi nyelvet; kerülendő a „villódzás", ha az auth-betöltés a render után fut — érdemes a nyelvet az auth-listener első adatával beállítani (lásd [[003-firebase-auth-settings]] 3. pont).
 - **SSR nincs** (Vite SPA), így a detector kliensoldalon gond nélkül fut.
 
 ---
 
 ## 10. Kapcsolódó tervek
 
-- [[002-firebase-auth-settings]] – **kánon**: a felhasználóhoz kötött nyelv (`settings.language`) itt perzisztál; a nyelvváltó a Settings menüben is megjelenik.
-- [[003-ingame-shop-strapi-stripe]] – a termékkatalógus szövegei a Strapi i18n pluginjén, ezzel a nyelvi réteggel összhangban lokalizáltak.
+- [[003-firebase-auth-settings]] – **kánon**: a felhasználóhoz kötött nyelv (`settings.language`) itt perzisztál; a nyelvváltó a Settings menüben is megjelenik.
+- [[004-ingame-shop-strapi-stripe]] – a termékkatalógus szövegei a Strapi i18n pluginjén, ezzel a nyelvi réteggel összhangban lokalizáltak.
 
 ---
 

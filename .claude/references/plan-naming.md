@@ -16,14 +16,17 @@
 When referencing existing plans in markdown, use `[[plan-name]]` syntax (without `.md`):
 - `[[000-i18n-nyelvesites]]`
 - `[[001-main-menu-settings]]`
-- `[[002-firebase-auth-settings]]`
-- `[[003-ingame-shop-strapi-stripe]]`
 
-## Current Plans (Sorted by Step)
+The slug **contains the numeric prefix**, so every `[[...]]` link breaks when a plan is
+renumbered. Renumbering therefore always includes a repo-wide `[[old-slug]]` → `[[new-slug]]`
+sweep (`plans/`, `.claude/`, `CLAUDE.md`, `agents.md`) — see `manage-roadmap` Section A.
 
-| Step | Filename | Title |
-|------|----------|-------|
-| 0 | `plans/000-i18n-nyelvesites.md` | Nyelvesítési terv |
-| 1 | `plans/001-main-menu-settings.md` | Főmenü + Beállítások képernyő |
-| 2 | `plans/002-firebase-auth-settings.md` | Firebase bejelentkezés + perzisztens beállítások |
-| 3 | `plans/003-ingame-shop-strapi-stripe.md` | Játékon belüli áruház (Strapi + Stripe) |
+## Current Plans
+
+> ⚠️ **Deliberately not listed here.** A hand-maintained plan list goes stale on every
+> renumbering. The live list is the **generated** `plans/roadmap.md` ("Phase Details" +
+> "Insertion Guide"). Regenerate before reading it:
+>
+> ```bash
+> python .claude/scripts/generate_roadmap.py
+> ```
