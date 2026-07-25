@@ -42,8 +42,10 @@ const ProductGrid = ({ category, onAddToCart }: ProductGridProps) => {
 
   const products = useMemo(() => {
     // Exoplanets: JSON exoplanets wrapped with raw data, PLUS base planets as flat items
-    if (category === "exoplanets") return [...exoplanets, ...BASE_EXOPLANETS];
-    if (category === "ships") return SHOP_SHIPS;
+    if (category === "exoplanets")
+      return [...BASE_EXOPLANETS, ...exoplanets];
+    if (category === "ships")
+      return [...SHOP_SHIPS].sort((a, b) => a.priceCredits - b.priceCredits);
     if (category === "music") return SHOP_MUSIC;
     return [];
   }, [category, exoplanets]);
