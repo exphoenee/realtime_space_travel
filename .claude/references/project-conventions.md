@@ -7,7 +7,12 @@
 ```
 src/
 ├── App.tsx                  # Main component – logic center
-├── components/              # UI components (*.tsx + *.module.css)
+├── components/
+│   ├── screens/             # Full-page GamePhase views (IntroScreen, MainMenu, MissionSelector, SettingsScreen, LoadingScreen)
+│   ├── features/            # In-game feature components (Dashboard, PauseMenu, DebugOverlay)
+│   ├── shop/                # Shop feature (ShopScreen, ProductCard, CartView, CreditShopView, ...)
+│   ├── ui/                  # Reusable UI primitives (LanguageSwitcher, Starfield, ScreenCheck, ErrorBoundary)
+│   └── routing/             # Screen phase router (ScreenRouter)
 ├── hooks/                   # Custom React hooks (use* prefix)
 ├── services/                # External service integrations
 ├── state/                   # Zustand stores (use*Store pattern)
@@ -17,6 +22,18 @@ src/
 ├── stubs/                   # Test stubs
 └── test/                    # Test setup
 ```
+
+### Component directory rules
+
+| Directory | Contents | Example |
+|-----------|----------|---------|
+| `screens/` | Egy-egy GamePhase-hez tartozó teljes képernyős nézet | `IntroScreen.tsx`, `MainMenu.tsx` |
+| `features/` | Játék közben használt funkció-komponensek | `Dashboard.tsx`, `PauseMenu.tsx` |
+| `shop/` | Bolt funkció összes komponense (saját mappa, mert 10+ fájl) | `ShopScreen.tsx`, `ProductCard.tsx` |
+| `ui/` | Újrahasználható, apró UI elemek | `LanguageSwitcher.tsx`, `Starfield.tsx` |
+| `routing/` | Navigációs / fázis-orchestrációs komponens | `ScreenRouter.tsx` |
+
+Ha egy feature 5+ komponensné nagyobbra nő, kapjon saját mappát (`features/<feature>/`).
 
 ## File Naming Conventions
 

@@ -92,7 +92,7 @@ tags:
 - [ ] **`CreditShopView`** — új komponens a 4. fülhöz: kreditcsomagok listája (€ ár, ⭐ mennyiség), mindegyiknél „Megveszem" gomb → mock fizetés → kredit jóváírás
 
 **C rész — i18n + validáció**
-- [ ] i18n `shop.*` kulcsok mind az 5 nyelven (a fordítást az `i18n` agent végzi a /dev fázisban)
+- [ ] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt) (a fordítást az `i18n` agent végzi a /dev fázisban)
 - [ ] Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás
 - [ ] Ellenőrzés: `tsc`, tesztek, `build`, kulcs-paritás (5 nyelv)
 
@@ -459,17 +459,19 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 ## 7. Érintett / új fájlok
 
 **Új:**
-- `src/components/shop/ShopScreen.tsx (+.module.css)`, `ShopTabs.tsx (+css)`, `ProductGrid.tsx (+css)`, `ProductCard.tsx (+css)`, `CartButton.tsx (+css)`, `CartView.tsx (+css)`, `CheckoutSuccess.tsx (+css)`, `MusicPreviewButton.tsx (+css)`, `CreditBalance.tsx (+css)`
+- `src/components/shop/ShopScreen.tsx (+.module.css)`, `ShopTabs.tsx`, `ProductGrid.tsx`, `ProductCard.tsx (+.module.css)`, `CartButton.tsx`, `CartView.tsx`, `CheckoutSuccess.tsx`, `MusicPreviewButton.tsx`, `CreditBalance.tsx (+.module.css)`
+- `src/components/shop/CreditShopView.tsx (+.module.css)` — **új**: kreditcsomagok listája
+- `src/components/shop/CreditSuccess.tsx` — **új**: sikeres kreditvásárlás képernyő
 - `src/state/useShopStore.ts` (+ `useShopStore.test.ts`)
-- `src/constants/shopCatalog.ts` (konstansok, debug-kredit, 3 hajó, 5 zene, ár-/wage-képletek, `mapExoplanet`)
+- `src/constants/shopCatalog.ts` (konstansok, `CREDIT_PACKS` (4 csomag), debug-kredit, 3 hajó, 5 zene, ár-/wage-képletek, `mapExoplanet`)
 - `src/data/exoplanets.json` (a `output/exoplanets.json` másolata, 100 elem)
 
 **Módosított:**
 - `src/types/index.ts` — `GamePhase` (`shop`), `ShopCategory`, `ShopProduct*`, `CartItem`, `OwnedItems`
 - `src/state/useGameStore.ts` — `phaseToFlags` (`shop` a pre-game `case`-hez)
 - `src/App.tsx` — `isPreGame` bővítés (`shop`) + a preview-flag (`isPreviewing`) figyelése a háttérzene szüneteltetéséhez
-- `src/components/ScreenRouter.tsx` — új `case "shop": return <ShopScreen />`
-- `src/components/MainMenu.tsx` — „Áruház" gomb: placeholder helyett `transitionTo("shop")`
+- `src/components/routing/ScreenRouter.tsx` — új `case "shop": return <ShopScreen />`
+- `src/components/screens/MainMenu.tsx` — „Áruház" gomb: placeholder helyett `transitionTo("shop")`
 - `public/music/*` — 5 fájl átnevezése kisbetűsre `_`-rel
 - `src/i18n/locales/{en,hu,fr,de,es}/translation.json` — `shop.*` kulcsok
 
@@ -485,9 +487,10 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - **Persist-kulcs:** `space-travel-shop` — nem ütközhet a `space-travel-game/ui/lang` (és a tervezett Firebase-cache) kulcsokkal.
 - **Adatméret:** a 100 exobolygó statikus importja elhanyagolható a bundle-ben; a rács **virtualizáció nélkül** is elbírja, de nagy lista esetén érdemes lazy/paginált renderre figyelni (első körben egyszerű görgetés + keresőszűrés elég).
 - **Determinisztikus ár:** az ár-/wage-képlet tiszta függvény — a [[004-ingame-shop-strapi-stripe]] Strapi-seed ugyanezt reprodukálja, hogy ne ugorjanak az árak a backend bekötésekor.
-- **Debug-kredit:** a `DEBUG_STARTING_CREDITS` (9000 ⭐) csak `VITE_DEBUG_MODE=true` esetén az induló egyenleg; ha már van perzisztált egyenleg a localStorage-ban, az felülírja (a debug-érték törölt storage / első futás esetén érvényesül). Éles buildben (`VITE_DEBUG_MODE=false`) az 5000 ⭐ az alap.
-- **Migráció Firebase-re:** a `useShopStore` API-ja (isOwned/checkout/credits/owned) úgy tervezendő, hogy a [[003-firebase-auth-settings]] a **forrást** cserélje (localStorage → RTDB), ne az UI-t. A kredit-levonás akkor Cloud Functionre vált.
+- **Debug-kredit:** a `DEBUG_STARTING_CREDITS` (9000 ⭐) csak `VITE_DEBUG_MODE=true` esetén az induló egyenleg. Normál módban **0 ⭐** — első látogatáskor a bolt üres egyenleggel vár. A felhasználónak a Kredit vásárlás fülön kell induló kreditet vennie.
+- **Migráció Firebase-re:** a `useShopStore` API-ja (isOwned/checkout/credits/owned/buyCredits) úgy tervezendő, hogy a [[003-firebase-auth-settings]] a **forrást** cserélje (localStorage → RTDB), ne az UI-t. A kredit-levonás és -jóváírás akkor Cloud Functionre vált.
 - **Anti-cheat:** ebben a fázisban a kredit/birtoklás **kliensoldali** (localStorage) → hamisítható. Ez **tudatos, ideiglenes** kompromisszum; a mérvadó, szerver-írt forrást a [[003-firebase-auth-settings]] + [[004-ingame-shop-strapi-stripe]] hozza. A bolt-UI nem feltételezhet szerveroldali igazságot itt.
+- **Kreditcsomag árazás:** a 4 csomag aránya tudatosan nem lineáris (10€→100⭐ = 10⭐/€, 100€→2000⭐ = 20⭐/€) — ösztönzi a nagyobb csomag vásárlását. Ez a mock adatban is így marad, a Strapi ugyanezeket az árakat használja majd.
 
 ---
 
@@ -499,7 +502,7 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
   - **Exobolygók** → küldetésválasztó: a birtokolt bolygók megjelennek a `MissionSelector`-ban választható úticélként (`baseDestinations` + birtokolt bolygók), a `wage`/`distanceLy` mezőkkel.
   - Az adatmodell ezt **előkészíti** (a mezők már megvannak), de a bekötő kód (`activeShipId`/`activeMusicId`, `MissionSelector`/`Dashboard`/`useAudio`/`SettingsScreen` módosítás) **nem** ebben a fázisban készül.
 - **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`); a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function; a localStorage offline tükörré válik. A fenti játékmenet-bekötés (aktív hajó/zene) itt/ezután kap Firebase-forrást (`settings`).
-- **[[004-ingame-shop-strapi-stripe]]** — a **mock katalógust Strapira**, a **mock checkoutot Stripe-ra** cseréli. A `ShopScreen`/`ProductCard`/`CartView`/`CheckoutSuccess` UI **megmarad**; a `shopCatalog.ts` mock-katalógus helyére a `useCatalog` (Strapi) lép, a determinisztikus árakat a Strapi-seed reprodukálja. A valós pénzes út a Stripe→Strapi→Firebase híd.
+- **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás). A **mock katalógus és kosár** (termékekre) **megmarad** (a Strapi csak a fizetési utat kezeli). A `ShopScreen`/`ProductCard`/`CartView`/`CreditShopView` UI **megmarad**; a `CreditShopView` „Megveszem" gombja valós Stripe fizetésre vált (Strapi Checkout Session → webhook → Firebase `wallet.credits` növelés). A termék-katalógus (hajók, zenék, exobolygók) továbbra is mock marad — a Strapi **nem** a termék-katalógust, hanem **kizárólag a kreditfeltöltést** végzi.
 - **[[000-i18n-nyelvesites]]** — a `shop.*` kulcsok a meglévő nyelvi rétegbe illeszkednek; a tulajdonnevek (bolygó/csillag/hajó) nem fordítandók.
 - **[[001-main-menu-settings]]** — a „Áruház" gomb (eddig placeholder) most valódi `shop` fázisra visz; a `GamePhase`/`ScreenRouter`/`phaseToFlags` mintát innen örökli. (A `SettingsScreen` zeneválasztó-bővítése a jövőbeli bekötési fázis.)
 
@@ -509,12 +512,12 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 
 | Rész | Nagyságrend |
 |------|-------------|
-| Adat + állapot (`useShopStore`, `shopData.ts`, exoplanets import, típusok) | ~1 nap |
-| Bolt-UI (ShopScreen + fülek + kártyák + kosár + checkout + preview) | ~2–3 nap |
+| Adat + állapot (`useShopStore`, `CREDIT_PACKS`, `shopData.ts`, exoplanets import, típusok) | ~1 nap |
+| Bolt-UI (ShopScreen + fülek + kártyák + kosár + checkout + preview + **CreditShopView + CreditSuccess**) | ~2–3 nap |
 | Bekötés a játékba (hajó-sebesség, zeneválasztó, exobolygó-küldetések, fájl-átnevezés) | ~1–2 nap |
 | i18n kulcsok (5 nyelv) + Vitest + validáció | ~1 nap |
 
-**Kész definíció:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos a 3 kategóriában (100 exobolygó keresővel, 3 űrhajó, 5 zene) böngészhet, egyenként 1 db-ot kosárba tehet, majd in-game kreditből (⭐, mellette €-ekvivalens) fizethet; a mock checkout levonja a kreditet, birtokoltra állítja a tételeket és üríti a kosarat; a megvett hajó a küldetésindításnál (sebesség), a zene a Beállításokban (háttérzene-sáv), az exobolygó a küldetésválasztóban (új úticél) jelenik meg; minden birtoklás és a kredit-egyenleg `localStorage`-ban (`space-travel-shop`) perzisztál; a `SHIP_SPEED_KM_PER_SECOND` konstans változatlan.
+**Kész definíció:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók, (2) Űrhajók, (3) Zenék, (4) **Kredit vásárlás**. A termékfülekben 100 exobolygó keresővel, 3 űrhajó, 5 zene böngészhető; egyenként 1 db kosárba tehető, majd in-game kreditből fizethető. A **Kredit vásárlás** fülön 4 kreditcsomag (10€→100⭐, 25€→300⭐, 50€→700⭐, 100€→2000⭐) vehető mock fizetéssel — a kredit azonnal jóváíródik. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐. A mock checkout levonja a kreditet, birtokoltra állítja a tételeket és üríti a kosarat. Minden birtoklás és a kredit-egyenleg `localStorage`-ban (`space-travel-shop`) perzisztál. A `SHIP_SPEED_KM_PER_SECOND` konstans változatlan.
 
 ---
 

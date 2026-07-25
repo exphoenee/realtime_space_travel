@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useGameStore from "../state/useGameStore";
+import useGameStore from "../../state/useGameStore";
 import styles from "./LoadingScreen.module.css";
 
 const STEPS = [

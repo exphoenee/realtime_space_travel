@@ -1,7 +1,7 @@
 import React, { type RefObject } from "react";
 import { useTranslation } from "react-i18next";
-import type { FaceAnalysis } from "../services/faceRecognition";
-import type { Destination } from "../types";
+import type { FaceAnalysis } from "../../services/faceRecognition";
+import type { Destination } from "../../types";
 import styles from "./DebugOverlay.module.css";
 
 interface DebugOverlayProps {

@@ -1,10 +1,10 @@
 
 import React, { useRef, useEffect } from "react";
-import { Star } from "../types";
+import { Star } from "../../types";
 import {
   STAR_COUNT,
   STAR_SPEED,
-} from "../constants/constants";
+} from "../../constants/constants";
 
 interface StarfieldProps {
   onCanvasBoundsChange?: (bounds: DOMRectReadOnly) => void;

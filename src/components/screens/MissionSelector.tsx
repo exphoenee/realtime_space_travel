@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Destination } from "../types";
-import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../constants/constants";
-import { baseDestinations } from "../constants/universeData";
-import useGameStore from "../state/useGameStore";
+import { Destination } from "../../types";
+import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../../constants/constants";
+import { baseDestinations } from "../../constants/universeData";
+import useGameStore from "../../state/useGameStore";
 import styles from "./MissionSelector.module.css";
 
 interface MissionSelectorProps {

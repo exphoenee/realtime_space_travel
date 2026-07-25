@@ -1,10 +1,10 @@
 import React from "react";
-import { Destination, GamePhase } from "../types";
-import IntroScreen from "./IntroScreen";
-import MainMenu from "./MainMenu";
-import MissionSelector from "./MissionSelector";
-import SettingsScreen from "./SettingsScreen";
-import LoadingScreen from "./LoadingScreen";
+import { Destination, GamePhase } from "../../types";
+import IntroScreen from "../screens/IntroScreen";
+import MainMenu from "../screens/MainMenu";
+import MissionSelector from "../screens/MissionSelector";
+import SettingsScreen from "../screens/SettingsScreen";
+import LoadingScreen from "../screens/LoadingScreen";
 
 interface ScreenRouterProps {
   phase: GamePhase;

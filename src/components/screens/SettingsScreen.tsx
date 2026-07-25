@@ -1,9 +1,9 @@
 import { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import type { Difficulty } from "../types";
-import useGameStore from "../state/useGameStore";
-import useUIStore from "../state/useUIStore";
-import LanguageSwitcher from "./LanguageSwitcher";
+import type { Difficulty } from "../../types";
+import useGameStore from "../../state/useGameStore";
+import useUIStore from "../../state/useUIStore";
+import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./SettingsScreen.module.css";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];

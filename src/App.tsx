@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import ScreenRouter from "./components/ScreenRouter";
-import Starfield from "./components/Starfield";
-import Dashboard from "./components/Dashboard";
-import PauseMenu from "./components/PauseMenu";
-import DebugOverlay from "./components/DebugOverlay";
+import ScreenRouter from "./components/routing/ScreenRouter";
+import Starfield from "./components/ui/Starfield";
+import Dashboard from "./components/features/Dashboard";
+import PauseMenu from "./components/features/PauseMenu";
+import DebugOverlay from "./components/features/DebugOverlay";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";

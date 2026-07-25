@@ -8,7 +8,7 @@ implemented: 2
 in_progress: 0
 not_started: 3
 tasks_done: 29
-tasks_total: 85
+tasks_total: 86
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -29,7 +29,7 @@ plans:
     status: "not-started"
     category: "shop"
     tasks_done: 0
-    tasks_total: 18
+    tasks_total: 19
     dependencies: [001-main-menu-settings]
   - step: 3
     slug: "003-firebase-auth-settings"
@@ -56,7 +56,7 @@ plans:
 ## Project Status
 
 - **Plans:** 2 implemented · 0 in progress · 3 not started (of 5)
-- **Tasks:** 29/85 done (34%)
+- **Tasks:** 29/86 done (34%)
 
 ## Overview
 
@@ -64,7 +64,7 @@ plans:
 |------|------|--------|----------|-------|----------|-----------|
 | 0 | Nyelvesítési terv | ✅ Implemented | 20/21 | 0 | i18n | — |
 | 1 | Főmenü + Beállítások képernyő terve | ✅ Implemented | 9/13 | — | ui | 0 |
-| 2 | Helyi működésű áruház (frontend-only) terve | ⬜ Not started | 0/18 | — | shop | 1 |
+| 2 | Helyi működésű áruház (frontend-only) terve | ⬜ Not started | 0/19 | — | shop | 1 |
 | 3 | Firebase bejelentkezés + perzisztens felhasználói beállítások terve | ⬜ Not started | 0/14 | 1–2 | auth | 0, 1 |
 | 4 | Játékon belüli áruház terve | ⬜ Not started | 0/19 | 3–4 | shop | 3 |
 
@@ -74,7 +74,7 @@ plans:
 
 - **Step 0 — Nyelvesítési terv** (20/21): Firebase `settings.language` szinkron bekötése (Fázis 1 után — lásd [[003-firebase-auth-settings]])
 - **Step 1 — Főmenü + Beállítások képernyő terve** (9/13): **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
-- **Step 2 — Helyi működésű áruház (frontend-only) terve** (0/18): `output/exoplanets.json` bemásolása `src/data/exoplanets.json`-ba (100 elem, Vite JSON-import) + típus (`ExoplanetRaw`)
+- **Step 2 — Helyi működésű áruház (frontend-only) terve** (0/19): `output/exoplanets.json` bemásolása `src/data/exoplanets.json`-ba (100 elem, Vite JSON-import) + típus (`ExoplanetRaw`)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (0/14): Firebase projekt + Auth (Google, Anonymous) + Realtime Database + env változók
 - **Step 4 — Játékon belüli áruház terve** (0/19): Strapi projekt (külön repo vagy `/server`) + adatbázis
 

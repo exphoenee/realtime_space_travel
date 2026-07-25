@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { WeatherCondition } from "../constants/universeData";
+import type { WeatherCondition } from "../../constants/universeData";
 import styles from "./Dashboard.module.css";
 
 interface DashboardProps {
