@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-25"
 created_at: "2026-07-25"
-updated_at: "2026-07-25"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 2
 phase: null
@@ -46,7 +46,7 @@ tags:
 |--------|-----------|
 | Backend | **Nincs** — tisztán frontend, mock katalógus, `localStorage` perzisztencia |
 | Fizetőeszköz | **In-game kredit** (⭐) — a termékeket kreditből veszed, a kreditet valós pénzért (€) veszed |
-| Kreditcsomagok (€ → ⭐) | **4 csomag**: 10 € → 100 ⭐, 25 € → 300 ⭐, 50 € → 700 ⭐, 100 € → 2000 ⭐ |
+| Kreditcsomagok (€ → ⭐) | **4 csomag**: **5 € → 100 ⭐**, **10 € → 300 ⭐**, **25 € → 700 ⭐**, **100 € → 2000 ⭐** |
 | Kreditvásárlás | A bolt 4. füle: **„Kredit vásárlás"** — mock fizetés (később Stripe), kredit azonnal jóváírva. A Strapi később csak a kreditfeltöltést végzi. |
 | Kezdő egyenleg | **Normál mód:** `STARTING_CREDITS = 0` ⭐ (játékosnak nincs kreditje induláskor — vennie kell). **Debug mód** (`VITE_DEBUG_MODE=true`): `DEBUG_STARTING_CREDITS = 9000` ⭐ (teszteléshez) |
 | Kredit→€ átváltás termékeknél | `priceEur = priceCredits / CREDITS_PER_EUR` (`CREDITS_PER_EUR = 100`) — csak tájékoztató jellegű |
@@ -61,14 +61,16 @@ tags:
 | Kredit forrása | Ebben a fázisban `localStorage`. A [[003-firebase-auth-settings]] után a **Firebase RTDB a mérvadó** (a store csak offline tükör). |
 | Exobolygó adat helye | `src/data/exoplanets.json` (a `output/exoplanets.json` generátor-kimenet másolata) — Vite JSON-import `src/`-ből; mapper alakítja tétellé + procedurális ár |
 | Katalógus (hajó+zene) helye | `src/constants/shopCatalog.ts` — kézzel írt statikus katalógus (a `universeData.ts` mintájára) |
-| Exobolygók | Mind a **100** a `src/data/exoplanets.json`-ból; görgethető rács + **keresőmező**; **procedurális, determinisztikus ár** |
+| Exobolygók | Mind a **100** a `src/data/exoplanets.json`-ból; görgethető rács + **keresőmező**; **procedurális, determinisztikus ár**; a 3 alap bolygó (`BASE_EXOPLANETS`) a lista **elején** jelenik meg |
 | Alap exobolygók (előre birtokolt) | **3 bolygó** (Proxima Centauri, Wolf 424, Ross 780) — a `BASE_EXOPLANETS` tömbben, `priceCredits: 0`, a shopban „Birtokolt" státusszal jelennek meg, a küldetésválasztóban is láthatók |
-| Űrhajók | **3 mock hajó** eltérő sebességgel — csak katalógus-adat (sebesség flavor); az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` **alapként elérhető** |
+| Űrhajók | **3 mock hajó** eltérő sebességgel — `priceCredits` arányos a sebességgel, a legdrágább **1000 ⭐**; a shopban **olcsó → drága** sorrendben jelennek meg (`sort` by price asc); az alap hajó `SHIP_SPEED_KM_PER_SECOND = 191` **alapként elérhető** |
 | Zenék | A meglévő **5** fájl `public/music`-ból, **kisbetűsre + `_`-re átnevezve**; boltban **belehallgatás** (preview) |
 | Háttérzene a boltban | **NEM szól** a háttérzene (`shouldPlayMusic` kizárja a `"shop"` fázist) |
 | Zenei előnézet | Egyszerre **csak 1 előnézet** szólhat (modul-szintű `globalStopPreview` singleton + store-beli `activePreviewId` követés) |
 | Generikus komponensek | `Modal` és `Tabs` kiszervezve `src/components/ui/`-be, újrahasznosítható, shop ezeket használja |
 | Grid scroll | Csak a `.productGrid` container scrollázik — a fülek + kereső fixek maradnak (flex scroll chain) |
+| Kosár gomb a kredit lapon | A kosár gomb `visibility: hidden`-nel láthatatlan (nem `display: none`), hogy a fejléc ne ugorjon átméretezéskor |
+| Gombok túlcsordulás mentes | `.productButton`: `min-width: 0` + `overflow: hidden` + `text-overflow: ellipsis` + `white-space: nowrap` — a „Birtokolt" gomb nem lóg le a kártyáról |
 | Keresés | **Minden** termék tabon (exobolygók, űrhajók, zenék) — név szerinti szűrés |
 | Kredit vásárlás layout | Azonos layout mint a többi tab: `productGrid` + `productCard` osztályok, arany border módosítóval |
 | Info gomb (küldetésválasztó) | `ℹ` gomb minden küldetéskártyán → `MissionExoplanetModal` (JSON bolygóknál teljes adat, alap bolygóknál név+táv+jutalom) |
@@ -114,6 +116,11 @@ tags:
 - [x] **Scroll javítás:** flex scroll chain — csak a `.productGrid` scrollázik, fülek + kereső fixek
 - [x] **Generikus komponensek kiszervezése:** `Modal` + `Tabs` → `src/components/ui/`, shop ezeket használja
 - [x] **`project-conventions.md` frissítése** az új mappastruktúrával (`ui/`, `screens/`, `shop/`)
+- [x] **Árak csökkentése:** legdrágább hajó 1000 ⭐ (Aether Titan), arányos árak (Nomad: 150 ⭐, Vega: 400 ⭐); zenék: 30 ⭐/db; exobolygó formula olcsóbb (`50 + dist*5 + mass*10 + temp*0.2`); wage formula arányosan csökkentve (`dist*3 + mass*2`)
+- [x] **Kredit pakkok frissítése:** 5€/100kr, 10€/300kr, 25€/700kr, 100€/2000kr
+- [x] **Sorrendezés a shopban:** `BASE_EXOPLANETS` a lista elején; hajók `priceCredits` szerint növekvő sorrendben
+- [x] **Kosár gomb láthatatlanság:** kredit lapon `visibility: hidden` (nem `display: none`) — a fejléc nem ugrik átméretezéskor
+- [x] **Gomb túlcsordulás javítás:** `.productButton`: `min-width:0`, `overflow:hidden`, `text-overflow:ellipsis`, `white-space:nowrap` — a „Birtokolt" gomb nem lóg le a kártyáról
 
 **C rész — játékmenet-bekötés (részben megvalósítva)**
 - [x] **Birtokolt exobolygók a küldetésválasztóban:** `MissionSelector` most olvassa a `useShopStore.owned.exoplanets`-et, és a JSON adatokból `mapExoplanet`-tel képzett célokat jeleníti meg az alap 3 mellett
@@ -127,8 +134,8 @@ tags:
 - [x] **Python scraper dokumentálva** — a `exoplanets.py` NASA Images API + Wikimedia Commons hívásokkal próbál képeket keresni, de 0/100 találat (nincs artista koncepciórajz a 100 legközelebbi exobolygóra). ESA linkek is csak keresőoldalak, nem közvetlen képek.
 - [x] **MP3 fájlok átnevezése** — `public/music/*.mp3` fájlok kisbetűsre + `_`-re átnevezve (pl. `Dust on the Highway.mp3` → `dust_on_the_highway.mp3`), a kód hivatkozásai már az új nevekre mutattak
 - [x] **Űrhajók bekötése (ShipSelectScreen)** — `shipSelect` GamePhase: alap hajó (191 km/s) + birtokolt shop hajók listája. `ShipSelectScreen` (grid layout, hajókártyák info gombbal + indítás gombbal). `ShipInfoModal` (read-only műszaki adatok: sebesség, gyártó, kapacitás, hatótáv). Hajó kiválasztásakor `travelYears` újraszámolva: gyorsabb hajó = rövidebb utazási idő.
-- [x] **i18n shipSelect kulcsok** — mind az 5 nyelvhez: `shipSelect.title`, `.subtitle`, `.default`, `.info`, `.launch`, `.launchWith`, `.defaultDesc`
-- [x] **Kamera ellenőrzés flow** — MissionSelector `onSelectDestination` prop → App.tsx `handleSelectDestination` (kamera check) → `selectDestinationForShip` → `shipSelect` fázis → hajó választás → `startMission` → `loading` |  
+- [x] **i18n shipSelect kulcsok** — mind az 5 nyelvhez: `shipSelect.title`, `.subtitle`, `.default`, `.info`, `.launch`, `.launchWith`, `.defaultDesc`, `.owned`
+- [x] **i18n `settings.musicTrack` + `settings.musicDefault`** — mind az 5 nyelvhez |  
 
 **D rész — i18n + validáció**
 - [x] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt)
@@ -369,9 +376,9 @@ A játékos induláskor birtokolja őket. A shopban „Birtokolt" státusszal je
 
 | id | Név | Távolság (ly) | Jutalom (⭐) | Ár |
 |----|-----|--------------|-------------|-----|
-| `exo-proxima-centauri` | Proxima Centauri | 4.24 | 50 | 0 (birtokolt) |
-| `exo-wolf-424` | Wolf 424 | 14.31 | 250 | 0 (birtokolt) |
-| `exo-ross-780` | Ross 780 | 15.34 | 1000 | 0 (birtokolt) |
+| `exo-proxima-centauri` | Proxima Centauri | 4.24 | **15** | 0 (birtokolt) |
+| `exo-wolf-424` | Wolf 424 | 14.31 | **45** | 0 (birtokolt) |
+| `exo-ross-780` | Ross 780 | 15.34 | **50** | 0 (birtokolt) |
 
 ---
 

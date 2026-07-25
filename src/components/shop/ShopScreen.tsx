@@ -74,8 +74,10 @@ const ShopScreen = () => {
               </button>
             )}
             <CreditBalance />
-            {view === "browse" && activeTab !== "credits" && (
-              <CartButton onClick={() => setView("cart")} />
+            {view === "browse" && (
+              <div className={activeTab === "credits" ? styles.cartButtonGhost : undefined}>
+                <CartButton onClick={() => setView("cart")} />
+              </div>
             )}
           </div>
         </div>
