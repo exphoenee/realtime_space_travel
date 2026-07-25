@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useGameStore from "../state/useGameStore";
 import styles from "./LoadingScreen.module.css";
 
 const STEPS = [
-  { icon: "📡", label: "Kamera csatlakoztatása..." },
-  { icon: "🧠", label: "Mesterséges intelligencia modell betöltése..." },
-  { icon: "👁️", label: "Arcfelismerő rendszer kalibrálása..." },
-  { icon: "✅", label: "Minden rendszer üzemkész!" },
+  { icon: "📡", labelKey: "loading.step.camera" },
+  { icon: "🧠", labelKey: "loading.step.model" },
+  { icon: "👁️", labelKey: "loading.step.calibration" },
+  { icon: "✅", labelKey: "loading.step.ready" },
 ];
 
 const STEP_DELAYS = [1000, 2000, 3000]; // ms delays to advance step 0→1, 1→2, 2→3
@@ -17,6 +18,7 @@ interface LoadingScreenProps {
 }
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
+  const { t } = useTranslation();
   const isInitializing = useGameStore((s) => s.isInitializing);
   const [activeStep, setActiveStep] = useState(0);
   const [ready, setReady] = useState(false);
@@ -67,8 +69,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
 
         {/* Title */}
         <div>
-          <h2 className={styles.title}>Rendszerek inicializálása</h2>
-          <p className={styles.subtitle}>A hajó fedélzeti számítógépe ellenőrzi a rendszereket</p>
+          <h2 className={styles.title}>{t("loading.title")}</h2>
+          <p className={styles.subtitle}>{t("loading.subtitle")}</p>
         </div>
 
         {/* Steps */}
@@ -80,17 +82,17 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
 
             const statusText =
               i < activeStep
-                ? "Kész"
+                ? t("loading.status.done")
                 : i === activeStep && i === STEPS.length - 1 && !isInitializing
-                  ? "Kész"
+                  ? t("loading.status.done")
                   : i === activeStep
-                    ? "Folyamatban"
+                    ? t("loading.status.inProgress")
                     : "";
 
             return (
               <li key={i} className={`${styles.step} ${stateClass}`}>
                 <span className={styles.stepIcon}>{step.icon}</span>
-                <span className={styles.stepLabel}>{step.label}</span>
+                <span className={styles.stepLabel}>{t(step.labelKey)}</span>
                 {statusText && <span className={styles.stepStatus}>{statusText}</span>}
               </li>
             );
@@ -103,8 +105,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
         <div className={styles.readyOverlay}>
           <div className={styles.readyCard}>
             <div className={styles.readyIcon}>🚀</div>
-            <h2 className={styles.readyText}>Minden készen áll</h2>
-            <p className={styles.readySubtext}>Nézz a képernyőre az utazás megkezdéséhez</p>
+            <h2 className={styles.readyText}>{t("loading.readyTitle")}</h2>
+            <p className={styles.readySubtext}>{t("loading.readySubtitle")}</p>
           </div>
         </div>
       )}

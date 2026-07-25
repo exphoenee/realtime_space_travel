@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import i18n from "../i18n";
 
 interface Props {
   children: ReactNode;
@@ -44,10 +45,10 @@ class ErrorBoundary extends Component<Props, State> {
           >
             <div>
               <h2 style={{ color: "#f87171", marginBottom: "1rem" }}>
-                Hiba történt
+                {i18n.t("errorBoundary.title")}
               </h2>
               <p style={{ color: "#fecdd3", marginBottom: "1rem" }}>
-                Váratlan hiba történt az alkalmazásban.
+                {i18n.t("errorBoundary.text")}
               </p>
               <button
                 onClick={() => window.location.reload()}
@@ -61,7 +62,7 @@ class ErrorBoundary extends Component<Props, State> {
                   fontWeight: 600,
                 }}
               >
-                Újratöltés
+                {i18n.t("errorBoundary.reload")}
               </button>
             </div>
           </div>

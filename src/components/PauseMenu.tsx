@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import styles from "./PauseMenu.module.css";
 
 interface PauseMenuProps {
@@ -5,6 +6,7 @@ interface PauseMenuProps {
 }
 
 const PauseMenu = ({ countdownSeconds }: PauseMenuProps) => {
+  const { t } = useTranslation();
   const isCountdown = typeof countdownSeconds === "number";
 
   if (isCountdown) {
@@ -12,18 +14,15 @@ const PauseMenu = ({ countdownSeconds }: PauseMenuProps) => {
       <div className={styles.overlay} aria-live="assertive">
         <div>
           <p className={styles.warningIcon}>⚠️</p>
-          <h2 className={styles.countdownHeading}>Figyelem!</h2>
+          <h2 className={styles.countdownHeading}>{t("pause.attentionTitle")}</h2>
           <p className={styles.countdownSub}>
-            Még {countdownSeconds} másodperced van visszanézni a képernyőre,
-            különben a teljes hibernált legénység odavész!
+            {t("pause.countdownSub", { seconds: countdownSeconds })}
           </p>
           <div className={styles.countdown}>
             <p className={styles.countdownValue}>{countdownSeconds}</p>
-            <p className={styles.countdownUnit}>másodperc</p>
+            <p className={styles.countdownUnit}>{t("pause.seconds")}</p>
           </div>
-          <p className={styles.countdownBlame}>
-            Mert te nem végzed a feladatod...
-          </p>
+          <p className={styles.countdownBlame}>{t("pause.blame")}</p>
         </div>
       </div>
     );
@@ -33,13 +32,13 @@ const PauseMenu = ({ countdownSeconds }: PauseMenuProps) => {
     <div className={styles.overlay} aria-live="polite">
       <div>
         <p className={styles.warningIcon}>📡</p>
-        <h2 className={styles.heading}>Kapcsolat megszakadt</h2>
-        <p className={styles.subtitle}>
-          A fedélzeti rendszerek nem érzékelik a jelenlétedet.
-        </p>
+        <h2 className={styles.heading}>{t("pause.disconnectedTitle")}</h2>
+        <p className={styles.subtitle}>{t("pause.disconnectedSub")}</p>
         <p className={styles.warningText}>
-          <strong>60 másodperced</strong> van visszatérni a képernyő elé, mielőtt a
-          hajó vészprotokollt aktivál. A legénység sorsa a te figyelmeden múlik.
+          <Trans i18nKey="pause.disconnectedWarning">
+            <strong>60 másodperced</strong> van visszatérni a képernyő elé, mielőtt a
+            hajó vészprotokollt aktivál. A legénység sorsa a te figyelmeden múlik.
+          </Trans>
         </p>
       </div>
     </div>
