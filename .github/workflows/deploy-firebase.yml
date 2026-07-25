@@ -41,8 +41,6 @@ jobs:
           VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
 
       - name: Deploy to Firebase Hosting
-        uses: w9jds/firebase-action@v13
-        with:
-          args: deploy --only hosting
+        run: npx firebase-tools deploy --only hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
