@@ -116,19 +116,19 @@ playing → remainingYears ≤ 0 → missionComplete
 | Konstans | Érték | Leírás |
 |---|---|---|
 | `SHIP_SPEED_KM_PER_SECOND` | 191 | Űrhajó sebessége km/s-ben |
-| `TRAVEL_YEARS_PER_SECOND` | 0.001 | Hány földi év telik el játékmásodpercenként |
+| `TRAVEL_YEARS_PER_SECOND` | `1 / SECONDS_PER_YEAR` (≈ 3.17e-8) | Hány földi év telik el játékmásodpercenként |
 | `INACTIVITY_LIMIT_SECONDS` | 60 | Figyelmen kívül hagyás időkorlátja |
-| `ATTENTION_INTERVAL_MS` | 1000 | Arcfelismerési ciklus időköze |
-| `FACE_DETECTION_INTERVAL_MS` | 100 | Arcdetektálás gyakorisága |
-| `SERVICE_UPDATE_INTERVAL_MS` | 1000 | Szolgálati idő frissítési gyakorisága |
+| `ATTENTION_INTERVAL_MS` | 1000 | Figyelemfigyelési ciklus időköze |
+| `FACE_DETECTION_INTERVAL_MS` | 1000 | Arcdetektálás gyakorisága |
+| `SERVICE_UPDATE_INTERVAL_MS` | 50 | Szolgálati idő / hátralévő idő frissítési gyakorisága |
 
 ### universeData.ts
 
 | Célnév | Távolság (LY) | Jutalom |
 |---|---|---|
-| Proxima Centauri | 4.24 | 500$ |
-| Wolf 424 | 14.3 | 2000$ |
-| Ross 780 | 16.6 | 3000$ |
+| Proxima Centauri | 4.24 | 50$ |
+| Wolf 424 | 14.31 | 250$ |
+| Ross 780 | 15.34 | 1000$ |
 
 ## Nemzetköziesítés (i18n)
 
@@ -152,7 +152,7 @@ A `VITE_DEBUG_MODE=true` környezeti változóval:
 - Kamera előnézet látható (`DebugOverlay`)
 - Arcfelismerési metrikák megjelennek
 - `debugIgnoreAttention` kapcsoló (figyelemfigyelés kikapcsolása)
-- Intro görgetés sebessége lassabb (120s)
+- Intro görgetés sebessége lassabb (`INTRO_SCROLL_DURATION` = 180s)
 
 ## Tesztelés
 

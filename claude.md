@@ -149,7 +149,8 @@ A projekt a Claude Code natív **skill** és **agent (subagent)** mechanizmusát
 - **`/plan` folyamat:** spec + döntések tisztázása → `planner` → `manage-roadmap`.
 - **Single source of truth:** a `./plans/` könyvtár; a `roadmap.md` **scripttel generált** (`python .claude/scripts/generate_roadmap.py`) a tervek YAML fejlécéből és TODO-jából — olvasás előtt mindig újragenerálandó, kézzel nem szerkesztendő.
 - **Subagentek nem kérdezhetnek a felhasználótól** — minden tisztázás a skillekben/fő agentben történik az agent-indítás előtt.
-- Megosztott referenciák: `.claude/references/` (`project-conventions.md`, `plan-yaml-schema.md`, `plan-naming.md`, `phase-numbering.md`).
+- Megosztott referenciák: `.claude/references/` — konvenciók/séma (`project-conventions.md`, `plan-yaml-schema.md`, `plan-naming.md`, `phase-numbering.md`) és architektúra/állapot doksik (`architecture-current.md`, `architecture-planned.md`, `project-state.md`).
+- Viselkedési szabályok: `.claude/rules/` (`main-rules.md`).
 
 ## Figyelmeztetések
 
