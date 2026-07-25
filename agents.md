@@ -6,11 +6,11 @@
 
 **A vékony skillek triggerelik az agenteket.** Nincs „skill loader" — egyetlen skill sem tölt be másik skillt. A minta:
 
-- **Skill** (`.claude/skills/<name>/SKILL.md`) — vékony belépési pont / orchestrátor. A `Skill` eszközzel hívódik (`/dev`, `/plan`). Betölti az utasításait a fő agent turnjébe, majd a **fő agent** az `Agent` eszközzel **subagenteket indít**.
-- **Agent** (`.claude/agents/<name>.md`) — önálló worker, saját kontextussal. Az `Agent` eszközzel indul (`subagent_type: <name>`), elvégzi a feladatot, és jelentést ad vissza.
+- **Skill** (`.claude/skills/<name>/SKILL.md`) — vékony belépési pont / orchestrátor. A `Skill` eszközzel hívódik (`/dev`, `/plan`). Betölti az utasításait a fő agent turnjébe, majd a **fő agent** az `spawn_agents` eszközzel **subagenteket indít**.
+- **Agent** (`.claude/agents/<name>.md`) — önálló worker, saját kontextussal. Az `spawn_agents` eszközzel indul (`agent_type: <name>`), elvégzi a feladatot, és jelentést ad vissza.
 
 ```
-felhasználó → Skill (dev/plan) → fő agent → Agent(subagent_type: …) → jelentés → fő agent → összegzés
+felhasználó → Skill (dev/plan) → fő agent → spawn_agents(agent_type: …) → jelentés → fő agent → összegzés
 ```
 
 ## Skillek (belépési pontok)
@@ -25,14 +25,14 @@ Tisztázza a specifikációt és a döntéseket a felhasználóval, majd triggel
 
 ## Agentek (workerek)
 
-| Agent | `subagent_type` | Fájl | Szerep | Ki indítja |
-|-------|-----------------|------|--------|------------|
+| Agent | `agent_type` | Fájl | Szerep | Ki indítja |
+|-------|-------------|------|--------|------------|
 | React fejlesztő | `react-dev` | `.claude/agents/react-dev.md` | React komponensek, Zustand store-ok, hook-ok, típusok, CSS Module-ok, GamePhase-ek, navigáció | `/dev`, vagy közvetlenül |
 | i18n | `i18n` | `.claude/agents/i18n.md` | Fordítási kulcsok mind az 5 nyelven (hu, en, fr, de, es), kulcs-paritás, plurals/interpoláció/HTML | `/dev`, vagy közvetlenül |
 | Roadmap-kezelő | `manage-roadmap` | `.claude/agents/manage-roadmap.md` | Tervfájlok átszámozása, YAML `step`/`slug`/függőségek, `roadmap.md` generálás, TODO frissítés, placement-analízis | `/dev`, `/plan` |
 | Tervező | `planner` | `.claude/agents/planner.md` | Tervfájl-tartalom (YAML, TODO, architektúra, i18n, kockázatok), cross-reference-ek | `/plan` |
 
-**Indítás példa:** a `/dev` skill utasítására a fő agent az `Agent` eszközt hívja `subagent_type: react-dev` értékkel, precíz feladattal (mit építs, mely fájlok, mely i18n kulcsok). A subagent visszaadja a módosított fájlok listáját és az új i18n kulcsokat, amit a fő agent továbbad az `i18n` agentnek.
+**Indítás példa:** a `/dev` skill utasítására a fő agent a `spawn_agents` eszközt hívja `agent_type: react-dev` értékkel, precíz feladattal (mit építs, mely fájlok, mely i18n kulcsok). A subagent visszaadja a módosított fájlok listáját és az új i18n kulcsokat, amit a fő agent továbbad az `i18n` agentnek.
 
 ## Munkafolyamatok
 
@@ -41,39 +41,95 @@ Tisztázza a specifikációt és a döntéseket a felhasználóval, majd triggel
 /dev (fő agent, orchestrátor)
   1. plans/ olvasása → következő feladat → állapot jelentése
   2. Terv (érintett kód olvasása, fájlok + i18n kulcsok meghatározása)
-  3. Agent(react-dev)      → React kód implementálása
-  4. Agent(i18n)           → fordítások mind az 5 nyelvre
-  5. Validáció (tsc, test, build)
-  6. (opcionális) /code-review a diffre
-  7. Agent(manage-roadmap) → TODO + YAML + roadmap frissítés
-  8. Összegzés
+  3. spawn_agents(react-dev)    → React kód implementálása
+  4. spawn_agents(i18n)         → fordítások mind az 5 nyelvre
+  5. Validáció (tsc, test, build) párhuzamosan + code-review
+  6. spawn_agents(manage-roadmap) → TODO + YAML + roadmap frissítés
+  7. Összegzés
 ```
 
 ### `/plan` — új terv
 ```
 /plan (fő agent, belépési pont)
   1. Specifikáció átvétele
-  2. Döntések tisztázása a felhasználóval (AskUserQuestion);
-     opcionálisan Agent(manage-roadmap) placement-analízishez
-  3. Agent(planner)        → tervtartalom + cross-reference-ek
-  4. Agent(manage-roadmap) → átszámozás, YAML, roadmap újragenerálás
+  2. Döntések tisztázása a felhasználóval (ask_user);
+     opcionálisan spawn_agents(manage-roadmap) placement-analízishez
+  3. spawn_agents(planner)        → tervtartalom + cross-reference-ek
+  4. spawn_agents(manage-roadmap) → átszámozás, YAML, roadmap újragenerálás
   5. Összegzés
 ```
 
-## Beépített képességek (natív Claude Code eszközök)
+## Tool használati útmutató
 
-A fő agent és a subagentek a natív eszközöket használják — nincs szükség külön „kereső/basher/reviewer" agentekre:
+### `spawn_agents` — párhuzamos agent indítás
 
-- **Kontextusgyűjtés:** `Read`, `Grep`, `Glob` (fájlkeresés és -olvasás).
-- **Validáció / parancsok:** `Bash` (`npx tsc --noEmit`, `npm run test`, `npm run build`).
-- **Kódellenőrzés:** a `/code-review` skill a diffre (nem külön agent).
-- **Böngészős ellenőrzés:** a Claude-in-Chrome eszközök (ha a bővítmény csatlakoztatva van).
-- **Kérdezés:** `AskUserQuestion` — **csak a skillekben / fő agentben**, a döntéseket a subagent-indítás *előtt* kell tisztázni.
+**A preferált eszköz** agentek indításához. Több agentet lehet párhuzamosan indítani.
+
+**Fontos:** A JSON paraméterekben:
+- Ne használj backtick-et (`) — használj sima idézőjeleket
+- Minden agent kapjon saját `agent_type`, `prompt`, `params` objektumot
+- A `params` mezők az adott agent sémájához igazodjanak
+
+Példa párhuzamos validációra:
+```json
+{
+  "agents": [
+    {
+      "agent_type": "basher",
+      "params": {
+        "command": "cd /e/Projects/realtime_space_travel && npx tsc --noEmit 2>&1",
+        "what_to_summarize": "Van-e TypeScript hiba?"
+      }
+    },
+    {
+      "agent_type": "code_reviewer_deepseek_flash",
+      "prompt": "Review the recent changes..."
+    }
+  ]
+}
+```
+
+### `basher` — terminál parancsok
+
+Terminál parancsok futtatásához. Windows bash shell esetén:
+- `move` → `mv` (bash)
+- `copy` → `cp` (bash)
+- A `cd` működik, de az elérési utakban `/` használandó (nem `\`)
+
+### `str_replace` — fájl szerkesztés
+
+Több replacement esetén használj **egy** `str_replace` hívást a `replacements` tömbbel.
+Figyelj a JSON escape-ekre: újsor = `\n`, idézőjel = `\"`.
+
+## Beépített képességek (natív eszközök)
+
+A fő agent és a subagentek a natív eszközöket használják:
+
+- **Kontextusgyűjtés:** `read_files`, `code_searcher` (ripgrep), `glob`, `list_directory`
+- **Validáció / parancsok:** `basher` (`npx tsc --noEmit`, `npm run test`, `npm run build`)
+- **Kódellenőrzés:** `code_reviewer_deepseek_flash` a diffre
+- **Böngészős ellenőrzés:** `browser_use` (Chrome DevTools)
+- **Kérdezés:** `ask_user` — **csak a skillekben / fő agentben**, a döntéseket az agent-indítás *előtt* kell tisztázni.
+- **Követés:** `write_todos` — lépések nyomon követéséhez
+
+## Fontos archívumok
+
+| Fájl | Tartalom |
+|------|---------|
+| `.claude/references/architecture-current.md` | Jelenlegi architektúra részletesen |
+| `.claude/references/architecture-planned.md` | Tervezett architektúra jövőbeli fázisokkal |
+| `.claude/references/project-conventions.md` | Kód konvenciók, mappa struktúra |
+| `.claude/references/project-state.md` | Projekt állapot fázisonként |
+| `.claude/references/plan-yaml-schema.md` | Terv YAML séma |
+| `.claude/references/plan-naming.md` | Terv fájl elnevezési konvenciók |
+| `.claude/references/phase-numbering.md` | Fázis számozási szabályok |
+| `.claude/lessons-learned.md` | **Tanulságok és minták** — olvasd el fejlesztés előtt! |
 
 ## Fontos megkötések
 
 - **Subagentek nem kérdezhetnek a felhasználótól.** Minden tisztázást a fő agent (skill) végez, mielőtt agentet indít; a subagent a bizonytalanságot a jelentésében jelzi.
-- **Single source of truth:** a `./plans/` könyvtár. A `roadmap.md` **scripttel generált** (`python .claude/scripts/generate_roadmap.py`), tájékoztató jellegű — kézzel ne szerkeszd. **Olvasás előtt mindig generáld újra.** A script a tervek YAML fejlécéből és „Haladás (TODO)" szekciójából állítja elő a projekt-állást (terv- és task-haladás), a következő nyitott feladatokat és a beillesztési útmutatót (függőségek + függő tervek).
-- **Nincs skill-loading.** Skill sosem tölt be másik skillt; a delegálás mindig `Agent` eszközzel, `subagent_type`-pal történik.
-- **Konvenciók:** `.claude/references/project-conventions.md`; terv-YAML séma és számozás: `.claude/references/plan-yaml-schema.md`, `plan-naming.md`, `phase-numbering.md`.
+- **Single source of truth:** a `./plans/` könyvtár. A `roadmap.md` **scripttel generált** (`python .claude/scripts/generate_roadmap.py`), tájékoztató jellegű — kézzel ne szerkeszd. **Olvasás előtt mindig generáld újra.**
+- **Nincs skill-loading.** Skill sosem tölt be másik skillt; a delegálás mindig `spawn_agents` eszközzel, `agent_type`-pal történik.
+- **Konvenciók:** `.claude/references/project-conventions.md`
 - **Pusztító parancsok** (`git push`, `rm -rf`, stb.) csak kifejezett kérésre.
+- **Tanulságok:** mielőtt új feature-t implementálsz, olvasd el a `.claude/lessons-learned.md`-t!
