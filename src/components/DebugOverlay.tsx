@@ -1,4 +1,5 @@
 import React, { type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 import type { FaceAnalysis } from "../services/faceRecognition";
 import type { Destination } from "../types";
 import styles from "./DebugOverlay.module.css";
@@ -24,6 +25,7 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   videoRef,
   destination,
 }) => {
+  const { t } = useTranslation();
   if (!destination) return null;
 
   const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
@@ -50,26 +52,26 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
       />
       <div className={styles.info}>
         <p>
-          Kamera állapot:{" "}
+          {t("debug.cameraStatus")}{" "}
           <span style={{ color: faceStatus.detected ? "#22c55e" : "#f87171" }}>
-            {faceStatus.detected ? "Arc érzékelve" : "Nincs arc"}
+            {faceStatus.detected ? t("debug.faceDetected") : t("debug.noFace")}
           </span>
         </p>
-        <p>Utolsó frissítés: {lastUpdateAgoSeconds.toFixed(1)}s</p>
+        <p>{t("debug.lastUpdate", { value: lastUpdateAgoSeconds.toFixed(1) })}</p>
         <p>
-          Balance arány:{" "}
+          {t("debug.balanceRatio")}{" "}
           {debugMetrics
             ? `${debugMetrics.balanceRatio.toFixed(2)}`
             : "N/A"}
         </p>
         <p>
-          Szem döntés arány:{" "}
+          {t("debug.eyeVerticalRatio")}{" "}
           {debugMetrics
             ? `${debugMetrics.eyeVerticalRatio.toFixed(2)}`
             : "N/A"}
         </p>
         <p>
-          Szem-fül különbség:{" "}
+          {t("debug.eyeEarMargin")}{" "}
           {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"}
         </p>
         <label className={styles.toggle}>
@@ -78,7 +80,7 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
             checked={debugIgnoreAttention}
             onChange={(e) => setDebugIgnoreAttention(e.target.checked)}
           />
-          <span>Figyelmen kívül hagyás</span>
+          <span>{t("debug.ignore")}</span>
         </label>
       </div>
     </div>

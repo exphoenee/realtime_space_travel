@@ -2,6 +2,8 @@ import React from "react";
 import { Destination, GamePhase } from "../types";
 import IntroScreen from "./IntroScreen";
 import MainMenu from "./MainMenu";
+import MissionSelector from "./MissionSelector";
+import SettingsScreen from "./SettingsScreen";
 import LoadingScreen from "./LoadingScreen";
 
 interface ScreenRouterProps {
@@ -16,10 +18,12 @@ interface ScreenRouterProps {
 
 /**
  * Routes rendering based on the current GamePhase.
- * - 'intro'    → IntroScreen
- * - 'menu'     → MainMenu
- * - 'loading'  → LoadingScreen (camera/model initialization)
- * - All others → children (the game view with overlays)
+ * - 'intro'        → IntroScreen
+ * - 'mainMenu'     → MainMenu (login / start game / shop / settings / intro)
+ * - 'missionSelect'→ MissionSelector (mission selection)
+ * - 'settings'     → SettingsScreen (music volume, language, difficulty)
+ * - 'loading'      → LoadingScreen (camera/model initialization)
+ * - All others     → children (the game view with overlays)
  */
 const ScreenRouter: React.FC<ScreenRouterProps> = ({
   phase,
@@ -31,8 +35,12 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
   switch (phase) {
     case "intro":
       return <IntroScreen onSkip={onSkipIntro} />;
-    case "menu":
-      return <MainMenu onSelectDestination={onSelectDestination} />;
+    case "mainMenu":
+      return <MainMenu />;
+    case "missionSelect":
+      return <MissionSelector onSelectDestination={onSelectDestination} />;
+    case "settings":
+      return <SettingsScreen />;
     case "loading":
       return <LoadingScreen onComplete={onLoadingComplete} />;
     default:

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import ScreenRouter from "./components/ScreenRouter";
 import Starfield from "./components/Starfield";
@@ -28,6 +29,7 @@ import styles from "./App.module.css";
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const {
     gamePhase,
     destination,
@@ -61,9 +63,9 @@ const App: React.FC = () => {
     cameraError,
     showExitConfirm,
     isMusicMuted,
+    musicVolume,
     setCameraError,
     setShowExitConfirm,
-    setIsMusicMuted,
   } = useUIStore();
 
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
@@ -81,38 +83,30 @@ const App: React.FC = () => {
 
   const handleSelectDestination = async (selectedDestination: Destination) => {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-      setCameraError(
-        "A böngésződ nem támogatja a kamera hozzáférést. Próbálj másik böngészőt.",
-      );
+      setCameraError(t("app.camera.noSupport"));
       return;
     }
 
     if (!window.FaceDetection) {
-      setCameraError(
-        "A gépi látás modell nem tölthető be. Próbáld meg frissíteni az oldalt.",
-      );
+      setCameraError(t("app.camera.noModel"));
       return;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((t) => t.stop());
+      stream.getTracks().forEach((track) => track.stop());
     } catch (err) {
-      let errorMessage =
-        "Kamera hozzáférés szükséges a játékhoz. Engedélyezd a kamerát és frissítsd az oldalt.";
+      let errorMessage = t("app.camera.needAccess");
       if (err instanceof DOMException) {
         switch (err.name) {
           case "NotAllowedError":
-            errorMessage =
-              "Kamera hozzáférés megtagadva. Kérjük, engedélyezd a kamerát a böngésző beállításaiban.";
+            errorMessage = t("app.camera.denied");
             break;
           case "NotFoundError":
-            errorMessage =
-              "Nem található kamera. Csatlakoztass egy webkamerát és próbáld újra.";
+            errorMessage = t("app.camera.notFound");
             break;
           case "NotReadableError":
-            errorMessage =
-              "A kamera nem olvasható. Lehet, hogy egy másik alkalmazás használja.";
+            errorMessage = t("app.camera.notReadable");
             break;
         }
       }
@@ -156,7 +150,12 @@ const App: React.FC = () => {
     }
   };
 
-  const isPreGame = gamePhase === "intro" || gamePhase === "menu" || gamePhase === "loading";
+  const isPreGame =
+    gamePhase === "intro" ||
+    gamePhase === "mainMenu" ||
+    gamePhase === "missionSelect" ||
+    gamePhase === "settings" ||
+    gamePhase === "loading";
 
   const attentionCountdown =
     gamePhase === "countdown"
@@ -170,12 +169,8 @@ const App: React.FC = () => {
     [setCanvasBounds],
   );
 
-  const handleToggleMusic = useCallback(() => {
-    setIsMusicMuted((prev) => !prev);
-  }, [setIsMusicMuted]);
-
   const handleSkipIntro = useCallback(() => {
-    useGameStore.getState().transitionTo("menu");
+    useGameStore.getState().transitionTo("mainMenu");
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -186,37 +181,14 @@ const App: React.FC = () => {
   const bestServiceMinutes = bestServiceSeconds / 60;
   const crewLostMessage =
     crewLostReason === "buttons"
-      ? "Az egész hibernált legénység elpusztult, mert piszkáltad a gombokat!"
-      : "Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.";
+      ? t("app.crewLostButtons")
+      : t("app.crewLostAttention");
 
   // Pause overlay visible when in paused/countdown phase and no blocking overlays
   const isPauseOverlayVisible =
     (gamePhase === "paused" || gamePhase === "countdown") &&
     !cameraError &&
     !showExitConfirm;
-
-  const showBellOverlay =
-    !!canvasBounds && (isPreGame || isPauseOverlayVisible);
-  const bellOverlay =
-    showBellOverlay && canvasBounds ? (
-      <div
-        className={styles.bellOverlay}
-        style={{
-          top: canvasBounds.top,
-          left: canvasBounds.left,
-          width: canvasBounds.width,
-          height: canvasBounds.height,
-        }}
-      >
-        <button
-          onClick={handleToggleMusic}
-          className={styles.musicButton}
-          aria-label={isMusicMuted ? "Zene bekapcsolása" : "Zene némítása"}
-        >
-          {isMusicMuted ? "🔕" : "🔔"}
-        </button>
-      </div>
-    ) : null;
 
   useEffect(() => {
     if (!showIntro) return;
@@ -280,8 +252,8 @@ const App: React.FC = () => {
       isPaused);
 
   useEffect(() => {
-    playMusic(shouldPlayMusic, isMusicMuted);
-  }, [shouldPlayMusic, isMusicMuted, playMusic]);
+    playMusic(shouldPlayMusic, isMusicMuted, musicVolume);
+  }, [shouldPlayMusic, isMusicMuted, musicVolume, playMusic]);
 
   useEffect(() => {
     if (!destination || isPaused || crewLost || missionComplete) {
@@ -380,7 +352,6 @@ const App: React.FC = () => {
             onSelectDestination={handleSelectDestination}
             onLoadingComplete={handleLoadingComplete}
           />
-          {bellOverlay}
         </main>
       ) : !destination ? null : (
         <main className={styles.app}>
@@ -398,13 +369,13 @@ const App: React.FC = () => {
                 height: canvasBounds.height,
               }}
             >
-              <button onClick={handleRequestExit} className={styles.exitButton} aria-label="Kilépés a küldetésből">
-                Kilépés
+              <button onClick={handleRequestExit} className={styles.exitButton} aria-label={t("app.exitAria")}>
+                {t("app.exit")}
               </button>
               <div className={styles.statsPanel}>
-                <p>Szolgálati idő: {serviceMinutes.toFixed(2)} perc</p>
+                <p>{t("app.serviceTime", { minutes: serviceMinutes.toFixed(2) })}</p>
                 <p className={styles.statsRecord}>
-                  Rekord: {bestServiceMinutes.toFixed(2)} perc
+                  {t("app.record", { minutes: bestServiceMinutes.toFixed(2) })}
                 </p>
               </div>
             </div>
@@ -421,16 +392,16 @@ const App: React.FC = () => {
           {missionComplete && (
             <div className={styles.overlay}>
               <div className={`${styles.overlayCard} ${styles.successCard}`}>
-                <h2 className={styles.overlayTitle}>Megérkeztél!</h2>
+                <h2 className={styles.overlayTitle}>{t("app.missionCompleteTitle")}</h2>
                 <p className={styles.overlayText}>
-                  Megérkeztél! Az uticélod a jobb oldalon van!
+                  {t("app.missionCompleteText")}
                 </p>
                 <div className={styles.overlayActions}>
                   <button
                     onClick={handleConfirmExit}
                     className={`${styles.button} ${styles.successButton}`}
                   >
-                    Vissza a főmenübe
+                    {t("app.backToMenu")}
                   </button>
                 </div>
               </div>
@@ -440,14 +411,14 @@ const App: React.FC = () => {
           {crewLost && (
             <div className={styles.overlay}>
               <div className={`${styles.overlayCard} ${styles.dangerCard}`}>
-                <h2 className={styles.overlayTitle}>Vége a játéknak</h2>
+                <h2 className={styles.overlayTitle}>{t("app.gameOverTitle")}</h2>
                 <p className={styles.overlayText}>{crewLostMessage}</p>
                 <div className={styles.overlayActions}>
                   <button
                     onClick={handleConfirmExit}
                     className={`${styles.button} ${styles.dangerButton}`}
                   >
-                    Vissza a főmenübe
+                    {t("app.backToMenu")}
                   </button>
                 </div>
               </div>
@@ -457,22 +428,22 @@ const App: React.FC = () => {
           {showExitConfirm ? (
             <div className={styles.overlay}>
               <div className={`${styles.overlayCard} ${styles.neutralCard}`}>
-                <h2 className={styles.overlayTitle}>Biztosan kilépsz?</h2>
+                <h2 className={styles.overlayTitle}>{t("app.exitConfirmTitle")}</h2>
                 <p className={styles.overlayText}>
-                  A játék nem menti az eddigi elért eredményeidet!
+                  {t("app.exitConfirmText")}
                 </p>
                 <div className={styles.overlayActions}>
                   <button
                     onClick={handleConfirmExit}
                     className={`${styles.button} ${styles.dangerButton}`}
                   >
-                    Igen
+                    {t("app.yes")}
                   </button>
                   <button
                     onClick={handleCancelExit}
                     className={`${styles.button} ${styles.neutralButton}`}
                   >
-                    Nem
+                    {t("app.no")}
                   </button>
                 </div>
               </div>
@@ -480,7 +451,7 @@ const App: React.FC = () => {
           ) : cameraError ? (
             <div className={`${styles.overlay} ${styles.cameraError}`}>
               <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
-                <h2 className={styles.cameraErrorTitle}>Hiba</h2>
+                <h2 className={styles.cameraErrorTitle}>{t("app.errorTitle")}</h2>
                 <p className={styles.cameraErrorText}>{cameraError}</p>
                 <div className={styles.overlayActions}>
                   <button
@@ -490,7 +461,7 @@ const App: React.FC = () => {
                     }}
                     className={`${styles.button} ${styles.neutralButton}`}
                   >
-                    Próbáld újra
+                    {t("app.retry")}
                   </button>
                 </div>
               </div>
@@ -499,7 +470,6 @@ const App: React.FC = () => {
             <PauseMenu countdownSeconds={attentionCountdown} />
           ) : null}
 
-          {bellOverlay}
           {DEBUG_MODE && (
             <DebugOverlay
               debugCanvasRef={debugCanvasRef}

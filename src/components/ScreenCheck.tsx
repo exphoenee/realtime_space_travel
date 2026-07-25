@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 interface ScreenCheckProps {
   children: React.ReactNode;
@@ -8,6 +9,7 @@ const MIN_WIDTH = 900;
 const MIN_HEIGHT = 530;
 
 const ScreenCheck = ({ children }: ScreenCheckProps) => {
+  const { t } = useTranslation();
   const [isBlocked, setIsBlocked] = useState(true);
   const [reason, setReason] = useState<"portrait" | "small" | null>(null);
 
@@ -71,11 +73,10 @@ const ScreenCheck = ({ children }: ScreenCheckProps) => {
                   color: "#f87171",
                 }}
               >
-                Fekvő nézet szükséges
+                {t("screenCheck.portraitTitle")}
               </h2>
               <p style={{ color: "#94a3b8", lineHeight: 1.6 }}>
-                Kérjük, fordítsd el a készülékedet vízszintes helyzetbe a játék
-                elindításához.
+                {t("screenCheck.portraitText")}
               </p>
             </>
           ) : (
@@ -88,11 +89,13 @@ const ScreenCheck = ({ children }: ScreenCheckProps) => {
                   color: "#f87171",
                 }}
               >
-                Túl kicsi képernyő
+                {t("screenCheck.tooSmallTitle")}
               </h2>
               <p style={{ color: "#94a3b8", lineHeight: 1.6 }}>
-                Legalább <strong style={{ color: "#67e8f9" }}>900×530</strong>{" "}
-                felbontás szükséges.
+                <Trans i18nKey="screenCheck.tooSmallText">
+                  Legalább <strong style={{ color: "#67e8f9" }}>900×530</strong>{" "}
+                  felbontás szükséges.
+                </Trans>
               </p>
               <p
                 style={{
@@ -101,7 +104,10 @@ const ScreenCheck = ({ children }: ScreenCheckProps) => {
                   marginTop: "0.5rem",
                 }}
               >
-                Jelenlegi: {window.innerWidth}×{window.innerHeight}
+                {t("screenCheck.current", {
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                })}
               </p>
             </>
           )}

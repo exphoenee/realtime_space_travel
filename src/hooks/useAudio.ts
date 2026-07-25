@@ -2,7 +2,6 @@ import { useRef, useCallback, useEffect } from "react";
 import {
   AUDIO_FADE_INTERVAL_MS,
   AUDIO_FADE_STEP,
-  MUSIC_ACTIVE_VOLUME,
 } from "../constants/constants";
 
 export const useAudio = () => {
@@ -73,13 +72,14 @@ export const useAudio = () => {
   }, []);
 
   const playMusic = useCallback(
-    (shouldPlay: boolean, isMuted: boolean) => {
+    (shouldPlay: boolean, isMuted: boolean, volume: number) => {
       const audio = ensureAudio();
 
+      const clampedVolume = Math.max(0, Math.min(1, volume));
       const targetVolume =
-        shouldPlay && !isMuted ? MUSIC_ACTIVE_VOLUME : 0;
+        shouldPlay && !isMuted ? clampedVolume : 0;
 
-      if (shouldPlay && !isMuted) {
+      if (shouldPlay && !isMuted && clampedVolume > 0) {
         const playPromise = audio.play();
         if (playPromise && typeof playPromise.catch === "function") {
           playPromise.catch(() => {
