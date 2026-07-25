@@ -1,128 +1,79 @@
-# Agents – AI Agent Architektúra és Szerepek
+# Agents – Fejlesztési architektúra (skillek + agentek)
 
-> Ez a fájl dokumentálja, hogyan használhatók AI agentek a Realtime Space Travel fejlesztési munkafolyamatában.
+> Ez a fájl dokumentálja, hogyan szervezzük a fejlesztési munkafolyamatot a Realtime Space Travel projektben a Claude Code natív **skill** és **agent (subagent)** mechanizmusával.
 
-## Agent típusok
+## Alapelv
 
-### 1. Buffy (Fő koordinátor)
+**A vékony skillek triggerelik az agenteket.** Nincs „skill loader" — egyetlen skill sem tölt be másik skillt. A minta:
 
-**Szerep:** A fő AI asszisztens, aki koordinálja a feladatokat, döntéseket hoz, és integrálja az al-agentek eredményeit.
-
-**Felelősség:**
-- A felhasználó kéréseinek értelmezése és dekomponálása
-- Al-agentek spawnolása párhuzamosan vagy szekvenciálisan
-- Változtatások végrehajtása (str_replace, write_file)
-- Döntések meghozatala a projekt konvenciói alapján
-- Végső összegzés írása
-
-### 2. File Picker
-
-**Szerep:** Fájlok keresése a kódbázisban fuzzy kereséssel.
-
-**Használat:** Amikor releváns fájlokat kell találni egy feladathoz. Nem csinál string-keresést — fuzzy alapú.
-
-**Példa prompt:** "Find files related to game state management and persistence"
-
-### 3. Code Searcher
-
-**Szerep:** Ripgrep-alapú line-oriented keresés a forráskódokban.
-
-**Használat:** Amikor konkrét stringeket, függvényhívásokat vagy mintákat kell keresni.
-
-**Példa prompt:** Search for `transitionTo` usage patterns across all TypeScript files.
-
-### 4. Researcher (Web / Docs)
-
-**Szerep:** Dokumentáció és webes források kutatása.
-
-**Web researcher:** Általános webes keresés, API-dokumentációk, harmadik fél szolgáltatások.
-**Docs researcher:** Könyvtárak/keretrendszerek hivatalos dokumentációjának böngészése (React, Zustand, i18next, stb.).
-
-### 5. Basher
-
-**Szerep:** Terminál parancsok futtatása és kimenetük összefoglalása.
-
-**Használat:** `npm run build`, `npm run test`, `tsc` ellenőrzés, stb.
-
-### 6. Code Reviewer (mimo)
-
-**Szerep:** Fájlváltoztatások kritikus áttekintése.
-
-**Használat:** Implementálás után, hogy visszajelzést adjon a kód minőségéről, a projekthez való illeszkedésről, és lehetséges problémákról.
-
-### 7. Thinker (GPT)
-
-**Szerep:** Mély gondolkodás a beszélgetési kontextus alapján.
-
-**Használat:** Komplex döntések, architekturális tervezés, problémamegoldás. Korlátozás: legfeljebb 1 spawn kérésenként.
-
-### 8. Context Pruner
-
-**Szerep:** Kontextus összehangolása és tömörítése.
-
-**Használat:** Automatikusan spawnolódik, amikor a kontextus túl nagy lesz. Nem kell kézzel spawnolni.
-
-### 9. Browser Use
-
-**Szerep:** Chrome DevTools-alapú böngésző automatizálás.
-
-**Használat:** UI tesztelés, renderelés ellenőrzése, hibaüzenetek keresése, responsive design tesztelés.
-
-**Követelmény:** Chrome telepítve kell legyen.
-
-### 10. Tmux CLI
-
-**Szerep:** Tmux szessziók kezelése CLI alkalmazások teszteléséhez.
-
-**Használat:** Hosszú ideig futó szolgáltatások tesztelése, interakció CLI appokkal.
-
-## Agentek használatának mintázatai
-
-### Kódolási feladat (implementálás)
+- **Skill** (`.claude/skills/<name>/SKILL.md`) — vékony belépési pont / orchestrátor. A `Skill` eszközzel hívódik (`/dev`, `/plan`). Betölti az utasításait a fő agent turnjébe, majd a **fő agent** az `Agent` eszközzel **subagenteket indít**.
+- **Agent** (`.claude/agents/<name>.md`) — önálló worker, saját kontextussal. Az `Agent` eszközzel indul (`subagent_type: <name>`), elvégzi a feladatot, és jelentést ad vissza.
 
 ```
-1. file-picker + code-searcher (párhuzamos) → releváns fájlok keresése
-2. read_files → kontextusgyűjtés
-3. ask_user → tisztázás (ha kell)
-4. write_todos → lépések tervezése
-5. str_replace / write_file → implementálás
-6. code-reviewer-mimo → kódellenőrzés
-7. basher (tsc, test, build) → validálás
-8. Hibák javítása
+felhasználó → Skill (dev/plan) → fő agent → Agent(subagent_type: …) → jelentés → fő agent → összegzés
 ```
 
-### Kutatási feladat
+## Skillek (belépési pontok)
 
+### `/dev` — implementációs orchestrátor
+**Fájl:** `.claude/skills/dev/SKILL.md`
+Beolvassa a `./plans/`-t, meghatározza a következő feladatot, majd sorban triggeli: **react-dev** → **i18n** → (validáció: tsc/test/build) → **manage-roadmap**, végül összegez. Használat: „folytasd a fejlesztést", következő fázis implementálása, `/dev`.
+
+### `/plan` — új terv létrehozása
+**Fájl:** `.claude/skills/plan/SKILL.md`
+Tisztázza a specifikációt és a döntéseket a felhasználóval, majd triggeli a **planner** agentet (tervtartalom) és a **manage-roadmap** agentet (átszámozás + roadmap újragenerálás). Használat: `/plan <leírás>`, „tervezd meg <funkció>".
+
+## Agentek (workerek)
+
+| Agent | `subagent_type` | Fájl | Szerep | Ki indítja |
+|-------|-----------------|------|--------|------------|
+| React fejlesztő | `react-dev` | `.claude/agents/react-dev.md` | React komponensek, Zustand store-ok, hook-ok, típusok, CSS Module-ok, GamePhase-ek, navigáció | `/dev`, vagy közvetlenül |
+| i18n | `i18n` | `.claude/agents/i18n.md` | Fordítási kulcsok mind az 5 nyelven (hu, en, fr, de, es), kulcs-paritás, plurals/interpoláció/HTML | `/dev`, vagy közvetlenül |
+| Roadmap-kezelő | `manage-roadmap` | `.claude/agents/manage-roadmap.md` | Tervfájlok átszámozása, YAML `step`/`slug`/függőségek, `roadmap.md` generálás, TODO frissítés, placement-analízis | `/dev`, `/plan` |
+| Tervező | `planner` | `.claude/agents/planner.md` | Tervfájl-tartalom (YAML, TODO, architektúra, i18n, kockázatok), cross-reference-ek | `/plan` |
+
+**Indítás példa:** a `/dev` skill utasítására a fő agent az `Agent` eszközt hívja `subagent_type: react-dev` értékkel, precíz feladattal (mit építs, mely fájlok, mely i18n kulcsok). A subagent visszaadja a módosított fájlok listáját és az új i18n kulcsokat, amit a fő agent továbbad az `i18n` agentnek.
+
+## Munkafolyamatok
+
+### `/dev` — implementáció
 ```
-1. researcher-web → webes források keresése
-2. researcher-docs → dokumentáció böngészése
-3. gravity_index → harmadik fél szolgáltatások összehasonlítása
-4. Válasz összeállítása a talált információkból
+/dev (fő agent, orchestrátor)
+  1. plans/ olvasása → következő feladat → állapot jelentése
+  2. Terv (érintett kód olvasása, fájlok + i18n kulcsok meghatározása)
+  3. Agent(react-dev)      → React kód implementálása
+  4. Agent(i18n)           → fordítások mind az 5 nyelvre
+  5. Validáció (tsc, test, build)
+  6. (opcionális) /code-review a diffre
+  7. Agent(manage-roadmap) → TODO + YAML + roadmap frissítés
+  8. Összegzés
 ```
 
-### Refaktorálási feladat
-
+### `/plan` — új terv
 ```
-1. code-searcher → szimbólum összes használatának keresése
-2. read_files → érintett fájlok elolvasása
-3. file-picker → kapcsolódó fájlok keresése
-4. str_replace → változtatások
-5. basher → típus- és tesztellenőrzés
-6. code-reviewer-mimo → visszajelzés
+/plan (fő agent, belépési pont)
+  1. Specifikáció átvétele
+  2. Döntések tisztázása a felhasználóval (AskUserQuestion);
+     opcionálisan Agent(manage-roadmap) placement-analízishez
+  3. Agent(planner)        → tervtartalom + cross-reference-ek
+  4. Agent(manage-roadmap) → átszámozás, YAML, roadmap újragenerálás
+  5. Összegzés
 ```
 
-## Párhuzamosítás
+## Beépített képességek (natív Claude Code eszközök)
 
-- **File-picker + code-searcher** párhuzamosan spawnolhatók (független keresés).
-- **Basher parancsok** párhuzamosan futtathatók (pl. `tsc` és `npm run test` egyszerre).
-- **Code-reviewer-mimo** a basher-ekkel párhuzamosan futtatható.
-- **Researcherek** (web + docs) párhuzamosan spawnolhatók.
-- **Thinker agent** egyszerre legfeljebb 1 spawnolható kérésenként.
+A fő agent és a subagentek a natív eszközöket használják — nincs szükség külön „kereső/basher/reviewer" agentekre:
 
-## Figyelmeztetések
+- **Kontextusgyűjtés:** `Read`, `Grep`, `Glob` (fájlkeresés és -olvasás).
+- **Validáció / parancsok:** `Bash` (`npx tsc --noEmit`, `npm run test`, `npm run build`).
+- **Kódellenőrzés:** a `/code-review` skill a diffre (nem külön agent).
+- **Böngészős ellenőrzés:** a Claude-in-Chrome eszközök (ha a bővítmény csatlakoztatva van).
+- **Kérdezés:** `AskUserQuestion` — **csak a skillekben / fő agentben**, a döntéseket a subagent-indítás *előtt* kell tisztázni.
 
-- **Ne használd a `set_output` eszközt** parent agentként — csak al-agentek használhatják.
-- **Context pruner** automatikusan spawnolódik, ne spawnold kézzel.
-- **Thinker agent** nem rendelkezik eszközökkel — a teljes beszélgetési kontextusból dolgozik.
-- **Terminál parancsok:** legyél óvatos a pusztító parancsokkal (`git push`, `rm -rf`, stb.) — csak kérésre futtatsd őket.
-- **Harmadik fél szolgáltatások:** mindig használd a `gravity_index` eszközt a kutatáshoz, ne ajánlj szolgáltatást memóriából.
+## Fontos megkötések
+
+- **Subagentek nem kérdezhetnek a felhasználótól.** Minden tisztázást a fő agent (skill) végez, mielőtt agentet indít; a subagent a bizonytalanságot a jelentésében jelzi.
+- **Single source of truth:** a `./plans/` könyvtár. A `roadmap.md` **scripttel generált** (`python .claude/scripts/generate_roadmap.py`), tájékoztató jellegű — kézzel ne szerkeszd. **Olvasás előtt mindig generáld újra.** A script a tervek YAML fejlécéből és „Haladás (TODO)" szekciójából állítja elő a projekt-állást (terv- és task-haladás), a következő nyitott feladatokat és a beillesztési útmutatót (függőségek + függő tervek).
+- **Nincs skill-loading.** Skill sosem tölt be másik skillt; a delegálás mindig `Agent` eszközzel, `subagent_type`-pal történik.
+- **Konvenciók:** `.claude/references/project-conventions.md`; terv-YAML séma és számozás: `.claude/references/plan-yaml-schema.md`, `plan-naming.md`, `phase-numbering.md`.
+- **Pusztító parancsok** (`git push`, `rm -rf`, stb.) csak kifejezett kérésre.

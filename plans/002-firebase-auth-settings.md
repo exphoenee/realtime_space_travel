@@ -1,3 +1,34 @@
+---
+title: "Firebase bejelentkezés + perzisztens felhasználói beállítások terve"
+slug: 002-firebase-auth-settings
+type: plan
+category: auth
+status: not-started
+implemented: false
+implemented_at: null
+created_at: "2026-07-25"
+updated_at: "2026-07-25"
+author: exphoenee
+step: 2
+phases:
+  - 1
+  - 2
+dependencies:
+  - 000-i18n-nyelvesites
+  - 001-main-menu-settings
+related_plans:
+  - 000-i18n-nyelvesites
+  - 001-main-menu-settings
+  - 003-ingame-shop-strapi-stripe
+tags:
+  - firebase
+  - auth
+  - rtdb
+  - settings
+  - ship-select
+  - cloud-functions
+---
+
 # Firebase bejelentkezés + perzisztens felhasználói beállítások terve
 
 **Cél:**
@@ -18,14 +49,14 @@
 
 ## 0. Architekturális kontextus (fontos)
 
-Két backend lesz, **tiszta felelősség-határral**, hogy ne ütközzenek (lásd [[ingame-shop-strapi-stripe]]):
+Két backend lesz, **tiszta felelősség-határral**, hogy ne ütközzenek (lásd [[003-ingame-shop-strapi-stripe]]):
 
 - **Firebase = a játék olvasási modellje.** A kliens **kizárólag a Firebase-ből olvas** minden felhasználói adatot (beállítások, kredit, birtokolt hajók/zenék, rekord). Bejelentkezéskor ez tölt be.
 - **Strapi + Stripe = a fizetés írási útja.** Valós pénzes vásárláskor a Stripe webhook → Strapi → **Firebase Admin SDK** beírja a megvett tételt a felhasználó Firebase csomópontjába. Így a Firebase marad az egyetlen olvasási forrás a játék számára, a Strapi csak a pénzügyi tranzakciót intézi.
 
 Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Settings menü, hajóválasztó). A fizetési híd a bolt-tervben él.
 
-> **Ez a terv a kánon.** Felülírja a [[ingame-shop-strapi-stripe]] korábbi verziójának azon részeit, ahol a Strapi kezelte az autentikációt, a vendég-tokent (`/api/guest`, `/api/guest/upgrade`), a `User.credits`-et és az `Entitlement` content type-ot. Ezek helyett: **auth = Firebase**, **vendég→fiók = Anonymous→Google linkelés**, **kredit/birtoklás = RTDB (szerver-írt)**. A bolt-terv frissítve lett ehhez.
+> **Ez a terv a kánon.** Felülírja a [[003-ingame-shop-strapi-stripe]] korábbi verziójának azon részeit, ahol a Strapi kezelte az autentikációt, a vendég-tokent (`/api/guest`, `/api/guest/upgrade`), a `User.credits`-et és az `Entitlement` content type-ot. Ezek helyett: **auth = Firebase**, **vendég→fiók = Anonymous→Google linkelés**, **kredit/birtoklás = RTDB (szerver-írt)**. A bolt-terv frissítve lett ehhez.
 
 ---
 
@@ -41,12 +72,12 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [ ] `ensureUserNode` + `subscribeUser` → `useSettingsStore` / `useInventoryStore` feltöltés
 - [ ] `SettingsMenu` + `AccountSection`; `bellOverlay` → `settingsOverlay` csere; zene-némítás áthelyezés
 - [ ] Google-belépés + Anonymous→Google **linkelés**
-- [ ] Nyelv/rekord/némítás összefésülés a meglévő store-okkal ([[i18n-nyelvesites]])
+- [ ] Nyelv/rekord/némítás összefésülés a meglévő store-okkal ([[000-i18n-nyelvesites]])
 
 **Fázis 2 — hajóválasztó + sebesség**
 - [ ] `GamePhase: "shipSelect"` + `MainMenu` pending destination + `ScreenRouter` ág
 - [ ] `ShipSelect` komponens (alap hajó mindig; üres inventory → csak alap)
-- [ ] Sebesség-integráció (aktív hajó → `travelYears` / `Dashboard` / `MainMenu`) — **közös** [[ingame-shop-strapi-stripe]]
+- [ ] Sebesség-integráció (aktív hajó → `travelYears` / `Dashboard` / `MainMenu`) — **közös** [[003-ingame-shop-strapi-stripe]]
 - [ ] Zene-integráció: `useAudio` az aktív zene URL-jével
 
 **Kredit-út (részben Fázis 3-mal közös)**
@@ -140,7 +171,7 @@ users/
 ### Betöltés bejelentkezéskor (a kérés lényege)
 - Auth-esemény után `subscribeUser(uid)` — **RTDB real-time listener** a `users/{uid}` ágra.
 - A beérkező adat feltölti a store-okat:
-  - `settings` → `useSettingsStore` (aktív zene/hajó, némítás, nyelv → utóbbi az [[i18n-nyelvesites]] `i18n.changeLanguage`-ét hívja).
+  - `settings` → `useSettingsStore` (aktív zene/hajó, némítás, nyelv → utóbbi az [[000-i18n-nyelvesites]] `i18n.changeLanguage`-ét hívja).
   - `wallet.credits` + `inventory` + `stats` → `useInventoryStore`.
 - A real-time listener miatt a több eszközön történő változás automatikusan szinkronizálódik.
 - **`ensureUserNode`:** ha még nincs csomópont (első belépés), létrehozza az alapértelmezésekkel (`credits: 0`, üres inventory, alap hajó/zene aktív, a böngésző nyelve).
@@ -159,7 +190,7 @@ A jelenlegi **`bellOverlay`** (`App.tsx` 198–219. sor): egy 🔔/🔕 gomb a v
 1. **Fiók** (`AccountSection`): bejelentkezett felhasználó neve/avatarja; „Bejelentkezés Google-lel" (ha anonymous) / „Kijelentkezés". Kredit-egyenleg kijelzése.
 2. **Zene**: be/ki kapcsoló + **sávválasztó** a birtokolt zenékből (`inventory.music`), alap = jelenlegi téma. Választás → `settings.activeMusicId` írás RTDB-be → a `useAudio` átvált.
 3. **Űrhajó**: aktív hajó kijelzése/választása a birtokolt hajókból (ugyanaz a lista, mint a küldetés-választó lépésnél).
-4. **Nyelv**: nyelvváltó (összekötve az [[i18n-nyelvesites]] tervvel), választás → `settings.language`.
+4. **Nyelv**: nyelvváltó (összekötve az [[000-i18n-nyelvesites]] tervvel), választás → `settings.language`.
 5. (Opcionális) **Rekord** (`stats.bestServiceSeconds`) megjelenítése.
 
 > A Settings menü elérhető a főmenüben és szünet közben is, ahogy a harang eddig.
@@ -180,19 +211,19 @@ A jelenlegi **`bellOverlay`** (`App.tsx` 198–219. sor): egy 🔔/🔕 gomb a v
 - **`ScreenRouter`**: új `case "shipSelect": return <ShipSelect ... />`.
 - **`ShipSelect` komponens:**
   - Listázza a választható hajókat: **alap hajó** (mindig) + `inventory.ships` birtokolt hajók.
-  - **Ha az `inventory.ships` üres → csak az alap hajó választható** (a többi „zárolt", boltba mutató kártyaként jelenhet meg — kapcsolódik a [[ingame-shop-strapi-stripe]] tervhez).
+  - **Ha az `inventory.ships` üres → csak az alap hajó választható** (a többi „zárolt", boltba mutató kártyaként jelenhet meg — kapcsolódik a [[003-ingame-shop-strapi-stripe]] tervhez).
   - Hajó adatai: név, **sebesség** (km/s), a célhoz számított **utazási idő** (a hajó sebességéből, lásd lent).
   - „Indítás" gomb → beállítja `settings.activeShipId`-t, majd meghívja a kamera-ellenőrzést és a `startMission`-t a kiválasztott hajóval.
-- **Sebesség-integráció:** a `startMission` a **kiválasztott hajó** sebességéből számolja a `travelYears`-t (jelenleg a fix `SHIP_SPEED_LIGHTYEARS_PER_YEAR`-ből). A `Dashboard` sebesség-kijelzője és a `MainMenu` utazásiidő-becslése is az aktív hajóból számol. (Ez a rész közös a [[ingame-shop-strapi-stripe]] „aktív hajó" integrációjával — érdemes egyszer, egységesen megvalósítani.)
+- **Sebesség-integráció:** a `startMission` a **kiválasztott hajó** sebességéből számolja a `travelYears`-t (jelenleg a fix `SHIP_SPEED_LIGHTYEARS_PER_YEAR`-ből). A `Dashboard` sebesség-kijelzője és a `MainMenu` utazásiidő-becslése is az aktív hajóból számol. (Ez a rész közös a [[003-ingame-shop-strapi-stripe]] „aktív hajó" integrációjával — érdemes egyszer, egységesen megvalósítani.)
 
 ---
 
 ## 6. Kredit írása (wage jóváírás) — szerveroldali út
 
-Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek **Firebase Cloud Functionökön** keresztül futnak (egységesen a [[ingame-shop-strapi-stripe]] tervvel):
+Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek **Firebase Cloud Functionökön** keresztül futnak (egységesen a [[003-ingame-shop-strapi-stripe]] tervvel):
 - **`awardWage`** (callable) — a küldetés végi `wage` jóváírás: validálja a befejezést és **atomikusan** (RTDB tranzakció) növeli `wallet.credits`-et.
 - **`purchaseWithCredits`** (callable) — kredites vásárlás: egyenleg-ellenőrzés + levonás + `inventory` bővítés egyetlen tranzakcióban (nem a kliens). Az árat a Strapi katalógusból olvassa.
-- A **valós pénzes** vásárlás ettől külön út: Stripe → Strapi webhook → **Firebase Admin SDK** írja az `inventory`-t (lásd [[ingame-shop-strapi-stripe]] 1. és 4. pont).
+- A **valós pénzes** vásárlás ettől külön út: Stripe → Strapi webhook → **Firebase Admin SDK** írja az `inventory`-t (lásd [[003-ingame-shop-strapi-stripe]] 1. és 4. pont).
 
 ---
 
@@ -200,7 +231,7 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 
 - **`useUIStore`** jelenleg `isMusicMuted`-et `persist`-eli (`space-travel-ui`). Bejelentkezés után a **mérvadó forrás az RTDB `settings.musicMuted`**; a localStorage csak offline tükör. A `useSettingsStore` szinkronizál a kettő között (RTDB → store → `useAudio`).
 - **`useGameStore`** `bestServiceSeconds`-je (`space-travel-game` persist) → bejelentkezéskor összefésül az RTDB `stats.bestServiceSeconds`-szel (a nagyobb nyer), majd az RTDB lesz mérvadó.
-- **Nyelv:** a Firebase `settings.language` és az i18n `space-travel-lang` (lásd [[i18n-nyelvesites]]) összehangolása — bejelentkezéskor az RTDB nyelv nyer, kijelentkezve a helyi detektált nyelv.
+- **Nyelv:** a Firebase `settings.language` és az i18n `space-travel-lang` (lásd [[000-i18n-nyelvesites]]) összehangolása — bejelentkezéskor az RTDB nyelv nyer, kijelentkezve a helyi detektált nyelv.
 - **Új persist kulcsok** nem szükségesek a Firebase-adatokhoz (az RTDB a forrás); ha offline-tükör kell, külön `space-travel-firebase-cache` kulcs, hogy ne ütközzön a meglévőkkel.
 
 ---
@@ -251,5 +282,5 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 ---
 
 ## 11. Kapcsolódó tervek
-- [[ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
-- [[i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.
+- [[003-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
+- [[000-i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.

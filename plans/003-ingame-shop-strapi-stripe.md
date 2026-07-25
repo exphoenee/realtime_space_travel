@@ -1,15 +1,45 @@
+---
+title: "Játékon belüli áruház terve – Strapi katalógus + Stripe fizetés"
+slug: 003-ingame-shop-strapi-stripe
+type: plan
+category: shop
+status: not-started
+implemented: false
+implemented_at: null
+created_at: "2026-07-25"
+updated_at: "2026-07-25"
+author: exphoenee
+step: 3
+phases:
+  - 3
+  - 4
+dependencies:
+  - 002-firebase-auth-settings
+related_plans:
+  - 000-i18n-nyelvesites
+  - 001-main-menu-settings
+  - 002-firebase-auth-settings
+tags:
+  - strapi
+  - stripe
+  - shop
+  - payments
+  - cloud-functions
+  - firebase-admin
+---
+
 # Játékon belüli áruház terve – Strapi katalógus + Stripe fizetés (Firebase read-modellel)
 
 **Cél:** játékon belüli bolt, ahol a játékos **űrhajókat**, **DLC csillagrendszereket/bolygókat** és **zenéket** (stb.) vásárolhat kreditből vagy valós pénzből.
 
 > ### 🔗 Architektúra-kánon (mindhárom terv erre épül)
-> A felelősség-határ a [[firebase-auth-settings]] tervben véglegesített:
+> A felelősség-határ a [[002-firebase-auth-settings]] tervben véglegesített:
 > - **Firebase = auth + a játék olvasási modellje.** A kliens **kizárólag a Firebase-ből olvas** minden felhasználói adatot: kredit-egyenleg, birtokolt hajók/zenék/DLC, beállítások, rekord. Az auth is Firebase (Google + Anonymous→fiók).
 > - **Strapi = katalógus + rendelés-nyilvántartás.** A termékadatok (ár, típus, payload) és a rendelési/pénzügyi rekordok itt élnek.
 > - **Stripe = valós pénzes fizetés.** A Stripe webhook → Strapi, és a Strapi a **Firebase Admin SDK**-val írja be a megvett tételt a felhasználó Firebase csomópontjába. Így a Firebase marad az egyetlen olvasási forrás a játéknak.
 > - **Kredit-műveletek (wage-jóváírás, kredites vásárlás) = Firebase Cloud Function** (nincs valós pénz, marad Firebase-en belül).
 >
-> **Ez a terv a katalógust, a Stripe-fizetést és a bolt-UI-t részletezi.** Az auth, a kredit/inventory tárolás és a Security Rules a [[firebase-auth-settings]] tervben van.
+> **Ez a terv a katalógust, a Stripe-fizetést és a bolt-UI-t részletezi.** Az auth, a kredit/inventory tárolás és a Security Rules a [[002-firebase-auth-settings]] tervben van.
 
 ## Döntések (egyeztetve)
 
@@ -17,14 +47,14 @@
 |--------|-----------|
 | Fizetési átjáró | **Stripe Checkout** (hosztolt fizetőoldal + webhook) |
 | Pénznem-modell | **Hibrid**: küldetés-jutalom (`wage`) → játékbeli **kredit**; prémium tartalom valós pénzért |
-| Auth / vendég→fiók | **Firebase Auth** (Google + Anonymous→fiók) — lásd [[firebase-auth-settings]]. A Strapi **nem** kezel usert/guest-tokent, csak Firebase ID tokent ellenőriz. |
+| Auth / vendég→fiók | **Firebase Auth** (Google + Anonymous→fiók) — lásd [[002-firebase-auth-settings]]. A Strapi **nem** kezel usert/guest-tokent, csak Firebase ID tokent ellenőriz. |
 | Kredit + birtoklás forrása | **Firebase RTDB** (szerver-írt), a Strapi Admin SDK-val ír bele fizetés után |
 
 ---
 
 ## ✅ Haladás (TODO)
 
-> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Implementáció közben itt vezetjük, hol tartunk, hogy félbeszakadás után folytatható legyen. Előfeltétel: a [[firebase-auth-settings]] Fázis 1 (auth + RTDB + Security Rules) áll. Részletek a lenti szekciókban.
+> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Implementáció közben itt vezetjük, hol tartunk, hogy félbeszakadás után folytatható legyen. Előfeltétel: a [[002-firebase-auth-settings]] Fázis 1 (auth + RTDB + Security Rules) áll. Részletek a lenti szekciókban.
 
 **A fázis — Strapi (katalógus + Stripe)**
 - [ ] Strapi projekt (külön repo vagy `/server`) + adatbázis
@@ -36,14 +66,14 @@
 
 **B fázis — Firebase Cloud Functions**
 - [ ] `purchaseWithCredits` (kredites vétel, RTDB tranzakció)
-- [ ] `awardWage` (küldetés végi kredit) — **közös** [[firebase-auth-settings]]
+- [ ] `awardWage` (küldetés végi kredit) — **közös** [[002-firebase-auth-settings]]
 
 **C fázis — Frontend**
 - [ ] `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory)
 - [ ] `ShopScreen` + `ProductCard` + `ShopTabs` + `CreditBalance`
 - [ ] `GamePhase: "shop"` + `ScreenRouter` ág + „Áruház" gomb a `MainMenu`-be
 - [ ] DLC zárolt/feloldott logika (Firebase `inventory.dlc`)
-- [ ] Aktív hajó/zene integráció (**közös** [[firebase-auth-settings]])
+- [ ] Aktív hajó/zene integráció (**közös** [[002-firebase-auth-settings]])
 - [ ] `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`
 - [ ] Küldetés végén `wage` → `awardWage` bekötés
 
@@ -83,7 +113,7 @@
 3. Strapi ellenőrzi a Firebase ID tokent (Admin SDK `verifyIdToken`), majd létrehoz egy Stripe **Checkout Session**-t (szerveroldali titkos kulccsal), a metaadatba téve a `uid`-t és `productSlug`-ot; visszaadja a `session.url`-t.
 4. Frontend átirányít a Stripe hosztolt fizetőoldalra.
 5. Sikeres fizetés → Stripe **webhook** (`checkout.session.completed`) → Strapi ellenőrzi az aláírást, létrehoz egy `Order`-t (pénzügyi rekord), majd **Firebase Admin SDK**-val beírja a tételt a `users/{uid}/inventory`-ba.
-6. Frontend a `success_url`-ről visszatér; a Firebase real-time listener (lásd [[firebase-auth-settings]]) automatikusan frissíti az `inventory`-t → a termék feloldva.
+6. Frontend a `success_url`-ről visszatér; a Firebase real-time listener (lásd [[002-firebase-auth-settings]]) automatikusan frissíti az `inventory`-t → a termék feloldva.
 
 **Kredit-vásárlás (játékbeli valuta, nem valós pénz):**
 - **Nem érinti sem a Stripe-ot, sem a Strapit.** Egy **Firebase Cloud Function** (`purchaseWithCredits`, callable) **atomikusan** (RTDB tranzakció) ellenőrzi az egyenleget, levonja a kreditet, és hozzáadja az `inventory`-t. Az árat a függvény a Strapi katalógusból (vagy egy szinkronizált konfigból) olvassa — a kliens csak `productSlug`-ot küld.
@@ -94,7 +124,7 @@
 
 A jelenlegi app **teljesen kliensoldali** (nincs backend/auth, minden `localStorage`-ban: `space-travel-game`, `space-travel-ui`). Valós fizetéshez és jogosultság-kezeléshez **szerveroldali igazságforrás kell**, különben a vásárlások hamisíthatók. A felelősség-megosztás:
 
-- A **kredit-egyenleg** és a **birtoklás (inventory)** mérvadó példánya a **Firebase RTDB**-ben él, **szerver-írt** csomópontként (`wallet`/`inventory` a Security Rules szerint kliensből nem írható — lásd [[firebase-auth-settings]] 2. pont).
+- A **kredit-egyenleg** és a **birtoklás (inventory)** mérvadó példánya a **Firebase RTDB**-ben él, **szerver-írt** csomópontként (`wallet`/`inventory` a Security Rules szerint kliensből nem írható — lásd [[002-firebase-auth-settings]] 2. pont).
 - A **termékkatalógus** és a **pénzügyi rendelés-rekord** a **Strapiban** él.
 - A kliens `localStorage` csak offline tükör; az élő adat a Firebase listenerből jön.
 - A `wage` jutalmat a küldetés végén **Cloud Function** írja jóvá (nem a kliens).
@@ -103,14 +133,14 @@ A jelenlegi app **teljesen kliensoldali** (nincs backend/auth, minden `localStor
 
 ## 3. Strapi – Content Types (adatmodell)
 
-> A **kredit** és a **birtoklás (entitlement)** **NEM** Strapiban él, hanem a Firebase RTDB-ben (lásd [[firebase-auth-settings]]). A Strapi felhasználó-fogalma minimális: a rekordokat a **Firebase `uid`** azonosítja, nincs Strapi Users & Permissions login, nincs guest-token.
+> A **kredit** és a **birtoklás (entitlement)** **NEM** Strapiban él, hanem a Firebase RTDB-ben (lásd [[002-firebase-auth-settings]]). A Strapi felhasználó-fogalma minimális: a rekordokat a **Firebase `uid`** azonosítja, nincs Strapi Users & Permissions login, nincs guest-token.
 
 ### `Product` (termék) — a katalógus forrása
 | mező | típus | megjegyzés |
 |------|-------|-----------|
 | `slug` | UID | egyedi azonosító (`ship-nebula`, `dlc-milky-way`, `music-ambient-1`) |
 | `type` | enum | `ship` \| `dlc` \| `music` \| `cosmetic` |
-| `name` | i18n string | lokalizált (Strapi i18n plugin, lásd [[i18n-nyelvesites]]) |
+| `name` | i18n string | lokalizált (Strapi i18n plugin, lásd [[000-i18n-nyelvesites]]) |
 | `description` | i18n text | lokalizált |
 | `priceCredits` | integer\|null | ha kreditből vehető |
 | `priceStripeId` | string\|null | Stripe Price ID, ha valós pénzért |
@@ -182,13 +212,13 @@ src/
     useEntitlements.ts        # birtokolt termékek Firebase-ből + „owns(slug)" segéd
 ```
 
-> **Nincs** külön `useAuthStore` és `useShopStore(credits/entitlements)` ebben a tervben — ezeket a [[firebase-auth-settings]] biztosítja (`useAuthStore`, `useInventoryStore`, `useSettingsStore`). A bolt ezekre épül; itt csak a **katalógus** (`useCatalog`) új.
+> **Nincs** külön `useAuthStore` és `useShopStore(credits/entitlements)` ebben a tervben — ezeket a [[002-firebase-auth-settings]] biztosítja (`useAuthStore`, `useInventoryStore`, `useSettingsStore`). A bolt ezekre épül; itt csak a **katalógus** (`useCatalog`) új.
 
 ### Integráció a meglévő kóddal
-- **Belépési pont a boltba:** a `MainMenu.tsx` már reklámozza a „Tejút DLC"-t → ide „Áruház" gomb, a `ShopScreen`-t nyitja. Új `GamePhase: "shop"` (`src/types/index.ts` + `useGameStore` `phaseToFlags`), `ScreenRouter` ág. (A Settings menüből is elérhető, lásd [[firebase-auth-settings]].)
+- **Belépési pont a boltba:** a `MainMenu.tsx` már reklámozza a „Tejút DLC"-t → ide „Áruház" gomb, a `ShopScreen`-t nyitja. Új `GamePhase: "shop"` (`src/types/index.ts` + `useGameStore` `phaseToFlags`), `ScreenRouter` ág. (A Settings menüből is elérhető, lásd [[002-firebase-auth-settings]].)
 - **Célállomások (DLC):** a destinations = `baseDestinations` + a birtokolt `dlc` termékek `payload.destinations`. A birtoklást a **Firebase `inventory.dlc`** adja; a nem birtokolt DLC „zárolt" kártyaként → boltba visz.
-- **Űrhajók (sebesség):** **közös** a [[firebase-auth-settings]] „aktív hajó" integrációjával — **egyszer, egységesen** valósítandó meg. Az aktív hajót a Firebase `settings.activeShipId` tartja, a birtoklást az `inventory.ships`; a sebesség felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `startMission`/`Dashboard`/`MainMenu` becslésben. A hajóválasztó képernyő a [[firebase-auth-settings]] `ShipSelect`-je.
-- **Zenék:** a `useAudio` az **aktív zene** URL-jét kapja (Firebase `settings.activeMusicId` + `inventory.music`), alap = jelenlegi téma. A zeneválasztó a **Settings menüben** van (lásd [[firebase-auth-settings]]).
+- **Űrhajók (sebesség):** **közös** a [[002-firebase-auth-settings]] „aktív hajó" integrációjával — **egyszer, egységesen** valósítandó meg. Az aktív hajót a Firebase `settings.activeShipId` tartja, a birtoklást az `inventory.ships`; a sebesség felülírja a `SHIP_SPEED_KM_PER_SECOND`-t a `startMission`/`Dashboard`/`MainMenu` becslésben. A hajóválasztó képernyő a [[002-firebase-auth-settings]] `ShipSelect`-je.
+- **Zenék:** a `useAudio` az **aktív zene** URL-jét kapja (Firebase `settings.activeMusicId` + `inventory.music`), alap = jelenlegi téma. A zeneválasztó a **Settings menüben** van (lásd [[002-firebase-auth-settings]]).
 - **Kredit forrása (wage):** a küldetés végén (`missionComplete`) a `wage` jóváírása a **`awardWage` Cloud Function**nel (a `handleConfirmExit`/`missionComplete` ágból).
 
 ### Vásárlási folyamat a kliensen
@@ -209,7 +239,7 @@ src/
 
 ## 7. Megvalósítási lépések (sorrend)
 
-> Előfeltétel: a [[firebase-auth-settings]] auth + RTDB séma + Security Rules már áll (a kredit/inventory oda íródik).
+> Előfeltétel: a [[002-firebase-auth-settings]] auth + RTDB séma + Security Rules már áll (a kredit/inventory oda íródik).
 
 **A fázis – Strapi (katalógus + Stripe)**
 1. Strapi projekt (külön repo vagy `/server`), Postgres/SQLite.
@@ -225,7 +255,7 @@ src/
 7. `useCatalog` (Strapi) + `useEntitlements` (Firebase inventory-ból).
 8. `ShopScreen` + `ProductCard` + `ShopTabs` + `CreditBalance`; `GamePhase: "shop"` + `ScreenRouter` ág.
 9. „Áruház" gomb a `MainMenu`-be; DLC zárolt/feloldott logika a Firebase inventory alapján.
-10. Aktív hajó/zene integráció (**közös** a [[firebase-auth-settings]] tervvel).
+10. Aktív hajó/zene integráció (**közös** a [[002-firebase-auth-settings]] tervvel).
 11. `PurchaseModal` (kredit → Cloud Function) + Stripe redirect + `CheckoutReturn`.
 12. Küldetés végén `wage` → `awardWage` bekötése.
 
@@ -239,11 +269,11 @@ src/
 
 ## 8. Kockázatok / figyelmeztetések
 
-- **Két backend (Firebase + Strapi) szinkronban tartása** a fő komplexitás — a tiszta határ (Firebase olvas, Strapi/Stripe fizet, Admin SDK ír Firebase-be) elengedhetetlen. Lásd [[firebase-auth-settings]] 0. és 9. pont.
+- **Két backend (Firebase + Strapi) szinkronban tartása** a fő komplexitás — a tiszta határ (Firebase olvas, Strapi/Stripe fizet, Admin SDK ír Firebase-be) elengedhetetlen. Lásd [[002-firebase-auth-settings]] 0. és 9. pont.
 - **Biztonság a legkritikusabb:** a birtoklás és a kredit **soha** ne legyen kliensoldalon mérvadó. Webhook-aláírás + Firebase Security Rules (wallet/inventory szerver-only) kötelező.
 - **Idempotencia:** a webhook duplán ne írjon a Firebase inventory-ba (`Order.entitlementWritten` / `session.id` kulcs).
-- **Vendég→fiók:** ezt a **Firebase Anonymous→Google linkelés** oldja meg (lásd [[firebase-auth-settings]]), **nem** Strapi guest-token — az kikerült.
-- **i18n:** a termékek nevei/leírásai a Strapi i18n pluginjén lokalizáltak, a felület nyelvét az [[i18n-nyelvesites]] adja; a felhasználó nyelvét a Firebase `settings.language` tartja.
+- **Vendég→fiók:** ezt a **Firebase Anonymous→Google linkelés** oldja meg (lásd [[002-firebase-auth-settings]]), **nem** Strapi guest-token — az kikerült.
+- **i18n:** a termékek nevei/leírásai a Strapi i18n pluginjén lokalizáltak, a felület nyelvét az [[000-i18n-nyelvesites]] adja; a felhasználó nyelvét a Firebase `settings.language` tartja.
 - **`base href` / útvonalak:** `/realtime_space_travel/` alatt fut, a Stripe redirect és a router ehhez igazodjon.
 - **Jog/pénzügy:** valós fizetésnél ÁFA/számla/visszatérítés/GDPR — merchant-of-record (Paddle/Lemon Squeezy) egyszerűsítheti később.
 - **Autoplay + fizetés-redirect:** a Stripe redirect elhagyja az oldalt; visszatéréskor a Firebase auth session és a játékállapot helyreáll.
@@ -266,5 +296,5 @@ src/
 
 ## 10. Kapcsolódó tervek
 
-- [[firebase-auth-settings]] – **kánon**: auth, kredit/inventory RTDB tárolás, Security Rules, aktív hajó/zene, Settings menü, ship-select.
-- [[i18n-nyelvesites]] – a termékkatalógus és a bolt-UI szövegeinek nyelvi rétege.
+- [[002-firebase-auth-settings]] – **kánon**: auth, kredit/inventory RTDB tárolás, Security Rules, aktív hajó/zene, Settings menü, ship-select.
+- [[000-i18n-nyelvesites]] – a termékkatalógus és a bolt-UI szövegeinek nyelvi rétege.

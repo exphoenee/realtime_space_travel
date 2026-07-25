@@ -139,6 +139,18 @@ npm run test         # Tesztek futtatása
 npm run test:watch   # Tesztek figyelése
 ```
 
+## Fejlesztési munkafolyamat (skillek + agentek)
+
+A projekt a Claude Code natív **skill** és **agent (subagent)** mechanizmusát használja. **A vékony skillek triggerelik az agenteket** — nincs „skill loader", egyetlen skill sem tölt be másik skillt. Részletek: [`agents.md`](./agents.md).
+
+- **Skillek** (`.claude/skills/`): `dev` (implementációs orchestrátor) és `plan` (új terv). A `Skill` eszközzel / `/dev`, `/plan` paranccsal hívhatók.
+- **Agentek** (`.claude/agents/`): `react-dev` (React kód), `i18n` (fordítások 5 nyelven), `manage-roadmap` (tervszámozás + `roadmap.md` generálás), `planner` (tervtartalom). A fő agent az `Agent` eszközzel indítja őket (`subagent_type: <name>`).
+- **`/dev` folyamat:** plans olvasása → `react-dev` → `i18n` → validáció (tsc/test/build) → `manage-roadmap` → összegzés.
+- **`/plan` folyamat:** spec + döntések tisztázása → `planner` → `manage-roadmap`.
+- **Single source of truth:** a `./plans/` könyvtár; a `roadmap.md` **scripttel generált** (`python .claude/scripts/generate_roadmap.py`) a tervek YAML fejlécéből és TODO-jából — olvasás előtt mindig újragenerálandó, kézzel nem szerkesztendő.
+- **Subagentek nem kérdezhetnek a felhasználótól** — minden tisztázás a skillekben/fő agentben történik az agent-indítás előtt.
+- Megosztott referenciák: `.claude/references/` (`project-conventions.md`, `plan-yaml-schema.md`, `plan-naming.md`, `phase-numbering.md`).
+
 ## Figyelmeztetések
 
 - **Ne módosítsd a `SHIP_SPEED_KM_PER_SECOND` konstanst** anélkül, hogy frissítenéd a `Dashboard` és a `MissionSelector` számításait.
