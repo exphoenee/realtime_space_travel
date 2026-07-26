@@ -566,3 +566,4 @@ rotateDeviceId(): string {
 - [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje itt változik.
 - [[000-i18n-nyelvesites]] — a `login.error.*` és `settings.logout`/`uidCopied` kulcsok mind az 5 nyelven.
 - [[006-editable-displayname]] — a store `setNickname`/`setDisplayName` mechanizmus erre épül.
+- [[009-stripe-fraud-defense]] — az itt bevezetett **Phase-1 rules** (`database.rules.json`, kliens-írható `wallet`, `device_map` alapú `rtdbKey`) **additív szigorítása**: `wallet.credits` írásonkénti növekmény-limit + `lastTopUpAt` ütemkorlát, valamint új `credit_claims/$sessionId` node. A `device_map` logika változatlan marad.

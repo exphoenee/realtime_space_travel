@@ -3,12 +3,12 @@
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-26"
-total_plans: 8
-implemented: 4
+total_plans: 10
+implemented: 6
 in_progress: 3
 not_started: 1
-tasks_done: 183
-tasks_total: 223
+tasks_done: 238
+tasks_total: 306
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -49,8 +49,8 @@ plans:
     slug: "005-ingame-shop-strapi-stripe"
     status: "in-progress"
     category: "shop"
-    tasks_done: 14
-    tasks_total: 18
+    tasks_done: 25
+    tasks_total: 28
     dependencies: [003-firebase-auth-settings, 004-firebase-auth-bugfix]
   - step: 6
     slug: "006-editable-displayname"
@@ -61,11 +61,25 @@ plans:
     dependencies: [004-firebase-auth-bugfix]
   - step: 7
     slug: "007-state-persist-page-refresh"
-    status: "not-started"
+    status: "implemented"
     category: "core"
-    tasks_done: 0
-    tasks_total: 22
+    tasks_done: 30
+    tasks_total: 30
     dependencies: [004-firebase-auth-bugfix]
+  - step: 8
+    slug: "008-shop-cart-bugfixes"
+    status: "implemented"
+    category: "core"
+    tasks_done: 14
+    tasks_total: 14
+    dependencies: [007-state-persist-page-refresh]
+  - step: 9
+    slug: "009-stripe-fraud-defense"
+    status: "not-started"
+    category: "security"
+    tasks_done: 0
+    tasks_total: 51
+    dependencies: [005-ingame-shop-strapi-stripe]
 ---
 
 # Roadmap
@@ -76,8 +90,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 4 implemented · 3 in progress · 1 not started (of 8)
-- **Tasks:** 183/223 done (82%)
+- **Plans:** 6 implemented · 3 in progress · 1 not started (of 10)
+- **Tasks:** 238/306 done (78%)
 
 ## Overview
 
@@ -88,9 +102,11 @@ plans:
 | 2 | Helyi működésű áruház (frontend-only) terve | ✅ Implemented | 52/53 | — | shop | 1 |
 | 3 | Firebase bejelentkezés + perzisztens felhasználói beállítások terve | 🟨 In progress | 21/28 | 1–2 | auth | 0, 1 |
 | 4 | Firebase Google bejelentkezés bugfix | 🟨 In progress | 66/67 | 1 | auth | 3 |
-| 5 | Valós pénzes kredit vásárlás | 🟨 In progress | 14/18 | 3–4 | shop | 3, 4 |
+| 5 | Valós pénzes kredit vásárlás | 🟨 In progress | 25/28 | 3–4 | shop | 3, 4 |
 | 6 | Szerkeszthető fantázianév a Settings menüben | ✅ Implemented | — | 1 | auth | 4 |
-| 7 | Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R) | ⬜ Not started | 0/22 | 4 | core | 4 |
+| 7 | Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R) | ✅ Implemented | 30/30 | 4 | core | 4 |
+| 8 | Áruház kosár bugfixek + kreditlimit + összérték kijelzés | ✅ Implemented | 14/14 | 4 | core | 7 |
+| 9 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5 |
 
 ## Next Open Tasks
 
@@ -101,8 +117,8 @@ plans:
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (52/53): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (21/28): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
 - **Step 4 — Firebase Google bejelentkezés bugfix** (66/67): A 12 pontos ellenőrzési terv (7. szekció) végigfuttatása
-- **Step 5 — Valós pénzes kredit vásárlás** (14/18): Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás)
-- **Step 7 — Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R)** (0/22): `zustand/middleware` → `persist` import
+- **Step 5 — Valós pénzes kredit vásárlás** (25/28): Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
+- **Step 9 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 
 ## Insertion Guide
 
@@ -117,9 +133,11 @@ plans:
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
 | 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5 |
 | 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6, 7 |
-| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | — |
+| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 9 |
 | 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
-| 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | — |
+| 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | 8 |
+| 8 | `008-shop-cart-bugfixes` | core | 007-state-persist-page-refresh | — |
+| 9 | `009-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe | — |
 
 ## Phase Details
 
@@ -135,3 +153,5 @@ plans:
 | 5 | `plans/005-ingame-shop-strapi-stripe.md` | Valós pénzes kredit vásárlás |
 | 6 | `plans/006-editable-displayname.md` | Szerkeszthető fantázianév a Settings menüben |
 | 7 | `plans/007-state-persist-page-refresh.md` | Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R) |
+| 8 | `plans/008-shop-cart-bugfixes.md` | Áruház kosár bugfixek + kreditlimit + összérték kijelzés |
+| 9 | `plans/009-stripe-fraud-defense.md` | Stripe csalásvédelem |

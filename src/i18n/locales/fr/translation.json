@@ -166,6 +166,102 @@
     "medium": "Moyen",
     "hard": "Difficile"
   },
+  "shop": {
+    "title": "Boutique",
+    "back": "Retour",
+    "creditsLabel": "⭐ {{count}} crédits",
+    "balance": "Solde : ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exoplanètes",
+      "ships": "Vaisseaux",
+      "music": "Musique"
+    },
+    "search": "Rechercher par nom…",
+    "searchNoResult": "Aucun résultat",
+    "addToCart": "Ajouter au panier",
+    "inCart": "Dans le panier ✓",
+    "owned": "Possédé",
+    "remove": "Retirer",
+    "cart": {
+      "title": "Panier",
+      "empty": "Votre panier est vide",
+      "total": "Total",
+      "checkout": "Payer"
+    },
+    "notEnoughCredits": "Pas assez de crédits pour cet achat.",
+    "success": {
+      "title": "Achat réussi !",
+      "text": "Les articles ont été crédités. Bon voyage !",
+      "continue": "Retour à la boutique"
+    },
+    "cartCount": "{{count}} article",
+    "preview": {
+      "play": "Aperçu",
+      "stop": "Arrêter"
+    },
+    "ship": {
+      "preview": "🚀 Détails",
+      "speed": "Vitesse : {{value}} km/s",
+      "capacity": "Capacité : {{count}} membres d'équipage",
+      "range": "Portée : {{value}} années-lumière",
+      "manufacturer": "Fabricant : {{name}}",
+      "speedLabel": "Vitesse",
+      "manufacturerLabel": "Fabricant",
+      "capacityLabel": "Capacité d'équipage",
+      "rangeLabel": "Portée",
+      "crew": "équipage",
+      "ly": "al",
+      "modal": {
+        "close": "Fermer",
+        "specs": "Spécifications"
+      },
+      "nomadX1": {
+        "desc": "Le Nomad X1 est un vaisseau d'entrée de gamme fiable construit par Orion Shipyards. Malgré sa taille compacte, il est étonnamment rapide, idéal pour les missions courtes."
+      },
+      "vegaRunner": {
+        "desc": "Le Vega Runner est la fierté des ingénieurs de Helios Dynamics. Il offre des performances équilibrées et une longue portée, adapté aux expéditions de distance moyenne."
+      },
+      "aetherTitan": {
+        "desc": "L'Aether Titan est le vaisseau amiral de Nova Consortium. Sa vitesse et sa capacité immenses rendent accessibles même les systèmes stellaires les plus lointains."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} années-lumière",
+      "star": "Étoile : {{name}}",
+      "preview": "🔍 Aperçu",
+      "modal": {
+        "close": "Fermer",
+        "distance": "Distance",
+        "coordinates": "Coordonnées",
+        "temperature": "Température",
+        "mass": "Masse",
+        "radius": "Rayon",
+        "links": "Liens",
+        "section": {
+          "star": "Étoile",
+          "planet": "Planète",
+          "discovery": "Découverte"
+        }
+      }
+    },
+    "credits": {
+      "title": "Acheter des crédits",
+      "starter": "Pack Démarrage",
+      "advanced": "Pack Avancé",
+      "premium": "Pack Premium",
+      "ultra": "Pack Ultra",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} crédits",
+      "buy": "Acheter",
+      "successTitle": "Crédits achetés !",
+      "successText": "Vous avez acheté {{credits}} ⭐ crédits !",
+      "newBalance": "Nouveau solde : ⭐ {{balance}}",
+      "back": "Retour à la boutique",
+      "notEnoughCreditsHint": "Achetez des crédits dans l'onglet 'Acheter des crédits' !"
+    }
+  },
   "language": {
     "label": "Langue",
     "hu": "Magyar",

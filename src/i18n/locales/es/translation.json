@@ -166,6 +166,102 @@
     "medium": "Media",
     "hard": "Difícil"
   },
+  "shop": {
+    "title": "Tienda",
+    "back": "Volver",
+    "creditsLabel": "⭐ {{count}} créditos",
+    "balance": "Saldo: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exoplanetas",
+      "ships": "Naves",
+      "music": "Música"
+    },
+    "search": "Buscar por nombre…",
+    "searchNoResult": "Sin resultados",
+    "addToCart": "Añadir al carrito",
+    "inCart": "En el carrito ✓",
+    "owned": "Propio",
+    "remove": "Eliminar",
+    "cart": {
+      "title": "Carrito",
+      "empty": "Tu carrito está vacío",
+      "total": "Total",
+      "checkout": "Pagar"
+    },
+    "notEnoughCredits": "No tienes suficientes créditos para esta compra.",
+    "success": {
+      "title": "¡Compra exitosa!",
+      "text": "Los artículos han sido acreditados. ¡Buen viaje!",
+      "continue": "Volver a la tienda"
+    },
+    "cartCount": "{{count}} artículo",
+    "preview": {
+      "play": "Vista previa",
+      "stop": "Detener"
+    },
+    "ship": {
+      "preview": "🚀 Detalles",
+      "speed": "Velocidad: {{value}} km/s",
+      "capacity": "Capacidad: {{count}} tripulación",
+      "range": "Alcance: {{value}} años luz",
+      "manufacturer": "Fabricante: {{name}}",
+      "speedLabel": "Velocidad",
+      "manufacturerLabel": "Fabricante",
+      "capacityLabel": "Capacidad de tripulación",
+      "rangeLabel": "Alcance",
+      "crew": "tripulación",
+      "ly": "al",
+      "modal": {
+        "close": "Cerrar",
+        "specs": "Especificaciones"
+      },
+      "nomadX1": {
+        "desc": "El Nomad X1 es una nave de nivel básico fiable construida por Orion Shipyards. A pesar de su tamaño compacto, es sorprendentemente rápida, ideal para misiones cortas."
+      },
+      "vegaRunner": {
+        "desc": "El Vega Runner es el orgullo de los ingenieros de Helios Dynamics. Ofrece un rendimiento equilibrado y un largo alcance, adecuado para expediciones de media distancia."
+      },
+      "aetherTitan": {
+        "desc": "El Aether Titan es la nave insignia de Nova Consortium. Su inmensa velocidad y capacidad hacen accesibles incluso los sistemas estelares más lejanos."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} años luz",
+      "star": "Estrella: {{name}}",
+      "preview": "🔍 Vista previa",
+      "modal": {
+        "close": "Cerrar",
+        "distance": "Distancia",
+        "coordinates": "Coordenadas",
+        "temperature": "Temperatura",
+        "mass": "Masa",
+        "radius": "Radio",
+        "links": "Enlaces",
+        "section": {
+          "star": "Estrella",
+          "planet": "Planeta",
+          "discovery": "Descubrimiento"
+        }
+      }
+    },
+    "credits": {
+      "title": "Comprar créditos",
+      "starter": "Paquete Inicial",
+      "advanced": "Paquete Avanzado",
+      "premium": "Paquete Premium",
+      "ultra": "Paquete Ultra",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} créditos",
+      "buy": "Comprar",
+      "successTitle": "¡Créditos comprados!",
+      "successText": "¡Has comprado {{credits}} ⭐ créditos!",
+      "newBalance": "Nuevo saldo: ⭐ {{balance}}",
+      "back": "Volver a la tienda",
+      "notEnoughCreditsHint": "¡Compra créditos en la pestaña 'Comprar créditos'!"
+    }
+  },
   "language": {
     "label": "Idioma",
     "hu": "Magyar",

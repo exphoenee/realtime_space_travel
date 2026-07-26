@@ -230,6 +230,12 @@
 .removeBtn:hover {
   background: #dc2626;
 }
+.disabledBtn {
+  background: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .ownedBtn {
   background: #334155;
   color: #64748b;
@@ -280,6 +286,14 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
+}
+
+.cartTotalLabel {
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Cart view */

@@ -16,6 +16,7 @@ import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
 import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
+import { usePageLeave } from "./hooks/usePageLeave";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
@@ -89,6 +90,7 @@ const App: React.FC = () => {
     DEBUG_MODE,
   );
   useAttentionMonitor(faceStatus, destination);
+  usePageLeave();
 
   // Watch isMusicMuted changes → persist to RTDB.
   // Guard against the initial mount: the auth bootstrap (ensureDeviceMap +
@@ -225,6 +227,22 @@ const App: React.FC = () => {
       // prevents a second anonymous login.
       i18n.off("languageChanged", handleLanguageChange);
     };
+  }, []);
+
+  // After Zustand persist rehydrates the saved game state on page refresh,
+  // re-apply the boolean flags (showIntro, isPaused, isAttentionLost, etc.)
+  // so they are consistent with the restored gamePhase.
+  useEffect(() => {
+    // Use a macrotask so it runs after persist has finished rehydrating
+    // (which happens in a microtask after create()).
+    const timer = setTimeout(() => {
+      const gs = useGameStore.getState();
+      if (gs.gamePhase !== "intro") {
+        // Re-derive flags from the restored phase without changing the phase
+        gs.transitionTo(gs.gamePhase);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const checkCamera = useCallback(async (): Promise<boolean> => {
