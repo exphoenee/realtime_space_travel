@@ -61,6 +61,8 @@ export interface ShipProduct extends ShopProductBase {
   capacity: number;
   rangeLy: number;
   descriptionKey: string;
+  /** Relative path to the cockpit dashboard image in public/spaceships/ */
+  image?: string;
 }
 
 export interface MusicProduct extends ShopProductBase {

@@ -233,6 +233,21 @@
       },
       "aetherTitan": {
         "desc": "The Aether Titan is Nova Consortium's flagship starship. Its immense speed and capacity make even the most distant star systems accessible."
+      },
+      "redStar": {
+        "desc": "A rugged, industrial starship from Krasnyi Kosmos — built to endure the harshest conditions. With reinforced hull plating and redundant systems, the Red Star never quits."
+      },
+      "nebulaPioneer": {
+        "desc": "The Nebula Pioneer is Orion Shipyards' latest mid-range explorer. Designed for deep-space reconnaissance with advanced sensor suites and a comfortable crew quarters."
+      },
+      "quantumVoyager": {
+        "desc": "Helios Dynamics' quantum-drive prototype. The Voyager boasts unprecedented energy efficiency, allowing for extended missions into uncharted nebula regions."
+      },
+      "brassMonarch": {
+        "desc": "A marvel of retro-futuristic engineering from Steamforge Atelier. The Brass Monarch combines Victorian-era aesthetics with cutting-edge propulsion technology."
+      },
+      "cosmosSeeker": {
+        "desc": "Nova Consortium's ultra-long-range exploration vessel. Equipped with a state-of-the-art gravity drive and extensive laboratory facilities for deep-space research."
       }
     },
     "exoplanet": {

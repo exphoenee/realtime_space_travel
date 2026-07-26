@@ -34,6 +34,29 @@ const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
     });
   };
 
+  const renderVisual = () => {
+    if (product.category === "ship") {
+      const ship = product as ShipProduct;
+      return (
+        <div className={styles.productCardVisual}>
+          {ship.image ? (
+            <img
+              src={`${import.meta.env.BASE_URL}spaceships/${ship.image}`}
+              alt={ship.name}
+              className={styles.productCardImage}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <span className={styles.productCardEmoji}>🚀</span>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const renderMeta = () => {
     if (product.category === "ship") {
       const ship = product as ShipProduct;
@@ -85,6 +108,7 @@ const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
 
   return (
     <div className={styles.productCard}>
+      {renderVisual()}
       <h3 className={styles.productName}>{product.name}</h3>
       {renderMeta()}
       <p className={styles.productPrice}>

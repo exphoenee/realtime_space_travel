@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { WeatherCondition } from "../../constants/universeData";
 import styles from "./Dashboard.module.css";
@@ -7,6 +8,10 @@ interface DashboardProps {
   destinationName: string;
   localWeather: WeatherCondition;
   currentSpeedKmPerSecond: number;
+  /** Cockpit dashboard image URL for the selected ship */
+  shipImageUrl?: string;
+  /** Ship name for the alt text */
+  shipName?: string;
 }
 
 const Dashboard = ({
@@ -14,8 +19,11 @@ const Dashboard = ({
   destinationName,
   localWeather,
   currentSpeedKmPerSecond,
+  shipImageUrl,
+  shipName,
 }: DashboardProps) => {
   const { t } = useTranslation();
+  const [shipImgFailed, setShipImgFailed] = useState(false);
 
   return (
     <div className={styles.container}>
@@ -43,6 +51,16 @@ const Dashboard = ({
             {remainingYears.toFixed(3)} <span>{t("dashboard.earthYears")}</span>
           </p>
         </div>
+        {shipImageUrl && !shipImgFailed && (
+          <div className={`${styles.segment} ${styles.shipSegment}`}>
+            <img
+              src={shipImageUrl}
+              alt={shipName ?? t("dashboard.ship")}
+              className={styles.shipCockpit}
+              onError={() => setShipImgFailed(true)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShipProduct, CartItem } from "../../types";
 import useShopStore from "../../state/useShopStore";
@@ -16,6 +17,7 @@ const ShipPreviewModal = ({
   onClose,
 }: ShipPreviewModalProps) => {
   const { t } = useTranslation();
+  const [imgFailed, setImgFailed] = useState(false);
 
   const isOwned = useShopStore((s) => s.isOwned)("ship", product.id);
   const isInCart = useShopStore((s) => s.isInCart)(product.id);
@@ -81,9 +83,18 @@ const ShipPreviewModal = ({
         </>
       }
     >
-      {/* Ship icon / visual placeholder */}
+      {/* Ship cockpit image */}
       <div className={styles.shipPreviewVisual}>
-        <span className={styles.shipPreviewEmoji}>🚀</span>
+        {product.image && !imgFailed ? (
+          <img
+            src={`${import.meta.env.BASE_URL}spaceships/${product.image}`}
+            alt={product.name}
+            className={styles.shipCockpitImage}
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <span className={styles.shipPreviewEmoji}>🚀</span>
+        )}
       </div>
 
       {/* Description */}

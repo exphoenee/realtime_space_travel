@@ -225,6 +225,21 @@
       },
       "aetherTitan": {
         "desc": "L'Aether Titan est le vaisseau amiral de Nova Consortium. Sa vitesse et sa capacité immenses rendent accessibles même les systèmes stellaires les plus lointains."
+      },
+      "redStar": {
+        "desc": "Un vaisseau spatial robuste et industriel de Krasnyi Kosmos — construit pour résister aux conditions les plus rudes. Avec un blindage renforcé et des systèmes redondants, le Red Star n'abandonne jamais."
+      },
+      "nebulaPioneer": {
+        "desc": "Le Nebula Pioneer est le dernier explorateur moyenne distance d'Orion Shipyards. Conçu pour la reconnaissance spatiale avec des capteurs avancés et des quartiers d'équipage confortables."
+      },
+      "quantumVoyager": {
+        "desc": "Le prototype à propulsion quantique d'Helios Dynamics. Le Voyager offre une efficacité énergétique inégalée, permettant des missions prolongées dans des régions nébuleuses inexplorées."
+      },
+      "brassMonarch": {
+        "desc": "Une merveille d'ingénierie rétro-futuriste de Steamforge Atelier. Le Brass Monarch allie l'esthétique victorienne à une technologie de propulsion de pointe."
+      },
+      "cosmosSeeker": {
+        "desc": "Le vaisseau d'exploration ultra-longue distance de Nova Consortium. Équipé d'un propulseur gravitationnel de pointe et d'installations de laboratoire étendues pour la recherche spatiale."
       }
     },
     "exoplanet": {

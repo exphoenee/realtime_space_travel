@@ -9,11 +9,14 @@ import {
 interface StarfieldProps {
   onCanvasBoundsChange?: (bounds: DOMRectReadOnly) => void;
   isPaused?: boolean;
+  /** Custom cockpit image URL — overrides the default cockpit.png */
+  cockpitImageUrl?: string;
 }
 
 const Starfield: React.FC<StarfieldProps> = ({
   onCanvasBoundsChange,
   isPaused = false,
+  cockpitImageUrl,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPausedRef = useRef(isPaused);
@@ -37,7 +40,7 @@ const Starfield: React.FC<StarfieldProps> = ({
     let stars: Star[] = [];
     const cockpitImage = new Image();
     let cockpitLoaded = false;
-    const cockpitSrc = `${import.meta.env.BASE_URL}spaceships/cockpit.png`;
+    const cockpitSrc = cockpitImageUrl ?? `${import.meta.env.BASE_URL}spaceships/cockpit.png`;
 
     cockpitImage.src = cockpitSrc;
     cockpitImage.onload = () => {

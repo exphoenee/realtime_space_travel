@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShipProduct } from "../../types";
 import style from "./ShipSelectScreen.module.css";
@@ -10,6 +11,7 @@ interface ShipInfoModalProps {
 
 const ShipInfoModal = ({ ship, onClose, onSelect }: ShipInfoModalProps) => {
   const { t } = useTranslation();
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <div className={style.infoOverlay} onClick={onClose}>
@@ -29,7 +31,16 @@ const ShipInfoModal = ({ ship, onClose, onSelect }: ShipInfoModalProps) => {
         <h2 className={style.infoModalTitle}>{ship.name}</h2>
 
         <div className={style.infoModalVisual}>
-          <span className={style.shipEmoji}>🚀</span>
+          {ship.image && !imgFailed ? (
+            <img
+              src={`${import.meta.env.BASE_URL}spaceships/${ship.image}`}
+              alt={ship.name}
+              className={style.shipCockpitImage}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <span className={style.shipEmoji}>🚀</span>
+          )}
         </div>
 
         <p className={style.infoModalDesc}>

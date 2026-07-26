@@ -233,6 +233,21 @@
       },
       "aetherTitan": {
         "desc": "Az Aether Titan a Nova Consortium csúcskategóriás csillaghajója. Hatalmas sebessége és kapacitása révén a legtávolabbi csillagrendszerek is elérhetővé válnak."
+      },
+      "redStar": {
+        "desc": "A Krasnyi Kosmos robusztus, ipari csillaghajója — a legzordabb körülményekre tervezve. Megerősített páncélzattal és redundáns rendszerekkel a Red Star soha nem adja fel."
+      },
+      "nebulaPioneer": {
+        "desc": "A Nebula Pioneer az Orion Shipyards legújabb középtávú felfedezőhajója. Fejlett szenzormátrixokkal és kényelmes legénységi szállással felszerelve mélyűri felderítésre tervezve."
+      },
+      "quantumVoyager": {
+        "desc": "A Helios Dynamics kvantumhajtású prototípusa. A Voyager példátlan energiahatékonysággal büszkélkedhet, lehetővé téve kiterjesztett küldetéseket a feltérképezetlen ködök régiójába."
+      },
+      "brassMonarch": {
+        "desc": "A Steamforge Atelier retró-futurisztikus mérnöki remeke. A Brass Monarch a viktoriánus esztétikát ötvözi a csúcstechnológiájú meghajtással."
+      },
+      "cosmosSeeker": {
+        "desc": "A Nova Consortium ultrahosszú távú felfedezőhajója. Csúcskategóriás gravitációs meghajtással és kiterjedt laboratóriumi létesítményekkel felszerelve a mélyűri kutatáshoz."
       }
     },
     "exoplanet": {

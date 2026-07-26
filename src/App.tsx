@@ -22,7 +22,7 @@ import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
 import { updateUserSettings } from "./firebase/userData";
 import type { UserNode } from "./firebase/userData";
-import { BASE_EXOPLANET_IDS } from "./constants/shopCatalog";
+import { BASE_EXOPLANET_IDS, SHOP_SHIPS, getShipImageById } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
 import {
@@ -80,6 +80,7 @@ const App: React.FC = () => {
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
 
   const activeMusicId = useUIStore((s) => s.activeMusicId);
+  const activeShipId = useUIStore((s) => s.activeShipId);
   const { playMusic } = useAudio(activeMusicId);
   const localWeather = useWeather(destination);
   const { videoRef, isStreamReady } = useCamera(destination);
@@ -516,7 +517,7 @@ const App: React.FC = () => {
     <>
       {isPreGame ? (
         <main className={styles.app}>
-          <Starfield onCanvasBoundsChange={handleCanvasBoundsChange} />
+          <Starfield key="pregame" onCanvasBoundsChange={handleCanvasBoundsChange} />
           <ScreenRouter
             phase={gamePhase}
             onSkipIntro={handleSkipIntro}
@@ -528,8 +529,10 @@ const App: React.FC = () => {
       ) : !destination ? null : (
         <main className={styles.app}>
           <Starfield
+            key="gameplay"
             onCanvasBoundsChange={handleCanvasBoundsChange}
             isPaused={isPauseOverlayVisible}
+            cockpitImageUrl={`${import.meta.env.BASE_URL}spaceships/${getShipImageById(activeShipId)}`}
           />
           {canvasBounds && (
             <div
@@ -558,6 +561,8 @@ const App: React.FC = () => {
               destinationName={destination.name}
               localWeather={localWeather}
               currentSpeedKmPerSecond={shipSpeedKmPerSecond}
+              shipImageUrl={`${import.meta.env.BASE_URL}spaceships/${getShipImageById(activeShipId)}`}
+              shipName={activeShipId ? SHOP_SHIPS.find(s => s.id === activeShipId)?.name : undefined}
             />
           </div>
 
