@@ -4,7 +4,7 @@ import type { Difficulty } from "../../types";
 import { SHOP_MUSIC } from "../../constants/shopCatalog";
 import useGameStore from "../../state/useGameStore";
 import useShopStore from "../../state/useShopStore";
-import useAuthStore from "../../state/useAuthStore";
+import useAuthStore, { selectRtdbKey, getRtdbKey } from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/auth";
 import { updateUserSettings, updateUserNickname } from "../../firebase/userData";
@@ -30,7 +30,7 @@ const SettingsScreen = () => {
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const deviceId = useAuthStore((s) => s.deviceId);
-  const rtdbKey = useAuthStore((s) => s.rtdbKey);
+  const rtdbKey = useAuthStore(selectRtdbKey);
   const storeDisplayName = useAuthStore((s) => s.displayName);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
@@ -63,7 +63,7 @@ const SettingsScreen = () => {
     setNickname(trimmed);
     setEditingNickname(false);
     // Persist to RTDB (use rtdbKey)
-    const { rtdbKey: key } = useAuthStore.getState();
+    const key = getRtdbKey();
     if (key) {
       try {
         await updateUserNickname(key, trimmed);

@@ -22,21 +22,6 @@ export const getDeviceId = (): string => {
   return id;
 };
 
-/**
- * Clear the device ID entirely from localStorage, then generate a brand-new
- * UUID and persist it. Call this after a successful guest → Google migration
- * so the old deviceId can never be reused for a new guest session.
- *
- * The old guest RTDB node at users/{oldId} and the device_map/{oldId} entry
- * have already been deleted by migrateGuestData — this finalises the cleanup
- * on the client side.
- *
- * Returns the new device ID.
- */
-export const clearDeviceId = (): string => {
-  // Explicitly remove the old key first, then generate + persist a new one.
-  localStorage.removeItem(DEVICE_ID_KEY);
-  const newId = crypto.randomUUID();
-  localStorage.setItem(DEVICE_ID_KEY, newId);
-  return newId;
-};
+/* clearDeviceId was removed in 009 — the old guest→Google migration flow
+ * that rotated the deviceId has been replaced with an idempotent migratedFrom
+ * guard that does not require rotation (see authBootstrap.ts). */

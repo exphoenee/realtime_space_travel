@@ -9,7 +9,7 @@ import DebugOverlay from "./components/features/DebugOverlay";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
-import useAuthStore from "./state/useAuthStore";
+import useAuthStore, { getRtdbKey } from "./state/useAuthStore";
 import useShopStore from "./state/useShopStore";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
@@ -98,7 +98,8 @@ const App: React.FC = () => {
   // ensureUserNode) may not have completed yet, and writing to RTDB before
   // the device_map entry exists triggers a PERMISSION_DENIED.
   useEffect(() => {
-    const { rtdbKey, _initialized } = useAuthStore.getState();
+    const { _initialized } = useAuthStore.getState();
+    const rtdbKey = getRtdbKey();
     if (_initialized && rtdbKey) {
       updateUserSettings(rtdbKey, { musicMuted: isMusicMuted }).catch(console.error);
     }
@@ -134,9 +135,9 @@ const App: React.FC = () => {
           } else {
             // Not owned anymore — reset to null and write back to RTDB
             ui.setActiveShipId(null);
-            const authState = useAuthStore.getState();
-            if (authState.rtdbKey) {
-              updateUserSettings(authState.rtdbKey, { activeShipId: null }).catch(console.error);
+            const rtdbKey = getRtdbKey();
+            if (rtdbKey) {
+              updateUserSettings(rtdbKey, { activeShipId: null }).catch(console.error);
             }
           }
         }
@@ -215,7 +216,7 @@ const App: React.FC = () => {
 
     // Listen for language changes → persist to RTDB
     const handleLanguageChange = (lng: string) => {
-      const { rtdbKey } = useAuthStore.getState();
+      const rtdbKey = getRtdbKey();
       if (rtdbKey) {
         updateUserSettings(rtdbKey, { language: lng }).catch(console.error);
       }
