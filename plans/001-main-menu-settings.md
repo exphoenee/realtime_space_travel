@@ -133,7 +133,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 
 ## 7. Érintett/új fájlok
 
-**Új:** `MainMenu.tsx(+css)` (Főmenü), `SettingsScreen.tsx(+css)`.
+**Új:** `MainMenu.tsx(+css)` (Főmenü), `SettingsScreen.tsx(+css)`, `src/components/ui/CustomSelect.tsx(+css)` (custom dropdown a Settings zenéihez).
 **Átnevezett:** régi `MainMenu` → `MissionSelector.tsx(+css)`; `StartMenu` → `MainMenu`.
 **Módosított:** `types/index.ts` (GamePhase + `Difficulty`), `useGameStore.ts` (phaseToFlags, resetToMenu → mainMenu), `useUIStore.ts` (musicVolume, difficulty), `useAudio.ts` (volume param), `App.tsx` (isPreGame, handleSkipIntro, harang eltávolítás, playMusic volume), `ScreenRouter.tsx`, `IntroScreen.tsx` (rAF-fix + lassítás), az 5 `translation.json`.
 
@@ -151,6 +151,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 - [x] Sarok-nyelvváltó és harang eltávolítása; `LanguageSwitcher` a Beállításokba
 - [x] i18n kulcsok mind az 5 nyelven (`mainMenu.*`, `settings.*`, `difficulty.*`)
 - [x] Intro: rAF-blokkfix + lassabb görgetés (120s)
+- [x] **CustomSelect komponens:** `src/components/ui/CustomSelect.tsx + .module.css` — natív `<select>` helyett egyedi dropdown `role="combobox"`, billentyűzet navigáció (Enter/Escape/ArrowUp/Down), ARIA attribútumok, dark téma scrollbar. A Settings zenekiválasztója ezt használja.
 - [x] Ellenőrzés: tsc, 14/14 teszt, build, kulcs-paritás (109/nyelv)
 - [ ] **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
 - [ ] **Áruház gomb bekötése** → [[002-ingame-shop-frontend]] (helyi bolt), később backend: [[005-ingame-shop-strapi-stripe]]

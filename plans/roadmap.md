@@ -3,11 +3,11 @@
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-26"
-total_plans: 6
-implemented: 3
-in_progress: 1
-not_started: 2
-tasks_done: 104
+total_plans: 7
+implemented: 4
+in_progress: 2
+not_started: 1
+tasks_done: 135
 tasks_total: 170
 plans:
   - step: 0
@@ -40,9 +40,9 @@ plans:
     dependencies: [000-i18n-nyelvesites, 001-main-menu-settings]
   - step: 4
     slug: "004-firebase-auth-bugfix"
-    status: "not-started"
+    status: "in-progress"
     category: "auth"
-    tasks_done: 0
+    tasks_done: 31
     tasks_total: 39
     dependencies: [003-firebase-auth-settings]
   - step: 5
@@ -52,6 +52,13 @@ plans:
     tasks_done: 2
     tasks_total: 16
     dependencies: [003-firebase-auth-settings, 004-firebase-auth-bugfix]
+  - step: 6
+    slug: "006-editable-displayname"
+    status: "implemented"
+    category: "auth"
+    tasks_done: 0
+    tasks_total: 0
+    dependencies: [004-firebase-auth-bugfix]
 ---
 
 # Roadmap
@@ -62,8 +69,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 3 implemented · 1 in progress · 2 not started (of 6)
-- **Tasks:** 104/170 done (61%)
+- **Plans:** 4 implemented · 2 in progress · 1 not started (of 7)
+- **Tasks:** 135/170 done (79%)
 
 ## Overview
 
@@ -73,8 +80,9 @@ plans:
 | 1 | Főmenü + Beállítások képernyő terve | ✅ Implemented | 9/13 | — | ui | 0 |
 | 2 | Helyi működésű áruház (frontend-only) terve | ✅ Implemented | 52/53 | — | shop | 1 |
 | 3 | Firebase bejelentkezés + perzisztens felhasználói beállítások terve | 🟨 In progress | 21/28 | 1–2 | auth | 0, 1 |
-| 4 | Firebase Google bejelentkezés bugfix | ⬜ Not started | 0/39 | 1 | auth | 3 |
+| 4 | Firebase Google bejelentkezés bugfix | 🟨 In progress | 31/39 | 1 | auth | 3 |
 | 5 | Valós pénzes kredit vásárlás | ⬜ Not started | 2/16 | 3–4 | shop | 3, 4 |
+| 6 | Szerkeszthető fantázianév a Settings menüben | ✅ Implemented | — | 1 | auth | 4 |
 
 ## Next Open Tasks
 
@@ -84,7 +92,7 @@ plans:
 - **Step 1 — Főmenü + Beállítások képernyő terve** (9/13): **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (52/53): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (21/28): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
-- **Step 4 — Firebase Google bejelentkezés bugfix** (0/39): `security.rules.json` — dokumentált (kommentelt) forrás létrehozása/frissítése a Phase-1 szabályokkal + a generáló one-liner a fejlécbe
+- **Step 4 — Firebase Google bejelentkezés bugfix** (31/39): Console → Hosting → Get started (default site: `realtimespacetravel-e74e3.web.app`)
 - **Step 5 — Valós pénzes kredit vásárlás** (2/16): Stripe fiók + API kulcsok + 4 Price objektum (5€, 10€, 25€, 100€) a Stripe Dashboard-on
 
 ## Insertion Guide
@@ -99,8 +107,9 @@ plans:
 | 1 | `001-main-menu-settings` | ui | 000-i18n-nyelvesites | 2, 3 |
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
 | 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5 |
-| 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5 |
+| 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6 |
 | 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | — |
+| 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
 
 ## Phase Details
 
@@ -114,3 +123,4 @@ plans:
 | 3 | `plans/003-firebase-auth-settings.md` | Firebase bejelentkezés + perzisztens felhasználói beállítások terve |
 | 4 | `plans/004-firebase-auth-bugfix.md` | Firebase Google bejelentkezés bugfix |
 | 5 | `plans/005-ingame-shop-strapi-stripe.md` | Valós pénzes kredit vásárlás |
+| 6 | `plans/006-editable-displayname.md` | Szerkeszthető fantázianév a Settings menüben |

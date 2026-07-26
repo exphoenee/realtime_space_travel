@@ -3,11 +3,11 @@ title: "Firebase Google bejelentkezés bugfix – uid-megőrzés, RTDB rules, de
 slug: 004-firebase-auth-bugfix
 type: plan
 category: auth
-status: not-started
+status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-26"
-updated_at: "2026-07-26"
+updated_at: "2026-07-27"
 author: exphoenee
 step: 4
 phases:
@@ -18,6 +18,7 @@ related_plans:
   - 000-i18n-nyelvesites
   - 002-ingame-shop-frontend
   - 005-ingame-shop-strapi-stripe
+  - 006-editable-displayname
 tags:
   - firebase
   - auth
@@ -25,6 +26,8 @@ tags:
   - bugfix
   - security-rules
   - deploy
+  - device-id
+  - stale-bundle
 ---
 
 # Firebase Google bejelentkezés bugfix – uid-megőrzés, RTDB rules, deploy
@@ -55,6 +58,9 @@ Google bejelentkezéskor a játékos anonim fiókja (uid `hJ9MWfvxZKXP6cj8FrIsPK
 | Elárvult 7804 kredit | **Mentsük** — dokumentált kézi Firebase Console lépés |
 | MediaPipe 404 | **A terv része** (az arcfelismerés a játék fő mechanikája) |
 | Phase-2 rules (`".write": false`) | **Nem most** — csak az `awardWage` / `purchaseWithCredits` Cloud Functionök után ([[003-firebase-auth-settings]] 6. pont) |
+| Guest azonosítás | **localStorage UUID (`deviceId`)** — ahelyett, hogy minden vendég user random Firebase Anonymous UID-t kapna, egy localStorage-beli UUID a stabil azonosító (`device_map/{deviceId}→{firebaseUid}`) |
+| Guest→Google migráció | **Adatmigráció:** guest adatok (`users/{deviceId}`) → Google user (`users/{googleUid}`), utána guest adat + device_map törölve |
+| Kredit duplikáció védelem | **deviceId rotáció:** migráció után új UUID a localStorage-ban, a régi többé nem használható |
 
 ---
 
@@ -63,65 +69,110 @@ Google bejelentkezéskor a játékos anonim fiókja (uid `hJ9MWfvxZKXP6cj8FrIsPK
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A. RTDB Security Rules deploy (ez oldja fel a PERMISSION_DENIED-et — ELSŐ lépés)**
-- [ ] `security.rules.json` — dokumentált (kommentelt) forrás létrehozása/frissítése a Phase-1 szabályokkal + a generáló one-liner a fejlécbe
-- [ ] `database.rules.json` — a Phase-1 (kommentmentes) szabályok: `profile`/`settings`/`wallet`/`inventory`/`stats` → `auth != null && auth.uid == $uid`
-- [ ] `firebase.json` → `"database": { "rules": "database.rules.json" }` szekció
-- [ ] `.github/workflows/deploy-firebase.yml` → `npx firebase-tools deploy --only hosting,database`
-- [ ] Kézi deploy: `npx firebase-tools deploy --only database` + Rules Playground ellenőrzés
+- [x] `security.rules.json` — dokumentált (kommentelt) forrás létrehozása/frissítése a Phase-1 szabályokkal + a generáló one-liner a fejlécbe
+- [x] `database.rules.json` — a Phase-1 (kommentmentes) szabályok: `profile`/`settings`/`wallet`/`inventory`/`stats` → `auth != null && auth.uid == $uid`
+- [x] `firebase.json` → `"database": { "rules": "database.rules.json" }` szekció
+- [x] `.github/workflows/deploy-firebase.yml` → `npx firebase-tools deploy --only hosting,database`
+- [x] Kézi deploy: `npx firebase-tools deploy --only database` + Rules Playground ellenőrzés
+- [x] **device_map + $key==auth.uid szabályok** hozzáadása (lásd L. + O. blokk)
 
 **B. Firebase Hosting bekapcsolása**
-- [ ] Console → Hosting → Get started (default site: `realtimespacetravel-e74e3.web.app`)
-- [ ] Console → Authentication → Settings → Authorized domains: `localhost`, `realtimespacetravel-e74e3.web.app`, `exphoenee.github.io`
-- [ ] A korábbi GitHub Actions deploy-log ellenőrzése (a bukás oka a hiányzó site volt-e)
+- [x] Console → Hosting → Get started (default site: `realtimespacetravel-e74e3.web.app`)
+- [x] Console → Authentication → Settings → Authorized domains: `localhost`, `realtimespacetravel-e74e3.web.app`, `exphoenee.github.io`
+- [x] A korábbi GitHub Actions deploy-log ellenőrzése (a bukás oka a hiányzó site volt-e)
 
 **C. Egységes `startGoogleAuth()` (a #3 hiba gyökere)**
-- [ ] `src/firebase/auth.ts` → `startGoogleAuth()` (popup-first, link ha anonim, redirect fallback, `credential-already-in-use` ág)
-- [ ] `MainMenu.tsx` **és** `SettingsScreen.tsx` ugyanezt hívja (a `signInWithGoogle` + `linkAnonymousToGoogle` páros kivezetése)
-- [ ] `credential-already-in-use` esethez felhasználói üzenet (a vendég-kredit nem vihető át)
+- [x] `src/firebase/auth.ts` → `startGoogleAuth()` (popup-first, link ha anonim, redirect fallback, `credential-already-in-use` ág)
+- [x] `MainMenu.tsx` **és** `SettingsScreen.tsx` ugyanezt hívja (a `signInWithGoogle` + `linkAnonymousToGoogle` páros kivezetése)
+- [x] `credential-already-in-use` esethez felhasználói üzenet (a vendég-kredit nem vihető át)
 
 **D. Auth bootstrap singleton (StrictMode dupla-init race)**
-- [ ] Új `src/firebase/authBootstrap.ts` — modul-szintű `started` / `anonInit` / `redirectCheckDone` flagek
-- [ ] `signInAnonymous` csak `auth.currentUser == null` esetén; hibánál `anonInit = false` (újrapróbálható)
-- [ ] `subscribeUser` **kikerül** az `ensureUserNode` `try`-jából — mindig lefut
-- [ ] `App.tsx` effect már csak `startAuthBootstrap(handleUserData)`-t hív
+- [x] Új `src/firebase/authBootstrap.ts` — modul-szintű `started` / `anonInit` / `redirectCheckDone` flagek
+- [x] `signInAnonymous` csak `auth.currentUser == null` esetén; hibánál `anonInit = false` (újrapróbálható)
+- [x] `subscribeUser` **kikerül** az `ensureUserNode` `try`-jából — mindig lefut
+- [x] `App.tsx` effect már csak `startAuthBootstrap(handleUserData)`-t hív
 
 **E. Hibák felszínre hozása (ez rejtette el az egész bugot)**
-- [ ] `checkRedirectResult` ne nyelje el a hibát → `{ user, error }` visszatérés
-- [ ] `useAuthStore` → `authError: string | null` + `setAuthError`
-- [ ] `getAuthErrorMessage` bekötése minden auth/RTDB hibaágra (`console.error` **mellé**, nem helyette)
-- [ ] `SettingsScreen` hibasáv újrahasznosítása + hibasáv a `MainMenu`-ben
-- [ ] `useAuthStore.clearUser` holt kód felszámolása: Kijelentkezés gomb bekötése vagy törlés
+- [x] `checkRedirectResult` ne nyelje el a hibát → `{ user, error }` visszatérés
+- [x] `useAuthStore` → `authError: string | null` + `setAuthError`
+- [x] `getAuthErrorMessage` bekötése minden auth/RTDB hibaágra (`console.error` **mellé**, nem helyette)
+- [x] `SettingsScreen` hibasáv újrahasznosítása + hibasáv a `MainMenu`-ben
+- [x] `useAuthStore.clearUser` holt kód felszámolása: Kijelentkezés gomb bekötése vagy törlés
 
 **F. RTDB = egyetlen kredit-forrás**
-- [ ] `useShopStore` → `credits: 0` induló érték (lokális debug-elágazás törlése) + `creditsLoaded: boolean`
-- [ ] `getDefaultUserNode` → debug 9000 **ide** + `exoplanets: BASE_EXOPLANET_IDS` (külön bug: ma üres inventory-val jön létre a node)
-- [ ] `handleUserData` → RTDB mérvadó hiányzó ág esetén is (`data.wallet?.credits ?? 0`, `mergeInventory` → `[]` / `BASE_EXOPLANET_IDS`)
-- [ ] Kreditkijelzők (`SettingsScreen`, `CreditBalance`, `ShopScreen`) `creditsLoaded === false` → `—`
+- [x] `useShopStore` → `credits: 0` induló érték (lokális debug-elágazás törlése) + `creditsLoaded: boolean`
+- [x] `getDefaultUserNode` → debug 9000 **ide** + `exoplanets: BASE_EXOPLANET_IDS` (külön bug: ma üres inventory-val jön létre a node)
+- [x] `handleUserData` → RTDB mérvadó hiányzó ág esetén is (`data.wallet?.credits ?? 0`, `mergeInventory` → `[]` / `BASE_EXOPLANET_IDS`), + `setDisplayName` szinkron
+- [x] Kreditkijelzők (`SettingsScreen`, `CreditBalance`, `ShopScreen`) `creditsLoaded === false` → `—`
 
 **G. Dev headerek + deploy konfigurációk**
-- [ ] `vite.config.ts` → a `Cross-Origin-Opener-Policy` + `Cross-Origin-Embedder-Policy` dev headerek **törlése**
-- [ ] `.github/workflows/deploy.yml` → mind a 8 `${{ vars.VITE_FIREBASE_* }}` sor a `Build for GitHub Pages` step `env:` blokkjába
-- [ ] `.env.example` létrehozása a dokumentált env változókkal
+- [x] `vite.config.ts` → a `Cross-Origin-Opener-Policy` + `Cross-Origin-Embedder-Policy` dev headerek **törlése**
+- [x] `.github/workflows/deploy.yml` → mind a 8 `${{ vars.VITE_FIREBASE_* }}` sor a `Build for GitHub Pages` step `env:` blokkjába
+- [x] `.env.example` létrehozása a dokumentált env változókkal
 
 **H. MediaPipe 404**
-- [ ] `faceRecognition.ts` → futásidejű `solutionPath` (`new URL(..., document.baseURI)`)
-- [ ] `index.html` `<script src="mediapipe/...">` + `__BASE_HREF__` viszony ellenőrzése mindkét base path-on
-- [ ] Ellenőrzés: a GH Pages-re nem a `build:firebase` (base `/`) kimenete került-e ki
-- [ ] `vite.config.ts` MediaPipe **alias** vizsgálata: prodban is a stub épül-e be → ha igen, az alias a `test` szekcióba költözik
+- [x] `faceRecognition.ts` → futásidejű `solutionPath` (`new URL(..., document.baseURI)`)
+- [x] `index.html` `<script src="mediapipe/...">` + `__BASE_HREF__` viszony ellenőrzése mindkét base path-on — feltárva: a `<base href>` hardcodeolva volt `/`-ra, nem `__BASE_HREF__`; javítva
+- [x] Ellenőrzés: a GH Pages-re nem a `build:firebase` (base `/`) kimenete került-e ki — mindkét workflow (deploy.yml + deploy-firebase.yml) saját env-vel épít, nincs átfedés
+- [x] `vite.config.ts` MediaPipe **alias** vizsgálata: prodban is a stub épül-e be → ha igen, az alias a `test` szekcióba költözik
 
 **I. Adatmentés (egyszeri, kézi — az A–D deploy UTÁN)**
-- [ ] `users/hJ9MWfvxZKXP6cj8FrIsPKmIDnr1` export JSON (ha létezik)
-- [ ] Auth → Users: az árva Google uid azonosítása (gyanús: `UkJoNld9AjavJ1INwtCyY3lRT1P2`)
-- [ ] `users/<google-uid>/wallet/credits = 7804` + inventory átmásolás
-- [ ] Az árva anonim fiók törlése (Auth + RTDB node)
+- [x] `users/hJ9MWfvxZKXP6cj8FrIsPKmIDnr1` export JSON (ha létezik)
+- [x] Auth → Users: az árva Google uid azonosítása (gyanús: `UkJoNld9AjavJ1INwtCyY3lRT1P2`)
+- [x] `users/<google-uid>/wallet/credits = 7804` + inventory átmásolás
+- [x] Az árva anonim fiók törlése (Auth + RTDB node)
 
 **J. i18n**
-- [ ] `login.error.*` kulcsok mind az 5 nyelven (en, hu, fr, de, es)
-- [ ] Kredit „betöltés alatt" jelölés (`settings.creditsLoading`) mind az 5 nyelven
+- [x] `login.error.*` kulcsok mind az 5 nyelven (en, hu, fr, de, es)
+- [x] `settings.logout` mind az 5 nyelven
+- [x] `settings.uidCopied` mind az 5 nyelven (en, hu, fr, de, es)
 
 **K. Ellenőrzés**
-- [ ] A 10 pontos ellenőrzési terv (7. szekció) végigfuttatása
-- [ ] `npm run test` + `npm run build` + `npm run build:gh-pages`
+- [ ] A 12 pontos ellenőrzési terv (7. szekció) végigfuttatása
+- [x] `npm run test` (14 passed) + `npm run build` + `npm run build:gh-pages`
+- [x] `tsc --noEmit` — többször lefuttatva, mindig clean
+
+**L. Device-based guest identitás (localStorage UUID)**
+- [x] `src/firebase/deviceId.ts` — új utility: `getDeviceId()` (UUID generálás/olvasás localStorage-ból)
+- [x] `src/state/useAuthStore.ts` — +`deviceId` mező (kezdőérték: `getDeviceId()`), +`setDisplayName` action
+- [x] `src/firebase/userData.ts` — +`ensureDeviceMap(deviceId, firebaseUid)`; `ensureUserNode` 3. param: `deviceId` → `users/${deviceId}` path
+- [x] `src/firebase/authBootstrap.ts` — `ensureDeviceMap` hívása MINDEN auth-user előtt; `subscribeUser(deviceId, …)`; `getDeviceId()` használata
+- [x] **Minden RTDB írás (shop, settings, stats) átállítva** `uid`→`deviceId`: `App.tsx`, `useShopStore.ts`, `SettingsScreen.tsx`
+- [x] `database.rules.json` — `device_map` szekció: `".write": "auth != null && newData.val() == auth.uid"`; `/users/$deviceId` rules: `device_map/$deviceId == auth.uid` ellenőrzés
+- [x] `security.rules.json` — ugyanaz kommentekkel
+
+**M. `subscribeUser` retry + cleanup**
+- [x] `subscribeUser` exponenciális backoff retry (1s, 2s, 4s, 8s) `permission_denied` esetén
+- [x] `cancelled` flag + `clearTimeout` a cleanup-ban (megakadályozza a retry-t az unsubscribe után)
+- [x] Kijelentkezéskor `unsubUser()` hívása a `!user` ágban (authBootstrap.ts) — a régi listener nem marad aktív
+- [x] `handleCopyUid` dependency fix: `[uid]` → `[deviceId]`
+
+**N. SettingsScreen UI javítások**
+- [x] **DisplayName szinkron:** `handleUserData` `profile.displayName` szinkronizálása a store-ba `setDisplayName()`-nel (megoldja, hogy `authUser.displayName` null legyen linkelt Google fióknál)
+- [x] **Account section layout:** full-width vertical stack (`.accountSection`) — név + badge balra, kredit jobbra → nickname editor → device ID → logout gomb
+- [x] **Custom Select komponens:** `src/components/ui/CustomSelect.tsx + .module.css` — `role="combobox"`, billentyűzet nav, ARIA, dark téma, scrollbar styling
+- [x] Natív `<select>` kivezetve a SettingsScreen-ből, CustomSelect-re cserélve
+- [x] `uid` dead code eltávolítva (`deviceId` váltotta ki)
+- [x] `<label htmlFor="music-track">` visszaállítva (accessibility)
+
+**O. Guest adat migráció Google belépéskor**
+- [x] `src/state/useAuthStore.ts` — +`rtdbKey` mező (deviceId guest, uid authenticated); +`setRtdbKey` + `setDeviceId` action; `clearUser` deviceId frissítés
+- [x] `src/firebase/userData.ts` — +`migrateGuestData(deviceId, targetUid)`:
+  - Olvassa `users/{deviceId}` guest adatokat
+  - **`update`-tal** írja `users/{googleUid}` gyerekeire (ugyanaz a `set`→`update` minta, ami az eredeti PERMISSION_DENIED-et javította)
+  - Kredit merge: guest + Google kreditek **összeadódnak** (nem vesznek el)
+  - Inventory merge: **egyesül** (mindkettő megmarad)
+  - Stats: a **jobb érték marad**
+  - Guest adat törlés: gyerekenként `update(..., null)` (mert a szülőn nincs `.write`)
+  - device_map törlés: `set(mapRef, null)` (az új `data.val() == auth.uid` szabály engedi)
+- [x] `src/firebase/authBootstrap.ts` — migráció hívása Google auth után (minden egyes belépéskor); sikeres migráció után `rotateDeviceId()` + store frissítés; hiba esetén fallback `deviceId`-re
+- [x] `database.rules.json` + `security.rules.json` — `$deviceId` → `$key` paraméter; `.read`/`.write` engedi mind a `device_map/$key == auth.uid` (guest), mind a `$key == auth.uid` (authenticated) feltételt; `device_map` write rule `data.val() == auth.uid` (törlés engedély)
+- [x] **Minden RTDB hívás átállítva:** `deviceId` → `rtdbKey` a store-ból (`useShopStore.ts`, `SettingsScreen.tsx`, `App.tsx`)
+
+**P. DeviceId rotáció (kredit duplikáció védelem)**
+- [x] `src/firebase/deviceId.ts` — +`rotateDeviceId()`: új UUID generálás + localStorage felülírás
+- [x] `src/state/useAuthStore.ts` — +`setDeviceId(id)` action; `clearUser` most `deviceId: getDeviceId()`-t is állít (a rotált értéket olvassa)
+- [x] `src/firebase/authBootstrap.ts` — sikeres migráció után: `rotateDeviceId()` + `store.setDeviceId(newDeviceId)` (a régi deviceId égett, nem használható újra)
 
 ---
 
@@ -156,7 +207,7 @@ Google bejelentkezéskor a játékos anonim fiókja (uid `hJ9MWfvxZKXP6cj8FrIsPK
 [6] rules soha nem deployolva + GH Pages env hiány ──▶ [1] és auth/invalid-api-key
 ```
 
-**A javítás sorrendje kötött:** A (rules) → B (hosting) → C/D/E (kliens auth) → F (kredit-forrás) → G (deploy) → H (mediapipe) → I (adatmentés).
+**A javítás sorrendje kötött:** A (rules) → B (hosting) → C/D/E (kliens auth) → F (kredit-forrás) → G (deploy) → H (mediapipe) → I (adatmentés). Az L–P blokkok párhuzamosan haladhatnak az előzőekkel.
 
 ### 1.1 `[1]` PERMISSION_DENIED megöli a read-utat
 
@@ -204,35 +255,57 @@ Ráadásul az `anonInit = true` a `try` **ELŐTT** áll be → ha a `signInAnony
 - `.github/workflows/deploy.yml` `Build for GitHub Pages` step `env:` blokkja **csak** `VITE_DEBUG_MODE`-ot tartalmaz. A repo variables mind a 8 `VITE_FIREBASE_*` kulcsra be vannak állítva, de a GitHub Actions a `vars`-t **nem** teszi automatikusan env-be — expliciten kell hivatkozni `${{ vars.VITE_FIREBASE_* }}` formában. **Ez a GH Pages-es `auth/invalid-api-key` teljes oka.**
 - Nincs Firebase Hosting site provisionálva.
 
+### 1.7 Továbbfejlesztések (a terv során merültek fel)
+
+**L. Device-based guest identitás:** A Google bejelentkezés linkelése megőrzi az uid-et, de kijelentkezéskor az anonim session megsemmisül → új anonim UID → elvész a guest adat. A localStorage UUID (`deviceId`) stabil azonosítót ad.
+
+**M. `subscribeUser` retry:** Az `onValue` WebSocket kapcsolat nem mindig kapja meg időben az auth tokent → `permission_denied`. A retry mechanizmus (1s, 2s, 4s, 8s backoff) ezt hidalja át. Kijelentkezéskor az `unsubUser()` cleanup megakadályozza a retry-cascade-ot.
+
+**N. SettingsScreen UI:** A displayName nem jelent meg Google linkelés után, mert `authUser.displayName` null volt. Az account section vertical stack layout-ra váltott, Custom Select komponens a zenékhez.
+
+**O. Guest→Google adatmigráció:** Guest adatok (`users/{deviceId}`) átmásolása a Google user alá (`users/{googleUid}`) belépéskor, `rtdbKey` store mező (guest = deviceId, authenticated = googleUid).
+
+**P. DeviceId rotáció:** Migráció után új UUID generálása, hogy a régi deviceId többé ne legyen használható — megakadályozza a kredit duplikációt.
+
 ---
 
 ## 2. Fájlstruktúra
 
 ### Új fájlok
 ```
-src/firebase/authBootstrap.ts     # modul-szintű auth bootstrap singleton
-database.rules.json               # DEPLOYOLT RTDB rules (Phase-1, kommentmentes)
-security.rules.json               # dokumentált forrás (kommentekkel) + generáló one-liner
-.env.example                      # dokumentált env változók (003-as terv nyitott TODO-ja)
+src/firebase/authBootstrap.ts         # modul-szintű auth bootstrap singleton
+database.rules.json                   # DEPLOYOLT RTDB rules (Phase-1, kommentmentes)
+security.rules.json                   # dokumentált forrás (kommentekkel) + generáló one-liner
+.env.example                          # dokumentált env változók (003-as terv nyitott TODO-ja)
+src/firebase/deviceId.ts              # device-alapú guest azonosító (UUID + rotateDeviceId)
+src/components/ui/CustomSelect.tsx    # custom dropdown komponens (Settings zenékhez)
+src/components/ui/CustomSelect.module.css
 ```
 
 ### Módosuló fájlok
 ```
-src/firebase/auth.ts                        # startGoogleAuth + checkRedirectResult({user,error}) + getAuthErrorMessage
-src/firebase/userData.ts                    # getDefaultUserNode: debug kredit + BASE_EXOPLANET_IDS
-src/state/useAuthStore.ts                   # authError + setAuthError; clearUser bekötése/törlése
-src/state/useShopStore.ts                   # credits: 0 + creditsLoaded
-src/App.tsx                                 # az auth effect → startAuthBootstrap(handleUserData)
-src/components/screens/MainMenu.tsx         # startGoogleAuth + hibasáv
-src/components/screens/SettingsScreen.tsx   # startGoogleAuth + hibasáv + creditsLoaded kijelzés
-src/components/shop/CreditBalance.tsx       # creditsLoaded === false → "—"
-src/components/shop/ShopScreen.tsx          # creditsLoaded === false → "—"
-src/services/faceRecognition.ts             # futásidejű solutionPath
-vite.config.ts                              # COOP/COEP dev headerek törlése; mediapipe alias vizsgálat
-firebase.json                               # "database" szekció
-.github/workflows/deploy.yml                # 8 db VITE_FIREBASE_* env
-.github/workflows/deploy-firebase.yml       # --only hosting,database
-src/i18n/locales/{en,hu,fr,de,es}/translation.json  # login.error.* + settings.creditsLoading
+src/firebase/auth.ts                              # startGoogleAuth + checkRedirectResult({user,error}) + getAuthErrorMessage
+src/firebase/userData.ts                          # ensureDeviceMap, ensureUserNode(deviceId), subscribeUser retry,
+                                                  #   migrateGuestData(deviceId, targetUid)
+src/firebase/authBootstrap.ts                     # deviceId integráció, device_map, unsubscribe cleanup,
+                                                  #   migrateGuestData hívás, rotateDeviceId Google belépéskor
+src/state/useAuthStore.ts                         # authError, deviceId, setDisplayName, rtdbKey, setRtdbKey, setDeviceId
+src/state/useShopStore.ts                         # credits: 0 + creditsLoaded + rtdbKey RTDB (deviceId→rtdbKey)
+src/App.tsx                                       # startAuthBootstrap(handleUserData), deviceId→rtdbKey, displayName sync
+src/components/screens/MainMenu.tsx               # startGoogleAuth + hibasáv
+src/components/screens/SettingsScreen.tsx         # startGoogleAuth + deviceId→rtdbKey + DisplayName + layout + CustomSelect
+src/components/screens/SettingsScreen.module.css  # vertical stack layout (accountSection)
+src/components/shop/CreditBalance.tsx             # creditsLoaded === false → "—"
+src/components/shop/ShopScreen.tsx                # creditsLoaded === false → "—"
+src/services/faceRecognition.ts                   # futásidejű solutionPath
+vite.config.ts                                    # COOP/COEP dev headerek törlése; mediapipe alias vizsgálat
+firebase.json                                     # "database" szekció
+.github/workflows/deploy.yml                      # 8 db VITE_FIREBASE_* env
+.github/workflows/deploy-firebase.yml             # --only hosting,database
+src/i18n/locales/{en,hu,fr,de,es}/translation.json  # login.error.* + settings.logout + uidCopied
+index.html                                        # <base href="__BASE_HREF__" />
+database.rules.json                               # device_map + $key==auth.uid + device_map törlés engedély
+security.rules.json                               # ugyanaz kommentekkel (GUEST DATA MIGRATION szekció)
 ```
 
 ---
@@ -241,32 +314,35 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # login.error.* + settings.c
 
 ### 3.A RTDB Security Rules deploy (első és legfontosabb)
 
-**`database.rules.json` (Phase-1 — kliens-írható `wallet`/`inventory`):**
+**`database.rules.json` (Phase-1 — kliens-írható `wallet`/`inventory`, device_map, $key==auth.uid):**
 
 ```json
 {
   "rules": {
+    "device_map": {
+      "$deviceId": {
+        ".write": "auth != null && (newData.val() == auth.uid || data.val() == auth.uid)",
+        ".read": false
+      }
+    },
     "users": {
-      "$uid": {
-        ".read":  "auth != null && auth.uid == $uid",
-        "profile":   { ".write": "auth != null && auth.uid == $uid" },
-        "settings":  { ".write": "auth != null && auth.uid == $uid" },
-        "wallet":    { ".write": "auth != null && auth.uid == $uid" },
-        "inventory": { ".write": "auth != null && auth.uid == $uid" },
-        "stats":     { ".write": "auth != null && auth.uid == $uid" }
+      "$key": {
+        ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
+        "profile":   { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+        "settings":  { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+        "wallet":    { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+        "inventory": { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+        "stats":     { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" }
       }
     }
   }
 }
 ```
 
-- `security.rules.json` marad a **dokumentált forrás** (kommentekkel); a fejlécébe kerüljön be, hogy a `database.rules.json` a **generált párja**, a generáló one-linerrel együtt.
-- `firebase.json`:
-  ```json
-  "database": { "rules": "database.rules.json" }
-  ```
+- A `$key == auth.uid` feltétel engedi a direkt UID-alapú hozzáférést (migráció után).
+- `device_map` write: `data.val() == auth.uid` engedi a törlést (migrációkor).
+- `security.rules.json` marad a **dokumentált forrás** (kommentekkel + GUEST DATA MIGRATION szekció).
 - `deploy-firebase.yml`: `npx firebase-tools deploy --only hosting,database`
-- **Phase-2** (`wallet`/`inventory` → `".write": false`) csak az `awardWage` / `purchaseWithCredits` Cloud Functionök megléte után élesíthető — ez a [[003-firebase-auth-settings]] „Kredit-út" TODO-ja, nem ezé a tervé.
 
 ### 3.B Firebase Hosting bekapcsolása
 
@@ -276,146 +352,114 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # login.error.* + settings.c
 
 ### 3.C Egységes `startGoogleAuth()`
 
-Váltja ki a mostani `signInWithGoogle` + `linkAnonymousToGoogle` párost:
-
-```ts
-export const startGoogleAuth = async (): Promise<User | null> => {
-  const auth = getFirebaseAuth();
-  const provider = new GoogleAuthProvider();
-  const current = auth.currentUser;
-  try {
-    // Anonim → LINK: az uid és az összes RTDB adat megmarad
-    const cred = current?.isAnonymous
-      ? await linkWithPopup(current, provider)
-      : await signInWithPopup(auth, provider);
-    return cred.user;
-  } catch (err) {
-    const code = (err as { code?: string }).code;
-    // A Google-fiók már létezik másik uid alatt → belépés abba (a vendég-haladat nem vihető át)
-    if (code === "auth/credential-already-in-use") {
-      const credential = GoogleAuthProvider.credentialFromError(err as AuthError);
-      if (credential) return (await signInWithCredential(auth, credential)).user;
-    }
-    // Popup blokkolva / nem támogatott → redirect fallback (a lap elnavigál)
-    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-      current?.isAnonymous
-        ? await linkWithRedirect(current, provider)
-        : await signInWithRedirect(auth, provider);
-      return null;
-    }
-    throw err;
-  }
-};
-```
-
-- A **`MainMenu.tsx` ÉS a `SettingsScreen.tsx` ugyanezt hívja** — ez a `[3]` hiba gyökere.
-- A popup-út **szinkron** eredményt ad, nincs oldalbetöltés → ettől a `[2]` tünet („login után 9000") már önmagában eltűnik.
-- `credential-already-in-use` → i18n üzenet: a vendég-kredit nem vihető át.
+Váltja ki a mostani `signInWithGoogle` + `linkAnonymousToGoogle` párost — a `src/firebase/auth.ts`-ben implementálva.
 
 ### 3.D `src/firebase/authBootstrap.ts` — bootstrap singleton
 
-```ts
-let started = false;
-let anonInit = false;
-let redirectCheckDone = false;
-let unsubAuth: (() => void) | null = null;
-let unsubUser: (() => void) | null = null;
-
-export const startAuthBootstrap = (handleUserData: (data: UserNode | null) => void) => {
-  if (started) return;           // StrictMode dupla-mount védelem (MODUL-scope!)
-  started = true;
-  // ... checkRedirectResult → onAuthChange → (currentUser == null) ? signInAnonymous : ...
-};
-```
-
-- `signInAnonymous` **csak** akkor, ha `auth.currentUser == null`.
-- Hiba esetén `anonInit = false` (újrapróbálkozás lehetősége) — az `anonInit = true` **soha** ne a `try` előtt álljon be.
-- A `subscribeUser` kerüljön ki a `try`-ból:
-
-```ts
-try {
-  await ensureUserNode(user, user.isAnonymous ? "anonymous" : "google");
-} catch (err) {
-  setAuthError(getAuthErrorMessage(err));
-}
-unsubUser = subscribeUser(user.uid, handleUserData); // MINDIG lefut
-```
-
-- Az `App.tsx` effect csak ezt hívja; a `handleUserData` **marad** az `App.tsx`-ben.
+Modul-szintű `started` / `anonInit` / `redirectCheckDone` flagek. Google auth után:
+1. `ensureDeviceMap` (mapping)
+2. **`migrateGuestData`** (ha nem anonim)
+3. Sikeres migráció → **`rotateDeviceId()`** + `store.setDeviceId()`
+4. `ensureUserNode` (`rtdbKey`-val)
+5. `subscribeUser` (`rtdbKey`-val)
 
 ### 3.E Hibák felszínre hozása
 
-- `checkRedirectResult` ne nyelje el a hibát → `{ user: User | null; error: unknown | null }`.
-- `useAuthStore` → új `authError: string | null` + `setAuthError`.
-- `getAuthErrorMessage` i18n-kulcsokat ad (`login.error.*`) — minden hibaágon `console.error` **mellé** `setAuthError` is.
-- A `SettingsScreen` meglévő `loginError` sávja újrahasznosítható; a `MainMenu`-ben új sáv kell.
-- `useAuthStore.clearUser` ma **holt kód** (soha nincs hívva) → kössük be a Kijelentkezés gombra a `SettingsScreen` fiók-blokkjában, vagy töröljük.
+- `checkRedirectResult` → `{ user, error }` (nem nyel el)
+- `useAuthStore` → `authError: string | null` + `setAuthError`
+- `getAuthErrorMessage` i18n-kulcsok minden auth/RTDB hibaágra
+- `clearUser` bekötve kijelentkezés gombra
 
 ### 3.F RTDB = egyetlen kredit-forrás
 
-- `useShopStore` → `credits: 0` induló érték (az `initialCredits` debug-elágazás **törlése**) + új `creditsLoaded: boolean`. A `resetShop` debug-elágazása maradhat.
-- `getDefaultUserNode` → **ide** kerül a debug 9000 és az alap exobolygó-készlet:
-  ```ts
-  wallet: { credits: DEBUG_MODE ? DEBUG_STARTING_CREDITS : STARTING_CREDITS },
-  inventory: {
-    ships: {},
-    music: {},
-    exoplanets: Object.fromEntries(BASE_EXOPLANET_IDS.map((id) => [id, true])),
-  },
-  ```
-  > **Ez külön bug:** ma a node üres `exoplanets`-szel jön létre, így az első sikeres RTDB-szinkronnál a játékos **elveszti a 3 alap exobolygóját**.
-- `handleUserData` → az RTDB legyen mérvadó akkor is, ha hiányzik az ág. **Az RTDB nem tárol üres objektumot**, tehát friss usernél a `data.inventory` `undefined`:
-  - `data.wallet?.credits ?? 0`
-  - `mergeInventory` hiányzó ág esetén `[]`-t adjon vissza (exobolygóknál `BASE_EXOPLANET_IDS`) — **ne** a lokális értéket tartsa meg (ma: `if (!rtdbItems) return localItems;`)
-  - a `creditsLoaded` **itt** áll `true`-ra
-- Kreditkijelzők (`SettingsScreen`, `CreditBalance`, `ShopScreen`): `creditsLoaded === false` → `—`, **ne** `0`.
+- `credits: 0` + `creditsLoaded`; kredit 9000 a `getDefaultUserNode`-ban
+- `handleUserData`: `data.wallet?.credits ?? 0`, `mergeInventory` fallback `[]`/`BASE_EXOPLANET_IDS`
+- `profile.displayName` szinkron → `setDisplayName`
+- Kreditkijelzők: `creditsLoaded === false` → `—`
 
 ### 3.G Dev headerek + deploy konfigurációk
 
-- `vite.config.ts` → a `server.headers` **teljes törlése**:
-  - a `Cross-Origin-Opener-Policy: same-origin` elvágja a `window.opener`-t → **megöli a popupot**;
-  - a `Cross-Origin-Embedder-Policy: require-corp` **blokkolja az auth iframe-et**;
-  - a prod (`firebase.json` headers) csak `**/*.wasm`-ra küldi őket, tehát a dokumentum ott sem cross-origin isolated — a **dev feleslegesen volt szigorúbb a prodnál**.
-- `.github/workflows/deploy.yml` → a `Build for GitHub Pages` step `env:` blokkjába mind a 8 sor, a `deploy-firebase.yml` mintájára:
-  ```yaml
-  env:
-    VITE_DEBUG_MODE: "false"
-    VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
-    VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
-    VITE_FIREBASE_DATABASE_URL: ${{ vars.VITE_FIREBASE_DATABASE_URL }}
-    VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-    VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
-    VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-    VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
-    VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
-  ```
-- `.env.example` létrehozása a dokumentált env változókkal (a [[003-firebase-auth-settings]] nyitott TODO-ja).
+- `server.headers` törölve; `.github/workflows/deploy.yml` env blokk; `.env.example`
 
 ### 3.H MediaPipe 404
 
-- Az assetek megvannak: `public/mediapipe/face_detection/` (`face_detection.js`, `.binarypb`, `.tflite`, wasm).
-- `src/services/faceRecognition.ts`:
-  ```ts
-  const solutionPath = `${import.meta.env.BASE_URL}mediapipe/face_detection`;
-  ```
-  Az `import.meta.env.BASE_URL` **build-időben fixálódik**, így ugyanaz a bundle nem szolgálható ki két különböző base path alól (Firebase `/`, GH Pages `/realtime_space_travel/`). A 404-es URL root-relatív volt → a `BASE_URL` `/` volt.
-- **Javítás:** futásidejű feloldás
-  ```ts
-  const solutionPath = new URL("mediapipe/face_detection", document.baseURI).href;
-  ```
-  Ez összhangban van az `index.html` `<base href="__BASE_HREF__">` mechanizmusával (a build script helyettesíti be a `VITE_BASE_PATH` szerint).
-- Ellenőrizendő, hogy a GH Pages-re **nem a `build:firebase`** (base `/`) kimenete került-e ki — a két workflow ugyanarra a `dist/`-re épít.
-- **Külön nyitott pont:** a `vite.config.ts` a `@mediapipe/face_detection`-t **minden** buildben a teszt-stubra (`src/stubs/mediapipe-stub.ts`) aliasolja, nem csak a `test` configban. Ellenőrizendő, hogy prodban nem rontja-e el a detektort — ha igen, az alias **költözzön a `test` szekcióba**.
+- `new URL("mediapipe/face_detection", document.baseURI).href` futásidejű feloldás
 
 ### 3.I Adatmentés: a 7804 kredit (egyszeri kézi lépés)
 
-Az **A–D pont deployja UTÁN**, amikor a linkelés már megőrzi az uid-et:
+- Export, árva uid azonosítás, kézi RTDB írás, fiók törlés
 
-1. Console → Realtime Database → `users/hJ9MWfvxZKXP6cj8FrIsPKmIDnr1` → **Export JSON**.
-   *(Ha a node nem létezik, a 7804 sosem került be az RTDB-be a PERMISSION_DENIED miatt — ekkor csak a `wallet/credits` kézi beírása marad.)*
-2. Authentication → Users: létrejött-e külön Google uid? (gyanús: `UkJoNld9AjavJ1INwtCyY3lRT1P2`)
-3. `users/<google-uid>/wallet/credits` → `7804`, és az `inventory` ágak átmásolása az exportból.
-4. Az árva anonim fiók törlése az Auth Users listából **és** a node az RTDB-ből.
+### 3.L Device-based guest identitás
+
+```ts
+// src/firebase/deviceId.ts
+getDeviceId() → localStorage UUID (első látogatáskor generálva)
+```
+
+### 3.M `subscribeUser` retry + cleanup
+
+Exponenciális backoff (1s, 2s, 4s, 8s), `cancelled` flag, cleanup kijelentkezéskor.
+
+### 3.N SettingsScreen UI
+
+DisplayName szinkron, vertical stack layout, CustomSelect komponens.
+
+### 3.O Guest→Google adatmigráció
+
+```ts
+// src/firebase/userData.ts
+migrateGuestData(deviceId, targetUid):
+  1. Olvas: get(users/{deviceId})
+  2. Ha létezik → update(users/{targetUid}, 5 child) (update-tel, nem set-tel!)
+     - Kredit: guest + google (összeadva)
+     - Inventory: egyesítve
+     - Stats: max
+  3. update(users/{deviceId}, 5 child → null) (törlés)
+  4. set(device_map/{deviceId}, null) (törlés)
+  5. return true (volt guest adat)
+```
+
+**Flow `authBootstrap.ts`-ben:**
+```ts
+const deviceId = getDeviceId();
+await ensureDeviceMap(deviceId, user.uid);
+
+if (!user.isAnonymous) {
+  const migrated = await migrateGuestData(deviceId, user.uid);
+  if (migrated) {
+    rotateDeviceId();          // új UUID a localStorage-ba
+    setDeviceId(newDeviceId);  // store frissítés
+  }
+}
+
+const rtdbKey = useAuthStore.getState().rtdbKey;
+await ensureUserNode(user, "google", rtdbKey);
+unsubUser = subscribeUser(rtdbKey, handleUserData);
+```
+
+### 3.P DeviceId rotáció (kredit duplikáció védelem)
+
+**Probléma:** Migráció után a guest deviceId ugyanaz maradt a localStorage-ban. Kijelentkezés után új guest session ugyanazzal a deviceId-val → `ensureUserNode` új krediteket ad → új Google belépés → újabb migráció → kreditek duplikálódnak.
+
+**Megoldás:** `rotateDeviceId()` minden sikeres migráció után:
+```ts
+// src/firebase/deviceId.ts
+rotateDeviceId(): string {
+  const newId = crypto.randomUUID();
+  localStorage.setItem(DEVICE_ID_KEY, newId);
+  return newId;
+}
+```
+
+**Eredmény:**
+```
+1. Guest: 2000 kredit → Google belépés → migráció → Google: +2000 ✅
+2. deviceId rotáció: "abc" → "xyz"
+3. Kijelentkezés → új guest → deviceId = "xyz" (új, tiszta)
+4. ensureUserNode("xyz") → új alapadatok (nincs régi guest adat)
+5. Ha újra belép: migrateGuestData("xyz", uid) → nincs adat → false
+6. Nincs duplikáció! ✅
+```
 
 ---
 
@@ -441,8 +485,6 @@ Az **A–D pont deployja UTÁN**, amikor a linkelés már megőrzi az uid-et:
 
 ## 5. i18n
 
-A `getAuthErrorMessage` által visszaadott kulcsok **hiányoznak a fordításokból** — mind az 5 nyelvre (en, hu, fr, de, es) fel kell venni. Új **top-level `login`** namespace (a meglévő `mainMenu.login` string **nem** ütközik vele):
-
 | Kulcs | Tartalom (hu) |
 |---|---|
 | `login.error.popupBlocked` | „A böngésző letiltotta a bejelentkező ablakot. Engedélyezd a felugró ablakokat, vagy próbáld újra." |
@@ -451,36 +493,42 @@ A `getAuthErrorMessage` által visszaadott kulcsok **hiányoznak a fordításokb
 | `login.error.cancelled` | „A bejelentkezést megszakítottad." |
 | `login.error.network` | „Hálózati hiba a bejelentkezés közben. Ellenőrizd a kapcsolatot." |
 | `login.error.generic` | „A bejelentkezés nem sikerült. Próbáld újra később." |
-| `settings.creditsLoading` | `—` / „Betöltés…" (a kredit-kijelző `creditsLoaded === false` állapota) |
+| `settings.logout` | „Kijelentkezés" |
+| `settings.uidCopied` | „Másolva!" |
 
-> **Teljes paritás kötelező** mind az 5 nyelven ([[000-i18n-nyelvesites]] konvenció). A `settings.creditsLoading` csak akkor kell, ha a `—` helyett szöveges jelölést használunk — a kompakt kijelzőkben (`CreditBalance`) a `—` az elsődleges.
+> **Teljes paritás kötelező** mind az 5 nyelven ([[000-i18n-nyelvesites]] konvenció).
 
 ---
 
 ## 6. Kockázatok / figyelmeztetések
 
-- **COOP eltávolítás vs. cross-origin isolation:** a popup-flow-hoz a `Cross-Origin-Opener-Policy: same-origin` dev header eltávolítása **kötelező**. Ha a jövőben `SharedArrayBuffer`/cross-origin isolation kellene a MediaPipe-hoz, az **ütközik** a popup-alapú authtal — akkor a redirect-út marad, same-origin `/__/auth/*` handlerrel Firebase Hostingon.
-- **`auth/credential-already-in-use`:** ha a Google-fiók már létezik másik uid alatt, a vendég-haladat **nem vihető át automatikusan** — a felhasználót tájékoztatni kell ([[003-firebase-auth-settings]] él eset).
-- **Phase-1 rules = kredit-hamisítás lehetséges:** a `wallet`/`inventory` kliens-írható. Ez **tudatos, átmeneti** kompromisszum a Cloud Functionök megjelenéséig; a Phase-2 átállás a [[003-firebase-auth-settings]] 6. pontja / [[005-ingame-shop-strapi-stripe]] hatásköre.
-- **GitHub Pages korlát:** statikus hoszt, nincs proxy → **nem tud** same-origin `/__/auth/*` handlert adni. Ott a **popup az egyetlen működő út**, redirect fallback nélkül. A redirect fallback gyakorlatilag csak Firebase Hostingon értelmes.
-- **`creditsLoaded` és a shop UX:** amíg `false`, a vásárlás gombok legyenek letiltva, különben a játékos 0 kredittel próbál vásárolni.
-- **Adatmentés = destruktív lépés:** a 3.I pont kézi RTDB-írás. Export **előbb**, törlés **utoljára**.
-- **A `useShopStore` persist eltávolítása** offline-módban elveszti a helyi állapotot — a kredit ekkor `—` marad. Ez elfogadott (RTDB = egyetlen forrás).
+- **COOP eltávolítás vs. cross-origin isolation:** a popup-flow-hoz a `Cross-Origin-Opener-Policy: same-origin` dev header eltávolítása **kötelező**.
+- **Phase-1 rules = kredit-hamisítás lehetséges:** a `wallet`/`inventory` kliens-írható. **Tudatos, átmeneti** kompromisszum.
+- **GitHub Pages korlát:** statikus hoszt, nincs proxy → **nem tud** same-origin `/__/auth/*` handlert adni.
+- **`creditsLoaded` és a shop UX:** amíg `false`, a vásárlás gombok legyenek letiltva.
+- **Adatmentés = destruktív lépés:** Export **előbb**, törlés **utoljára**.
+- **Stale bundle probléma:** Vite HMR néha nem frissít minden modult. Ha a konzolban `users/{firebaseUid}` path-ek jelennek meg (nem `users/{UUID}`), akkor a böngészőben régi JavaScript fut. Megoldás: **Ctrl+Shift+R** (hard reload).
+- **`migrateGuestData` `update`-ot használ, nem `set`-et:** A `set` a `users/$key` szülőre írna, ahol nincs `.write` szabály → PERMISSION_DENIED (ugyanaz a bug, mint az eredeti). Az `update` gyerekenként értékelődik ki.
+- **`ensureDeviceMap` felesleges Google user-eknél:** A migráció után a felhasználó `$key == auth.uid` alatt fér hozzá az adatokhoz, a `device_map` nem kell. De a hívás ártalmatlan — kijelentkezéskor felülíródik az új anonim UID-val.
 
 ---
 
 ## 7. Ellenőrzési terv
 
 1. `npx firebase-tools deploy --only database`, majd Console → **Rules Playground**: `users/<uid>/wallet` write, `auth.uid = $uid` → **allow**.
-2. `npm run dev` → DevTools Console: **nincs** `PERMISSION_DENIED`, a `users/{uid}` node létrejön.
-3. **Friss inkognitó ablak** → a User ID **nem** `null`, a kredit debug módban 9000, és **oldalfrissítés után is ugyanaz az uid + kredit** (ma ez bukik).
-4. **Vásárlás a shopban** → a kredit csökken → **F5** → a csökkentett érték marad (RTDB-ből).
-5. **Linkelés (a lényeg):** anonim uid + kredit feljegyzése → Settings → Login → Google → **ugyanaz az uid**, **ugyanaz a kredit**, a név megjelenik. **Ugyanez a MainMenu login gombbal is** — a két gomb ugyanúgy viselkedjen.
+2. `npm run dev` → DevTools Console: **nincs** `PERMISSION_DENIED`.
+3. **Friss inkognitó ablak** → a deviceId nem változik oldalfrissítés után.
+4. **Vásárlás a shopban** → a kredit csökken → **F5** → a csökkentett érték marad.
+5. **Linkelés:** anonim deviceId + kredit feljegyzése → Settings → Login → Google → **ugyanaz a kredit**, displayName megjelenik. **Ugyanez a MainMenu login gombbal is**.
 6. **Logout** → ugyanazzal a Google-fiókkal újra be → a kredit és az inventory megmarad.
-7. **Redirect fallback:** popup-blokkoló bekapcsolva → a login redirectre vált, és visszatérés után is bejelentkezve marad.
-8. **Hibaút:** ideiglenesen `".write": false` a `wallet`-re → a login **működjön**, az egyenleg **töltődjön be** (a read él), és a shop írási hibája **látható** üzenet legyen, ne néma konzol-log.
+7. **Redirect fallback:** popup-blokkoló bekapcsolva → a login redirectre vált.
+8. **Hibaút:** `".write": false` a `wallet`-re → a login működjön, shop írási hiba látható üzenet.
 9. **MediaPipe:** mindkét deployon induljon el az arcfelismerés **404 nélkül**.
 10. `npm run test` + `npm run build` + `npm run build:gh-pages`.
+11. **DeviceId perzisztencia:** kijelentkezés → F5 → ugyanaz a deviceId a Settings-ben.
+12. **Custom Select:** billentyűzet navigáció (Enter, Escape, ArrowUp/Down) működik.
+13. **Kredit duplikáció teszt:** guest vásárol → Google login → kijelentkezés → új guest vásárol → Google login → **nincs duplikáció** (a deviceId rotált, a második guest friss adatokat hoz).
+14. **Migráció után deviceId rotáció:** a Settings-ben a deviceId megváltozik Google login után.
 
 ---
 
@@ -497,18 +545,24 @@ A `getAuthErrorMessage` által visszaadott kulcsok **hiányoznak a fordításokb
 | G. Dev headerek + GH Pages env + `.env.example` | ~1 óra |
 | H. MediaPipe base path + alias vizsgálat | ~1–2 óra |
 | I. Adatmentés (kézi) | ~30 perc |
-| J. i18n (7 kulcs × 5 nyelv) | ~1 óra |
-| K. Ellenőrzés (10 pont, 2 deploy) | ~2 óra |
+| J. i18n (kulcsok × 5 nyelv) | ~1 óra |
+| K. Ellenőrzés (14 pont, 2 deploy) | ~2 óra |
+| L. Device-based guest identitás | ~3–4 óra |
+| M. Retry + cleanup | ~1–2 óra |
+| N. SettingsScreen UI (displayName, layout, CustomSelect) | ~2–3 óra |
+| O. Guest→Google adatmigráció | ~3–4 óra |
+| P. DeviceId rotáció (kredit duplikáció védelem) | ~1 óra |
 
-**Összesen:** ~2 fejlesztői nap.
+**Összesen:** ~4 fejlesztői nap.
 
-**Kész definíció:** a játékos névtelenül azonnal játszik; a Google bejelentkezés **ugyanazt az uid-et** tartja meg (linkelés), a kredit és a birtoklás az **RTDB-ből** jön, oldalfrissítés és redirect után is; nincs `PERMISSION_DENIED` és nincs `auth/invalid-api-key`; az arcfelismerés **mindkét** deployon 404 nélkül indul; minden auth-hiba **látható** üzenetként jelenik meg mind az 5 nyelven; a 7804 kredit visszakerült a játékos fiókjára.
+**Kész definíció:** a játékos névtelenül azonnal játszik; a Google bejelentkezés **ugyanazt a deviceId-t** tartja meg, a kredit és a birtoklás az **RTDB-ből** jön, oldalfrissítés és kijelentkezés után is; nincs `PERMISSION_DENIED` és nincs `auth/invalid-api-key`; az arcfelismerés **mindkét** deployon 404 nélkül indul; minden auth-hiba **látható** üzenetként jelenik meg mind az 5 nyelven; a displayName megjelenik a Settings-ben; a zenék dropdown Custom Select-komponenssel működik; a guest adat **migrálódik Google user alá** belépéskor; a **deviceId rotáció** megakadályozza a kredit duplikációt.
 
 ---
 
 ## 9. Kapcsolódó tervek
 
-- [[003-firebase-auth-settings]] — **közvetlen előfeltétel.** Ez a terv annak megvalósított részét javítja, és több nyitott TODO-ját lezárja (Security Rules deploy Phase-1 szinten, `.env.example`, auth-bootstrap, linkelés). A Phase-2 rules és a Cloud Functionök ott maradnak.
-- [[005-ingame-shop-strapi-stripe]] — **erre a tervre épül:** a kredit írási útja (Stripe → Cloud Function → `wallet.credits`) csak működő auth és működő RTDB-olvasás felett építhető. A Phase-2 (`".write": false`) rules átállás ott történik.
-- [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje **itt változik**: `credits: 0` + `creditsLoaded`, a lokális debug-9000 megszűnik (átkerül a `getDefaultUserNode`-ba).
-- [[000-i18n-nyelvesites]] — a `login.error.*` kulcsok mind az 5 nyelven.
+- [[003-firebase-auth-settings]] — **közvetlen előfeltétel.** Phase-2 rules és Cloud Functionök ott maradnak.
+- [[005-ingame-shop-strapi-stripe]] — **erre a tervre épül:** a kredit írási útja (Stripe → Cloud Function → `wallet.credits`) csak működő auth + RTDB felett építhető.
+- [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje itt változik.
+- [[000-i18n-nyelvesites]] — a `login.error.*` és `settings.logout`/`uidCopied` kulcsok mind az 5 nyelven.
+- [[006-editable-displayname]] — a store `setNickname`/`setDisplayName` mechanizmus erre épül.
