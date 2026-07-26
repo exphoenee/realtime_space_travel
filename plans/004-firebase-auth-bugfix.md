@@ -174,6 +174,8 @@ Google bejelentkezéskor a játékos anonim fiókja (uid `hJ9MWfvxZKXP6cj8FrIsPK
 - [x] `src/state/useAuthStore.ts` — +`setDeviceId(id)` action; `clearUser` most `deviceId: getDeviceId()`-t is állít (a rotált értéket olvassa)
 - [x] `src/firebase/authBootstrap.ts` — sikeres migráció után: `rotateDeviceId()` + `store.setDeviceId(newDeviceId)` (a régi deviceId égett, nem használható újra)
 
+> ⚠️ **Az O. és P. blokkot utólag javítja [[009-firebase-identity-split-bugfix]].** Az O. blokk migrációs `catch`-ága (`setRtdbKey(deviceId)`) élesben identitás-szétválást okozott, a P. blokk rotációja pedig felderíthetetlenné teszi az árva node-okat. A `rtdbKey` derivált értékké válik, a `setRtdbKey` action megszűnik, a rotáció kikerül a migrációs útból. **Ne ezt a két blokkot vedd referenciának — a 009-es tervet.**
+
 ---
 
 ## 0. Kiindulási állapot (fontos a végrehajtónak)
@@ -566,4 +568,5 @@ rotateDeviceId(): string {
 - [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje itt változik.
 - [[000-i18n-nyelvesites]] — a `login.error.*` és `settings.logout`/`uidCopied` kulcsok mind az 5 nyelven.
 - [[006-editable-displayname]] — a store `setNickname`/`setDisplayName` mechanizmus erre épül.
-- [[009-stripe-fraud-defense]] — az itt bevezetett **Phase-1 rules** (`database.rules.json`, kliens-írható `wallet`, `device_map` alapú `rtdbKey`) **additív szigorítása**: `wallet.credits` írásonkénti növekmény-limit + `lastTopUpAt` ütemkorlát, valamint új `credit_claims/$sessionId` node. A `device_map` logika változatlan marad.
+- [[009-firebase-identity-split-bugfix]] — **az itt bevezetett O. és P. blokk hibáinak javítása.** A `migrateGuestData` `catch`-ágán lévő `setRtdbKey(deviceId)` „non-fatal fallback" (`authBootstrap.ts:128-132`) élesben **identitás-szétválást** okozott: ugyanaz a Google fiók két RTDB node-ot kapott (`users/{uid}` és `users/{deviceId}`), külön kredittel. A kiváltó crash a `userData.ts:176` bal oldali `?.` nélküli `guestData.wallet.credits = …` írás volt. A 009-es terv: a fallback törlése, az `rtdbKey` **derivált értékké** tétele (a `setRtdbKey` action megszűnik), null-safe + atomikus + idempotens `migrateGuestData`, a `deviceId`-rotáció (**P. blokk**) kivezetése a migrációs útból, valamint az `ensureUserNode` `createdAt`-javítása.
+- [[010-stripe-fraud-defense]] — az itt bevezetett **Phase-1 rules** (`database.rules.json`, kliens-írható `wallet`, `device_map` alapú `rtdbKey`) **additív szigorítása**: `wallet.credits` írásonkénti növekmény-limit + `lastTopUpAt` ütemkorlát, valamint új `credit_claims/$sessionId` node. A `device_map` logika változatlan marad.

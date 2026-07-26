@@ -73,8 +73,21 @@ const ShopScreen = () => {
     }
   }, []);
 
+  /**
+   * Clean up the URL by removing the /shop/success path segment,
+   * so a page refresh doesn't re-trigger the success flow.
+   */
+  const cleanSuccessUrl = () => {
+    const path = window.location.pathname;
+    if (path.includes("/shop/success")) {
+      const cleanPath = path.replace(/\/shop\/success.*$/, "") || "/";
+      window.history.replaceState(null, "", cleanPath);
+    }
+  };
+
   const handleBack = () => {
     if (view !== "browse") {
+      cleanSuccessUrl();
       setView("browse");
     } else {
       transitionTo("mainMenu");
@@ -154,13 +167,13 @@ const ShopScreen = () => {
             />
           )}
           {view === "success" && (
-            <CheckoutSuccess onContinue={() => setView("browse")} />
+            <CheckoutSuccess onContinue={() => { cleanSuccessUrl(); setView("browse"); }} />
           )}
           {view === "creditSuccess" && (
             <CreditSuccess
               credits={lastCredits}
               newBalance={lastCreditsAmount}
-              onContinue={() => setView("browse")}
+              onContinue={() => { cleanSuccessUrl(); setView("browse"); }}
             />
           )}
         </div>
