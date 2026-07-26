@@ -15,7 +15,11 @@ interface ProductCardProps {
 const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
   const { t } = useTranslation();
   const isOwned = useShopStore((s) => s.isOwned)(product.category, product.id);
-  const isInCart = useShopStore((s) => s.isInCart)(product.id);
+  const isInCart = useShopStore((s) => s.cart.some((item) => item.id === product.id));
+  const cart = useShopStore((s) => s.cart);
+  const credits = useShopStore((s) => s.credits);
+  const cartTotal = cart.reduce((sum, item) => sum + item.priceCredits, 0);
+  const canAfford = credits >= (cartTotal + product.priceCredits);
 
   const handleClick = () => {
     if (isOwned) return;
@@ -28,6 +32,29 @@ const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
       category: product.category as "exoplanet" | "ship" | "music",
       priceCredits: product.priceCredits,
     });
+  };
+
+  const renderVisual = () => {
+    if (product.category === "ship") {
+      const ship = product as ShipProduct;
+      return (
+        <div className={styles.productCardVisual}>
+          {ship.image ? (
+            <img
+              src={`${import.meta.env.BASE_URL}spaceships/${ship.image}`}
+              alt={ship.name}
+              className={styles.productCardImage}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <span className={styles.productCardEmoji}>🚀</span>
+          )}
+        </div>
+      );
+    }
+    return null;
   };
 
   const renderMeta = () => {
@@ -75,11 +102,13 @@ const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
   const getButtonClass = () => {
     if (isOwned) return `${styles.productButton} ${styles.ownedBtn}`;
     if (isInCart) return `${styles.productButton} ${styles.removeBtn}`;
+    if (!canAfford) return `${styles.productButton} ${styles.disabledBtn}`;
     return `${styles.productButton} ${styles.addToCartBtn}`;
   };
 
   return (
     <div className={styles.productCard}>
+      {renderVisual()}
       <h3 className={styles.productName}>{product.name}</h3>
       {renderMeta()}
       <p className={styles.productPrice}>
@@ -102,7 +131,7 @@ const ProductCard = ({ product, onAddToCart, onPreview }: ProductCardProps) => {
           type="button"
           className={getButtonClass()}
           onClick={handleClick}
-          disabled={isOwned}
+          disabled={isOwned || (!isInCart && !canAfford)}
         >
           {getButtonLabel()}
         </button>

@@ -125,7 +125,9 @@ src/components/
 | `musicVolume` | `number` (0..1) | Hangerő |
 | `difficulty` | `"easy"\|"medium"\|"hard"` | Nehézség |
 | `activeMusicId` | `string \| null` | Aktív zene ID (null = main_theme) |
+| `activeShipId` | `string \| null` | Aktív hajó ID (null = alap hajó, különben shop hajó ID) |
 | `setActiveMusicId(id)` | akció | Zene váltás |
+| `setActiveShipId(id)` | akció | Hajó váltás (mentéskor a Starfield + Dashboard ezt használja) |
 
 ### useShopStore (Zustand + persist, kulcs: `space-travel-shop`)
 
@@ -156,7 +158,8 @@ intro → mainMenu → missionSelect / shop / settings
 |------|------|-------|
 | Exobolygók (100) | `src/data/exoplanets.json` | JSON (Vite import) |
 | Alap exobolygók (3) | `src/constants/shopCatalog.ts` | `BASE_EXOPLANETS` |
-| Űrhajók (3 mock) | `src/constants/shopCatalog.ts` | `SHOP_SHIPS` |
+| Űrhajók (8 — 3 alap + 5 új cockpit képekkel) | `src/constants/shopCatalog.ts` | `SHOP_SHIPS`, `getShipImageById()`, `DEFAULT_SHIP_IMAGE` |
+| Hajó műszerfal cockpit képek | `public/spaceships/*.png` (8 fájl) | Minden hajóhoz `image` mező a `ShipProduct`-ban |
 | Zenék (5 + main_theme) | `src/constants/shopCatalog.ts` | `SHOP_MUSIC`, fájlok: `public/music/*.mp3` |
 | Kreditcsomagok (4) | `src/constants/shopCatalog.ts` | `CREDIT_PACKS` |
 | Konstansok | `src/constants/shopCatalog.ts` | `CREDITS_PER_EUR`=100, `STARTING_CREDITS`=0, `DEBUG_STARTING_CREDITS`=9000 |
@@ -168,6 +171,22 @@ intro → mainMenu → missionSelect / shop / settings
 - **Fallback:** `en`
 - **Persist:** `localStorage` (`space-travel-lang`)
 - **Kulcs csoportok:** `menu.*`, `dashboard.*`, `intro.*`, `loading.*`, `pause.*`, `app.*`, `screenCheck.*`, `errorBoundary.*`, `weather.*`, `shop.*`, `settings.*`
+
+## Hajó műszerfal képek (cockpit)
+
+A `public/spaceships/` mappa tartalmazza a hajók műszerfal/mögöttes képeit. Minden `ShipProduct` rendelkezik egy `image?: string` mezővel, ami a fájlnevet adja meg.
+
+**Kép kiválasztás flow:**
+1. `ShipSelectScreen.handleSelectShip()` → `useUIStore.setActiveShipId(shipId)`
+2. `App.tsx` → `getShipImageById(activeShipId)` → visszaadja a fájlnevet
+3. `Starfield.tsx` → `cockpitImageUrl` prop → betölti a képet a canvas fölé
+4. `Dashboard.tsx` → `shipImageUrl` prop → kis előnézet a dashboard panelben
+
+**Segédfüggvények:**
+- `getShipImageById(id: string | null): string` — `null` → `DEFAULT_SHIP_IMAGE` ("cockpit.png"), ismert ID → hajó képe, ismeretlen → fallback
+- `DEFAULT_SHIP_IMAGE = "cockpit.png"` — az alap hajó műszerfal képe
+
+**Starfield `key` prop:** Mindkét `<Starfield>` (`key="pregame"` / `key="gameplay"`) dedikált `key`-t kap, hogy a React fázisváltáskor friss példányt mountoljon — ellenkező esetben a `useEffect([])` a pre-game `cockpitImageUrl` (undefined) értéket zárná be.
 
 ## Zene rendszer
 

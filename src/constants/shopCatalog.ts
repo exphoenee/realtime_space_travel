@@ -64,6 +64,7 @@ export const SHOP_SHIPS: ShipProduct[] = [
     capacity: 4,
     rangeLy: 20,
     descriptionKey: "shop.ship.nomadX1.desc",
+    image: "modern3.png",
   },
   {
     id: "ship-1",
@@ -76,6 +77,7 @@ export const SHOP_SHIPS: ShipProduct[] = [
     capacity: 8,
     rangeLy: 60,
     descriptionKey: "shop.ship.vegaRunner.desc",
+    image: "modern2.png",
   },
   {
     id: "ship-2",
@@ -88,6 +90,72 @@ export const SHOP_SHIPS: ShipProduct[] = [
     capacity: 20,
     rangeLy: 200,
     descriptionKey: "shop.ship.aetherTitan.desc",
+    image: "ultramodern1.png",
+  },
+  {
+    id: "ship-3",
+    category: "ship",
+    name: "Red Star",
+    priceCredits: 200,
+    priceEur: 2.00,
+    speedKmPerSecond: 450,
+    manufacturer: "Krasnyi Kosmos",
+    capacity: 5,
+    rangeLy: 25,
+    descriptionKey: "shop.ship.redStar.desc",
+    image: "russian1.png",
+  },
+  {
+    id: "ship-4",
+    category: "ship",
+    name: "Nebula Pioneer",
+    priceCredits: 550,
+    priceEur: 5.50,
+    speedKmPerSecond: 1100,
+    manufacturer: "Orion Shipyards",
+    capacity: 10,
+    rangeLy: 80,
+    descriptionKey: "shop.ship.nebulaPioneer.desc",
+    image: "modern4.png",
+  },
+  {
+    id: "ship-5",
+    category: "ship",
+    name: "Quantum Voyager",
+    priceCredits: 750,
+    priceEur: 7.50,
+    speedKmPerSecond: 1600,
+    manufacturer: "Helios Dynamics",
+    capacity: 14,
+    rangeLy: 120,
+    descriptionKey: "shop.ship.quantumVoyager.desc",
+    image: "modern5.png",
+  },
+  {
+    id: "ship-6",
+    category: "ship",
+    name: "Brass Monarch",
+    priceCredits: 650,
+    priceEur: 6.50,
+    speedKmPerSecond: 780,
+    manufacturer: "Steamforge Atelier",
+    capacity: 12,
+    rangeLy: 90,
+    descriptionKey: "shop.ship.brassMonarch.desc",
+    image: "steampunk2.png",
+  },
+  {
+    id: "ship-7",
+    category: "ship",
+    name: "Cosmos Seeker",
+    priceCredits: 1400,
+    priceEur: 14.00,
+    speedKmPerSecond: 2000,
+    manufacturer: "Nova Consortium",
+    capacity: 24,
+    rangeLy: 250,
+    descriptionKey: "shop.ship.cosmosSeeker.desc",
+    image: "modern6.png",
   },
 ];
 
@@ -162,6 +230,19 @@ export const BASE_EXOPLANETS: ExoplanetProduct[] = [
 ];
 
 export const BASE_EXOPLANET_IDS = BASE_EXOPLANETS.map((e) => e.id);
+
+/** Default ship image used when no ship is selected (cockpit.png) */
+export const DEFAULT_SHIP_IMAGE = "cockpit.png";
+
+/**
+ * Resolve the cockpit image path for a given ship ID.
+ * Returns null if the ship ID is unknown (safety fallback).
+ */
+export const getShipImageById = (activeShipId: string | null): string | null => {
+  if (activeShipId === null) return DEFAULT_SHIP_IMAGE;
+  const found = SHOP_SHIPS.find((s) => s.id === activeShipId);
+  return found?.image ?? DEFAULT_SHIP_IMAGE;
+};
 
 /** Nyers exobolygó JSON struktúra */
 export interface ExoplanetRaw {

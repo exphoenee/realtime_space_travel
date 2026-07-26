@@ -5,6 +5,7 @@ import { SHOP_SHIPS } from "../../constants/shopCatalog";
 import type { ShipProduct } from "../../types";
 import useGameStore from "../../state/useGameStore";
 import useShopStore from "../../state/useShopStore";
+import useUIStore from "../../state/useUIStore";
 import ShipInfoModal from "./ShipInfoModal";
 import styles from "./ShipSelectScreen.module.css";
 
@@ -24,12 +25,31 @@ const DEFAULT_SHIP: ShipProduct & { isDefault: boolean } = {
   capacity: 2,
   rangeLy: 10,
   descriptionKey: "ship.default.description",
+  image: "cockpit.png",
   isDefault: true,
 };
 
 interface ShipSelectScreenProps {
   onCheckCamera?: () => Promise<boolean>;
 }
+
+const ShipCardVisual = ({ ship }: { ship: ShipProduct & { isDefault?: boolean } }) => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className={styles.shipVisual}>
+      {ship.image && !failed ? (
+        <img
+          src={`${import.meta.env.BASE_URL}spaceships/${ship.image}`}
+          alt={ship.name}
+          className={styles.shipCockpitImage}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span className={styles.shipEmoji}>🚀</span>
+      )}
+    </div>
+  );
+};
 
 const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
   const { t } = useTranslation();
@@ -69,6 +89,11 @@ const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
     const travelYears =
       pendingDestination.travelYears /
       (entry.ship.speedKmPerSecond / SHIP_SPEED_KM_PER_SECOND);
+    // Persist the selected ship so it shows on the dashboard during gameplay
+    useUIStore.getState().setActiveShipId(
+      entry.ship.isDefault ? null : entry.ship.id,
+    );
+
     startMission(
       { name: pendingDestination.name, travelYears },
       entry.ship.speedKmPerSecond,
@@ -95,9 +120,7 @@ const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
         <div className={styles.grid}>
           {availableShips.map((entry) => (
             <div key={entry.ship.id} className={styles.shipCard}>
-              <div className={styles.shipVisual}>
-                <span className={styles.shipEmoji}>🚀</span>
-              </div>
+              <ShipCardVisual ship={entry.ship} />
               <div className={styles.shipInfo}>
                 <h3 className={styles.shipName}>{entry.ship.name}</h3>
                 {entry.ship.isDefault ? (

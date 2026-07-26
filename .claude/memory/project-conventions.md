@@ -23,6 +23,24 @@ Fájlnevek:
 
 A kódban a `getTrackUrl(musicId)` helper a `SHOP_MUSIC` katalógusból képzi az URL-t: `${BASE_URL}music/${product.file}`.
 
+## 🚀 Hajó műszerfal képek
+
+Minden űrhajó (`ShipProduct`) rendelkezik egy `image?: string` mezővel, ami a `public/spaceships/` mappában lévő cockpit kép fájlnevét adja meg.
+
+A kép URL képzés: `${import.meta.env.BASE_URL}spaceships/${ship.image}`
+
+**Alap hajó képe:** `cockpit.png` (a `DEFAULT_SHIP_IMAGE` konstans `src/constants/shopCatalog.ts`-ben)
+
+**Komponensek, ahol a cockpit kép megjelenik:**
+- `Starfield.tsx` — teljes képernyős háttér (canvas drawImage) a `cockpitImageUrl` prop alapján
+- `Dashboard.tsx` — kis előnézet a dashboard panelben a `shipImageUrl` prop alapján
+- `ShipPreviewModal.tsx` — shop előnézet modál
+- `ShipSelectScreen.tsx` — hajóválasztó kártyák (`ShipCardVisual` subkomponens)
+- `ShipInfoModal.tsx` — hajó info modál
+- `ProductCard.tsx` — shop termékkártyák (`renderVisual()`)
+
+**Kép betöltési hiba esetén:** Minden komponens `useState`-alapú `imgFailed`/`setImgFailed` mechanizmust használ: ha a kép nem tölt be, elrejti és 🚀 emoji-t mutat helyette.
+
 ## 🗂️ JSON adat — nested objektumok
 
 A `exoplanets.json`-ban az `images` mező értékei **objektumok**, nem string URL-ek:

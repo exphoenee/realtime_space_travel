@@ -3,9 +3,9 @@ title: "Firebase bejelentkezés + perzisztens felhasználói beállítások terv
 slug: 003-firebase-auth-settings
 type: plan
 category: auth
-status: in-progress
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-26"
 created_at: "2026-07-25"
 updated_at: "2026-07-26"
 author: exphoenee
@@ -82,7 +82,7 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [x] Zustand `persist` teljesen eltávolítva minden store-ból → **Firebase RTDB = single source of truth**
 - [x] `security.rules.json` létrehozva (Phase 1: client write engedélyezve; Phase 2 migrációs út dokumentálva)
 - [ ] **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
-- [ ] `activeShipId` validáció az `inventory.ships` ellenében
+- [x] `activeShipId` validáció az `inventory.ships` ellenében — **MEGVALÓSÍTVA** az `App.tsx` `handleUserData`-ban: ha a mentett `activeShipId` nincs az RTDB `inventory.ships`-ben, `null`-ra állítja és visszaírja
 - [ ] `.env.example` létrehozása dokumentált env változókkal (`VITE_DEBUG_MODE=true`)
 
 > ⚠️ **A Fázis 1 auth jelenleg HIBÁS.** A Google bejelentkezés eldobja a névtelen uid-et (a kredit és a birtoklás árván marad), a User ID `null` lesz, és `PERMISSION_DENIED` jön az RTDB-ből (a Security Rules soha nem lett deployolva). A teljes hibaanalízis és a javítás a **[[004-firebase-auth-bugfix]]** tervben van — **azt kell előbb végrehajtani**, mielőtt a lenti nyitott TODO-k bármelyike lezárható lenne.
@@ -93,7 +93,7 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 |---|---|
 | **Security Rules deploy** a Firebase Console-ba | **Kipipálható** — a bugfix a `database.rules.json` + `firebase.json` `database` szekció + CI (`--only hosting,database`) úton deployolja a **Phase-1** (kliens-írható `wallet`/`inventory`) szabályokat. A **Phase-2** (`".write": false`) továbbra is nyitva marad a Cloud Functionökig (lásd 6. pont). |
 | **`.env.example` létrehozása** dokumentált env változókkal | **Kipipálható** — a bugfix G. blokkja hozza létre. |
-| `activeShipId` validáció az `inventory.ships` ellenében | **Nem** — külön feladat marad ebben a tervben. |
+| `activeShipId` validáció az `inventory.ships` ellenében | ✅ **Már implementálva** — az `App.tsx` `handleUserData` callbackjében. |
 
 **Fázis 2 — hajóválasztó + sebesség (✅ MEGVALÓSÍTVA a [[002-ingame-shop-frontend]]-ben)**
 - [x] `GamePhase: "shipSelect"` + `screens/MissionSelector` pending destination + `routing/ScreenRouter` ág
@@ -101,12 +101,18 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [x] Sebesség-integráció (`shipSpeedKmPerSecond` a `useGameStore`-ban; `Dashboard` használja) — **közös** [[005-ingame-shop-strapi-stripe]]
 - [x] Zene-integráció: `useAudio` az aktív zene URL-jével; zeneválasztó a `SettingsScreen`-ben
 - [x] **Firebase bekötés:** `useShopStore` wallet/inventory RTDB-ből szinkronizálva (`handleUserData`); `useGameStore.shipSpeedKmPerSecond`
-- [ ] **Flow átszervezés:** kamera-ellenőrzés áthelyezése a hajóválasztás UTÁN (`ShipSelectScreen.handleSelectShip` → kamera → `startMission`)
+- [x] **Flow átszervezés:** kamera-ellenőrzés áthelyezése a hajóválasztás UTÁN (`ShipSelectScreen.handleSelectShip` → kamera → `startMission`) — **MEGVALÓSÍTVA** az `App.tsx` `handleSelectDestination` csak `selectDestinationForShip`-et hív, a kamera ellenőrzés a `ShipSelectScreen.handleSelectShip`-ben történik
 
-**Kredit-út (részben Fázis 3-mal közös)**
-- [ ] Cloud Function `awardWage` (küldetés végi kredit)
-- [ ] Cloud Function `purchaseWithCredits` (kredites vásárlás)
-- [ ] Stripe→Firebase híd: webhook → Admin SDK → `inventory` írás (a 004-es tervből)
+**Kredit-út — ❌ KIVÉVE: lásd alább**
+
+> ⚠️ **Tervváltozás (2026-07-26):** Az alábbi 3 pont **NEM része** ennek a tervnek. A Spark (ingyenes) Firebase terv nem támogatja a Cloud Functionöket, ezért az architektúra megváltozott:
+> - **`awardWage`** + **`purchaseWithCredits`** Cloud Functionök → ❌ **Eltávolítva.** A kliensoldali kredites vásárlás és a küldetés végi wage jóváírás a Phase-1 RTDB rules alatt, kliens-írható `wallet`-tel működik. A Phase-2 rules (`wallet.write = false`) és a szerveroldali validáció a [[009-stripe-fraud-defense]] terv opcionális (F) fázisa — Cloudflare Workerrel vagy Blaze tervre váltással.
+> - **Stripe→Firebase híd** (Stripe webhook → Admin SDK → `inventory`) → ❌ **Eltávolítva.** Helyette a [[005-ingame-shop-strapi-stripe]] terv **Stripe Payment Links + kliensoldali jóváírás** architektúrát használ, amihez nincs szükség backendre.
+>
+> **Követő tervek:** [[005-ingame-shop-strapi-stripe]] (Stripe Payment Links, kliensoldali kredit-írás), [[009-stripe-fraud-defense]] (Spark-kompatibilis csalásvédelem, opcionális serverless webhook)
+
+- [~] `awardWage` + `purchaseWithCredits` Cloud Functionök → ~~eltávolítva, lásd [[005-ingame-shop-strapi-stripe]] + [[009-stripe-fraud-defense]]~~
+- [~] Stripe→Firebase híd → ~~eltávolítva, lásd [[005-ingame-shop-strapi-stripe]]~~
 
 ---
 
@@ -316,3 +322,4 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 - [[002-ingame-shop-frontend]] – a **helyi (frontend-only) bolt** ELŐBB valósul meg: a `useShopStore` (localStorage) kredit/birtoklás/aktív-hajó/aktív-zene állapotát ez a terv **per-felhasználós Firebase-mentésre** cseréli (RTDB `wallet`/`inventory`/`settings`), a localStorage offline tükör lesz; a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function. Az „aktív hajó sebessége" és a „Settings zeneválasztó" integráció közös — ott úgy épül, hogy itt csak a forrás cserélődjön.
 - [[005-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
 - [[000-i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.
+- [[009-stripe-fraud-defense]] – a 6. pont **Cloud Function** útjának (`awardWage`, `purchaseWithCredits`) Blaze-mentes alternatívája: külső serverless futtató (Cloudflare Worker) + RTDB REST API, amivel a **Phase-2 rules** (`wallet.write = false`) Spark terven is bevezethető. A terv addig is szigorítja a Phase-1 `wallet` szabályt (írásonkénti növekmény-limit + ütemkorlát) — ezt az `awardWage` későbbi bevezetésekor együtt kell hangolni.

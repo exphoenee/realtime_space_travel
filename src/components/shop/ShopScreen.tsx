@@ -22,7 +22,8 @@ const ShopScreen = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
   const [view, setView] = useState<ShopView>("browse");
-  const [activeTab, setActiveTab] = useState<string>("exoplanets");
+  const activeTab = useShopStore((s) => s.activeShopTab);
+  const setActiveTab = useShopStore((s) => s.setActiveShopTab);
   const [lastCredits, setLastCredits] = useState(0);
   const lastCreditsAmount = useShopStore((s) => s.credits);
 

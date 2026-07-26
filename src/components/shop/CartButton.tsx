@@ -8,7 +8,9 @@ interface CartButtonProps {
 
 const CartButton = ({ onClick }: CartButtonProps) => {
   const { t } = useTranslation();
-  const itemCount = useShopStore((s) => s.cart.length);
+  const cart = useShopStore((s) => s.cart);
+  const itemCount = cart.length;
+  const totalCredits = cart.reduce((sum, item) => sum + item.priceCredits, 0);
 
   return (
     <button
@@ -19,7 +21,12 @@ const CartButton = ({ onClick }: CartButtonProps) => {
     >
       🛒
       {itemCount > 0 && (
-        <span className={styles.cartBadge}>{itemCount}</span>
+        <>
+          <span className={styles.cartBadge}>{itemCount}</span>
+          <span className={styles.cartTotalLabel}>
+            ⭐{totalCredits.toFixed(0)}
+          </span>
+        </>
       )}
     </button>
   );

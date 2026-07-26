@@ -166,6 +166,117 @@
     "medium": "Mittel",
     "hard": "Schwer"
   },
+  "shop": {
+    "title": "Shop",
+    "back": "Zurück",
+    "creditsLabel": "⭐ {{count}} Credits",
+    "balance": "Guthaben: ⭐ {{count}}",
+    "priceCredits": "⭐ {{credits}}",
+    "priceEur": "(€ {{eur}})",
+    "tab": {
+      "exoplanets": "Exoplaneten",
+      "ships": "Raumschiffe",
+      "music": "Musik"
+    },
+    "search": "Suche nach Namen…",
+    "searchNoResult": "Keine Ergebnisse",
+    "addToCart": "In den Warenkorb",
+    "inCart": "Im Warenkorb ✓",
+    "owned": "Besitzt",
+    "remove": "Entfernen",
+    "cart": {
+      "title": "Warenkorb",
+      "empty": "Dein Warenkorb ist leer",
+      "total": "Gesamtsumme",
+      "checkout": "Bezahlen"
+    },
+    "notEnoughCredits": "Nicht genug Credits für diesen Kauf.",
+    "success": {
+      "title": "Kauf erfolgreich!",
+      "text": "Die Artikel wurden gutgeschrieben. Gute Reise!",
+      "continue": "Zurück zum Shop"
+    },
+    "cartCount": "{{count}} Artikel",
+    "preview": {
+      "play": "Vorschau",
+      "stop": "Stopp"
+    },
+    "ship": {
+      "preview": "🚀 Details",
+      "speed": "Geschwindigkeit: {{value}} km/s",
+      "capacity": "Kapazität: {{count}} Besatzung",
+      "range": "Reichweite: {{value}} Lichtjahre",
+      "manufacturer": "Hersteller: {{name}}",
+      "speedLabel": "Geschwindigkeit",
+      "manufacturerLabel": "Hersteller",
+      "capacityLabel": "Besatzungskapazität",
+      "rangeLabel": "Reichweite",
+      "crew": "Besatzung",
+      "ly": "Lj",
+      "modal": {
+        "close": "Schließen",
+        "specs": "Technische Daten"
+      },
+      "nomadX1": {
+        "desc": "Die Nomad X1 ist ein zuverlässiges Einstiegsraumschiff, gebaut von Orion Shipyards. Trotz ihrer kompakten Größe ist sie überraschend schnell und ideal für kürzere Missionen."
+      },
+      "vegaRunner": {
+        "desc": "Die Vega Runner ist der Stolz der Ingenieure von Helios Dynamics. Sie bietet ausgewogene Leistung und große Reichweite, geeignet für mittlere Expeditionen."
+      },
+      "aetherTitan": {
+        "desc": "Die Aether Titan ist das Flaggschiff der Nova Consortium. Ihre immense Geschwindigkeit und Kapazität machen selbst die entlegensten Sternensysteme erreichbar."
+      },
+      "redStar": {
+        "desc": "Ein robustes, industrielles Raumschiff von Krasnyi Kosmos – gebaut, um den härtesten Bedingungen zu trotzen. Mit verstärkter Hüllenpanzerung und redundanten Systemen gibt die Red Star niemals auf."
+      },
+      "nebulaPioneer": {
+        "desc": "Der Nebula Pioneer ist Orion Shipyards' neuester Mittestrecken-Explorer. Entwickelt für die Tiefenraum-Erkundung mit fortschrittlichen Sensor-Arrays und komfortablen Crew-Quartieren."
+      },
+      "quantumVoyager": {
+        "desc": "Helios Dynamics' Quantenantrieb-Prototyp. Der Voyager bietet beispiellose Energieeffizienz, die erweiterte Missionen in unkartierte Nebelregionen ermöglicht."
+      },
+      "brassMonarch": {
+        "desc": "Ein Wunderwerk retro-futuristischer Ingenieurskunst von Steamforge Atelier. Der Brass Monarch verbindet viktorianische Ästhetik mit hochmoderner Antriebstechnologie."
+      },
+      "cosmosSeeker": {
+        "desc": "Novas Consortiums Ultra-Langstrecken-Erkundungsschiff. Ausgestattet mit einem hochmodernen Gravitationsantrieb und umfangreichen Laboreinrichtungen für die Tiefenforschung."
+      }
+    },
+    "exoplanet": {
+      "distance": "{{value}} Lichtjahre",
+      "star": "Stern: {{name}}",
+      "preview": "🔍 Vorschau",
+      "modal": {
+        "close": "Schließen",
+        "distance": "Entfernung",
+        "coordinates": "Koordinaten",
+        "temperature": "Temperatur",
+        "mass": "Masse",
+        "radius": "Radius",
+        "links": "Links",
+        "section": {
+          "star": "Stern",
+          "planet": "Planet",
+          "discovery": "Entdeckung"
+        }
+      }
+    },
+    "credits": {
+      "title": "Credits kaufen",
+      "starter": "Einstiegspaket",
+      "advanced": "Fortgeschrittenenpaket",
+      "premium": "Premiumpaket",
+      "ultra": "Ultrapaket",
+      "price": "€ {{price}}",
+      "amount": "⭐ {{count}} Credits",
+      "buy": "Kaufen",
+      "successTitle": "Credits gekauft!",
+      "successText": "Du hast {{credits}} ⭐ Credits gekauft!",
+      "newBalance": "Neues Guthaben: ⭐ {{balance}}",
+      "back": "Zurück zum Shop",
+      "notEnoughCreditsHint": "Kaufe Credits auf dem Tab 'Credits kaufen'!"
+    }
+  },
   "language": {
     "label": "Sprache",
     "hu": "Magyar",

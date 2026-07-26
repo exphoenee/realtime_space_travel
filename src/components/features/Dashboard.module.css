@@ -106,3 +106,32 @@
   color: #fef3c7;
   margin-left: 0.3rem;
 }
+
+/* Ship cockpit image in dashboard */
+.shipSegment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shipCockpit {
+  width: 100%;
+  max-width: 200px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.shipCockpit:hover {
+  border-color: rgba(103, 232, 249, 0.5);
+}
+
+@media (max-width: 767px) {
+  .shipCockpit {
+    max-width: 100%;
+    height: 70px;
+  }
+}

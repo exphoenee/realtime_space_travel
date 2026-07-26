@@ -3,11 +3,11 @@ title: "Firebase Google bejelentkezés bugfix – uid-megőrzés, RTDB rules, de
 slug: 004-firebase-auth-bugfix
 type: plan
 category: auth
-status: in-progress
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-26"
 created_at: "2026-07-26"
-updated_at: "2026-07-27"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 4
 phases:
@@ -128,7 +128,7 @@ Google bejelentkezéskor a játékos anonim fiókja (uid `hJ9MWfvxZKXP6cj8FrIsPK
 - [x] `settings.uidCopied` mind az 5 nyelven (en, hu, fr, de, es)
 
 **K. Ellenőrzés**
-- [ ] A 12 pontos ellenőrzési terv (7. szekció) végigfuttatása
+- [x] A 12 pontos ellenőrzési terv (7. szekció) végigfuttatva
 - [x] `npm run test` (14 passed) + `npm run build` + `npm run build:gh-pages`
 - [x] `tsc --noEmit` — többször lefuttatva, mindig clean
 
@@ -566,3 +566,4 @@ rotateDeviceId(): string {
 - [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje itt változik.
 - [[000-i18n-nyelvesites]] — a `login.error.*` és `settings.logout`/`uidCopied` kulcsok mind az 5 nyelven.
 - [[006-editable-displayname]] — a store `setNickname`/`setDisplayName` mechanizmus erre épül.
+- [[009-stripe-fraud-defense]] — az itt bevezetett **Phase-1 rules** (`database.rules.json`, kliens-írható `wallet`, `device_map` alapú `rtdbKey`) **additív szigorítása**: `wallet.credits` írásonkénti növekmény-limit + `lastTopUpAt` ütemkorlát, valamint új `credit_claims/$sessionId` node. A `device_map` logika változatlan marad.
