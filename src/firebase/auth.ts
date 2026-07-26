@@ -1,20 +1,64 @@
 import {
   signInAnonymously,
+  signInWithPopup,
+  linkWithPopup,
   signInWithRedirect,
   linkWithRedirect,
+  signInWithCredential,
   getRedirectResult,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
+  type AuthError,
 } from "firebase/auth";
 import { getFirebaseAuth } from "./config";
 
-/** Sign in with Google using redirect (no popup -> no blocking). */
-export const signInWithGoogle = async (): Promise<void> => {
+/**
+ * Start a Google sign-in (unified entry point for both the MainMenu and
+ * Settings buttons).
+ *
+ * - Anonymous session → linkWithPopup: keeps the same uid and all RTDB data.
+ * - Otherwise → signInWithPopup.
+ * - `auth/credential-already-in-use`: the Google account already exists under
+ *   another uid → sign into that account (guest progress cannot be carried over).
+ * - Popup blocked / unsupported → redirect fallback (page navigates away,
+ *   returns null; the result is picked up by checkRedirectResult on return).
+ *
+ * Returns the signed-in user, or null when a redirect fallback was triggered.
+ */
+export const startGoogleAuth = async (): Promise<User | null> => {
   const auth = getFirebaseAuth();
   const provider = new GoogleAuthProvider();
-  await signInWithRedirect(auth, provider);
+  const current = auth.currentUser;
+  try {
+    // Anonymous → LINK: the uid and all RTDB data are preserved
+    const cred = current?.isAnonymous
+      ? await linkWithPopup(current, provider)
+      : await signInWithPopup(auth, provider);
+    return cred.user;
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    // The Google account already exists under another uid → sign into it
+    // (the guest progress cannot be transferred)
+    if (code === "auth/credential-already-in-use") {
+      const credential = GoogleAuthProvider.credentialFromError(err as AuthError);
+      if (credential) return (await signInWithCredential(auth, credential)).user;
+    }
+    // Popup blocked / not supported → redirect fallback (the page navigates away)
+    if (
+      code === "auth/popup-blocked" ||
+      code === "auth/operation-not-supported-in-this-environment"
+    ) {
+      if (current?.isAnonymous) {
+        await linkWithRedirect(current, provider);
+      } else {
+        await signInWithRedirect(auth, provider);
+      }
+      return null;
+    }
+    throw err;
+  }
 };
 
 /** Sign in anonymously. Used for auto-login so every player has a uid. */
@@ -25,29 +69,21 @@ export const signInAnonymous = async (): Promise<User> => {
 };
 
 /**
- * Link the current anonymous user to a Google account using redirect.
- * Does NOT return a user — the page redirects away. On return,
- * call checkRedirectResult() to get the linked user.
- */
-export const linkAnonymousToGoogle = async (): Promise<void> => {
-  const auth = getFirebaseAuth();
-  const provider = new GoogleAuthProvider();
-  const currentUser = auth.currentUser;
-  if (!currentUser) throw new Error("No active session to link");
-  await linkWithRedirect(currentUser, provider);
-};
-
-/**
  * Check for a pending redirect result from a Google sign-in or link.
- * Returns the user if a redirect sign-in completed, or null.
+ * Does NOT swallow errors — the caller decides how to surface them.
+ * Returns { user, error }: on success { user, error: null };
+ * on failure { user: null, error }.
  */
-export const checkRedirectResult = async (): Promise<User | null> => {
+export const checkRedirectResult = async (): Promise<{
+  user: User | null;
+  error: unknown | null;
+}> => {
   const auth = getFirebaseAuth();
   try {
     const result = await getRedirectResult(auth);
-    return result?.user ?? null;
-  } catch {
-    return null;
+    return { user: result?.user ?? null, error: null };
+  } catch (err) {
+    return { user: null, error: err };
   }
 };
 

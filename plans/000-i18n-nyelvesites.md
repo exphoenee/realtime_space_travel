@@ -7,15 +7,18 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-25"
 created_at: "2026-07-25"
-updated_at: "2026-07-25"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 0
-phase: 0
+phases:
+  - 0
 dependencies: []
 related_plans:
   - 001-main-menu-settings
+  - 002-ingame-shop-frontend
   - 003-firebase-auth-settings
-  - 004-ingame-shop-strapi-stripe
+  - 004-firebase-auth-bugfix
+  - 005-ingame-shop-strapi-stripe
 tags:
   - i18n
   - localization
@@ -38,7 +41,7 @@ tags:
 | Nyelvváltó | Látható **nyelvváltó UI**: bejelentkezés előtt a főmenüben/introban, valamint a **Settings menüben** (lásd [[003-firebase-auth-settings]]) |
 | Perzisztálás | Kijelentkezve `localStorage` (`space-travel-lang`); **bejelentkezve a Firebase `settings.language` a mérvadó** |
 
-> **Kánon-illeszkedés:** ez a terv a felület nyelvi rétegét adja. A **felhasználóhoz kötött nyelv** a [[003-firebase-auth-settings]] `settings.language` mezőjében perzisztál; a Strapi katalógus szövegeit a Strapi i18n plugin lokalizálja (lásd [[004-ingame-shop-strapi-stripe]]).
+> **Kánon-illeszkedés:** ez a terv a felület nyelvi rétegét adja. A **felhasználóhoz kötött nyelv** a [[003-firebase-auth-settings]] `settings.language` mezőjében perzisztál; a Strapi katalógus szövegeit a Strapi i18n plugin lokalizálja (lásd [[005-ingame-shop-strapi-stripe]]).
 
 ---
 
@@ -299,7 +302,7 @@ Az összes lefordítandó string az alábbi komponensekben található. Javasolt
 ## 10. Kapcsolódó tervek
 
 - [[003-firebase-auth-settings]] – **kánon**: a felhasználóhoz kötött nyelv (`settings.language`) itt perzisztál; a nyelvváltó a Settings menüben is megjelenik.
-- [[004-ingame-shop-strapi-stripe]] – a termékkatalógus szövegei a Strapi i18n pluginjén, ezzel a nyelvi réteggel összhangban lokalizáltak.
+- [[005-ingame-shop-strapi-stripe]] – a termékkatalógus szövegei a Strapi i18n pluginjén, ezzel a nyelvi réteggel összhangban lokalizáltak.
 
 ---
 

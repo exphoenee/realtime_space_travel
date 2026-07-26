@@ -8,7 +8,6 @@ implemented: false
 implemented_at: null
 created_at: "2026-07-25"
 updated_at: "2026-07-26"
-  - i18n: completed
 author: exphoenee
 step: 3
 phases:
@@ -18,10 +17,9 @@ dependencies:
   - 000-i18n-nyelvesites
   - 001-main-menu-settings
 related_plans:
-  - 000-i18n-nyelvesites
-  - 001-main-menu-settings
-  - 004-ingame-shop-strapi-stripe
   - 002-ingame-shop-frontend
+  - 004-firebase-auth-bugfix
+  - 005-ingame-shop-strapi-stripe
 tags:
   - firebase
   - auth
@@ -51,14 +49,14 @@ tags:
 
 ## 0. Architekturális kontextus (fontos)
 
-Két backend lesz, **tiszta felelősség-határral**, hogy ne ütközzenek (lásd [[004-ingame-shop-strapi-stripe]]):
+Két backend lesz, **tiszta felelősség-határral**, hogy ne ütközzenek (lásd [[005-ingame-shop-strapi-stripe]]):
 
 - **Firebase = a játék olvasási modellje.** A kliens **kizárólag a Firebase-ből olvas** minden felhasználói adatot (beállítások, kredit, birtokolt hajók/zenék, rekord). Bejelentkezéskor ez tölt be.
 - **Strapi + Stripe = a fizetés írási útja.** Valós pénzes vásárláskor a Stripe webhook → Strapi → **Firebase Admin SDK** beírja a megvett tételt a felhasználó Firebase csomópontjába. Így a Firebase marad az egyetlen olvasási forrás a játék számára, a Strapi csak a pénzügyi tranzakciót intézi.
 
 Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Settings menü, hajóválasztó). A fizetési híd a bolt-tervben él.
 
-> **Ez a terv a kánon.** Felülírja a [[004-ingame-shop-strapi-stripe]] korábbi verziójának azon részeit, ahol a Strapi kezelte az autentikációt, a vendég-tokent (`/api/guest`, `/api/guest/upgrade`), a `User.credits`-et és az `Entitlement` content type-ot. Ezek helyett: **auth = Firebase**, **vendég→fiók = Anonymous→Google linkelés**, **kredit/birtoklás = RTDB (szerver-írt)**. A bolt-terv frissítve lett ehhez.
+> **Ez a terv a kánon.** Felülírja a [[005-ingame-shop-strapi-stripe]] korábbi verziójának azon részeit, ahol a Strapi kezelte az autentikációt, a vendég-tokent (`/api/guest`, `/api/guest/upgrade`), a `User.credits`-et és az `Entitlement` content type-ot. Ezek helyett: **auth = Firebase**, **vendég→fiók = Anonymous→Google linkelés**, **kredit/birtoklás = RTDB (szerver-írt)**. A bolt-terv frissítve lett ehhez.
 
 ---
 
@@ -87,10 +85,20 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 - [ ] `activeShipId` validáció az `inventory.ships` ellenében
 - [ ] `.env.example` létrehozása dokumentált env változókkal (`VITE_DEBUG_MODE=true`)
 
+> ⚠️ **A Fázis 1 auth jelenleg HIBÁS.** A Google bejelentkezés eldobja a névtelen uid-et (a kredit és a birtoklás árván marad), a User ID `null` lesz, és `PERMISSION_DENIED` jön az RTDB-ből (a Security Rules soha nem lett deployolva). A teljes hibaanalízis és a javítás a **[[004-firebase-auth-bugfix]]** tervben van — **azt kell előbb végrehajtani**, mielőtt a lenti nyitott TODO-k bármelyike lezárható lenne.
+
+### Mit zár le a [[004-firebase-auth-bugfix]] ebből a tervből
+
+| 003-as TODO | Állapot a bugfix után |
+|---|---|
+| **Security Rules deploy** a Firebase Console-ba | **Kipipálható** — a bugfix a `database.rules.json` + `firebase.json` `database` szekció + CI (`--only hosting,database`) úton deployolja a **Phase-1** (kliens-írható `wallet`/`inventory`) szabályokat. A **Phase-2** (`".write": false`) továbbra is nyitva marad a Cloud Functionökig (lásd 6. pont). |
+| **`.env.example` létrehozása** dokumentált env változókkal | **Kipipálható** — a bugfix G. blokkja hozza létre. |
+| `activeShipId` validáció az `inventory.ships` ellenében | **Nem** — külön feladat marad ebben a tervben. |
+
 **Fázis 2 — hajóválasztó + sebesség (✅ MEGVALÓSÍTVA a [[002-ingame-shop-frontend]]-ben)**
 - [x] `GamePhase: "shipSelect"` + `screens/MissionSelector` pending destination + `routing/ScreenRouter` ág
 - [x] `ShipSelectScreen` komponens (alap hajó mindig; birtokolt hajók `useShopStore.owned.ships`-ből)
-- [x] Sebesség-integráció (`shipSpeedKmPerSecond` a `useGameStore`-ban; `Dashboard` használja) — **közös** [[004-ingame-shop-strapi-stripe]]
+- [x] Sebesség-integráció (`shipSpeedKmPerSecond` a `useGameStore`-ban; `Dashboard` használja) — **közös** [[005-ingame-shop-strapi-stripe]]
 - [x] Zene-integráció: `useAudio` az aktív zene URL-jével; zeneválasztó a `SettingsScreen`-ben
 - [x] **Firebase bekötés:** `useShopStore` wallet/inventory RTDB-ből szinkronizálva (`handleUserData`); `useGameStore.shipSpeedKmPerSecond`
 - [ ] **Flow átszervezés:** kamera-ellenőrzés áthelyezése a hajóválasztás UTÁN (`ShipSelectScreen.handleSelectShip` → kamera → `startMission`)
@@ -241,10 +249,10 @@ users/
 
 ## 6. Kredit írása (wage jóváírás) — szerveroldali út
 
-Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek **Firebase Cloud Functionökön** keresztül futnak (egységesen a [[004-ingame-shop-strapi-stripe]] tervvel):
+Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek **Firebase Cloud Functionökön** keresztül futnak (egységesen a [[005-ingame-shop-strapi-stripe]] tervvel):
 - **`awardWage`** (callable) — a küldetés végi `wage` jóváírás: validálja a befejezést és **atomikusan** (RTDB tranzakció) növeli `wallet.credits`-et.
 - **`purchaseWithCredits`** (callable) — kredites vásárlás: egyenleg-ellenőrzés + levonás + `inventory` bővítés egyetlen tranzakcióban (nem a kliens). Az árat a Strapi katalógusból olvassa.
-- A **valós pénzes** vásárlás ettől külön út: Stripe → Strapi webhook → **Firebase Admin SDK** írja az `inventory`-t (lásd [[004-ingame-shop-strapi-stripe]] 1. és 4. pont).
+- A **valós pénzes** vásárlás ettől külön út: Stripe → Strapi webhook → **Firebase Admin SDK** írja az `inventory`-t (lásd [[005-ingame-shop-strapi-stripe]] 1. és 4. pont).
 
 ---
 
@@ -304,6 +312,7 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 ---
 
 ## 11. Kapcsolódó tervek
+- [[004-firebase-auth-bugfix]] – **a terv Fázis 1 részének javítása.** A megvalósított auth hat egymást elfedő hibát tartalmaz (uid-vesztés Google-belépéskor, `PERMISSION_DENIED` a nem deployolt rules miatt, elnyelt redirect-hiba, StrictMode dupla-init, lokális 9000 kredit-default, GH Pages env hiány). A bugfix lezárja a **Security Rules deploy** (Phase-1) és a **`.env.example`** TODO-kat, valamint stabilizálja az auth bootstrapet és a linkelést. A Phase-2 rules és a Cloud Functionök ebben a tervben maradnak.
 - [[002-ingame-shop-frontend]] – a **helyi (frontend-only) bolt** ELŐBB valósul meg: a `useShopStore` (localStorage) kredit/birtoklás/aktív-hajó/aktív-zene állapotát ez a terv **per-felhasználós Firebase-mentésre** cseréli (RTDB `wallet`/`inventory`/`settings`), a localStorage offline tükör lesz; a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function. Az „aktív hajó sebessége" és a „Settings zeneválasztó" integráció közös — ott úgy épül, hogy itt csak a forrás cserélődjön.
-- [[004-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
+- [[005-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
 - [[000-i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.

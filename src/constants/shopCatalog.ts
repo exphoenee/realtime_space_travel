@@ -7,11 +7,50 @@ export const DEBUG_STARTING_CREDITS = 9000;  // kezdő egyenleg VITE_DEBUG_MODE=
 export const eurFromCredits = (c: number) => Math.round((c / CREDITS_PER_EUR) * 100) / 100;
 
 export const CREDIT_PACKS: CreditPack[] = [
-  { id: "credits-starter",  nameKey: "shop.credits.starter",  priceEur: 5,   credits: 100  },
-  { id: "credits-advanced", nameKey: "shop.credits.advanced", priceEur: 10,  credits: 300  },
-  { id: "credits-premium",  nameKey: "shop.credits.premium",  priceEur: 25,  credits: 700  },
-  { id: "credits-ultra",    nameKey: "shop.credits.ultra",    priceEur: 100, credits: 2000 },
+  {
+    id: "credits-starter",
+    nameKey: "shop.credits.starter",
+    priceEur: 5,
+    credits: 100,
+    stripePaymentLink: "https://buy.stripe.com/test_6oU14o2bg8sSfIM3XAeIw00",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_8x28wQ03810q7cg2TweIw04",
+  },
+  {
+    id: "credits-advanced",
+    nameKey: "shop.credits.advanced",
+    priceEur: 10,
+    credits: 300,
+    stripePaymentLink: "https://buy.stripe.com/test_28E5kE6rwcJ89koalYeIw01",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_6oUfZi7vA7oO548dyaeIw05",
+  },
+  {
+    id: "credits-premium",
+    nameKey: "shop.credits.premium",
+    priceEur: 25,
+    credits: 700,
+    stripePaymentLink: "https://buy.stripe.com/test_5kQdRacPUgZocwA9hUeIw02",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_eVq3cw4joaB0eEIdyaeIw06",
+  },
+  {
+    id: "credits-ultra",
+    nameKey: "shop.credits.ultra",
+    priceEur: 100,
+    credits: 2000,
+    stripePaymentLink: "https://buy.stripe.com/test_5kQ9AUg26fVk0NSalYeIw03",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_9B64gA2bg9wW68c9hUeIw07",
+  },
 ];
+
+/**
+ * Pick the Payment Link matching the current environment.
+ *
+ * A Payment Link's `after_completion.redirect.url` is stored on the Stripe
+ * object, so it cannot be chosen at click time — dev and prod need their own
+ * link. Run `node scripts/create_payment_links.mjs` with a localhost redirect
+ * to generate the dev set, then fill in `stripePaymentLinkDev` above.
+ */
+export const getPaymentLinkUrl = (pack: CreditPack): string =>
+  (import.meta.env.DEV && pack.stripePaymentLinkDev) || pack.stripePaymentLink;
 
 export const SHOP_SHIPS: ShipProduct[] = [
   {

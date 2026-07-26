@@ -131,17 +131,24 @@
     "musicTrack": "Selección de música",
     "musicDefault": "Por defecto",
     "signOut": "Cerrar sesión",
+    "logout": "Cerrar sesión",
     "authenticated": "Autenticado",
-    "userId": "ID de usuario"
+    "userId": "ID de usuario",
+    "uidCopied": "¡Copiado!",
+    "nickname": "Apodo",
+    "nicknamePlaceholder": "Introduce un nombre para mostrar",
+    "nicknameEdit": "Editar",
+    "nicknameSave": "Guardar",
+    "signIn": "Iniciar sesión"
   },
   "login": {
     "error": {
-      "popupBlocked": "La ventana de inicio de sesión fue bloqueada. Permite ventanas emergentes para este sitio e inténtalo de nuevo.",
-      "alreadyInUse": "Esta cuenta de Google ya está vinculada a otro perfil.",
-      "accountExists": "Ya existe una cuenta con este correo electrónico.",
-      "cancelled": "Inicio de sesión cancelado.",
-      "network": "Error de red. Verifica tu conexión e inténtalo de nuevo.",
-      "generic": "Error al iniciar sesión. Inténtalo de nuevo."
+      "popupBlocked": "El navegador bloqueó la ventana de inicio de sesión. Permite las ventanas emergentes o inténtalo de nuevo.",
+      "alreadyInUse": "Esta cuenta de Google ya pertenece a otro jugador. Tu progreso de invitado (créditos, contenidos adquiridos) no se puede transferir.",
+      "accountExists": "Ya existe una cuenta con esta dirección de correo electrónico usando otro método de inicio de sesión.",
+      "cancelled": "Cancelaste el inicio de sesión.",
+      "network": "Error de red durante el inicio de sesión. Comprueba tu conexión.",
+      "generic": "Error al iniciar sesión. Inténtalo de nuevo más tarde."
     }
   },
   "shipSelect": {

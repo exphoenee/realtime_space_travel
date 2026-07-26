@@ -131,17 +131,24 @@
     "musicTrack": "Musikauswahl",
     "musicDefault": "Standard",
     "signOut": "Abmelden",
+    "logout": "Abmelden",
     "authenticated": "Authentifiziert",
-    "userId": "Benutzer-ID"
+    "userId": "Benutzer-ID",
+    "uidCopied": "Kopiert!",
+    "nickname": "Spitzname",
+    "nicknamePlaceholder": "Gib einen Anzeigenamen ein",
+    "nicknameEdit": "Bearbeiten",
+    "nicknameSave": "Speichern",
+    "signIn": "Anmelden"
   },
   "login": {
     "error": {
-      "popupBlocked": "Das Anmelde-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite und versuchen Sie es erneut.",
-      "alreadyInUse": "Dieses Google-Konto ist bereits mit einem anderen Profil verknüpft.",
-      "accountExists": "Ein Konto mit dieser E-Mail existiert bereits.",
-      "cancelled": "Anmeldung abgebrochen.",
-      "network": "Netzwerkfehler. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
-      "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+      "popupBlocked": "Der Browser hat das Anmeldefenster blockiert. Erlaube Pop-ups oder versuche es erneut.",
+      "alreadyInUse": "Dieses Google-Konto gehört bereits einem anderen Spieler. Dein Gast-Fortschritt (Credits, im Besitz befindliche Inhalte) kann nicht übertragen werden.",
+      "accountExists": "Für diese E-Mail-Adresse existiert bereits ein Konto mit einer anderen Anmeldemethode.",
+      "cancelled": "Du hast die Anmeldung abgebrochen.",
+      "network": "Netzwerkfehler bei der Anmeldung. Überprüfe deine Verbindung.",
+      "generic": "Die Anmeldung ist fehlgeschlagen. Versuche es später erneut."
     }
   },
   "shipSelect": {

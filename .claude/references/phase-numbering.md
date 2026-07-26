@@ -2,16 +2,18 @@
 
 > Shared reference for all skills and agents. Defines how roadmap phases are numbered and ordered.
 
-## `step` vs `phase` — two different things
+## `step` vs `phases` — two different things
 
-| | `step` (+ filename prefix) | `phase` / `phases` |
+| | `step` (+ filename prefix) | `phases` |
 |---|---|---|
 | Means | **Implementation order** in `plans/` | A stable **label** for a body of work ("Fázis 3") |
 | Changes? | **Renumbered** whenever a plan is inserted | **Never** — once assigned, it stays |
 | Owner | `manage-roadmap` agent | The plan author |
-| Nullable? | **No** — every plan must have an integer `step` | Yes (`null`) — not every plan belongs to a numbered phase |
+| Empty? | **No** — every plan must have an integer `step` | Yes (`[]`) — not every plan belongs to a numbered phase |
 
-A plan may therefore sit at `step: 2` with `phase: null` while `step: 3` carries `phases: [1, 2]`.
+`phases` is always a **list** (the scalar `phase:` key is deprecated), so a plan can carry more
+than one phase label. A plan may therefore sit at `step: 2` with `phases: []` while `step: 3`
+carries `phases: [1, 2]`.
 That is **not** an inconsistency: steps say *when we build it*, phases say *what we call it*.
 
 ## Rules

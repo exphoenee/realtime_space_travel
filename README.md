@@ -18,6 +18,16 @@ A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói 
 
 ---
 
+## Élő verzió (deploy)
+
+A játék Firebase Hosting-on érhető el:
+
+- https://realtimespacetravel-e74e3.web.app
+- https://realtimespacetravel-e74e3.firebaseapp.com
+- https://exphoenee.github.io/realtime_space_travel/ (GitHub Pages)
+
+---
+
 ## Funkciók
 
 - Webkamerás arcfelismerés (MediaPipe)

@@ -1,0 +1,147 @@
+.container {
+  position: relative;
+  flex: 1;
+  max-width: 240px;
+}
+
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ─── Trigger (the visible button) ─── */
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(3, 7, 18, 0.7);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 0.5rem;
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.trigger:hover {
+  border-color: rgba(103, 232, 249, 0.7);
+}
+
+.trigger:focus-visible {
+  border-color: #67e8f9;
+  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.25);
+}
+
+.triggerOpen {
+  border-color: rgba(103, 232, 249, 0.7);
+  border-bottom-color: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.triggerText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Chevron ─── */
+.chevron {
+  flex-shrink: 0;
+  color: #67e8f9;
+  opacity: 0.7;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* ─── Dropdown list ─── */
+.list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: rgba(3, 7, 18, 0.95);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.12s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(103, 232, 249, 0.25) transparent;
+}
+
+.list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: rgba(103, 232, 249, 0.25);
+  border-radius: 999px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: rgba(103, 232, 249, 0.4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Option items ─── */
+.option {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.option:hover,
+.optionFocused {
+  background: rgba(103, 232, 249, 0.12);
+  color: #e0f2fe;
+}
+
+.optionSelected {
+  color: #67e8f9;
+  font-weight: 600;
+}
+
+.optionSelected::before {
+  content: "▸ ";
+  opacity: 0.7;
+}

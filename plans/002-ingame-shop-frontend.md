@@ -10,14 +10,14 @@ created_at: "2026-07-25"
 updated_at: "2026-07-26"
 author: exphoenee
 step: 2
-phase: null
+phases: []
 dependencies:
   - 001-main-menu-settings
 related_plans:
   - 000-i18n-nyelvesites
-  - 001-main-menu-settings
   - 003-firebase-auth-settings
-  - 004-ingame-shop-strapi-stripe
+  - 004-firebase-auth-bugfix
+  - 005-ingame-shop-strapi-stripe
 tags:
   - shop
   - frontend
@@ -34,9 +34,9 @@ tags:
 **Cél:** a Főmenü „Áruház" gombja mögé egy **teljesen kliensoldali** (backend nélküli) webshop, ahol a játékos **kreditcsomagokat** (valós pénz → in-game kredit), valamint **exobolygókat**, **űrhajókat** és **zenéket** vásárolhat **in-game kreditből**. A katalógus **mock-adat**, a kredit-egyenleg és a birtoklás **localStorage-ban** perzisztál (Zustand `persist`).
 
 > ### 🔗 Fázis-sorrend (fontos)
-> Ez a fázis a Firebase ([[003-firebase-auth-settings]]) és a Strapi+Stripe ([[004-ingame-shop-strapi-stripe]]) bekötése **ELŐTT** valósult meg, **tisztán helyi** mock-adattal és localStorage-perzisztenciával. A későbbi fázisok **erre a frontendre épülnek**:
+> Ez a fázis a Firebase ([[003-firebase-auth-settings]]) és a Strapi+Stripe ([[005-ingame-shop-strapi-stripe]]) bekötése **ELŐTT** valósult meg, **tisztán helyi** mock-adattal és localStorage-perzisztenciával. A későbbi fázisok **erre a frontendre épülnek**:
 > - **[[003-firebase-auth-settings]]** — a helyi kredit + birtoklás + beállítások **per-felhasználós Firebase-mentése** (a localStorage csak offline tükör lesz). **A kredit-egyenleg forrása a Firebase RTDB lesz.**
-> - **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi hook-kal); a mock katalógus és kosár (termékekre) **megmarad**; a bolt-UI és a bekötési pontok megmaradnak.
+> - **[[005-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi hook-kal); a mock katalógus és kosár (termékekre) **megmarad**; a bolt-UI és a bekötési pontok megmaradnak.
 >
 > Vagyis ez a terv **egyszer** megépíti a bolt-UI-t, az adatmodellt és a tulajdon-perzisztenciát; a következő két fázis csak az adat- és fizetési **forrást** cseréli le mögötte. A **birtokolt tartalmak játékmenetbe kötése** (hajó-sebesség, zene-lejátszó, exobolygó-küldetés) — lásd a 9. szekciót.
 
@@ -521,7 +521,7 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - **✅ Űrhajók bekötése (MEGVALÓSÍTVA)** — `shipSelect` GamePhase: alap hajó (191 km/s) + birtokolt shop hajók. `ShipSelectScreen` grid layout, minden hajókártyán `ℹ` info gomb → `ShipInfoModal` (műszaki adatok). Hajó kiválasztáskor az utazási idő újraszámolva: `travelYears = baseTravelYears / (shipSpeed / SHIP_SPEED_KM_PER_SECOND)`. Kamera ellenőrzés a destination kiválasztás után történik (App.tsx `handleSelectDestination`), a `startMission` előtt.
 - **✅ Zenék bekötése (MEGVALÓSÍTVA)** — a Beállítások zene-lejátszója: a birtokolt sáv aktiválása → a `useAudio` háttérzene-URL cseréje. `useUIStore.activeMusicId` perszisztál, `useAudio(activeMusicId)` dinamikusan vált.
 - **[[003-firebase-auth-settings]]** — a helyi `credits` + `owned` **per-felhasználós Firebase-mentése** (RTDB `wallet`/`inventory`).
-- **[[004-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás).
+- **[[005-ingame-shop-strapi-stripe]]** — a **mock kreditcsomag-vásárlást Stripe-ra** cseréli (Strapi webhook → Firebase kredit hozzáadás).
 - **[[000-i18n-nyelvesites]]** — a `shop.*` kulcsok a meglévő nyelvi rétegbe illeszkednek.
 - **[[001-main-menu-settings]]** — a „Áruház" gomb most valódi `shop` fázisra visz.
 
@@ -544,7 +544,8 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 ---
 
 ## 11. Kapcsolódó tervek
+- [[004-firebase-auth-bugfix]] – **a `useShopStore` kredit-modellje itt változik meg.** Az induló egyenleg lokális `initialCredits` elágazása (normál `0` ⭐ / debug `9000` ⭐) **megszűnik**: a store `credits: 0`-val indul, és új `creditsLoaded: boolean` flag jelzi, megérkezett-e már az RTDB-adat (amíg `false`, a kreditkijelzők `—`-t mutatnak `0` helyett, a vásárlás gombok pedig letiltottak). A debug 9000 a Firebase `getDefaultUserNode`-jába költözik, a 3 alap exobolygó pedig az induló `inventory.exoplanets`-be. **Az RTDB az egyetlen kredit- és birtoklás-forrás** (a `persist` már eltávolítva).
 - [[001-main-menu-settings]] – az „Áruház" gomb, a `GamePhase`/`ScreenRouter`/`phaseToFlags` minta.
 - [[003-firebase-auth-settings]] – a kredit/birtoklás/beállítás per-felhasználós Firebase-mentése.
-- [[004-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
+- [[005-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
 - [[000-i18n-nyelvesites]] – a `shop.*` nyelvi réteg; a tulajdonnevek nem fordítandók.

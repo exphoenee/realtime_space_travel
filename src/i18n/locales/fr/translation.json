@@ -131,17 +131,24 @@
     "musicTrack": "Sélection musicale",
     "musicDefault": "Par défaut",
     "signOut": "Déconnexion",
+    "logout": "Déconnexion",
     "authenticated": "Authentifié",
-    "userId": "Identifiant utilisateur"
+    "userId": "Identifiant utilisateur",
+    "uidCopied": "Copié !",
+    "nickname": "Surnom",
+    "nicknamePlaceholder": "Choisissez un nom d'affichage",
+    "nicknameEdit": "Modifier",
+    "nicknameSave": "Sauvegarder",
+    "signIn": "Se connecter"
   },
   "login": {
     "error": {
-      "popupBlocked": "La fenêtre de connexion a été bloquée. Autorisez les popups pour ce site et réessayez.",
-      "alreadyInUse": "Ce compte Google est déjà lié à un autre profil.",
-      "accountExists": "Un compte avec cet email existe déjà.",
-      "cancelled": "Connexion annulée.",
-      "network": "Erreur réseau. Vérifiez votre connexion et réessayez.",
-      "generic": "Échec de la connexion. Veuillez réessayer."
+      "popupBlocked": "Le navigateur a bloqué la fenêtre de connexion. Autorisez les fenêtres contextuelles, ou réessayez.",
+      "alreadyInUse": "Ce compte Google appartient déjà à un autre joueur. Votre progression d'invité (crédits, contenus possédés) ne peut pas être transférée.",
+      "accountExists": "Un compte associé à cette adresse e-mail existe déjà avec une autre méthode de connexion.",
+      "cancelled": "Vous avez annulé la connexion.",
+      "network": "Erreur réseau pendant la connexion. Vérifiez votre connexion.",
+      "generic": "La connexion a échoué. Réessayez plus tard."
     }
   },
   "shipSelect": {
