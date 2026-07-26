@@ -180,87 +180,82 @@
   opacity: 0.4;
 }
 
-/* Custom select dropdown */
-.selectWrapper {
-  position: relative;
-  flex: 1;
-  max-width: 240px;
-}
 
-.select {
+/* === Account section (authenticated) — full-width vertical stack === */
+.accountSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.15);
   width: 100%;
-  padding: 0.5rem 2rem 0.5rem 0.75rem;
-  background: rgba(3, 7, 18, 0.7);
-  border: 1px solid rgba(103, 232, 249, 0.35);
-  border-radius: 0.5rem;
+}
+
+.accountHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.accountNameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.accountDisplayName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: #e0f2fe;
-  font-family: inherit;
-  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.accountBadge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.accountField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  outline: none;
-  transition: border-color 0.2s ease;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
-.select:focus-visible {
-  border-color: #67e8f9;
-  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.25);
-}
-
-.select:hover:not(:disabled) {
-  border-color: rgba(103, 232, 249, 0.7);
-}
-
-.selectDisabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.selectArrow {
-  position: absolute;
-  right: 0.6rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.6rem;
-  color: #67e8f9;
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-.select:disabled + .selectArrow {
-  opacity: 0.3;
+.accountActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
 }
 
 .accountInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
+  gap: 0.4rem;
   align-items: flex-end;
-}
-
-.accountName {
-  font-size: 0.9rem;
-  color: #e0f2fe;
-  font-weight: 500;
-}
-
-.accountBadge {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #64748b;
+  flex: 1;
+  min-width: 0;
 }
 
 .loginError {
   font-size: 0.7rem;
   color: #fca5a5;
   max-width: 260px;
-  text-align: right;
+  text-align: left;
   line-height: 1.3;
 }
 
@@ -270,20 +265,36 @@
   color: #fbbf24;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .uidDisplay {
-  font-size: 0.65rem;
+  width: 100%;
+  font-size: 0.85rem;
   font-family: "Courier New", Courier, monospace;
-  color: #475569;
+  color: #94a3b8;
   letter-spacing: 0.04em;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  direction: rtl;
-  text-align: left;
+  word-break: break-all;
   user-select: all;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.25rem;
+  box-sizing: border-box;
+}
+
+.uidDisplay:hover {
+  color: #e0f2fe;
+  background: rgba(103, 232, 249, 0.08);
+}
+
+.uidDisplay:focus-visible {
+  outline: 2px solid rgba(103, 232, 249, 0.5);
+  outline-offset: 2px;
+}
+
+.uidCopied {
+  color: #4ade80 !important;
 }
 
 .authBtn {
@@ -313,6 +324,73 @@
 .authBtnDanger:hover {
   background: rgba(248, 113, 113, 0.15);
   border-color: rgba(248, 113, 113, 0.7);
+}
+
+.nicknameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.nicknameInputWrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.nicknameInput {
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  background: rgba(3, 7, 18, 0.5);
+  border: 1px solid rgba(103, 232, 249, 0.25);
+  border-radius: 0.4rem;
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: default;
+  box-sizing: border-box;
+}
+
+.nicknameInput:disabled {
+  opacity: 1;
+  -webkit-text-fill-color: #e0f2fe;
+  cursor: default;
+}
+
+.nicknameInputEditing {
+  border-color: rgba(103, 232, 249, 0.7);
+  background: rgba(3, 7, 18, 0.8);
+  cursor: text;
+}
+
+.nicknameInput::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.nicknameToggle {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  border-radius: 0.4rem;
+  color: #67e8f9;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.nicknameToggle:hover {
+  background: rgba(103, 232, 249, 0.15);
+  border-color: rgba(103, 232, 249, 0.7);
 }
 
 .backButton {

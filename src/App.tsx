@@ -18,9 +18,10 @@ import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
-import { onAuthChange, signInAnonymous, checkRedirectResult } from "./firebase/auth";
-import { ensureUserNode, subscribeUser, updateUserSettings } from "./firebase/userData";
+import { startAuthBootstrap } from "./firebase/authBootstrap";
+import { updateUserSettings } from "./firebase/userData";
 import type { UserNode } from "./firebase/userData";
+import { BASE_EXOPLANET_IDS } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
 import {
@@ -89,82 +90,20 @@ const App: React.FC = () => {
   );
   useAttentionMonitor(faceStatus, destination);
 
-  // Watch isMusicMuted changes → persist to RTDB
+  // Watch isMusicMuted changes → persist to RTDB.
+  // Guard against the initial mount: the auth bootstrap (ensureDeviceMap +
+  // ensureUserNode) may not have completed yet, and writing to RTDB before
+  // the device_map entry exists triggers a PERMISSION_DENIED.
   useEffect(() => {
-    const { uid } = useAuthStore.getState();
-    if (uid) {
-      updateUserSettings(uid, { musicMuted: isMusicMuted }).catch(console.error);
+    const { rtdbKey, _initialized } = useAuthStore.getState();
+    if (_initialized && rtdbKey) {
+      updateUserSettings(rtdbKey, { musicMuted: isMusicMuted }).catch(console.error);
     }
   }, [isMusicMuted]);
 
-  // Initialize Firebase on mount + listen for auth state changes
+  // Initialize Firebase on mount + boot the auth lifecycle singleton
   useEffect(() => {
     initFirebase();
-
-    let unsubUser: (() => void) | null = null;
-    let anonInit = false;
-    let redirectCheckDone = false;
-
-    // Process redirect result FIRST, before onAuthChange fires
-    // getRedirectResult must be called to "consume" the OAuth response
-    checkRedirectResult().then((redirectUser) => {
-      if (redirectUser) {
-        const { setUser } = useAuthStore.getState();
-        setUser(redirectUser);
-        ensureUserNode(redirectUser, "google").catch(console.error);
-        // Skip intro on OAuth return — go straight to main menu
-        useGameStore.getState().transitionTo("mainMenu");
-      }
-      redirectCheckDone = true;
-
-      // If onAuthChange already fired with null and we returned early,
-      // trigger anonymous auto-login now that redirect check is done
-      if (!redirectUser && !anonInit && !useAuthStore.getState().user) {
-        anonInit = true;
-        signInAnonymous().catch(console.error);
-      }
-    });
-
-    const unsub = onAuthChange(async (user) => {
-      // If no user and redirect still pending, wait WITHOUT clearing the store
-      if (!user && !anonInit && !redirectCheckDone) {
-        // Don't call setUser(null) — the redirect might be processing
-        // and we'd clear the store prematurely. Wait for checkRedirectResult.
-        return;
-      }
-
-      const { setUser } = useAuthStore.getState();
-      setUser(user);
-
-      // Only auto-login anonymously if:
-      // 1. No user from auth
-      // 2. We haven't already auto-logged in
-      if (!user && !anonInit) {
-        anonInit = true;
-        try {
-          await signInAnonymous();
-        } catch (err) {
-          console.error("Anonymous auto-login failed:", err);
-        }
-        return;
-      }
-
-      // Clean up previous subscription
-      if (unsubUser) {
-        unsubUser();
-        unsubUser = null;
-      }
-
-      if (user) {
-        try {
-          await ensureUserNode(user, user.isAnonymous ? "anonymous" : "google");
-          // Subscribe to RTDB user data
-          unsubUser = subscribeUser(user.uid, handleUserData);
-        } catch (err) {
-          console.error("Firebase sync failed:", err);
-        }
-      }
-    });
 
     /** Sync RTDB user data into local stores. */
     const handleUserData = (data: UserNode | null) => {
@@ -193,8 +132,8 @@ const App: React.FC = () => {
             // Not owned anymore — reset to null and write back to RTDB
             ui.setActiveShipId(null);
             const authState = useAuthStore.getState();
-            if (authState.uid) {
-              updateUserSettings(authState.uid, { activeShipId: null }).catch(console.error);
+            if (authState.rtdbKey) {
+              updateUserSettings(authState.rtdbKey, { activeShipId: null }).catch(console.error);
             }
           }
         }
@@ -219,47 +158,71 @@ const App: React.FC = () => {
         }
       }
 
-      // Wallet + Inventory → useShopStore (source of truth when signed in)
-      if (data.wallet?.credits !== undefined) {
-        // Only overwrite if RTDB has a different value to avoid loops
-        if (data.wallet.credits !== shop.credits) {
-          shop.setCredits(data.wallet.credits);
+      // Profile → useAuthStore (nickname + displayName)
+      if (data.profile) {
+        if (data.profile.nickname !== undefined) {
+          useAuthStore.getState().setNickname(data.profile.nickname);
+        }
+        // Sync RTDB displayName as fallback (some linked accounts lack
+        // Firebase Auth user.displayName, but RTDB persists the correct value).
+        if (data.profile.displayName) {
+          useAuthStore.getState().setDisplayName(data.profile.displayName);
         }
       }
-      if (data.inventory) {
-        const inv = data.inventory;
-        const mergeInventory = (
-          rtdbItems: Record<string, boolean> | undefined,
-          localItems: string[],
-        ): string[] => {
-          if (!rtdbItems) return localItems;
-          return Object.keys(rtdbItems).filter((k) => rtdbItems[k]);
-        };
-        const newShips = mergeInventory(inv.ships, shop.owned.ships);
-        const newMusic = mergeInventory(inv.music, shop.owned.music);
-        const newExos = mergeInventory(inv.exoplanets, shop.owned.exoplanets);
-        if (
-          JSON.stringify(newShips) !== JSON.stringify(shop.owned.ships) ||
-          JSON.stringify(newMusic) !== JSON.stringify(shop.owned.music) ||
-          JSON.stringify(newExos) !== JSON.stringify(shop.owned.exoplanets)
-        ) {
-          shop.setOwned({ ships: newShips, music: newMusic, exoplanets: newExos });
-        }
+
+      // Wallet + Inventory → useShopStore. RTDB is the single source of truth:
+      // a missing branch means the value is 0 / empty, NOT "keep the local
+      // value". setCredits also flips creditsLoaded → true.
+      shop.setCredits(data.wallet?.credits ?? 0);
+
+      const inv = data.inventory;
+      // Missing RTDB branch → fallback (empty, except exoplanets → base set).
+      const mergeInventory = (
+        rtdbItems: Record<string, boolean> | undefined,
+        fallback: string[],
+      ): string[] => {
+        if (!rtdbItems) return fallback;
+        return Object.keys(rtdbItems).filter((k) => rtdbItems[k]);
+      };
+      const newShips = mergeInventory(inv?.ships, []);
+      const newMusic = mergeInventory(inv?.music, []);
+      const newExos = mergeInventory(inv?.exoplanets, [...BASE_EXOPLANET_IDS]);
+      if (
+        JSON.stringify(newShips) !== JSON.stringify(shop.owned.ships) ||
+        JSON.stringify(newMusic) !== JSON.stringify(shop.owned.music) ||
+        JSON.stringify(newExos) !== JSON.stringify(shop.owned.exoplanets)
+      ) {
+        shop.setOwned({ ships: newShips, music: newMusic, exoplanets: newExos });
       }
     };
 
+    startAuthBootstrap(handleUserData);
+
+    // Detect returning from Stripe Payment Link (/shop/success).
+    // The SPA always loads index.html regardless of path, so the path is
+    // preserved. Auto-navigate to shop so ShopScreen's useEffect can
+    // process the pending purchase from sessionStorage/localStorage.
+    if (window.location.pathname.includes("/shop/success")) {
+      // Use a micro-task so the current render cycle settles first,
+      // then bypass the intro and go straight to the shop.
+      queueMicrotask(() => {
+        useGameStore.getState().transitionTo("shop");
+      });
+    }
+
     // Listen for language changes → persist to RTDB
     const handleLanguageChange = (lng: string) => {
-      const { uid } = useAuthStore.getState();
-      if (uid) {
-        updateUserSettings(uid, { language: lng }).catch(console.error);
+      const { rtdbKey } = useAuthStore.getState();
+      if (rtdbKey) {
+        updateUserSettings(rtdbKey, { language: lng }).catch(console.error);
       }
     };
     i18n.on("languageChanged", handleLanguageChange);
 
     return () => {
-      unsub();
-      if (unsubUser) unsubUser();
+      // Note: startAuthBootstrap is a module-level singleton and is intentionally
+      // NOT torn down here — keeping it alive across a StrictMode remount is what
+      // prevents a second anonymous login.
       i18n.off("languageChanged", handleLanguageChange);
     };
   }, []);

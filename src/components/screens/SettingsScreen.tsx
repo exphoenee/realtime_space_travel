@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, type CSSProperties } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { Difficulty } from "../../types";
 import { SHOP_MUSIC } from "../../constants/shopCatalog";
@@ -6,9 +6,10 @@ import useGameStore from "../../state/useGameStore";
 import useShopStore from "../../state/useShopStore";
 import useAuthStore from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
-import { linkAnonymousToGoogle, getAuthErrorMessage } from "../../firebase/auth";
-import { updateUserSettings } from "../../firebase/userData";
+import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/auth";
+import { updateUserSettings, updateUserNickname } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
+import CustomSelect from "../ui/CustomSelect";
 import styles from "./SettingsScreen.module.css";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -23,12 +24,100 @@ const SettingsScreen = () => {
   const activeMusicId = useUIStore((s) => s.activeMusicId);
   const setActiveMusicId = useUIStore((s) => s.setActiveMusicId);
   const credits = useShopStore((s) => s.credits);
+  const creditsLoaded = useShopStore((s) => s.creditsLoaded);
   const ownedMusicIds = useShopStore((s) => s.owned.music);
   const authUser = useAuthStore((s) => s.user);
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const uid = useAuthStore((s) => s.uid);
+  const deviceId = useAuthStore((s) => s.deviceId);
+  const rtdbKey = useAuthStore((s) => s.rtdbKey);
+  const storeDisplayName = useAuthStore((s) => s.displayName);
+  const authError = useAuthStore((s) => s.authError);
+  const setAuthError = useAuthStore((s) => s.setAuthError);
+  const clearUser = useAuthStore((s) => s.clearUser);
+  const nickname = useAuthStore((s) => s.nickname);
+  const nicknameLoaded = useAuthStore((s) => s.nicknameLoaded);
+  const setNickname = useAuthStore((s) => s.setNickname);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [uidCopied, setUidCopied] = useState(false);
+  const uidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nicknameInputRef = useRef<HTMLInputElement>(null);
+  // Sync local input when store value changes / editing starts
+  useEffect(() => {
+    if (editingNickname) {
+      setNicknameInput(nickname);
+    }
+  }, [editingNickname, nickname]);
+
+  // Focus the input when editing starts
+  useEffect(() => {
+    if (editingNickname && nicknameInputRef.current) {
+      nicknameInputRef.current.focus();
+    }
+  }, [editingNickname]);
+
+  const handleNicknameSave = useCallback(async () => {
+    const trimmed = nicknameInput.trim();
+    setNickname(trimmed);
+    setEditingNickname(false);
+    // Persist to RTDB (use rtdbKey)
+    const { rtdbKey: key } = useAuthStore.getState();
+    if (key) {
+      try {
+        await updateUserNickname(key, trimmed);
+      } catch (err) {
+        console.error("Failed to save nickname:", err);
+      }
+    }
+  }, [nicknameInput, setNickname]);
+
+  const handleNicknameKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        void handleNicknameSave();
+      }
+      if (e.key === "Escape") {
+        setEditingNickname(false);
+        setNicknameInput(nickname); // revert
+      }
+    },
+    [handleNicknameSave, nickname],
+  );
+
+  // Shared deviceId copy handler (copies the stable deviceId to clipboard)
+  const handleCopyUid = useCallback(async () => {
+    if (!deviceId) return;
+    try {
+      await navigator.clipboard.writeText(deviceId);
+      setUidCopied(true);
+      if (uidTimerRef.current) clearTimeout(uidTimerRef.current);
+      uidTimerRef.current = setTimeout(() => setUidCopied(false), 2000);
+    } catch {
+      // Clipboard API not available — fall back to user-select: all
+    }
+  }, [deviceId]);
+
+  const uidKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        void handleCopyUid();
+      }
+    },
+    [handleCopyUid],
+  );
+
+  // Clean up the uid copy timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (uidTimerRef.current) clearTimeout(uidTimerRef.current);
+    };
+  }, []);
+
+  // Local login error takes precedence, falling back to the global auth error.
+  const errorKey = loginError ?? authError;
 
   const ownedMusicTracks = useMemo(() => {
     return SHOP_MUSIC.filter((track) => ownedMusicIds.includes(track.id));
@@ -40,63 +129,146 @@ const SettingsScreen = () => {
 
   const handleGoogleLogin = useCallback(async () => {
     setLoginError(null);
+    setAuthError(null);
     try {
-      // linkAnonymousToGoogle redirects the page — no await needed for user
-      // On return, App.tsx checkRedirectResult handles the result
-      await linkAnonymousToGoogle();
+      // Unified popup-first flow (links the anonymous account when possible,
+      // redirect fallback if the popup is blocked).
+      await startGoogleAuth();
     } catch (err) {
       console.error("Login failed:", err);
       setLoginError(getAuthErrorMessage(err));
     }
-  }, []);
+  }, [setAuthError]);
+
+  const handleLogout = useCallback(async () => {
+    setLoginError(null);
+    setAuthError(null);
+    try {
+      await signOut();
+      // Optimistic local clear; the auth listener re-populates with a fresh
+      // anonymous session.
+      clearUser();
+    } catch (err) {
+      console.error("Logout failed:", err);
+      setLoginError(getAuthErrorMessage(err));
+    }
+  }, [setAuthError, clearUser]);
 
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
         <h1 className={styles.title}>{t("settings.title")}</h1>
 
-        {/* Account Section */}
-        <div className={styles.row}>
-          <span className={styles.label}>
-            {(authUser && !isAnonymous) ?
-              (authUser.displayName ?? t("settings.authenticated"))
-              : t("mainMenu.login")
-            }
-          </span>
-          <div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-end" }}>
+        {/* Account Section — full-width vertical stack */}
+        {(authUser && !isAnonymous) ? (
+          <div className={styles.accountSection}>
+            {/* Header row: name + credits */}
+            <div className={styles.accountHeader}>
+              <div className={styles.accountNameBlock}>
+                <span className={styles.accountDisplayName}>
+                  {storeDisplayName}
+                </span>
+                <span className={styles.accountBadge}>
+                  {t("settings.authenticated")}
+                </span>
+              </div>
               <span className={styles.creditDisplay}>
-                {t("shop.creditsLabel", { count: credits })}
+                {creditsLoaded ? t("shop.creditsLabel", { count: credits }) : "—"}
               </span>
-              {(authUser && !isAnonymous) ? (
-                <div className={styles.accountInfo}>
-                  <span className={styles.uidDisplay} title={uid ?? ""}>
-                    {t("settings.userId")}: {uid ?? "—"}
-                  </span>
+            </div>
+
+            {/* Nickname editor */}
+            <div className={styles.accountField}>
+              <span className={styles.fieldLabel}>{t("settings.nickname")}</span>
+              <div className={styles.nicknameRow}>
+                <div className={styles.nicknameInputWrapper}>
+                  <input
+                    ref={nicknameInputRef}
+                    type="text"
+                    className={`${styles.nicknameInput}${editingNickname ? ` ${styles.nicknameInputEditing}` : ""}`}
+                    value={editingNickname ? nicknameInput : (nickname || storeDisplayName || "")}
+                    onChange={(e) => setNicknameInput(e.target.value)}
+                    onKeyDown={handleNicknameKeyDown}
+                    disabled={!editingNickname}
+                    placeholder={storeDisplayName ?? t("settings.nicknamePlaceholder")}
+                    maxLength={30}
+                    aria-label={t("settings.nickname")}
+                  />
                 </div>
-              ) : (
-                <div className={styles.accountInfo}>
-                  <span className={styles.uidDisplay} title={uid ?? ""}>
-                    {t("settings.userId")}: {uid ?? "—"}
-                  </span>
-                  <button
-                    type="button"
-                    className={styles.authBtn}
-                    onClick={handleGoogleLogin}
-                    disabled={authStatus === "loading"}
-                  >
-                    {authStatus === "loading" ? "..." : t("mainMenu.login")}
-                  </button>
-                  {loginError && (
-                    <span className={styles.loginError}>
-                      {t(loginError)}
-                    </span>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  className={styles.nicknameToggle}
+                  onClick={editingNickname ? handleNicknameSave : () => setEditingNickname(true)}
+                  title={editingNickname ? t("settings.nicknameSave") : t("settings.nicknameEdit")}
+                  aria-label={editingNickname ? t("settings.nicknameSave") : t("settings.nicknameEdit")}
+                >
+                  {editingNickname ? "✓" : "✏️"}
+                </button>
+              </div>
+            </div>
+
+            {/* Device ID */}
+            <div className={styles.accountField}>
+              <span className={styles.fieldLabel}>{t("settings.userId")}</span>
+              <span
+                className={`${styles.uidDisplay}${uidCopied ? ` ${styles.uidCopied}` : ""}`}
+                title={uidCopied ? t("settings.uidCopied") : deviceId}
+                onClick={handleCopyUid}
+                role="button"
+                tabIndex={0}
+                onKeyDown={uidKeyDown}
+              >
+                {uidCopied ? t("settings.uidCopied") : deviceId}
+              </span>
+            </div>
+
+            {/* Logout */}
+            <div className={styles.accountActions}>
+              <button
+                type="button"
+                className={`${styles.authBtn} ${styles.authBtnDanger}`}
+                onClick={handleLogout}
+                disabled={authStatus === "loading"}
+              >
+                {t("settings.logout")}
+              </button>
+              {errorKey && (
+                <span className={styles.loginError}>
+                  {t(errorKey)}
+                </span>
               )}
             </div>
           </div>
-        </div>
+        ) : (
+          <div className={styles.row}>
+            <span className={styles.label}>{t("mainMenu.login")}</span>
+            <div className={styles.accountInfo}>
+              <span
+                className={`${styles.uidDisplay}${uidCopied ? ` ${styles.uidCopied}` : ""}`}
+                title={uidCopied ? t("settings.uidCopied") : deviceId}
+                onClick={handleCopyUid}
+                role="button"
+                tabIndex={0}
+                onKeyDown={uidKeyDown}
+              >
+                {uidCopied ? t("settings.uidCopied") : deviceId}
+              </span>
+              <button
+                type="button"
+                className={styles.authBtn}
+                onClick={handleGoogleLogin}
+                disabled={authStatus === "loading"}
+              >
+                {authStatus === "loading" ? "..." : t("settings.signIn")}
+              </button>
+              {errorKey && (
+                <span className={styles.loginError}>
+                  {t(errorKey)}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className={styles.row}>
           <label className={styles.label} htmlFor="music-volume">
@@ -117,8 +289,8 @@ const SettingsScreen = () => {
                 const val = Number(e.target.value);
                 setMusicVolume(val);
                 // Persist to RTDB if signed in
-                if (uid) {
-                  updateUserSettings(uid, { musicVolume: val }).catch(console.error);
+                if (rtdbKey) {
+                  updateUserSettings(rtdbKey, { musicVolume: val }).catch(console.error);
                 }
               }}
               className={styles.slider}
@@ -136,31 +308,26 @@ const SettingsScreen = () => {
           <label className={`${styles.label}${!hasOwnedMusic ? ` ${styles.labelDisabled}` : ""}`} htmlFor="music-track">
             {t("settings.musicTrack")}
           </label>
-          <div className={styles.selectWrapper}>
-            <select
-              id="music-track"
-              className={`${styles.select}${!hasOwnedMusic ? ` ${styles.selectDisabled}` : ""}`}
-              value={activeMusicId ?? "__default__"}
-              onChange={(e) => {
-                const val = e.target.value;
-                const newId = val === "__default__" ? null : val;
-                setActiveMusicId(newId);
-                // Persist to RTDB if signed in
-                if (uid) {
-                  updateUserSettings(uid, { activeMusicId: newId }).catch(console.error);
-                }
-              }}
-              disabled={!hasOwnedMusic}
-            >
-              <option value="__default__">{t("settings.musicDefault")}</option>
-              {ownedMusicTracks.map((track) => (
-                <option key={track.id} value={track.id}>
-                  {track.title}
-                </option>
-              ))}
-            </select>
-            <span className={styles.selectArrow} aria-hidden="true">▼</span>
-          </div>
+          <CustomSelect
+            id="music-track"
+            value={activeMusicId ?? "__default__"}
+            onChange={(val) => {
+              const newId = val === "__default__" ? null : val;
+              setActiveMusicId(newId);
+              if (rtdbKey) {
+                updateUserSettings(rtdbKey, { activeMusicId: newId }).catch(console.error);
+              }
+            }}
+            options={[
+              { value: "__default__", label: t("settings.musicDefault") },
+              ...ownedMusicTracks.map((track) => ({
+                value: track.id,
+                label: track.title,
+              })),
+            ]}
+            disabled={!hasOwnedMusic}
+            ariaLabel={t("settings.musicTrack")}
+          />
         </div>
 
         <div className={styles.row}>
@@ -175,8 +342,8 @@ const SettingsScreen = () => {
                 onClick={() => {
                   setDifficulty(level);
                   // Persist to RTDB if signed in
-                  if (uid) {
-                    updateUserSettings(uid, { difficulty: level }).catch(console.error);
+                  if (rtdbKey) {
+                    updateUserSettings(rtdbKey, { difficulty: level }).catch(console.error);
                   }
                 }}
               >

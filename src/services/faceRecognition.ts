@@ -108,7 +108,11 @@ export const createFaceDetector = async () => {
   }
 
   const model = SupportedModels.MediaPipeFaceDetector;
-  const solutionPath = `${import.meta.env.BASE_URL}mediapipe/face_detection`;
+  // Resolve at runtime against the live <base href> (set by index.tsx
+  // setBaseHref) so the same bundle works under both Firebase (/) and
+  // GitHub Pages (/realtime_space_travel/). Build-time import.meta.env.BASE_URL
+  // is fixed and 404s on the other host.
+  const solutionPath = new URL("mediapipe/face_detection", document.baseURI).href;
 
   const detectorConfig: MediaPipeFaceDetectorMediaPipeModelConfig = {
     runtime: "mediapipe",

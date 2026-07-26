@@ -44,6 +44,14 @@ export interface CreditPack {
   nameKey: string;
   priceEur: number;
   credits: number;
+  /** Stripe Payment Link URL for production — redirects back to Firebase Hosting. */
+  stripePaymentLink: string;
+  /**
+   * Stripe Payment Link URL for local development — redirects back to localhost.
+   * A Payment Link's return URL is fixed on the Stripe object itself, so dev and
+   * prod need separate links. Falls back to `stripePaymentLink` when unset.
+   */
+  stripePaymentLinkDev?: string;
 }
 
 export interface ShipProduct extends ShopProductBase {

@@ -6,6 +6,8 @@ import { updateUserWallet, updateUserInventory } from "../firebase/userData";
 
 interface ShopState {
   credits: number;
+  /** True once credits have been loaded from RTDB (before that, show "—"). */
+  creditsLoaded: boolean;
   owned: OwnedItems;
   cart: CartItem[];
   isPreviewing: boolean;
@@ -27,11 +29,11 @@ interface ShopState {
   setOwned: (owned: OwnedItems) => void;
 }
 
-const initialCredits =
-  import.meta.env.VITE_DEBUG_MODE === "true" ? DEBUG_STARTING_CREDITS : STARTING_CREDITS;
-
 const useShopStore = create<ShopState>()((set, get) => ({
-  credits: initialCredits,
+  // RTDB is the single source of truth for credits. Start at 0 / not-loaded;
+  // the real balance arrives via setCredits from the RTDB sync.
+  credits: 0,
+  creditsLoaded: false,
   owned: { ships: [], music: [], exoplanets: [...BASE_EXOPLANET_IDS] },
   cart: [],
   isPreviewing: false,
@@ -92,23 +94,24 @@ const useShopStore = create<ShopState>()((set, get) => ({
       cart: [],
     });
 
-    // Persist to RTDB if signed in
-    const uid = useAuthStore.getState().uid;
-    if (uid) {
-      updateUserWallet(uid, newCredits).catch(console.error);
+    // Persist to RTDB if signed in (use rtdbKey — deviceId for guests, uid for
+    // authenticated users after guest data migration)
+    const rtdbKey = useAuthStore.getState().rtdbKey;
+    if (rtdbKey) {
+      updateUserWallet(rtdbKey, newCredits).catch(console.error);
       // Update inventory per category
       if (cart.some((i) => i.category === "ship")) {
-        updateUserInventory(uid, "ships",
+        updateUserInventory(rtdbKey, "ships",
           Object.fromEntries(newOwned.ships.map((id) => [id, true]))
         ).catch(console.error);
       }
       if (cart.some((i) => i.category === "music")) {
-        updateUserInventory(uid, "music",
+        updateUserInventory(rtdbKey, "music",
           Object.fromEntries(newOwned.music.map((id) => [id, true]))
         ).catch(console.error);
       }
       if (cart.some((i) => i.category === "exoplanet")) {
-        updateUserInventory(uid, "exoplanets",
+        updateUserInventory(rtdbKey, "exoplanets",
           Object.fromEntries(newOwned.exoplanets.map((id) => [id, true]))
         ).catch(console.error);
       }
@@ -122,14 +125,14 @@ const useShopStore = create<ShopState>()((set, get) => ({
     if (!pack) return;
     const newCredits = get().credits + pack.credits;
     set({ credits: newCredits });
-    // Persist to RTDB if signed in
-    const uid = useAuthStore.getState().uid;
-    if (uid) {
-      updateUserWallet(uid, newCredits).catch(console.error);
+    // Persist to RTDB if signed in (use rtdbKey)
+    const rtdbKey = useAuthStore.getState().rtdbKey;
+    if (rtdbKey) {
+      updateUserWallet(rtdbKey, newCredits).catch(console.error);
     }
   },
 
-  setCredits: (credits) => set({ credits }),
+  setCredits: (credits) => set({ credits, creditsLoaded: true }),
   setOwned: (owned) => set({ owned }),
 
   setPreviewing: (v) => set({ isPreviewing: v }),
@@ -154,15 +157,15 @@ const useShopStore = create<ShopState>()((set, get) => ({
       activePreviewId: null,
     });
 
-    // Persist reset to RTDB if signed in
-    const uid = useAuthStore.getState().uid;
-    if (uid) {
-      updateUserWallet(uid, debugCredits).catch(console.error);
+    // Persist reset to RTDB if signed in (use rtdbKey)
+    const rtdbKey = useAuthStore.getState().rtdbKey;
+    if (rtdbKey) {
+      updateUserWallet(rtdbKey, debugCredits).catch(console.error);
       const emptyInventory = (ids: string[]) =>
         Object.fromEntries(ids.map((id) => [id, true]));
-      updateUserInventory(uid, "ships", {}).catch(console.error);
-      updateUserInventory(uid, "music", {}).catch(console.error);
-      updateUserInventory(uid, "exoplanets",
+      updateUserInventory(rtdbKey, "ships", {}).catch(console.error);
+      updateUserInventory(rtdbKey, "music", {}).catch(console.error);
+      updateUserInventory(rtdbKey, "exoplanets",
         emptyInventory(resetOwned.exoplanets)
       ).catch(console.error);
     }

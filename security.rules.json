@@ -4,6 +4,18 @@
  *  Firebase Realtime Database Security Rules
  *  Project: realtimespacetravel-e74e3
  *
+ *  RELATIONSHIP TO database.rules.json
+ *  ───────────────────────────────────
+ *  This file is the DOCUMENTED (commented) SOURCE. Its comment-free,
+ *  GENERATED twin is `database.rules.json` — that is the file Firebase
+ *  actually deploys (referenced by firebase.json → "database").
+ *  Keep the two in sync: edit the rules here, then regenerate
+ *  database.rules.json with the one-liner below.
+ *
+ *  CURRENT STATE: PHASE 1 is in effect — wallet + inventory are
+ *  CLIENT-WRITABLE (".write": "auth != null && auth.uid == $uid").
+ *  See the DEPLOYMENT PHASES section below.
+ *
  *  HOW TO DEPLOY
  *  ─────────────
  *  A) Firebase Console (easiest):
@@ -14,11 +26,12 @@
  *     Note: The Console editor accepts /* comments *\/ and will strip them on save.
  *
  *  B) Firebase CLI (for CI/CD):
- *     If you want CLI-based deployment, create a pure JSON copy:
+ *     Regenerate the comment-free database.rules.json twin, then deploy:
  *     node -e "require('fs').writeFileSync('database.rules.json',
  *       require('fs').readFileSync('security.rules.json','utf8')
  *         .replace(/\\/\\*[\\s\\S]*?\\*\\//g,''))"
  *     Then: npx firebase deploy --only database
+ *     (CI runs: npx firebase-tools deploy --only hosting,database)
  *
  *  ═══════════════════════════════════════════════════════════════
  *  DEPLOYMENT PHASES
@@ -50,25 +63,67 @@
  *        exoplanets: { <exoplanetId>: true, ... }
  *      stats:     { bestServiceSeconds }
  *
- * ═══════════════════════════════════════════════════════════════
+ *  device_map/
+ *    {deviceId}: "{firebaseAuthUid}"
+ *
+ *  ═══════════════════════════════════════════════════════════════
+ *  GUEST DATA MIGRATION
+ *  ═══════════════════════════════════════════════════════════════
+ *
+ *  When a guest user signs in with Google, their guest data is migrated
+ *  from users/{deviceId} to users/{googleUid}. After migration:
+ *    - users/{deviceId} is deleted
+ *    - device_map/{deviceId} is deleted
+ *    - All subsequent operations use users/{googleUid}
+ *    - Access is granted via the "$key == auth.uid" condition below
+ *
+ *  ═══════════════════════════════════════════════════════════════
  */
 
   "rules": {
+    /* ——— DEVICE MAP ——— */
+    "device_map": {
+      "$deviceId": {
+        /*
+         * Maps a persistent deviceId (from localStorage) to the current
+         * Firebase auth UID. The /users rules check this map instead of
+         * comparing auth.uid directly with the path segment, so the guest
+         * identity survives sign-out / new anonymous login.
+         *
+         * Write: any authenticated user may write their deviceId mapping
+         * to their own auth.uid OR delete it (data.val() == auth.uid).
+         * The data.val() part allows the guest->Google migration to clean
+         * up the device_map entry after copying data to users/{googleUid}.
+         *
+         * Read: no client reads this path; the /users rules access it via
+         * root.child('device_map').
+         */
+        ".write": "auth != null && (newData.val() == auth.uid || data.val() == auth.uid)",
+        ".read": false
+      }
+    },
+
     "users": {
-      "$uid": {
-        /* READ: Only the authenticated user can read their own data */
-        ".read": "auth != null && auth.uid == $uid",
+      "$key": {
+        /*
+         * READ: the authenticated user may read their own data if either:
+         *   1) The device_map maps this key to their auth.uid (guest session),
+         *      OR
+         *   2) The key is their own Firebase UID (after guest->Google migration).
+         * This allows guest data to be migrated to users/{googleUid} and then
+         * accessed directly without a device_map entry.
+         */
+        ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
 
         /* ——— PROFILE ——— */
         "profile": {
-          /* Write: user can update their own profile */
-          ".write": "auth != null && auth.uid == $uid"
+          /* Write: device owner (via device_map) OR own uid may update profile */
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
 
         /* ——— SETTINGS ——— */
         "settings": {
-          /* Write: user can update their preferences */
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
 
         /* ——— WALLET (credits) ——— */
@@ -76,11 +131,8 @@
           /*
            * PHASE 1: Allow client writes (Cloud Functions not yet deployed).
            * PHASE 2: Change to ".write": false — only Admin SDK / Cloud Functions write.
-           *
-           * Rationale: credits are in-game currency; client-side writes
-           * are vulnerable to manipulation. The target state is server-only.
            */
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
 
         /* ——— INVENTORY (owned items) ——— */
@@ -88,28 +140,13 @@
           /*
            * PHASE 1: Allow client writes (Cloud Functions not yet deployed).
            * PHASE 2: Change to ".write": false — only Admin SDK / Cloud Functions write.
-           *
-           * Rationale: inventory is the source of truth for what the player owns.
-           * Client-side manipulation would allow cheating. The target state
-           * is server-only via Cloud Functions (purchaseWithCredits) and
-           * Stripe→Strapi→Admin SDK pipeline.
-           *
-           * Sub-paths (ships, music, exoplanets) inherit this rule.
            */
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
 
         /* ——— STATS (e.g. bestServiceSeconds) ——— */
         "stats": {
-          /*
-           * Write: user can update stats.
-           * Currently client writes bestServiceSeconds directly.
-           * Future: could validate with a write rule to only allow increases.
-           *   ".write": "auth != null && auth.uid == $uid &&
-           *              newData.child('bestServiceSeconds').val() >=
-           *              data.child('bestServiceSeconds').val()"
-           */
-          ".write": "auth != null && auth.uid == $uid"
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         }
       }
     }

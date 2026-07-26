@@ -131,17 +131,24 @@
     "musicTrack": "Zeneválasztás",
     "musicDefault": "Alapértelmezett",
     "signOut": "Kijelentkezés",
+    "logout": "Kijelentkezés",
     "authenticated": "Hitelesítve",
-    "userId": "Felhasználói azonosító"
+    "userId": "Felhasználói azonosító",
+    "uidCopied": "Másolva!",
+    "nickname": "Becenév",
+    "nicknamePlaceholder": "Adj meg egy megjelenítendő nevet",
+    "nicknameEdit": "Szerkesztés",
+    "nicknameSave": "Mentés",
+    "signIn": "Bejelentkezés"
   },
   "login": {
     "error": {
-      "popupBlocked": "A bejelentkezési felugró ablakot letiltotta a böngésző. Engedélyezd az előugró ablakokat ehhez az oldalhoz, majd próbáld újra.",
-      "alreadyInUse": "Ez a Google fiók már másik profilhoz van kapcsolva.",
-      "accountExists": "Már létezik fiók ezzel az email címmel.",
-      "cancelled": "A bejelentkezés megszakítva.",
-      "network": "Hálózati hiba. Ellenőrizd a kapcsolatot és próbáld újra.",
-      "generic": "A bejelentkezés sikertelen. Próbáld újra."
+      "popupBlocked": "A böngésző letiltotta a bejelentkező ablakot. Engedélyezd a felugró ablakokat, vagy próbáld újra.",
+      "alreadyInUse": "Ez a Google-fiók már egy másik játékoshoz tartozik. A vendég-haladatod (kredit, birtokolt tartalmak) nem vihető át.",
+      "accountExists": "Ehhez az e-mail-címhez már tartozik fiók másik bejelentkezési módszerrel.",
+      "cancelled": "A bejelentkezést megszakítottad.",
+      "network": "Hálózati hiba a bejelentkezés közben. Ellenőrizd a kapcsolatot.",
+      "generic": "A bejelentkezés nem sikerült. Próbáld újra később."
     }
   },
   "shipSelect": {

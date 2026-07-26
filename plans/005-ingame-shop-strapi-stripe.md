@@ -1,9 +1,9 @@
 ---
-title: "Valós pénzes kredit vásárlás – Stripe + Firebase"
+title: "Valós pénzes kredit vásárlás – Stripe Payment Links"
 slug: 005-ingame-shop-strapi-stripe
 type: plan
 category: shop
-status: not-started
+status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-25"
@@ -23,290 +23,238 @@ related_plans:
 tags:
   - stripe
   - payments
-  - cloud-functions
-  - firebase-admin
+  - payment-links
+  - shop
 ---
 
-# Valós pénzes kredit vásárlás – Stripe + Firebase (nincs Strapi)
+# Valós pénzes kredit vásárlás – Stripe Payment Links
 
-**Cél:** a játékos 4 féle kredit-pakkot vásárolhasson valós pénzért. **Nincs Strapi** — csak Stripe (fizetés) + Firebase Cloud Function (webhook + wallet írás) + Firebase RTDB (kredit tárolás).
+**Cél:** a játékos 4 féle kredit-pakkot vásárolhasson valós pénzért Stripe Payment Links segítségével. **Nincs Cloud Functions, nincs webhook** — a Spark (ingyenes) Firebase terv miatt a Cloud Functions nem elérhető, ezért a Stripe Payment Links + kliensoldali jóváírás út a megoldás.
 
 > **Architektúra (egyszerűsített):**
-> - **Stripe Checkout** = fizetési felület (hosztolt oldal, nem kell hozzá saját backend)
-> - **Firebase Cloud Function** (`stripeWebhook`) = Stripe webhook fogadása → `wallet.credits` növelés Admin SDK-val
-> - **Firebase Cloud Function** (`createCheckoutSession`, callable) = Checkout Session létrehozása a klienstől hívva
-> - **Firebase RTDB** = a kredit-egyenleg (`wallet.credits`) egyetlen igazságforrása
-> - **A 4 CreditPack fix konstans** → `src/constants/shopCatalog.ts`-ban (már megvan)
->
-> **Épít a [[002-ingame-shop-frontend]] tervre:** a `CreditShopView` már mutatja a 4 pakkot mock gombokkal. Ez a terv ezt köti össze a Stripe-pal és a Firebase-szel.
+> - **Stripe Payment Links** = hosztolt fizetőoldal (redirect) — nincs szükség backendre
+> - **sessionStorage + localStorage** = függőben lévő vásárlás mentése a Stripe redirect előtt
+> - **URL detektálás App.tsx-ben** = Stripe-ról visszatérve `/shop/success` path → auto-navigate to shop
+> - **Firebase RTDB** = a kredit-egyenleg egyetlen igazságforrása (`updateUserWallet`)
+> - **A 4 CreditPack fix konstans** → `src/constants/shopCatalog.ts`-ban
 
 ## Döntések (egyeztetve)
 
 | Kérdés | Választás |
 |--------|-----------|
-| Strapi | ❌ **Nincs.** A 4 kredit-pakk fix konstans (`shopCatalog.ts`). |
-| Fizetési átjáró | **Stripe Checkout** (hosztolt fizetőoldal) |
-| Kredit-pakkok | 5€ → 100 kr · 10€ → 300 kr · 25€ → 700 kr · 100€ → 2000 kr |
-| Checkout hívás | **Firebase Callable Function** (`createCheckoutSession`) — nem kell saját szerver |
-| Webhook | **Firebase HTTPS Cloud Function** (`stripeWebhook`) — Stripe aláírás ellenőrzés |
-| Kredit írása fizetés után | **Firebase Admin SDK** a webhook CF-ben → `users/{uid}/wallet.credits` növelés (tranzakció) |
-| App-on belüli vásárlás | **Firebase Cloud Function** `purchaseWithCredits` (kreditből hajó/zene/exobolygó) |
-| Kredit forrása | Firebase RTDB `wallet.credits` (szerver-írt, Security Rules tiltja a kliens-írást) |
+| Fizetési átjáró | **Stripe Payment Links** (nem Checkout Session — nincs CF szükséges) |
+| Kredit-pakkok | 5€ → 100⭐ · 10€ → 300⭐ · 25€ → 700⭐ · 100€ → 2000⭐ |
+| Spark terv korlát | ❌ Nincs Cloud Functions → nincs webhook, nincs createCheckoutSession |
+| Visszatérés kezelés | URL path detektálás (`/shop/success`) → `queueMicrotask` → `transitionTo("shop")` |
+| Pending purchase tárolás | **sessionStorage + localStorage** dupla írás (localStorage túléli a page load ciklust) |
+| Kredit írása | Kliensoldali `buyCredits` → `updateUserWallet` (RTDB `set`, Phase-1 rules) |
+| Kredit forrása | Firebase RTDB `wallet.credits` (kliens-írható Phase-1-ben, később CF + Phase-2 rules) |
 
 ---
 
 ## ✅ Haladás (TODO)
 
-> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Előfeltétel: a [[003-firebase-auth-settings]] Fázis 1 (auth + RTDB + Security Rules).
+> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
-**A fázis — Stripe + Firebase Cloud Functions**
-- [ ] Stripe fiók + API kulcsok + 4 Price objektum (5€, 10€, 25€, 100€) a Stripe Dashboard-on
-- [ ] `createCheckoutSession` Firebase Callable Function (Stripe Checkout Session létrehozása, metaadat: `uid` + `credits`)
-- [ ] `stripeWebhook` Firebase HTTPS Cloud Function (Stripe aláírás ellenőrzés → `wallet.credits` tranzakció)
-- [ ] Idempotencia: webhook dupla hívás → ne növeljen kétszer (`walletWritten` kulcs)
-- [ ] Env változók: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PUBLISHABLE_KEY`
+**A fázis — Stripe fiók + Payment Links**
+- [x] Stripe fiók létrehozva (teszt mód)
+- [x] 4 Payment Link létrehozva a Stripe API-n keresztül (`scripts/create_payment_links.mjs`)
+- [x] `stripe` npm package telepítve
+- [x] Stripe best-practices skill telepítve a projekthez
 
-**B fázis — Firebase Cloud Functions (in-app vásárlások, közös [[003-firebase-auth-settings]])**
-- [ ] `purchaseWithCredits` (kredites vétel: hajó/zene/exobolygó, RTDB tranzakció)
-- [ ] `awardWage` (küldetés végi kredit)
+**B fázis — Frontend integráció**
+- [x] `CreditPack` típus bővítve: +`stripePaymentLink: string` (`src/types/index.ts`)
+- [x] 4 kredit pakkhoz `stripePaymentLink` URL-ek a `shopCatalog.ts`-ban
+- [x] `CreditShopView`: gomb → sessionStorage+localStorage mentés → Stripe redirect
+- [x] `ShopScreen`: useEffect sessionStorage+localStorage olvasás → `buyCredits` → success view
+- [x] `App.tsx`: Stripe visszatérés URL detektálás → auto-navigate to shop
 
-**C fázis — Frontend**
-- [x] `GamePhase: "shop"` + `ScreenRouter` ág + „Áruház" gomb — lásd [[002-ingame-shop-frontend]]
-- [x] `CreditShopView` mock (4 fix pakk) — lásd [[002-ingame-shop-frontend]]
-- [ ] `CreditShopView` élesítése: mock → `createCheckoutSession` callable hívás → Stripe redirect
-- [ ] `CheckoutReturn` komponens (success/cancel lap, Firebase listener-rel)
-- [ ] Küldetés végén wage → `functionsApi.awardWage()` bekötés
+**C fázis — Visszatérés kezelés (Stripe → SPA)**
+- [x] App.tsx: `window.location.pathname.includes("/shop/success")` → `queueMicrotask` → `transitionTo("shop")`
+- [x] Dupla storage írás: sessionStorage + localStorage a `CreditShopView.handleBuy`-ban
+- [x] Dupla storage olvasás: sessionStorage elsődleges, localStorage fallback a `ShopScreen` useEffect-ben
+- [x] Közös `clear()` helper: mindkét storage törlése siker/lejárat/érvénytelenség esetén
+- [x] Stripe MCP server telepítve (opcionális, Stripe API műveletekhez)
 
 **D fázis — Tesztelés / élesítés**
-- [ ] Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás, visszatérítés)
-- [ ] Webhook idempotencia teszt
-- [ ] Anti-cheat: Security Rules ellenőrzés
-- [ ] `base href` (`/realtime_space_travel/`) a Stripe redirect URL-eknél
+- [ ] Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás)
+- [ ] Visszatérés tesztelése Firebase Hosting URL-en (ugyanazon origin)
+- [ ] Cross-origin teszt (localhost → Firebase Hosting → localStorage nem elérhető)
+- [ ] Deploy: `npm run build:firebase && npx firebase-tools deploy --only hosting`
 
 ---
 
 ## 1. Architektúra
 
 ```
-┌──────────────────────┐    callable          ┌──────────────────────┐
-│  React SPA (Vite)    │ ──────────────────▶  │  Firebase Cloud      │
-│  - CreditShopView    │   createCheckout     │  Functions            │
-│  - CheckoutReturn    │   Session()          │  - createCheckout    │
-│  - Firebase listener  │ ◀────────────────── │    Session (callable)│
-│    (wallet.credits)   │   session.url        │  - stripeWebhook     │
-└──────┬───────────────┘                      │    (HTTPS)           │
-       │                                      │  - purchaseWithCredits│
-       │ Stripe redirect                      │  - awardWage         │
-       ▼ (session.url)                        └──────┬───────────────┘
-┌──────────────────────┐    webhook                  │ Admin SDK
-│  Stripe Checkout     │ ─────────────────────────▶  │ wallet.credits
-│  (hosztolt oldal)    │   checkout.session.         │ növelés
-│  5€ → 100 kr         │   completed                 ▼
-│  10€ → 300 kr        │                    ┌──────────────────────┐
-│  25€ → 700 kr        │                    │  Firebase RTDB       │
-│  100€ → 2000 kr      │                    │  users/{uid}/        │
-└──────────────────────┘                    │    wallet.credits    │
-                                            │    inventory/...     │
-                                            │    settings/...      │
-                                            └──────────────────────┘
+┌──────────────────────────┐
+│  React SPA (Vite)        │
+│  - CreditShopView         │
+│  - ShopScreen (useEffect) │
+│  - App.tsx (URL detektálás)│
+└──────┬───────────────────┘
+       │ 1. "Megveszem" kattintás
+       │ 2. sessionStorage + localStorage mentés
+       │ 3. window.location.href = pack.stripePaymentLink
+       ▼
+┌──────────────────────────┐
+│  Stripe Payment Link     │
+│  (hosztolt fizetőoldal)  │
+│  5€ → 100⭐               │
+│  10€ → 300⭐               │
+│  25€ → 700⭐               │
+│  100€ → 2000⭐             │
+└──────────┬───────────────┘
+           │ 4. Visszairányítás `/shop/success` URL-re
+           ▼
+┌──────────────────────────┐
+│  App.tsx URL detektálás   │
+│  → transitionTo("shop")   │
+└──────────┬───────────────┘
+           │ 5. ShopScreen useEffect
+           │ 6. localStorage/sessionStorage olvasás
+           │ 7. buyCredits(packId)
+           ▼
+┌──────────────────────────┐
+│  Firebase RTDB            │
+│  users/{uid}/             │
+│    wallet.credits += pack │
+└──────────────────────────┘
 ```
 
 **Fizetési folyamat:**
-1. Játékos → „Megveszem" a `CreditShopView`-ban
-2. Frontend → `createCheckoutSession({ creditPackId })` Firebase Callable Function
-3. CF → Stripe API: Checkout Session létrehozása (`uid`, `creditsAmount` metaadat)
-4. Frontend → `window.location.href = session.url` (Stripe hosztolt oldal)
-5. Játékos → fizetés a Stripe-on
-6. Stripe → `checkout.session.completed` webhook → `stripeWebhook` Cloud Function
-7. CF → `admin.database().ref(\`users/${uid}/wallet/credits\`).transaction(...)` növelés
-8. Frontend → Firebase real-time listener → kredit egyenleg frissül
+1. Játékos → "Megveszem" a `CreditShopView`-ban
+2. Frontend → `sessionStorage` + `localStorage` mentés: `{ packId, credits, timestamp }`
+3. Frontend → `window.location.href = pack.stripePaymentLink` (Stripe hosztolt oldal)
+4. Játékos → fizetés a Stripe-on
+5. Stripe → redirect: `https://...web.app/shop/success`
+6. `App.tsx` → URL path-ben `/shop/success` → `queueMicrotask` → `transitionTo("shop")`
+7. `ShopScreen` → `useEffect` → `localStorage.getItem(PENDING_PURCHASE_KEY)`
+8. `buyCredits(pack.id)` → lokális állapot + `updateUserWallet(rtdbKey, newCredits)`
+
+### Storage stratégia
+
+| Storage | Előny | Hátrány |
+|---------|-------|---------|
+| `sessionStorage` | Per-tab, automatikusan törlődik tab bezáráskor | Page navigáció + visszatéréskor elveszik |
+| `localStorage` | Túléli a page load ciklust (ugyanazon origin-en) | Perzisztens, kézzel kell törölni |
+
+**Megoldás:** Mindkettőbe mentünk. sessionStorage elsődleges, localStorage fallback. Közös `clear()` mindkettőt törli.
+
+### URL detektálás
+
+A Stripe Payment Link `after_completion.redirect.url` = `https://realtimespacetravel-e74e3.web.app/shop/success`. Mivel az SPA minden path-en `index.html`-t szolgál ki (Firebase Hosting SPA viselkedés), a `/shop/success` path megmarad. Az `App.tsx` useEffect-e ellenőrzi `window.location.pathname.includes("/shop/success")`-t, és `queueMicrotask`-ban `transitionTo("shop")`-t hív, ami átugorja az intrót és közvetlenül a shopba navigál.
 
 ---
 
 ## 2. Adatmodell
 
-### Kredit-pakkok (fix konstansok a kódban — nincs Strapi)
+### Kredit-pakkok (fix konstansok a kódban)
 
 ```ts
-// src/constants/shopCatalog.ts — már megvan!
-export const CREDIT_PACKS = [
-  { id: "pack-5eur",  priceEur: 5,  credits: 100, nameKey: "shop.credits.starter"  },
-  { id: "pack-10eur", priceEur: 10, credits: 300, nameKey: "shop.credits.advanced" },
-  { id: "pack-25eur", priceEur: 25, credits: 700, nameKey: "shop.credits.premium"  },
-  { id: "pack-100eur",priceEur: 100,credits: 2000,nameKey: "shop.credits.ultra"    },
+// src/constants/shopCatalog.ts
+export const CREDIT_PACKS: CreditPack[] = [
+  { id: "credits-starter",  nameKey: "shop.credits.starter",  priceEur: 5,   credits: 100,  stripePaymentLink: "https://buy.stripe.com/test_..." },
+  { id: "credits-advanced", nameKey: "shop.credits.advanced", priceEur: 10,  credits: 300,  stripePaymentLink: "https://buy.stripe.com/test_..." },
+  { id: "credits-premium",  nameKey: "shop.credits.premium",  priceEur: 25,  credits: 700,  stripePaymentLink: "https://buy.stripe.com/test_..." },
+  { id: "credits-ultra",    nameKey: "shop.credits.ultra",    priceEur: 100, credits: 2000, stripePaymentLink: "https://buy.stripe.com/test_..." },
 ];
 ```
 
-A Stripe Price ID-k nem a kódban, hanem a Firebase Cloud Function env-ben / konfigban élnek (vagy a Stripe API-ból lekérhetők `productId` alapján).
-
-### Firebase RTDB séma (közös [[003-firebase-auth-settings]])
+### Firebase RTDB séma (Phase-1, kliens-írható)
 
 ```json
 {
   "users": {
     "{uid}": {
-      "wallet": { "credits": 0 },          // CSAK szerver írhatja
-      "inventory": {
-        "ships": { "ship-id": true },
-        "music": { "music-id": true },
-        "exoplanets": { "exoplanet-id": true }
-      },                                     // CSAK szerver írhatja
-      "settings": { /* user írhatja */ },
-      "stats": { /* user írhatja */ }
+      "wallet": { "credits": 0 },      // Phase-1: kliens írhatja (updateUserWallet)
+      "inventory": { ... },            // Phase-1: kliens írhatja
+      "settings": { ... },             // kliens írhatja
+      "stats": { ... }                 // kliens írhatja
     }
+  },
+  "device_map": {
+    "{deviceId}": "{firebaseAuthUid}"  // security rules által ellenőrizve
   }
+}
+```
+
+### Security rules
+
+```json
+"$key": {
+  ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
+  "wallet":    { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+  "inventory": { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+  "profile":   { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+  "settings":  { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
+  "stats":     { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" }
 }
 ```
 
 ---
 
-## 3. Firebase Cloud Functions
+## 3. Módosított fájlok
 
-### `createCheckoutSession` (Callable)
+| Fájl | Változás |
+|------|----------|
+| `src/types/index.ts` | `CreditPack` → +`stripePaymentLink: string` |
+| `src/constants/shopCatalog.ts` | 4 kredit pakkhoz `stripePaymentLink` URL-ek a Stripe Payment Link-ekből |
+| `src/components/shop/CreditShopView.tsx` | Gomb → sessionStorage+localStorage mentés → Stripe redirect; exportált `PENDING_PURCHASE_KEY` |
+| `src/components/shop/ShopScreen.tsx` | `useEffect` sessionStorage+localStorage olvasás visszatéréskor → `buyCredits` + success view; közös `clear()` helper |
+| `src/App.tsx` | URL detektálás `/shop/success` → `queueMicrotask` → `transitionTo("shop")` |
+| `scripts/create_payment_links.mjs` | Stripe API szkript a 4 Payment Link létrehozásához |
 
-```ts
-export const createCheckoutSession = functions.https.onCall(async (data, context) => {
-  // 1. Auth ellenőrzés
-  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "...");
-
-  // 2. CreditPack validálás a fix listából
-  const pack = CREDIT_PACKS.find(p => p.id === data.creditPackId);
-  if (!pack) throw new functions.https.HttpsError("not-found", "...");
-
-  // 3. Stripe Checkout Session
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    line_items: [{ price_data: { currency: "eur", product_data: { name: pack.name }, unit_amount: pack.priceEur * 100 }, quantity: 1 }],
-    metadata: { uid: context.auth.uid, credits: pack.credits.toString() },
-    success_url: `${BASE_URL}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${BASE_URL}/shop/cancel`,
-  });
-
-  return { sessionUrl: session.url };
-});
-```
-
-### `stripeWebhook` (HTTPS)
-
-```ts
-export const stripeWebhook = functions.https.onRequest(async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  const event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const { uid, credits } = session.metadata;
-    const creditsAmount = parseInt(credits);
-
-    // Idempotencia: session.id alapján ne írjon duplán
-    const orderRef = admin.database().ref(`orders/${session.id}`);
-    const existing = await orderRef.once("value");
-    if (existing.exists()) return res.send("duplicate");
-
-    // Atomikus kredit növelés
-    const walletRef = admin.database().ref(`users/${uid}/wallet/credits`);
-    await walletRef.transaction(current => (current || 0) + creditsAmount);
-
-    // Idempotencia jelző
-    await orderRef.set({ uid, credits: creditsAmount, writtenAt: Date.now() });
-  }
-
-  res.json({ received: true });
-});
-```
+### Új függőségek
+- `stripe` npm package (csak a létrehozó szkripthez, nem a frontendhez)
 
 ---
 
-## 4. Frontend változtatások
+## 4. Stripe konfiguráció
 
-### Már kész ([[002-ingame-shop-frontend]])
-- `CreditShopView` — 4 pakk kártya, név/ár/kredit kijelzés
-- `CreditBalance` — egyenleg kijelzés a shop fejlécében
-- `useShopStore` (localStorage) — kredit/birtoklás mock
+- Stripe fiók: **teszt mód** (`pk_test_...`, `sk_test_...`)
+- 4 **Payment Link** létrehozva a Stripe API-n keresztül (nem manuálisan a Dashboard-on)
+- `after_completion.type: "redirect"` → `url: "https://realtimespacetravel-e74e3.web.app/shop/success"`
+- Payment Link URL-ek fixen a `shopCatalog.ts`-ban (nem env változókban, mert publikusak)
+- Teszt kártya: `4242 4242 4242 4242` (bármilyen jövőbeli dátum, CVC, irányítószám)
 
-### Firebase bekötéskor új fájlok
-```
-src/
-  services/
-    functionsApi.ts     # Cloud Functions hívások: createCheckoutSession, purchaseWithCredits, awardWage
-  components/
-    shop/
-      CheckoutReturn.tsx  # success/cancel lap Stripe fizetés után
-```
+### Env változók (csak a létrehozó szkripthez)
 
-### Változtatások
-- **`CreditShopView`**: „Megveszem" gomb → `functionsApi.createCheckoutSession(packId)` → `sessionUrl` redirect
-- **`CheckoutReturn`** (új): `success_url` / `cancel_url` kezelése; Stripe-ról visszatérve a Firebase listener megvárja a wallet frissülést
-- **`useShopStore`** → a [[003-firebase-auth-settings]] Firebase listener-ére cserélve
+Jelenleg a `scripts/create_payment_links.mjs` tartalmazza a `sk_test_...` kulcsot. Élesítéskor:
+- Hozd létre a 4 élő Payment Link-et (élő `sk_live_...` kulccsal)
+- Cseréld le a `stripePaymentLink` URL-eket a `shopCatalog.ts`-ban
+- Változtasd a `redirect.url`-ot az éles Firebase Hosting URL-re
 
 ---
 
-## 5. Stripe konfiguráció
+## 5. Ismert korlátok
 
-- Stripe Dashboard: 4 **Price** objektum (5€, 10€, 25€, 100€ — egyszeri fizetés)
-- Webhook endpoint: Firebase Functions URL (`stripeWebhook`)
-- Webhook események: `checkout.session.completed`
-- Env változók:
-  - `STRIPE_SECRET_KEY` — Stripe titkos kulcs
-  - `STRIPE_WEBHOOK_SECRET` — Webhook aláírás
-  - `STRIPE_PUBLISHABLE_KEY` — Publikus kulcs
-  - Firebase Admin SDK → automatikusan elérhető Functions környezetben (`firebase-functions` + `firebase-admin`)
-- Teszt mód: Stripe test kulcsok + `stripe listen --forward-to http://localhost:5001/...`
+| Korlát | Oka | Megoldás a jövőben |
+|--------|-----|-------------------|
+| Nem Cloud Functions | Spark (ingyenes) terv | Blaze tervre váltás + CF migration |
+| Kliens írja a kreditet | Phase-1 kompromisszum | Phase-2: `wallet.write = false` + `purchaseWithCredits` CF |
+| Cross-origin localStorage elveszik | localhost → Firebase Hosting | Productionben nem releváns |
+| Nincs webhook → nincs automatikus verifikáció | Spark terv korlát | CF migration után: `stripeWebhook` + idempotencia |
+| Payment Link URL-ek fixen a kódban | Nem lehet env változó a buildben | `.env` + Vite import (de publikus, így ez nem biztonsági issue) |
 
 ---
 
-## 6. Megvalósítási lépések (sorrend)
+## 6. Tesztelés
 
-**A fázis — Stripe + Firebase CF**
-1. Stripe fiók + API kulcsok + 4 Price objektum
-2. `createCheckoutSession` Callable Function
-3. `stripeWebhook` HTTPS Function + idempotencia
-4. Webhook endpoint regisztráció a Stripe Dashboard-on
-5. Env változók beállítása
-
-**B fázis — Firebase Cloud Functions**
-6. `purchaseWithCredits` (in-app kredites vásárlás)
-7. `awardWage` (küldetés végi kredit)
-
-**C fázis — Frontend**
-8. `src/services/functionsApi.ts` — Cloud Functions hívások
-9. `CreditShopView` élesítése: mock → `createCheckoutSession`
-10. `CheckoutReturn` komponens
-11. Küldetés végén wage → `awardWage` bekötés
-
-**D fázis — Tesztelés**
-12. Stripe teszt-vásárlások (siker, megszakítás, dupla webhook)
-13. Anti-cheat, Security Rules
-14. `base href` redirect URL-ek
+### Manuális teszt lépések
+1. Nyisd meg a Firebase Hosting URL-t: `https://realtimespacetravel-e74e3.web.app/`
+2. Navigálj a shopba → Kredit tab
+3. Kattints "Megveszem" a Starter Pack-en
+4. Stripe-on: `4242 4242 4242 4242` + bármilyen adat → Pay
+5. Ellenőrizd: visszatérés után a shopban a ⭐ egyenleg nőtt 100-zal?
+6. Ellenőrizd: az RTDB-ben `users/{uid}/wallet.credits` frissült?
+7. Próbáld ki mind a 4 pakkot
+8. Próbáld ki: megszakítás (Stripe-on vissza gomb → nem történik jóváírás)
 
 ---
 
-## 7. Kockázatok
+## 7. Kapcsolódó tervek
 
-- **Nincs Strapi** → nincs karbantartandó CMS, nincs extra backend, nincs CORS, nincs deploy komplexitás ✅
-- **Webhook idempotencia** kritikus: dupla fizetés → dupla kredit. Megoldás: `session.id` alapján `orders/{id}` lock.
-- **Stripe redirect** elhagyja az oldalt → visszatéréskor a Firebase auth session helyreáll (perzisztens auth).
-- **`base href`** (`/realtime_space_travel/`) — a Stripe `success_url` / `cancel_url` ehhez igazodjon.
-
----
-
-## 8. Becsült ráfordítás
-
-| Fázis | Nagyságrend |
-|-------|-------------|
-| Stripe + Firebase CF (createCheckout, webhook) | ~1 nap |
-| Cloud Functions (purchaseWithCredits, awardWage) | ~1 nap |
-| Frontend (Stripe bekötés, CheckoutReturn) | ~0.5 nap |
-| Tesztelés | ~0.5 nap |
-
-**Kész definíció:** a játékos 4 féle kredit-pakkot vásárolhat Stripe-on keresztül; a kredit a Firebase RTDB `wallet.credits`-be íródik (szerver-írt); app-on belüli vásárlások Firebase Cloud Functions-en mennek; nincs Strapi.
-
----
-
-## 9. Kapcsolódó tervek
-
-- [[004-firebase-auth-bugfix]] – **blokkoló előfeltétel.** A kredit **írási** útja (Stripe → `stripeWebhook` CF → `users/{uid}/wallet.credits`) csak **működő auth** és **működő RTDB-olvasás** felett építhető: amíg a Google-belépés eldobja az uid-et és a rules `PERMISSION_DENIED`-et adnak, a webhook nem tudja megbízhatóan azonosítani a fizető felhasználót, a kliens pedig nem látná a jóváírt kreditet. A Phase-2 rules átállás (`wallet`/`inventory` → `".write": false`) is csak a `purchaseWithCredits` / `awardWage` CF-ek megléte után, **ebben** a tervben történik.
-- [[002-ingame-shop-frontend]] – a shop UI (CreditShopView, CreditBalance) már készen van
-- [[003-firebase-auth-settings]] – auth, RTDB séma, Security Rules, Cloud Functions alapok
-- [[000-i18n-nyelvesites]] – a kredit-pakkok neveinek lokalizációja
+- [[002-ingame-shop-frontend]] – a shop UI alapjai (ShopScreen, ProductGrid, CartView)
+- [[003-firebase-auth-settings]] – auth, RTDB séma, Security Rules
+- [[004-firebase-auth-bugfix]] – **blokkoló előfeltétel.** A kredit írás (`updateUserWallet`) csak működő auth + RTDB rules felett építhető

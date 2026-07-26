@@ -131,17 +131,24 @@
     "musicTrack": "Music Selection",
     "musicDefault": "Default",
     "signOut": "Sign Out",
+    "logout": "Sign out",
     "authenticated": "Authenticated",
-    "userId": "User ID"
+    "userId": "User ID",
+    "uidCopied": "Copied!",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter a display name",
+    "nicknameEdit": "Edit",
+    "nicknameSave": "Save",
+    "signIn": "Sign in"
   },
   "login": {
     "error": {
-      "popupBlocked": "Sign-in popup was blocked. Please allow popups for this site and try again.",
-      "alreadyInUse": "This Google account is already linked to another profile.",
-      "accountExists": "An account with this email already exists.",
-      "cancelled": "Sign-in was cancelled.",
-      "network": "Network error. Check your connection and try again.",
-      "generic": "Sign-in failed. Please try again."
+      "popupBlocked": "The browser blocked the sign-in window. Allow pop-ups, or try again.",
+      "alreadyInUse": "This Google account already belongs to another player. Your guest progress (credits, owned content) cannot be transferred.",
+      "accountExists": "An account with this email address already exists using a different sign-in method.",
+      "cancelled": "You cancelled the sign-in.",
+      "network": "Network error during sign-in. Check your connection.",
+      "generic": "Sign-in failed. Please try again later."
     }
   },
   "shipSelect": {
