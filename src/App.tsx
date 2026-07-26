@@ -126,18 +126,20 @@ const App: React.FC = () => {
     });
 
     const unsub = onAuthChange(async (user) => {
+      // If no user and redirect still pending, wait WITHOUT clearing the store
+      if (!user && !anonInit && !redirectCheckDone) {
+        // Don't call setUser(null) — the redirect might be processing
+        // and we'd clear the store prematurely. Wait for checkRedirectResult.
+        return;
+      }
+
       const { setUser } = useAuthStore.getState();
       setUser(user);
 
       // Only auto-login anonymously if:
       // 1. No user from auth
       // 2. We haven't already auto-logged in
-      // 3. No redirect result is pending (wait for checkRedirectResult to complete)
       if (!user && !anonInit) {
-        if (!redirectCheckDone) {
-          // Redirect check still in progress — wait for it, then decide
-          return;
-        }
         anonInit = true;
         try {
           await signInAnonymous();

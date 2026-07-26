@@ -1,0 +1,117 @@
+{
+/*
+ * ═══════════════════════════════════════════════════════════════
+ *  Firebase Realtime Database Security Rules
+ *  Project: realtimespacetravel-e74e3
+ *
+ *  HOW TO DEPLOY
+ *  ─────────────
+ *  A) Firebase Console (easiest):
+ *     1. Open https://console.firebase.google.com/project/realtimespacetravel-e74e3/database
+ *     2. Go to Realtime Database → Rules
+ *     3. Paste the ENTIRE content of this file into the editor
+ *     4. Click PUBLISH
+ *     Note: The Console editor accepts /* comments *\/ and will strip them on save.
+ *
+ *  B) Firebase CLI (for CI/CD):
+ *     If you want CLI-based deployment, create a pure JSON copy:
+ *     node -e "require('fs').writeFileSync('database.rules.json',
+ *       require('fs').readFileSync('security.rules.json','utf8')
+ *         .replace(/\\/\\*[\\s\\S]*?\\*\\//g,''))"
+ *     Then: npx firebase deploy --only database
+ *
+ *  ═══════════════════════════════════════════════════════════════
+ *  DEPLOYMENT PHASES
+ *  ═══════════════════════════════════════════════════════════════
+ *
+ *  PHASE 1 (NOW):  wallet + inventory = user-writable
+ *    Cloud Functions NOT yet deployed. The client writes credits
+ *    and inventory directly via useShopStore.checkout/
+ *    buyCredits/resetShop. Use the rules below as-is.
+ *
+ *  PHASE 2 (FUTURE): wallet + inventory = server-only (".write": false)
+ *    When Cloud Functions awardWage and purchaseWithCredits are
+ *    deployed, change wallet and inventory to ".write": false.
+ *    Only Admin SDK / Cloud Functions will modify credits and
+ *    owned items. The client reads but never writes these paths.
+ *
+ *  ═══════════════════════════════════════════════════════════════
+ *  RTDB SCHEMA
+ *  ═══════════════════════════════════════════════════════════════
+ *
+ *  users/
+ *    {uid}/
+ *      profile:   { displayName, photoURL, provider, isAnonymous, createdAt, lastLoginAt }
+ *      settings:  { activeShipId, activeMusicId, musicMuted, musicVolume, difficulty, language }
+ *      wallet:    { credits }
+ *      inventory:
+ *        ships:      { <shipId>: true, ... }
+ *        music:      { <musicId>: true, ... }
+ *        exoplanets: { <exoplanetId>: true, ... }
+ *      stats:     { bestServiceSeconds }
+ *
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+  "rules": {
+    "users": {
+      "$uid": {
+        /* READ: Only the authenticated user can read their own data */
+        ".read": "auth != null && auth.uid == $uid",
+
+        /* ——— PROFILE ——— */
+        "profile": {
+          /* Write: user can update their own profile */
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        /* ——— SETTINGS ——— */
+        "settings": {
+          /* Write: user can update their preferences */
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        /* ——— WALLET (credits) ——— */
+        "wallet": {
+          /*
+           * PHASE 1: Allow client writes (Cloud Functions not yet deployed).
+           * PHASE 2: Change to ".write": false — only Admin SDK / Cloud Functions write.
+           *
+           * Rationale: credits are in-game currency; client-side writes
+           * are vulnerable to manipulation. The target state is server-only.
+           */
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        /* ——— INVENTORY (owned items) ——— */
+        "inventory": {
+          /*
+           * PHASE 1: Allow client writes (Cloud Functions not yet deployed).
+           * PHASE 2: Change to ".write": false — only Admin SDK / Cloud Functions write.
+           *
+           * Rationale: inventory is the source of truth for what the player owns.
+           * Client-side manipulation would allow cheating. The target state
+           * is server-only via Cloud Functions (purchaseWithCredits) and
+           * Stripe→Strapi→Admin SDK pipeline.
+           *
+           * Sub-paths (ships, music, exoplanets) inherit this rule.
+           */
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        /* ——— STATS (e.g. bestServiceSeconds) ——— */
+        "stats": {
+          /*
+           * Write: user can update stats.
+           * Currently client writes bestServiceSeconds directly.
+           * Future: could validate with a write rule to only allow increases.
+           *   ".write": "auth != null && auth.uid == $uid &&
+           *              newData.child('bestServiceSeconds').val() >=
+           *              data.child('bestServiceSeconds').val()"
+           */
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    }
+  }
+}
