@@ -3,9 +3,9 @@ title: "Firebase identitás-szétválás bugfix – az rtdbKey mindig az auth ui
 slug: 009-firebase-identity-split-bugfix
 type: plan
 category: auth
-status: not-started
-implemented: false
-implemented_at: null
+status: completed
+implemented: true
+implemented_at: "2026-07-26"
 created_at: "2026-07-26"
 updated_at: "2026-07-26"
 author: exphoenee

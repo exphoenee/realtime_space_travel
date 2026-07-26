@@ -17,7 +17,7 @@ interface AuthState {
   isAnonymous: boolean;
   /** Firebase UID (changes on sign-out / new anonymous login) */
   uid: string | null;
-  /** Stable device-based identifier from localStorage (persistent), used as RTDB key */
+  /** Stable device-based identifier from localStorage (persistent) */
   deviceId: string;
   /** Latest auth/RTDB error as an i18n key, or null */
   authError: string | null;
@@ -25,21 +25,28 @@ interface AuthState {
   nickname: string;
   /** Whether nickname has been loaded from RTDB */
   nicknameLoaded: boolean;
-  /**
-   * The RTDB path key to use for all user data operations.
-   * For guests:   deviceId (persistent localStorage UUID)
-   * For logged in: Firebase UID (after migration of guest data)
-   */
-  rtdbKey: string;
 
   setUser: (user: User | null) => void;
   setDisplayName: (name: string) => void;
   clearUser: () => void;
   setAuthError: (msg: string | null) => void;
   setNickname: (nickname: string) => void;
-  setRtdbKey: (key: string) => void;
   setDeviceId: (id: string) => void;
 }
+
+/**
+ * Selector: derive the RTDB key from the current auth state.
+ * - Non-anonymous (Google) users ALWAYS use user.uid — this is an invariant.
+ * - Anonymous/guests use the persistent deviceId from localStorage.
+ *
+ * This is a DERIVED value, NOT a writable state field. There is no setRtdbKey
+ * action — a structural guarantee that the identity can never be swapped.
+ */
+export const selectRtdbKey = (s: AuthState): string =>
+  s.user && !s.user.isAnonymous ? s.user.uid : s.deviceId;
+
+/** Non-React call sites (store actions, event handlers, authBootstrap). */
+export const getRtdbKey = (): string => selectRtdbKey(useAuthStore.getState());
 
 const useAuthStore = create<AuthState>()((set) => ({
   user: null,
@@ -52,7 +59,6 @@ const useAuthStore = create<AuthState>()((set) => ({
   authError: null,
   nickname: "",
   nicknameLoaded: false,
-  rtdbKey: getDeviceId(),
 
   setUser: (user) =>
     set(() => {
@@ -68,8 +74,6 @@ const useAuthStore = create<AuthState>()((set) => ({
         displayName: user?.displayName ?? null,
         isAnonymous: user?.isAnonymous ?? true,
         uid: user?.uid ?? null,
-        // Non-anonymous (Google) users use their uid as RTDB key after migration
-        rtdbKey: user && !user.isAnonymous ? (user.uid ?? deviceId) : deviceId,
       };
     }),
 
@@ -86,14 +90,11 @@ const useAuthStore = create<AuthState>()((set) => ({
       deviceId: getDeviceId(),
       nickname: "",
       nicknameLoaded: false,
-      rtdbKey: getDeviceId(),
     }),
 
   setAuthError: (msg) => set({ authError: msg }),
 
   setNickname: (nickname) => set({ nickname, nicknameLoaded: true }),
-
-  setRtdbKey: (key) => set({ rtdbKey: key }),
 
   setDeviceId: (id) => set({ deviceId: id }),
 }));

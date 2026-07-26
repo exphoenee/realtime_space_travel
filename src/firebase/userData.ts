@@ -20,6 +20,10 @@ export interface UserNode {
     lastLoginAt: number;
     /** Custom nickname editable by the user. */
     nickname: string;
+    /** Idempotence mark: maps deviceId → true once that guest node has been merged. */
+    migratedFrom?: Record<string, boolean>;
+    /** Audit trail: orphan credits that were discarded because the target already had a wallet. */
+    orphanDiscardedCredits?: Record<string, number>;
   };
   settings: {
     activeShipId: string | null;
@@ -95,15 +99,28 @@ export const ensureDeviceMap = async (
  * If missing, creates it with defaults (idempotent).
  *
  * @param deviceId The stable device-based key — the node lives at `users/{deviceId}`.
+ * @param options.seedWallet  When false, the wallet branch is NOT written.
+ *        Used when a guest→Google migration is pending: the migration itself
+ *        will bring the wallet data, and writing STARTING_CREDITS here would
+ *        make the target node look like it already has a wallet (causing the
+ *        migration wallet-policy to skip credit transfer).
  */
-export const ensureUserNode = async (user: User, provider: "anonymous" | "google", deviceId: string): Promise<void> => {
+export const ensureUserNode = async (
+  user: User,
+  provider: "anonymous" | "google",
+  deviceId: string,
+  options?: { seedWallet?: boolean },
+): Promise<void> => {
   const db = getFirebaseDB();
   const userRef = ref(db, `users/${deviceId}`);
+  const seedWallet = options?.seedWallet !== false; // default: true
 
   // Check if node exists
   const { get } = await import("firebase/database");
   const snapshot = await get(userRef);
   if (snapshot.exists()) {
+    const existing = snapshot.val();
+
     // Always update profile + lastLoginAt (handles anonymous→Google upgrade)
     const updates: Record<string, unknown> = {
       "profile/lastLoginAt": Date.now(),
@@ -113,6 +130,13 @@ export const ensureUserNode = async (user: User, provider: "anonymous" | "google
       "profile/isAnonymous": user.isAnonymous,
       // Preserve existing nickname — do NOT overwrite it on re-login
     };
+
+    // Write createdAt only if it's missing from the existing node.
+    // An orphan node written by the old fallback-ág may lack createdAt.
+    if (!existing.profile || !existing.profile.createdAt) {
+      updates["profile/createdAt"] = Date.now();
+    }
+
     await update(userRef, updates);
     return;
   }
@@ -128,7 +152,15 @@ export const ensureUserNode = async (user: User, provider: "anonymous" | "google
   // child rule and succeeds. This also keeps the Phase-2 rules (server-only
   // wallet/inventory) achievable without a $uid-level write grant.
   const defaults = getDefaultUserNode(user, provider);
-  await update(userRef, defaults as unknown as Record<string, unknown>);
+
+  // Conditionally omit the wallet branch to avoid seeding credits when a
+  // guest→Google migration is pending (see authBootstrap migrationPending).
+  if (!seedWallet) {
+    const { wallet: _wallet, ...rest } = defaults;
+    await update(userRef, rest as unknown as Record<string, unknown>);
+  } else {
+    await update(userRef, defaults as unknown as Record<string, unknown>);
+  }
 };
 
 /**
@@ -136,12 +168,18 @@ export const ensureUserNode = async (user: User, provider: "anonymous" | "google
  *
  * When a guest user signs in with Google, this:
  * 1. Reads the guest data at `users/{deviceId}`
- * 2. Writes it to `users/{targetUid}` (merging with any existing data)
- * 3. Deletes `users/{deviceId}`
- * 4. Deletes `device_map/{deviceId}`
+ * 2. Merges it into `users/{targetUid}` (idempotent merge via migratedFrom guard)
+ * 3. Deletes `users/{deviceId}` children, `device_map/{deviceId}`
+ * 4. Marks the migration as done via `users/{targetUid}/profile/migratedFrom/{deviceId}`
  *
- * After migration, all subsequent operations use `users/{targetUid}`.
- * The security rules grant access via `$key == auth.uid` for the target path.
+ * All of the above happens in a SINGLE atomic root multi-path `update()` call
+ * (or a fallback lépésenkénti sequence if the root-update fails).
+ *
+ * Wallet policy:
+ * - If the target already has a `wallet` branch: target wins. Non-zero orphan
+ *   credits are logged via console.warn and written to an audit field
+ *   (`profile/orphanDiscardedCredits/{deviceId}`).
+ * - If the target has NO `wallet` branch: guest credits are transferred.
  *
  * @returns true if guest data was found and migrated, false otherwise.
  */
@@ -156,83 +194,170 @@ export const migrateGuestData = async (
   const guestRef = ref(db, `users/${deviceId}`);
 
   const { get } = await import("firebase/database");
-  const snapshot = await get(guestRef);
+  const guestSnapshot = await get(guestRef);
 
   // No guest data to migrate
-  if (!snapshot.exists()) return false;
+  if (!guestSnapshot.exists()) return false;
 
-  const guestData = snapshot.val() as UserNode;
+  const guestData = guestSnapshot.val() as DeepPartial<UserNode>;
 
   // Check if the target already has data
   const targetRef = ref(db, `users/${targetUid}`);
   const targetSnapshot = await get(targetRef);
 
+  let targetData: DeepPartial<UserNode> | null = null;
   if (targetSnapshot.exists()) {
-    // Merge: combine guest + existing data. Guest wins for most fields,
-    // but wallet credits are summed (so nothing is lost).
-    const targetData = targetSnapshot.val() as UserNode;
+    targetData = targetSnapshot.val() as DeepPartial<UserNode>;
 
-    // Merge credits: sum them
-    guestData.wallet.credits = (guestData.wallet?.credits ?? 0) + (targetData.wallet?.credits ?? 0);
-
-    // Merge inventory: union of both sets
-    if (targetData.inventory) {
-      for (const cat of ["ships", "music", "exoplanets"] as const) {
-        if (!guestData.inventory) guestData.inventory = { ships: {}, music: {}, exoplanets: {} };
-        if (targetData.inventory[cat]) {
-          for (const key of Object.keys(targetData.inventory[cat])) {
-            if (targetData.inventory[cat][key]) {
-              guestData.inventory[cat][key] = true;
-            }
-          }
-        }
-      }
+    // Idempotence guard: if this deviceId was already migrated, skip merge.
+    if (targetData.profile?.migratedFrom?.[deviceId] === true) {
+      // Already migrated — just clean up the orphan guest node.
+      await cleanupGuestNode(db, deviceId);
+      return true;
     }
-
-    // Stats: keep the best
-    if (targetData.stats?.bestServiceSeconds !== undefined && guestData.stats) {
-      guestData.stats.bestServiceSeconds = Math.max(
-        guestData.stats.bestServiceSeconds ?? 0,
-        targetData.stats.bestServiceSeconds,
-      );
-    }
-
-    // Settings: guest settings take precedence (they were actively playing)
-    // (guestData.settings already has the guest values from the snapshot)
   }
 
-  // Write merged data to target path.
-  // Use `update` (not `set`) so the write is evaluated PER top-level child
-  // (profile/settings/wallet/inventory/stats). The security rules grant
-  // `.write` only on those children — NOT on `users/$key` itself — and RTDB
-  // write rules cascade downward, never upward. A `set` on the parent path
-  // would hit the (absent) `users/$key` rule and fail with PERMISSION_DENIED.
-  await update(targetRef, {
-    profile: guestData.profile,
-    settings: guestData.settings,
-    wallet: guestData.wallet,
-    inventory: guestData.inventory,
-    stats: guestData.stats,
-  } as unknown as Record<string, unknown>);
+  // --- Build the atomic updates object ---
+  // Root multi-path update: all writes in a single call.
+  // Uses ONLY leaf-level paths to avoid RTDB path overlap errors.
+  const updates: Record<string, unknown> = {};
 
-  // Delete guest data (write null to the parent — this is allowed because the
-  // device_map entry still exists at this point, so $key == auth.uid passes...
-  // Wait: the parent path itself still has no .write rule, but delete via set(null)
-  // to $key itself also fails. Instead, delete each child individually.
-  await update(guestRef, {
-    profile: null,
-    settings: null,
-    wallet: null,
-    inventory: null,
-    stats: null,
-  } as unknown as Record<string, unknown>);
+  // Idempotence mark (always written)
+  updates[`users/${targetUid}/profile/migratedFrom/${deviceId}`] = true;
 
-  // Delete device_map entry (no longer needed; targetUid grants access via $key == auth.uid)
-  // The security rule `data.val() == auth.uid` allows deletion.
-  const mapRef = ref(db, `device_map/${deviceId}`);
-  await set(mapRef, null);
+  // --- Wallet ---
+  const guestCredits = guestData.wallet?.credits ?? 0;
+  const targetCredits = targetData?.wallet?.credits ?? 0;
+
+  if (targetData?.wallet === undefined || targetData.wallet === null) {
+    // Target has NO wallet → transfer guest credits
+    updates[`users/${targetUid}/wallet/credits`] = guestCredits;
+  } else {
+    // Target has a wallet → target wins
+    if (guestCredits > 0) {
+      console.warn(
+        `Guest data migration: orphan credits discarded. deviceId=${deviceId}, ` +
+        `credits=${guestCredits}. Target uid=${targetUid} already has wallet.`,
+      );
+      // Audit trail so the orphan credits can be manually restored if needed
+      updates[`users/${targetUid}/profile/orphanDiscardedCredits/${deviceId}`] = guestCredits;
+    }
+  }
+
+  // --- Inventory (union) ---
+  const categories = ["ships", "music", "exoplanets"] as const;
+  for (const cat of categories) {
+    const guestCat = guestData.inventory?.[cat];
+    if (!guestCat) continue;
+    for (const [key, val] of Object.entries(guestCat)) {
+      if (val === true) {
+        updates[`users/${targetUid}/inventory/${cat}/${key}`] = true;
+      }
+    }
+  }
+
+  // --- Stats (max) ---
+  const guestBest = guestData.stats?.bestServiceSeconds ?? 0;
+  const targetBest = targetData?.stats?.bestServiceSeconds ?? 0;
+  if (guestBest > targetBest) {
+    updates[`users/${targetUid}/stats/bestServiceSeconds`] = guestBest;
+  }
+
+  // --- Settings (only if target has none) ---
+  if (!targetData?.settings) {
+    if (guestData.settings) {
+      // Write individual leaf fields
+      if (guestData.settings.activeShipId !== undefined)
+        updates[`users/${targetUid}/settings/activeShipId`] = guestData.settings.activeShipId;
+      if (guestData.settings.activeMusicId !== undefined)
+        updates[`users/${targetUid}/settings/activeMusicId`] = guestData.settings.activeMusicId;
+      if (guestData.settings.musicMuted !== undefined)
+        updates[`users/${targetUid}/settings/musicMuted`] = guestData.settings.musicMuted;
+      if (guestData.settings.musicVolume !== undefined)
+        updates[`users/${targetUid}/settings/musicVolume`] = guestData.settings.musicVolume;
+      if (guestData.settings.difficulty !== undefined)
+        updates[`users/${targetUid}/settings/difficulty`] = guestData.settings.difficulty;
+      if (guestData.settings.language !== undefined)
+        updates[`users/${targetUid}/settings/language`] = guestData.settings.language;
+    }
+  }
+
+  // --- Profile (nickname only if target has none; createdAt only if target has none) ---
+  if (!targetData?.profile?.nickname && guestData.profile?.nickname) {
+    updates[`users/${targetUid}/profile/nickname`] = guestData.profile.nickname;
+  }
+  if (!targetData?.profile?.createdAt && guestData.profile?.createdAt) {
+    updates[`users/${targetUid}/profile/createdAt`] = guestData.profile.createdAt;
+  }
+
+  // --- Cleanup: delete guest node children + device_map ---
+  // Get the actual keys from the guest snapshot to delete them
+  const guestKeys = Object.keys(guestSnapshot.val() || {});
+  for (const key of guestKeys) {
+    updates[`users/${deviceId}/${key}`] = null;
+  }
+  updates[`device_map/${deviceId}`] = null;
+
+  // --- Validate: no undefined values, no overlapping paths ---
+  for (const [path, val] of Object.entries(updates)) {
+    if (val === undefined) {
+      console.warn(`migrateGuestData: skipping undefined value at ${path}`);
+      delete updates[path];
+    }
+  }
+
+  // --- Execute atomic multi-path update ---
+  const rootRef = ref(db); // root reference for multi-path update
+  try {
+    await update(rootRef, updates);
+  } catch (err) {
+    console.error("migrateGuestData: atomic multi-path update failed:", err);
+
+    // Fallback: lépésenkénti sequence (rollback-barát)
+    // 1. Write target data + migratedFrom mark
+    const targetUpdates: Record<string, unknown> = {};
+    for (const [path, val] of Object.entries(updates)) {
+      if (path.startsWith(`users/${targetUid}/`)) {
+        targetUpdates[path.replace(`users/${targetUid}/`, "")] = val;
+      }
+    }
+    await update(ref(db, `users/${targetUid}`), targetUpdates as Record<string, unknown>);
+
+    // 2. Delete guest node children
+    await cleanupGuestNode(db, deviceId);
+
+    // 3. Delete device_map
+    const mapRef = ref(db, `device_map/${deviceId}`);
+    await set(mapRef, null);
+  }
 
   return true;
+};
+
+/**
+ * Type helper: all fields optional (for null-safe guest data access).
+ */
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+/**
+ * Delete all children of a guest node.
+ */
+const cleanupGuestNode = async (db: ReturnType<typeof getFirebaseDB>, deviceId: string): Promise<void> => {
+  const guestRef = ref(db, `users/${deviceId}`);
+  const { get } = await import("firebase/database");
+  const snap = await get(guestRef);
+  if (!snap.exists()) return;
+
+  const keys = Object.keys(snap.val());
+  if (keys.length === 0) return;
+
+  const cleanup: Record<string, null> = {};
+  for (const key of keys) {
+    cleanup[key] = null;
+  }
+  await update(guestRef, cleanup);
 };
 
 /**

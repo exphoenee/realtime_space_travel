@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { ShopCategory, CartItem, OwnedItems } from "../types";
 import { CREDIT_PACKS, STARTING_CREDITS, DEBUG_STARTING_CREDITS, BASE_EXOPLANET_IDS } from "../constants/shopCatalog";
-import useAuthStore from "./useAuthStore";
+import { getRtdbKey } from "./useAuthStore";
 import { updateUserWallet, updateUserInventory } from "../firebase/userData";
 
 interface ShopState {
@@ -104,9 +104,8 @@ const useShopStore = create<ShopState>()(
           cart: [],
         });
 
-        // Persist to RTDB if signed in (use rtdbKey — deviceId for guests, uid for
-        // authenticated users after guest data migration)
-        const rtdbKey = useAuthStore.getState().rtdbKey;
+        // Persist to RTDB if signed in (use rtdbKey — derived from auth state)
+        const rtdbKey = getRtdbKey();
         if (rtdbKey) {
           updateUserWallet(rtdbKey, newCredits).catch(console.error);
           // Update inventory per category
@@ -136,7 +135,7 @@ const useShopStore = create<ShopState>()(
         const newCredits = get().credits + pack.credits;
         set({ credits: newCredits });
         // Persist to RTDB if signed in (use rtdbKey)
-        const rtdbKey = useAuthStore.getState().rtdbKey;
+        const rtdbKey = getRtdbKey();
         if (rtdbKey) {
           updateUserWallet(rtdbKey, newCredits).catch(console.error);
         }
@@ -169,7 +168,7 @@ const useShopStore = create<ShopState>()(
         });
 
         // Persist reset to RTDB if signed in (use rtdbKey)
-        const rtdbKey = useAuthStore.getState().rtdbKey;
+        const rtdbKey = getRtdbKey();
         if (rtdbKey) {
           updateUserWallet(rtdbKey, debugCredits).catch(console.error);
           const emptyInventory = (ids: string[]) =>

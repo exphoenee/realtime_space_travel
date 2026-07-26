@@ -12,8 +12,8 @@ import {
   migrateGuestData,
   type UserNode,
 } from "./userData";
-import { getDeviceId, clearDeviceId } from "./deviceId";
-import useAuthStore from "../state/useAuthStore";
+import { getDeviceId } from "./deviceId";
+import useAuthStore, { getRtdbKey } from "../state/useAuthStore";
 import useGameStore from "../state/useGameStore";
 
 // Module-scope singleton state. Living at module scope (rather than inside a
@@ -107,39 +107,40 @@ export const startAuthBootstrap = (
     }
 
     // If this is a Google (non-anonymous) user, attempt to migrate guest data
-    // from users/{deviceId} to users/{user.uid}. The rtdbKey in the store
-    // is already set to user.uid by setUser() above.
+    // from users/{deviceId} to users/{user.uid}. The RTDB key for authenticated
+    // users is ALWAYS user.uid — this is a structural invariant enforced by the
+    // derived selectRtdbKey/getRtdbKey selectors (there is no setRtdbKey action).
+    let migrationPending = false;
     if (!user.isAnonymous) {
       try {
         const migrated = await migrateGuestData(deviceId, user.uid);
         if (migrated) {
           console.log("Guest data migrated to", user.uid);
-          // After successful migration, rotate the deviceId in localStorage so
-          // the old deviceId can never be reused. The old guest data has been
-          // deleted by migrateGuestData and the device_map entry is gone, but
-          // without rotating, a new guest session on the same device would still
-          // produce the same deviceId → another ensureUserNode with fresh defaults
-          // → another migration on next Google login → credits would accumulate.
-          const newDeviceId = clearDeviceId();
-          const store = useAuthStore.getState();
-          store.setDeviceId(newDeviceId);
-          // rtdbKey stays as user.uid (set by setUser above)
         }
       } catch (err) {
         console.error("Guest data migration failed:", err);
-        // Non-fatal: fall back to deviceId path if migration fails
-        useAuthStore.getState().setRtdbKey(deviceId);
+        useAuthStore.getState().setAuthError(getAuthErrorMessage(err));
+        // ❌ NO fallback to deviceId. The rtdbKey is a DERIVED value and
+        // cannot be swapped. A migration failure is logged + surfaced to the
+        // user; the next auth event retries. The identity stays on user.uid.
+        migrationPending = true; // prevents wallet seeding (see ensureUserNode)
       }
     }
 
-    // Determine the correct RTDB key (uid for Google users, deviceId for guests)
-    const rtdbKey = useAuthStore.getState().rtdbKey;
+    // Get the RTDB key — derived from auth state, guaranteed to be user.uid
+    // for non-anonymous users (see selectRtdbKey in useAuthStore.ts).
+    const rtdbKey = getRtdbKey();
 
     // Ensure the RTDB node exists at the correct path, but subscribe REGARDLESS
     // of whether that write succeeds — a PERMISSION_DENIED on ensureUserNode
     // must not stop the read path from ever running.
     try {
-      await ensureUserNode(user, user.isAnonymous ? "anonymous" : "google", rtdbKey);
+      await ensureUserNode(
+        user,
+        user.isAnonymous ? "anonymous" : "google",
+        rtdbKey,
+        { seedWallet: !migrationPending }, // skip wallet seed if migration is pending
+      );
     } catch (err) {
       useAuthStore.getState().setAuthError(getAuthErrorMessage(err));
       console.error("Firebase sync failed:", err);
