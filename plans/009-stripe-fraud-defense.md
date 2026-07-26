@@ -17,6 +17,7 @@ related_plans:
   - 002-ingame-shop-frontend
   - 003-firebase-auth-settings
   - 004-firebase-auth-bugfix
+  - 010-stripe-go-live
 tags:
   - stripe
   - security
@@ -87,6 +88,8 @@ tags:
 - [ ] Élesítéskor: **külön** live-módú restricted kulccsal létrehozott 4 live link; a `sk_live_` kulcs **soha ne kerüljön a `.env`-be** — egyszeri használat parancssori env változóval: `$env:STRIPE_SECRET_KEY="rk_live_…"; node scripts/create_payment_links.mjs`
 - [ ] `scripts/create_payment_links.mjs`: a redirect URL kapjon `?session_id={CHECKOUT_SESSION_ID}` végződést (mindkét — dev és prod — halmazra), majd a 8 meglévő link **újragenerálása vagy frissítése**
 - [ ] `src/constants/shopCatalog.ts`: az új link URL-ek beírása (`stripePaymentLink` + `stripePaymentLinkDev`)
+
+> ℹ️ **Pontosítás a [[010-stripe-go-live]] tervből:** a fenti első pont („dev Payment Linkek deaktiválása élesítés előtt") **finomítandó**. Élesben a Stripe `https` redirectet követel, ezért a `localhost`-ra visszatérő dev linkek **nem is hozhatók létre éles módban** — teszt módban maradnak, ahol valós pénzt nem tudnak mozgatni. A fejlesztői folyamat megtartása érdekében ezek **aktívak maradhatnak**; amit ténylegesen érdemes deaktiválni, az a **prod-redirectes teszt link-készlet**, mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek (összekeverhető). Ugyanez a terv rögzíti, hogy az itteni `?session_id={CHECKOUT_SESSION_ID}` toldalék **elrontja** a `create_payment_links.mjs` `redirectUrl === PROD_REDIRECT_URL` mező-javaslatát (`stripePaymentLink` helyett `stripePaymentLinkDev`-et írna) — a `startsWith`-alapú összehasonlításra javítás **kötelező**.
 
 **E fázis — Az ingyen-kredit rés szűkítése (Spark-on belül)**
 - [ ] `src/components/shop/CreditShopView.tsx`: a `PENDING_PURCHASE_KEY` payloadból a **`credits` mező kikerül** (marad `packId` + `timestamp`) — a kredit értéke a jóváíráskor a `CREDIT_PACKS`-ból származik
@@ -486,6 +489,7 @@ A felhasználó kifejezetten **Spark-kompatibilis, backend nélküli** védelmet
 ## 14. Kapcsolódó tervek
 
 - [[005-ingame-shop-strapi-stripe]] – **közvetlen előfeltétel.** Ez a terv az ott megépített Payment Links + kliensoldali jóváírás út köré épít védelmet; a 005 „Ismert korlátok" táblájának *„Kliens írja a kreditet"* és *„Nincs webhook → nincs automatikus verifikáció"* sorai itt kapnak konkrét kockázat-elemzést és enyhítést.
+- [[010-stripe-go-live]] – **ráépülő élesítési terv, amelynek ez a terv A és E fázisa blokkoló előfeltétele.** Valós pénzes fizetés nem indulhat a kulcs-higiénia és az ingyen-kredit rés szűkítése nélkül. A 010 az itteni `?session_id={CHECKOUT_SESSION_ID}` redirect-mintát viszi tovább az éles linkekre, `rk_live_` restricted kulccsal generálva, és kiegészíti a fizetési utat a Stripe Tax (`automatic_tax`, `tax_behavior`) valamint a 14 napos elállási jog lemondása (`consent_collection`) elemekkel. Fontos, hogy a 010 sem oldja meg a webhook hiányát: élesben a **refund után a kredit nem vonódik vissza** automatikusan — ez az F fázis melletti további érv.
 - [[004-firebase-auth-bugfix]] – a Phase-1 RTDB rules (`wallet` kliens-írható) és a `device_map` alapú `rtdbKey` innen származik; az 5.3 (d) pont ezeket a szabályokat **szigorítja additívan**, a `device_map` logika érintetlenül marad.
 - [[003-firebase-auth-settings]] – a Phase-2 rules (`wallet.write = false`) és az `awardWage` / `purchaseWithCredits` szerveroldali út itt van felvázolva Cloud Functionökkel; a jelen terv **F fázisa** ugyanezt Blaze terv nélkül, külső serverless futtatóval valósítaná meg.
 - [[002-ingame-shop-frontend]] – a `useShopStore` kredit/kosár/birtoklás logikája; a `buyCredits` és a `checkout` viselkedése a rules-limit hangolásánál számít (a `checkout` **levon**, ezért nem alkalmazható „csak nőhet" szabály).

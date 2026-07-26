@@ -20,6 +20,8 @@ related_plans:
   - 000-i18n-nyelvesites
   - 001-main-menu-settings
   - 002-ingame-shop-frontend
+  - 009-stripe-fraud-defense
+  - 010-stripe-go-live
 tags:
   - stripe
   - payments
@@ -269,6 +271,8 @@ export const getPaymentLinkUrl = (pack: CreditPack): string =>
 - Hozd létre a 4 élő Payment Link-et (élő `sk_live_...` kulccsal), `--redirect=<éles https URL>`-lel — élesben a `http://localhost` redirect nem engedélyezett
 - Cseréld le a `stripePaymentLink` URL-eket a `shopCatalog.ts`-ban (a `stripePaymentLinkDev` mezők maradhatnak teszt-linkek, prod buildben úgysem használatosak)
 
+> 📋 **A teljes élesítési út a [[010-stripe-go-live]] tervben van.** A fenti két pont csak a technikai mag; az élesítés valójában ennél lényegesen több: Stripe fiókaktiválás (KYC, egyéni vállalkozóként), **a weboldal jogi elemeinek megépítése** (ÁSZF, adatkezelési tájékoztató, elállási/visszatérítési szabályzat, impresszum — ma egyik sincs meg, és ez a Stripe review leggyakoribb blokkolója), az EU-s 14 napos elállási jogról szóló kifejezett lemondás beépítése a vásárlási folyamatba, valamint a **Stripe Tax** bekapcsolása (digitális termék adókód, `tax_behavior: "inclusive"`, `automatic_tax`). Fontos sorrendi kötöttség: a `tax_behavior` a `price` objektumon **immutábilis**, ezért a Stripe Tax beállítása **megelőzi** az éles linkek generálását. A 010-es terv minden feladatnál jelöli, hogy **kézi** (Stripe Dashboard / hatóság) vagy **automatizálható** (script) lépésről van-e szó.
+
 ---
 
 ## 5. Ismert korlátok
@@ -307,4 +311,5 @@ export const getPaymentLinkUrl = (pack: CreditPack): string =>
 - [[002-ingame-shop-frontend]] – a shop UI alapjai (ShopScreen, ProductGrid, CartView)
 - [[003-firebase-auth-settings]] – auth, RTDB séma, Security Rules
 - [[004-firebase-auth-bugfix]] – **blokkoló előfeltétel.** A kredit írás (`updateUserWallet`) csak működő auth + RTDB rules felett építhető
+- [[010-stripe-go-live]] – **az élesítés terve.** Teszt módból valós pénzes fizetésbe: KYC / fiókaktiválás, a kötelező jogi oldalak megépítése, elállási jog lemondása, Stripe Tax, a 4 éles Payment Link generálása és a go-live / rollback checklist. Módosítja a `create_payment_links.mjs`-t (`tax_code`, `tax_behavior`, `automatic_tax`, `consent_collection`), a `shopCatalog.ts` `stripePaymentLink` mezőit, a `CreditShopView`-t (elállási checkbox) és új `LegalScreen` képernyőt vezet be
 - [[009-stripe-fraud-defense]] – **ráépülő biztonsági terv.** Carding / refund-támadás / adatlopás elleni Spark-kompatibilis védelem + az ingyen-kredit rés szűkítése (`session_id` kapu, `credit_claims` ledger, `wallet` növekmény-limit). Módosítja a `CreditShopView` pending payloadját, a `ShopScreen` jóváírási ágát, az `updateUserWallet` írásmódját (`set` → `update`) és a `create_payment_links.mjs` redirect URL-jét
