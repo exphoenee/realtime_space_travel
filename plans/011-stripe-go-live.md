@@ -55,12 +55,12 @@ tags:
 > Jelölés az állapotra: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 > Jelölés a végrehajtóra: **`[K]`** = KÉZI (a felhasználó: Stripe Dashboard / hatóság / jogi szöveg) · **`[A]`** = AUTOMATIZÁLHATÓ (script vagy AI) · **`[K+A]`** = vegyes (AI előkészít, ember dönt/beír).
 
-**A fázis — Előfeltételek (blokkoló, a 009-es tervből)**
+**A fázis — Előfeltételek (blokkoló, a 010-es tervből)**
 - [ ] `[A]` [[010-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - [ ] `[K]` A GitHub repository secret **`VITE_STRIPE_SECRET_KEY` törlése** (Settings → Secrets and variables → Actions) — a frontend soha nem használta, csak kockázat
 - [ ] `[A]` `.github/workflows/deploy.yml` + `deploy-firebase.yml`: a Stripe-kulcs env sor **eltávolítása** a build blokkból
 - [ ] `[A]` [[010-stripe-fraud-defense]] **E fázis** teljes lefutása: `session_id` kapu, `credit_claims` ledger, `CREDIT_PACKS`-ból származó kredit, `wallet` növekmény-limit, i18n hibaágak
-- [ ] `[K]` Döntés-megerősítés: a 009 E fázisa nélkül **nem indul** az éles fizetés (a kockázatot lásd 11. tábla)
+- [ ] `[K]` Döntés-megerősítés: a 010 E fázisa nélkül **nem indul** az éles fizetés (a kockázatot lásd 11. tábla)
 
 **B fázis — Stripe fiókaktiválás / KYC (egyéni vállalkozó)** — *túlnyomórészt KÉZI*
 - [ ] `[K]` Dashboard → **Activate account** (vagy Settings → Business → Business details) indítása
@@ -126,7 +126,7 @@ tags:
 - [ ] `[K]` A `sk_live_` **teljes** kulcs **sehová** ne kerüljön: se `.env`, se GitHub secret, se workflow env (a [[010-stripe-fraud-defense]] A fázisának szabálya)
 - [ ] `[A]` A 4 **éles** Payment Link generálása egyszeri, fájlba nem író env-átadással:
       `$env:STRIPE_SECRET_KEY="rk_live_…"; node scripts/create_payment_links.mjs --redirect=https://realtimespacetravel-e74e3.web.app/shop/success?session_id={CHECKOUT_SESSION_ID}`
-      *(a `?session_id={CHECKOUT_SESSION_ID}` a 009 E fázisának kapuja — ha az már be van vezetve, az éles linkeknek ezzel kell készülniük)*
+      *(a `?session_id={CHECKOUT_SESSION_ID}` a 010 E fázisának kapuja — ha az már be van vezetve, az éles linkeknek ezzel kell készülniük)*
 - [ ] `[K]` Tudomásul vétel: a **teszt módban létrehozott termékek / árak / linkek NEM vihetők át élesbe** — a live mód külön adatbázis, mindent újra kell létrehozni
 - [ ] `[A]` `src/constants/shopCatalog.ts`: a 4 éles URL beírása a **`stripePaymentLink`** mezőkbe (a `stripePaymentLinkDev` marad teszt-link)
 - [ ] `[A]` Ellenőrzés: az éles link URL-ekben **nincs** `test_` szegmens (`https://buy.stripe.com/…` vs. `https://buy.stripe.com/test_…`)
@@ -330,7 +330,7 @@ const [consent, setConsent] = useState(false);
 <button disabled={!consent} onClick={() => handleBuy(pack.id)}>{t("shop.credits.buy")}</button>
 ```
 
-A pending payloadba bekerül a bizonyíték (a `credits` mező a 009 E fázisa szerint **kikerül**):
+A pending payloadba bekerül a bizonyíték (a `credits` mező a 010 E fázisa szerint **kikerül**):
 
 ```ts
 { packId, timestamp, consent: { at: Date.now(), version: "2026-07-26" } }
@@ -441,7 +441,7 @@ Dashboard → **Tax** → *Reports / Registrations*: ország szerinti bontású 
 
 ## 7. Éles kulcs és éles linkek
 
-### 7.1 Kulcs-szabályok (a 009 A fázisából örökölve)
+### 7.1 Kulcs-szabályok (a 010 A fázisából örökölve)
 
 | Szabály | Indok |
 |---|---|
@@ -512,7 +512,7 @@ A script kimenete tartalmazza a `stripePaymentLink` mezőbe illesztendő 4 URL-t
 - [ ] A Stripe fiókban a ToS URL és a Privacy URL be van állítva
 - [ ] Stripe Tax aktív, a linkeken `automatic_tax: true`
 - [ ] [[010-stripe-fraud-defense]] A + E fázis kész
-- [ ] Radar CVC- és irányítószám-blokkolás bekapcsolva (009 C fázis)
+- [ ] Radar CVC- és irányítószám-blokkolás bekapcsolva (010 C fázis)
 - [ ] Dispute / EFW / Refund / Failed payment értesítések bekapcsolva
 
 ### 8.3 Rollback-forgatókönyv
@@ -649,7 +649,7 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 
 | Fázis | Tartalom | K/A arány | Nagyságrend |
 |---|---|---|---|
-| A | Előfeltételek (009 A + E) | túlnyomórészt **A** | ~1–1,5 nap *(a 009-ben számolva)* |
+| A | Előfeltételek (010 A + E) | túlnyomórészt **A** | ~1–1,5 nap *(a 010-ben számolva)* |
 | B | KYC / fiókaktiválás | **K** | 1 óra munka + **1–10 munkanap átfutás** |
 | C | Jogi oldalak (szöveg + komponens + i18n) | **K+A** | ~1–1,5 nap + jogi review |
 | D | Elállási jog lemondása (UI + Payment Link + szöveg) | **A** (+K szöveg) | ~3 óra |
@@ -666,7 +666,7 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 ## 14. Kapcsolódó tervek
 
 - [[005-ingame-shop-strapi-stripe]] – **közvetlen előfeltétel.** Az ott megépített Payment Links út, a `getPaymentLinkUrl(pack)` dev/prod választás és a 4. szekció „Élesítéskor" pontja itt kap teljes, végrehajtható kifejtést. A 005 „Ismert korlátok" táblájának *„Nincs webhook"* sora élesben is fennáll.
-- [[010-stripe-fraud-defense]] – **blokkoló előfeltétel** (A + E fázis). A kulcs-higiénia, a restricted key, a `session_id` kapu és a `credit_claims` ledger nélkül nem indulhat valós pénzes fizetés. Ez a terv két ponton **finomítja** a 009-et: (1) a dev Payment Linkek nem deaktiválandók, mert teszt módban maradnak (7.3); (2) az éles linkek a 009 D fázisa szerinti `?session_id={CHECKOUT_SESSION_ID}` redirect-mintával készülnek.
+- [[010-stripe-fraud-defense]] – **blokkoló előfeltétel** (A + E fázis). A kulcs-higiénia, a restricted key, a `session_id` kapu és a `credit_claims` ledger nélkül nem indulhat valós pénzes fizetés. Ez a terv két ponton **finomítja** a 010-et: (1) a dev Payment Linkek nem deaktiválandók, mert teszt módban maradnak (7.3); (2) az éles linkek a 010 D fázisa szerinti `?session_id={CHECKOUT_SESSION_ID}` redirect-mintával készülnek.
 - [[002-ingame-shop-frontend]] – a shop UI, a `CreditShopView` és a `ShopScreen`; az elállási checkbox és a jogi lábléc-linkek ide épülnek be.
 - [[003-firebase-auth-settings]] – az RTDB `wallet` séma és a `rtdbKey` feloldás; a valós pénzes jóváírás célja ugyanez a node. A 6. pontjában vázolt szerveroldali út (`awardWage`, `purchaseWithCredits`) a refund-visszavonás problémáját is megoldaná.
 - [[009-firebase-identity-split-bugfix]] – **blokkoló előfeltétel, az A fázis de facto bővítése.** A `rtdbKey` ma egy migrációs `catch`-ág miatt a `deviceId`-re térülhet, így ugyanaz a Google fiók **két RTDB node-ot** kap külön kredittel (élesben megerősített hiba). Valós pénzes fizetés **nem indítható** addig: egy ilyen szétválás **kifizetett** kreditet tüntetne el a felhasználó számára visszakövethetetlenül → chargeback / dispute, ami a Stripe fiók kockázati pontszámát is rontja. Az élesítés előtti go-live checklistbe (8. szekció) felvenni: *„ugyanaz a fiók két böngészőben és két originon ugyanazt a kreditet látja"*.
