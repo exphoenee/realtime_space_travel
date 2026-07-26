@@ -17,9 +17,9 @@ created_at: "YYYY-MM-DD"
 updated_at: "YYYY-MM-DD"
 author: exphoenee
 step: null                     # roadmap step (set by manage-roadmap after creation)
-phase: null                    # roadmap phase number(s) or null
-dependencies: []               # list of plan slugs this depends on
-related_plans: []              # list of related plan slugs
+phases: []                     # roadmap phase number(s), list (e.g. [1, 2]); empty list if none
+dependencies: []               # list of plan slugs this depends on (sorted by slug)
+related_plans: []              # list of related plan slugs (sorted by slug)
 tags: []                       # keywords for discoverability
 ---
 ```
@@ -33,8 +33,9 @@ tags: []                       # keywords for discoverability
 | `status` | Must reflect actual implementation state based on TODO checkboxes |
 | `implemented` | `true` only when all core TODO items are checked `[x]` |
 | `implemented_at` | Set to the date when the last core task was completed |
-| `dependencies` | Plans that must be completed **before** this one |
-| `related_plans` | Plans that are connected but not blocking |
+| `phases` | Roadmap phase number(s) as a **list** (e.g. `[1, 2]`); empty list when the plan maps to no phase. The scalar `phase:` key is deprecated — do not use it |
+| `dependencies` | Plans that must be completed **before** this one. Sorted by slug |
+| `related_plans` | Plans that are connected but not blocking. **Must not repeat `dependencies`.** Sorted by slug, symmetric between plans (if A lists B, B lists A — unless the link is already expressed as a dependency) |
 | `tags` | Keywords for discoverability and filtering |
 
 ## Status Update Rules

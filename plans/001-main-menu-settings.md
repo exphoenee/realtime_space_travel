@@ -7,17 +7,16 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-25"
 created_at: "2026-07-25"
-updated_at: "2026-07-25"
+updated_at: "2026-07-26"
 author: exphoenee
 step: 1
-phase: null
+phases: []
 dependencies:
   - 000-i18n-nyelvesites
 related_plans:
-  - 000-i18n-nyelvesites
-  - 003-firebase-auth-settings
-  - 004-ingame-shop-strapi-stripe
   - 002-ingame-shop-frontend
+  - 003-firebase-auth-settings
+  - 005-ingame-shop-strapi-stripe
 tags:
   - ui
   - main-menu
@@ -127,7 +126,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 
 - **[[003-firebase-auth-settings]]**: a **Bejelentkezés** gomb valódi Google/Anonymous auth-ra cserélődik; a hangerő + nehézség + nyelv **Firebase `settings`-be** ment/onnan tölt; a Beállítások kap egy **Fiók** szekciót.
 - **[[002-ingame-shop-frontend]]**: az **Áruház** gomb a `mainMenu.shopComingSoon` placeholder helyett a valódi **helyi (frontend-only) `shop` fázisra** visz; a `SettingsScreen` bővül a **zeneválasztóval** (birtokolt sávok).
-- **[[004-ingame-shop-strapi-stripe]]**: a bolt **backend-bekötése** (Strapi katalógus + Stripe fizetés) — a [[002-ingame-shop-frontend]] mock katalógusát/checkoutját cseréli le.
+- **[[005-ingame-shop-strapi-stripe]]**: a bolt **backend-bekötése** (Strapi katalógus + Stripe fizetés) — a [[002-ingame-shop-frontend]] mock katalógusát/checkoutját cseréli le.
 - **Nehézség**: a `difficulty` a játékmenetbe köthető (pl. figyelem-időzítők, `INACTIVITY_LIMIT_SECONDS` skálázása).
 
 ---
@@ -154,7 +153,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 - [x] Intro: rAF-blokkfix + lassabb görgetés (120s)
 - [x] Ellenőrzés: tsc, 14/14 teszt, build, kulcs-paritás (109/nyelv)
 - [ ] **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
-- [ ] **Áruház gomb bekötése** → [[002-ingame-shop-frontend]] (helyi bolt), később backend: [[004-ingame-shop-strapi-stripe]]
+- [ ] **Áruház gomb bekötése** → [[002-ingame-shop-frontend]] (helyi bolt), később backend: [[005-ingame-shop-strapi-stripe]]
 - [ ] **Nehézség hatása a játékmenetre** (későbbi)
 - [ ] **Beállítások per-felhasználós mentése** (Firebase) → [[003-firebase-auth-settings]]
 
@@ -164,4 +163,4 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 - [[003-firebase-auth-settings]] – login, per-felhasználós beállítás-mentés, Fiók-szekció.
 - [[000-i18n-nyelvesites]] – a nyelvi réteg; a `LanguageSwitcher` most a Beállításokban.
 - [[002-ingame-shop-frontend]] – az Áruház gomb valódi (helyi) célja; a Beállítások zeneválasztója.
-- [[004-ingame-shop-strapi-stripe]] – a bolt későbbi backend-bekötése (Strapi + Stripe).
+- [[005-ingame-shop-strapi-stripe]] – a bolt későbbi backend-bekötése (Strapi + Stripe).

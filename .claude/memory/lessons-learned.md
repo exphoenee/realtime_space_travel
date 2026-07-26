@@ -108,7 +108,7 @@ A keresőmező csak az **exobolygók, űrhajók, zenék** tabokon jelenjen meg. 
 
 ---
 
-## 📜 Scroll — csak a grid scrollázzon
+## 📜 Scroll — csak a grid scrollozzon
 
 A tabok + keresőmező fixek maradjanak, csak a `.productGrid` container scrollázzon. Használj flex scroll chain-t:
 

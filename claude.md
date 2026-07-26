@@ -191,6 +191,8 @@ python .claude/scripts/generate_roadmap.py  # Roadmap újragenerálás
 
 A projekt a Claude Code natív **skill** és **agent (subagent)** mechanizmusát használja. Részletek: [`agents.md`](./agents.md).
 
+> ⚠️ **Kötelező szabályok:** [`.claude/rules/planning-workflow.md`](./.claude/rules/planning-workflow.md) — terv **kizárólag** a `./plans/`-ba, **kizárólag** a `plan` skillen és a `planner` agenten keresztül; a `roadmap.md` generált, csak a `manage-roadmap` agent nyúlhat hozzá.
+
 - **Skillek** (`.claude/skills/`): `dev` (implementációs orchestrátor) és `plan` (új terv)
 - **Agentek** (`.claude/agents/`): `react-dev`, `i18n`, `manage-roadmap`, `planner`
 - **Single source of truth:** `./plans/`; `roadmap.md` **scripttel generált**
