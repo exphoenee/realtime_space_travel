@@ -131,7 +131,18 @@
     "musicTrack": "Selección de música",
     "musicDefault": "Por defecto",
     "signOut": "Cerrar sesión",
-    "authenticated": "Autenticado"
+    "authenticated": "Autenticado",
+    "userId": "ID de usuario"
+  },
+  "login": {
+    "error": {
+      "popupBlocked": "La ventana de inicio de sesión fue bloqueada. Permite ventanas emergentes para este sitio e inténtalo de nuevo.",
+      "alreadyInUse": "Esta cuenta de Google ya está vinculada a otro perfil.",
+      "accountExists": "Ya existe una cuenta con este correo electrónico.",
+      "cancelled": "Inicio de sesión cancelado.",
+      "network": "Error de red. Verifica tu conexión e inténtalo de nuevo.",
+      "generic": "Error al iniciar sesión. Inténtalo de nuevo."
+    }
   },
   "shipSelect": {
     "title": "Elige tu nave",

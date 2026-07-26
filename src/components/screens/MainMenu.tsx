@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useAuthStore from "../../state/useAuthStore";
 import { signInWithGoogle } from "../../firebase/auth";
-import { ensureUserNode } from "../../firebase/userData";
 import styles from "./MainMenu.module.css";
 
 const MainMenu = () => {
@@ -10,7 +9,6 @@ const MainMenu = () => {
   const transitionTo = useGameStore((s) => s.transitionTo);
   const authUser = useAuthStore((s) => s.user);
   const authStatus = useAuthStore((s) => s.status);
-  const setUser = useAuthStore((s) => s.setUser);
 
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
@@ -19,9 +17,8 @@ const MainMenu = () => {
 
   const handleLogin = async () => {
     try {
-      const user = await signInWithGoogle();
-      setUser(user);
-      await ensureUserNode(user, "google");
+      // signInWithGoogle redirects the page — App.tsx handles the result on return
+      await signInWithGoogle();
     } catch (err) {
       console.error("Login failed:", err);
     }

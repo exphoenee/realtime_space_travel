@@ -122,7 +122,7 @@ tags:
 - [x] **Kosár gomb láthatatlanság:** kredit lapon `visibility: hidden` (nem `display: none`) — a fejléc nem ugrik átméretezéskor
 - [x] **Gomb túlcsordulás javítás:** `.productButton`: `min-width:0`, `overflow:hidden`, `text-overflow:ellipsis`, `white-space:nowrap` — a „Birtokolt" gomb nem lóg le a kártyáról
 
-**C rész — játékmenet-bekötés (részben megvalósítva)**
+**C rész — játékmenet-bekötés + Firebase szinkron**
 - [x] **Birtokolt exobolygók a küldetésválasztóban:** `MissionSelector` most olvassa a `useShopStore.owned.exoplanets`-et, és a JSON adatokból `mapExoplanet`-tel képzett célokat jeleníti meg az alap 3 mellett
 - [x] **Info gomb a küldetéskártyákon:** `ℹ` gomb → `MissionExoplanetModal` (JSON bolygóknál teljes adat képekkel/linkekkel, alap bolygóknál név+táv+jutalom)
 - [x] **Debug reset gomb** — `↺ Reset` az áruház fejlécében (csak debug módban); `resetShop` akció + localStorage törlés + persist újramentés
@@ -135,7 +135,10 @@ tags:
 - [x] **MP3 fájlok átnevezése** — `public/music/*.mp3` fájlok kisbetűsre + `_`-re átnevezve (pl. `Dust on the Highway.mp3` → `dust_on_the_highway.mp3`), a kód hivatkozásai már az új nevekre mutattak
 - [x] **Űrhajók bekötése (ShipSelectScreen)** — `shipSelect` GamePhase: alap hajó (191 km/s) + birtokolt shop hajók listája. `ShipSelectScreen` (grid layout, hajókártyák info gombbal + indítás gombbal). `ShipInfoModal` (read-only műszaki adatok: sebesség, gyártó, kapacitás, hatótáv). Hajó kiválasztásakor `travelYears` újraszámolva: gyorsabb hajó = rövidebb utazási idő.
 - [x] **i18n shipSelect kulcsok** — mind az 5 nyelvhez: `shipSelect.title`, `.subtitle`, `.default`, `.info`, `.launch`, `.launchWith`, `.defaultDesc`, `.owned`
-- [x] **i18n `settings.musicTrack` + `settings.musicDefault`** — mind az 5 nyelvhez |  
+- [x] **i18n `settings.musicTrack` + `settings.musicDefault`** — mind az 5 nyelvhez
+- [x] **useShopStore Firebase RTDB szinkron:** `setCredits` + `setOwned` akciók; `checkout()` / `buyCredits()` / `resetShop()` RTDB write (`updateUserWallet` + `updateUserInventory`)
+- [x] **App.tsx `handleUserData`:** wallet+inventory RTDB-ből → `useShopStore` READ szinkron (JSON.stringify védelem a loop-ok ellen)
+- [x] **`setCredits` + `setOwned`** akciók exportálva a `useShopStore`-ban
 
 **D rész — i18n + validáció**
 - [x] i18n `shop.*` kulcsok mind az 5 nyelven (kreditvásárlás kulcsokkal együtt)

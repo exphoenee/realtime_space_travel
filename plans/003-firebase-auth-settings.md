@@ -3,11 +3,12 @@ title: "Firebase bejelentkezés + perzisztens felhasználói beállítások terv
 slug: 003-firebase-auth-settings
 type: plan
 category: auth
-status: not-started
+status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-25"
 updated_at: "2026-07-26"
+  - i18n: completed
 author: exphoenee
 step: 3
 phases:
@@ -66,25 +67,38 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész. Implementáció közben itt vezetjük, hol tartunk, hogy félbeszakadás után folytatható legyen. Részletek a lenti szekciókban.
 
 **Fázis 1 — auth + RTDB + Settings menü**
-- [ ] Firebase projekt + Auth (Google, Anonymous) + Realtime Database + env változók
-- [ ] `firebase/config.ts`, `firebase/auth.ts`, `firebase/userData.ts`
-- [ ] **Security Rules** (`wallet`/`inventory` szerver-only; `settings`/`stats` user-írható)
-- [ ] `useAuthStore` + anonymous auto-login + `onAuthStateChanged`
-- [ ] `ensureUserNode` + `subscribeUser` → `useSettingsStore` / `useInventoryStore` feltöltés
-- [ ] `SettingsMenu` + `AccountSection`; `bellOverlay` → `settingsOverlay` csere; zene-némítás áthelyezés
-- [ ] Google-belépés + Anonymous→Google **linkelés**
-- [ ] Nyelv/rekord/némítás összefésülés a meglévő store-okkal ([[000-i18n-nyelvesites]])
+- [x] Firebase projekt + Auth (Google, Anonymous) + Realtime Database + env változók
+- [x] `firebase/config.ts`, `firebase/auth.ts`, `firebase/userData.ts`
+- [x] `useAuthStore` + anonymous auto-login + `onAuthStateChanged`
+- [x] `ensureUserNode` + `subscribeUser` → `handleUserData` szinkron (settings, stats, wallet, inventory)
+- [x] `SettingsScreen` + AccountSection (login, Google link, zeneválasztó, nehézség, hangerő)
+- [x] Google-belépés + Anonymous→Google **linkelés** (redirect-based: `linkWithRedirect`/`signInWithRedirect`)
+- [x] Redirect timing fix (`redirectCheckDone` flag) + skip intro OAuth visszatéréskor
+- [x] Nyelv → RTDB write (`i18n.on("languageChanged")` → `updateUserSettings`)
+- [x] Wallet + Inventory → RTDB szinkron (READ: `handleUserData`, WRITE: `checkout`/`buyCredits`/`resetShop`)
+- [x] Zeneválasztás → `settings.activeMusicId` RTDB write (`SettingsScreen`)
+- [x] `musicMuted` → RTDB `settings.musicMuted` write irány (`App.tsx` `useEffect`)
+- [x] `musicVolume` + `difficulty` → RTDB write (SettingsScreen slider + gombok) + READ (`handleUserData`)
+- [x] Kredit-egyenleg kijelzés a Settings `AccountSection`-ban
+- [x] User displayName megjelenítés a Settingsben (authenticated user)
+- [x] Zustand `persist` teljesen eltávolítva minden store-ból → **Firebase RTDB = single source of truth**
+- [x] `security.rules.json` létrehozva (Phase 1: client write engedélyezve; Phase 2 migrációs út dokumentálva)
+- [ ] **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
+- [ ] `activeShipId` validáció az `inventory.ships` ellenében
+- [ ] `.env.example` létrehozása dokumentált env változókkal (`VITE_DEBUG_MODE=true`)
 
 **Fázis 2 — hajóválasztó + sebesség (✅ MEGVALÓSÍTVA a [[002-ingame-shop-frontend]]-ben)**
 - [x] `GamePhase: "shipSelect"` + `screens/MissionSelector` pending destination + `routing/ScreenRouter` ág
 - [x] `ShipSelectScreen` komponens (alap hajó mindig; birtokolt hajók `useShopStore.owned.ships`-ből)
 - [x] Sebesség-integráció (`shipSpeedKmPerSecond` a `useGameStore`-ban; `Dashboard` használja) — **közös** [[004-ingame-shop-strapi-stripe]]
 - [x] Zene-integráció: `useAudio` az aktív zene URL-jével; zeneválasztó a `SettingsScreen`-ben
-- [ ] **Firebase bekötéskor:** `useShopStore` → `useInventoryStore` (RTDB), `useGameStore.shipSpeedKmPerSecond` → `settings.activeShipId` validáció
+- [x] **Firebase bekötés:** `useShopStore` wallet/inventory RTDB-ből szinkronizálva (`handleUserData`); `useGameStore.shipSpeedKmPerSecond`
+- [ ] **Flow átszervezés:** kamera-ellenőrzés áthelyezése a hajóválasztás UTÁN (`ShipSelectScreen.handleSelectShip` → kamera → `startMission`)
 
 **Kredit-út (részben Fázis 3-mal közös)**
 - [ ] Cloud Function `awardWage` (küldetés végi kredit)
-- [ ] Strapi↔Firebase híd: Stripe webhook → Admin SDK → `inventory` írás (a bolt-tervből)
+- [ ] Cloud Function `purchaseWithCredits` (kredites vásárlás)
+- [ ] Stripe→Firebase híd: webhook → Admin SDK → `inventory` írás (a 004-es tervből)
 
 ---
 

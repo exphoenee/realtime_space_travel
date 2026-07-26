@@ -1,13 +1,13 @@
-import { useMemo, useCallback, type CSSProperties } from "react";
+import { useState, useMemo, useCallback, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { Difficulty } from "../../types";
 import { SHOP_MUSIC } from "../../constants/shopCatalog";
 import useGameStore from "../../state/useGameStore";
-import useUIStore from "../../state/useUIStore";
 import useShopStore from "../../state/useShopStore";
 import useAuthStore from "../../state/useAuthStore";
-import { signInWithGoogle, signOut, linkAnonymousToGoogle } from "../../firebase/auth";
-import { ensureUserNode } from "../../firebase/userData";
+import useUIStore from "../../state/useUIStore";
+import { linkAnonymousToGoogle, getAuthErrorMessage } from "../../firebase/auth";
+import { updateUserSettings } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./SettingsScreen.module.css";
 
@@ -22,11 +22,13 @@ const SettingsScreen = () => {
   const setDifficulty = useUIStore((s) => s.setDifficulty);
   const activeMusicId = useUIStore((s) => s.activeMusicId);
   const setActiveMusicId = useUIStore((s) => s.setActiveMusicId);
+  const credits = useShopStore((s) => s.credits);
   const ownedMusicIds = useShopStore((s) => s.owned.music);
   const authUser = useAuthStore((s) => s.user);
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const setUser = useAuthStore((s) => s.setUser);
+  const uid = useAuthStore((s) => s.uid);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const ownedMusicTracks = useMemo(() => {
     return SHOP_MUSIC.filter((track) => ownedMusicIds.includes(track.id));
@@ -37,23 +39,16 @@ const SettingsScreen = () => {
   const handleBack = () => transitionTo("mainMenu");
 
   const handleGoogleLogin = useCallback(async () => {
+    setLoginError(null);
     try {
-      const user = await (authUser?.isAnonymous ? linkAnonymousToGoogle() : signInWithGoogle());
-      setUser(user);
-      await ensureUserNode(user, "google");
+      // linkAnonymousToGoogle redirects the page — no await needed for user
+      // On return, App.tsx checkRedirectResult handles the result
+      await linkAnonymousToGoogle();
     } catch (err) {
       console.error("Login failed:", err);
+      setLoginError(getAuthErrorMessage(err));
     }
-  }, [authUser, setUser]);
-
-  const handleSignOut = useCallback(async () => {
-    try {
-      await signOut();
-      setUser(null);
-    } catch (err) {
-      console.error("Sign out failed:", err);
-    }
-  }, [setUser]);
+  }, []);
 
   return (
     <div className={styles.overlay}>
@@ -63,35 +58,43 @@ const SettingsScreen = () => {
         {/* Account Section */}
         <div className={styles.row}>
           <span className={styles.label}>
-            {t("mainMenu.login")}
+            {(authUser && !isAnonymous) ?
+              (authUser.displayName ?? t("settings.authenticated"))
+              : t("mainMenu.login")
+            }
           </span>
           <div>
-            {authUser && !isAnonymous ? (
-              <div className={styles.accountInfo}>
-                <span className={styles.accountName}>
-                  {authUser.displayName ?? "User"}
-                </span>
-                <span className={styles.accountBadge}>
-                  {t("settings.authenticated")}
-                </span>
-                <button
-                  type="button"
-                  className={`${styles.authBtn} ${styles.authBtnDanger}`}
-                  onClick={handleSignOut}
-                >
-                  {t("settings.signOut")}
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className={styles.authBtn}
-                onClick={handleGoogleLogin}
-                disabled={authStatus === "loading"}
-              >
-                {authStatus === "loading" ? "..." : t("mainMenu.login")}
-              </button>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-end" }}>
+              <span className={styles.creditDisplay}>
+                {t("shop.creditsLabel", { count: credits })}
+              </span>
+              {(authUser && !isAnonymous) ? (
+                <div className={styles.accountInfo}>
+                  <span className={styles.uidDisplay} title={uid ?? ""}>
+                    {t("settings.userId")}: {uid ?? "—"}
+                  </span>
+                </div>
+              ) : (
+                <div className={styles.accountInfo}>
+                  <span className={styles.uidDisplay} title={uid ?? ""}>
+                    {t("settings.userId")}: {uid ?? "—"}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.authBtn}
+                    onClick={handleGoogleLogin}
+                    disabled={authStatus === "loading"}
+                  >
+                    {authStatus === "loading" ? "..." : t("mainMenu.login")}
+                  </button>
+                  {loginError && (
+                    <span className={styles.loginError}>
+                      {t(loginError)}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -110,7 +113,14 @@ const SettingsScreen = () => {
               max={1}
               step={0.01}
               value={musicVolume}
-              onChange={(e) => setMusicVolume(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setMusicVolume(val);
+                // Persist to RTDB if signed in
+                if (uid) {
+                  updateUserSettings(uid, { musicVolume: val }).catch(console.error);
+                }
+              }}
               className={styles.slider}
               style={
                 { ["--fill" as string]: `${Math.round(musicVolume * 100)}%` } as CSSProperties
@@ -133,7 +143,12 @@ const SettingsScreen = () => {
               value={activeMusicId ?? "__default__"}
               onChange={(e) => {
                 const val = e.target.value;
-                setActiveMusicId(val === "__default__" ? null : val);
+                const newId = val === "__default__" ? null : val;
+                setActiveMusicId(newId);
+                // Persist to RTDB if signed in
+                if (uid) {
+                  updateUserSettings(uid, { activeMusicId: newId }).catch(console.error);
+                }
               }}
               disabled={!hasOwnedMusic}
             >
@@ -157,7 +172,13 @@ const SettingsScreen = () => {
                 type="button"
                 className={`${styles.segment}${difficulty === level ? ` ${styles.segmentActive}` : ""}`}
                 aria-pressed={difficulty === level}
-                onClick={() => setDifficulty(level)}
+                onClick={() => {
+                  setDifficulty(level);
+                  // Persist to RTDB if signed in
+                  if (uid) {
+                    updateUserSettings(uid, { difficulty: level }).catch(console.error);
+                  }
+                }}
               >
                 {t(`difficulty.${level}`)}
               </button>

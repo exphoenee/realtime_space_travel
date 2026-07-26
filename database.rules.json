@@ -1,0 +1,29 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+
+        "profile": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        "settings": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+
+        "wallet": {
+          ".write": false
+        },
+
+        "inventory": {
+          ".write": false
+        },
+
+        "stats": {
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    }
+  }
+}
