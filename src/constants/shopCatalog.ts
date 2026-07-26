@@ -13,6 +13,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     priceEur: 5,
     credits: 100,
     stripePaymentLink: "https://buy.stripe.com/test_6oU14o2bg8sSfIM3XAeIw00",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_8x28wQ03810q7cg2TweIw04",
   },
   {
     id: "credits-advanced",
@@ -20,6 +21,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     priceEur: 10,
     credits: 300,
     stripePaymentLink: "https://buy.stripe.com/test_28E5kE6rwcJ89koalYeIw01",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_6oUfZi7vA7oO548dyaeIw05",
   },
   {
     id: "credits-premium",
@@ -27,6 +29,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     priceEur: 25,
     credits: 700,
     stripePaymentLink: "https://buy.stripe.com/test_5kQdRacPUgZocwA9hUeIw02",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_eVq3cw4joaB0eEIdyaeIw06",
   },
   {
     id: "credits-ultra",
@@ -34,6 +37,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     priceEur: 100,
     credits: 2000,
     stripePaymentLink: "https://buy.stripe.com/test_5kQ9AUg26fVk0NSalYeIw03",
+    stripePaymentLinkDev: "https://buy.stripe.com/test_9B64gA2bg9wW68c9hUeIw07",
   },
 ];
 
