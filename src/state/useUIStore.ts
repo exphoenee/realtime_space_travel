@@ -19,6 +19,8 @@ interface UIState {
   activeMusicId: string | null;
   /** Aktív hajó azonosítója (null = alap hajó, különben shop hajók) */
   activeShipId: string | null;
+  /** Debug mód bekapcsolva (runtime toggle, csak VITE_DEBUG_MODE=true esetén jelenik meg) */
+  debugMode: boolean;
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
@@ -27,6 +29,7 @@ interface UIState {
   setDifficulty: (updater: StateUpdater<Difficulty>) => void;
   setActiveMusicId: (id: string | null) => void;
   setActiveShipId: (id: string | null) => void;
+  setDebugMode: (mode: boolean) => void;
 }
 
 const useUIStore = create<UIState>()((set) => ({
@@ -37,9 +40,11 @@ const useUIStore = create<UIState>()((set) => ({
   difficulty: "medium",
   activeMusicId: null,
   activeShipId: null,
+  debugMode: import.meta.env.VITE_DEBUG_MODE === "true",
 
   setActiveMusicId: (id) => set({ activeMusicId: id }),
   setActiveShipId: (id) => set({ activeShipId: id }),
+  setDebugMode: (mode) => set({ debugMode: mode }),
 
   setCameraError: (updater) =>
     set((state) => ({

@@ -323,5 +323,62 @@
     "speedDesc": "Speed ↓",
     "distanceAsc": "Distance ↑",
     "distanceDesc": "Distance ↓"
+  },
+  "event": {
+    "horn": {
+      "title": "Horn signal!",
+      "desc": "Press the button immediately!",
+      "action": "Press horn button",
+      "success": "Horn acknowledged",
+      "fail": "You missed the horn signal!"
+    },
+    "asteroid": {
+      "title": "Asteroid on trajectory!",
+      "desc": "Evasive maneuver required! Change course now!",
+      "success": "Asteroid avoided! +{{years}} years detour",
+      "fail": "Collision! Travel time increased by {years} years"
+    },
+    "rescueTransfer": {
+      "title": "Rescue ship detected!",
+      "desc": "A rescue ship is nearby. Do you want to transfer?",
+      "success": "Successfully transferred to rescue ship",
+      "fail": "Transfer failed — you missed the window",
+      "active": "⚡ Transferred to rescue ship — different controls active",
+      "rescueShip": "Rescue Ship Cockpit"
+    },
+    "solarFlare": {
+      "title": "⚠️ SOLAR FLARE WARNING ⚠️",
+      "desc": "Critical: activate shields immediately!",
+      "success": "Shields held — ship survived",
+      "fail": "The solar flare overwhelmed the ship. Crew lost!"
+    },
+    "rover": {
+      "title": "Space rover available!",
+      "desc": "A rover is available for this mission. Deploy it?",
+      "success": "Rover deployed — bonus objective unlocked",
+      "fail": "Rover deployment failed"
+    },
+    "fake": {
+      "horn": "Hold the EMERGENCY STOP button for 10 seconds",
+      "asteroid": "Ignore the asteroid — maintain current course",
+      "rescueTransfer": "Stay on current ship — the rescue ship is a trap",
+      "title": "⚠️ INSTRUCTION ⚠️",
+      "desc": "Follow the instruction on screen!",
+      "trapAction": "Follow instruction"
+    },
+    "penalty": {
+      "timeAdded": "+{years} years added to travel time",
+      "crewLost": "Crew lost!"
+    },
+    "timeLeft": "{{seconds}}s left",
+    "confirm": "Confirm",
+    "transfer": "Transfer",
+    "activate": {
+      "shields": "Activate shields!"
+    },
+    "deploy": "Deploy",
+    "ignore": "Ignore",
+    "evasiveManeuver": "Evasive maneuver!",
+    "fakeBadge": "DECEPTIVE SIGNAL"
   }
 }

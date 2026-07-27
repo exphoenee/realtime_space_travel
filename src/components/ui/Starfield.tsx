@@ -146,7 +146,7 @@ const Starfield: React.FC<StarfieldProps> = ({
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [cockpitImageUrl]);
 
   return (
     <canvas

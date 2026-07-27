@@ -6,6 +6,7 @@ import Starfield from "./components/ui/Starfield";
 import Dashboard from "./components/features/Dashboard";
 import PauseMenu from "./components/features/PauseMenu";
 import DebugOverlay from "./components/features/DebugOverlay";
+import DebugEventBar from "./components/features/DebugEventBar";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
@@ -17,12 +18,13 @@ import { useCamera } from "./hooks/useCamera";
 import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
 import { usePageLeave } from "./hooks/usePageLeave";
+import { useEventSystem } from "./hooks/useEventSystem";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
 import { updateUserSettings } from "./firebase/userData";
 import type { UserNode } from "./firebase/userData";
-import { BASE_EXOPLANET_IDS, SHOP_SHIPS, getShipImageById } from "./constants/shopCatalog";
+import { BASE_EXOPLANET_IDS, getShipImageById } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
 import {
@@ -30,11 +32,10 @@ import {
   INACTIVITY_LIMIT_SECONDS,
   INTRO_AUTO_SKIP_TIMEOUT_MS,
   SERVICE_UPDATE_INTERVAL_MS,
+  SHIP_SPEED_KM_PER_SECOND,
   TRAVEL_YEARS_PER_SECOND,
 } from "./constants/constants";
 import styles from "./App.module.css";
-
-const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
 const App: React.FC = () => {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ const App: React.FC = () => {
     musicVolume,
     setCameraError,
     setShowExitConfirm,
+    debugMode,
   } = useUIStore();
 
   const [canvasBounds, setCanvasBounds] = useState<DOMRectReadOnly | null>(null);
@@ -88,10 +90,11 @@ const App: React.FC = () => {
     videoRef,
     destination,
     isStreamReady,
-    DEBUG_MODE,
+    debugMode,
   );
   useAttentionMonitor(faceStatus, destination);
   usePageLeave();
+  const { triggerManualEvent } = useEventSystem();
 
   // Watch isMusicMuted changes → persist to RTDB.
   // Guard against the initial mount: the auth bootstrap (ensureDeviceMap +
@@ -436,12 +439,16 @@ const App: React.FC = () => {
     const deltaSeconds = SERVICE_UPDATE_INTERVAL_MS / 1000;
     const interval = window.setInterval(() => {
       setServiceSeconds((prev) => prev + deltaSeconds);
+      // Read the current ship speed from the store each tick so that
+      // speed changes (e.g. rescue ship) affect the travel rate.
+      const currentSpeed = useGameStore.getState().shipSpeedKmPerSecond;
+      const speedRatio = currentSpeed / SHIP_SPEED_KM_PER_SECOND;
       setRemainingYears((prev) => {
         if (prev <= 0) {
           return 0;
         }
 
-        const next = prev - deltaSeconds * TRAVEL_YEARS_PER_SECOND;
+        const next = prev - deltaSeconds * TRAVEL_YEARS_PER_SECOND * speedRatio;
         return next <= 0 ? 0 : next;
       });
     }, SERVICE_UPDATE_INTERVAL_MS);
@@ -494,6 +501,26 @@ const App: React.FC = () => {
     missionComplete,
     updateBestServiceTime,
   ]);
+
+  // Check for pending destruction (rescue-transfer ignored)
+  useEffect(() => {
+    if (!destination || crewLost || missionComplete) return;
+
+    const interval = window.setInterval(() => {
+      const state = useGameStore.getState();
+      if (
+        state.pendingDestructionAt &&
+        Date.now() >= state.pendingDestructionAt &&
+        state.gamePhase === "playing"
+      ) {
+        state.transitionTo("crewLost");
+        state.setCrewLostReason("event");
+        state.cancelDestruction();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [destination, crewLost, missionComplete]);
 
   useEffect(() => {
     if (!destination || missionComplete || crewLost) {
@@ -562,8 +589,6 @@ const App: React.FC = () => {
               destinationName={destination.name}
               localWeather={localWeather}
               currentSpeedKmPerSecond={shipSpeedKmPerSecond}
-              shipImageUrl={`${import.meta.env.BASE_URL}spaceships/${getShipImageById(activeShipId)}`}
-              shipName={activeShipId ? SHOP_SHIPS.find(s => s.id === activeShipId)?.name : undefined}
             />
           </div>
 
@@ -648,7 +673,7 @@ const App: React.FC = () => {
             <PauseMenu countdownSeconds={attentionCountdown} />
           ) : null}
 
-          {DEBUG_MODE && (
+          {debugMode && (
             <DebugOverlay
               debugCanvasRef={debugCanvasRef}
               faceStatus={faceStatus}
@@ -659,6 +684,10 @@ const App: React.FC = () => {
               videoRef={videoRef}
               destination={destination}
             />
+          )}
+
+          {debugMode && !isPreGame && (
+            <DebugEventBar onTrigger={triggerManualEvent} />
           )}
         </main>
       )}

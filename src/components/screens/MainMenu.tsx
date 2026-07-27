@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useAuthStore from "../../state/useAuthStore";
+import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, getAuthErrorMessage } from "../../firebase/auth";
 import styles from "./MainMenu.module.css";
+
+const DEBUG_ENV = import.meta.env.VITE_DEBUG_MODE === "true";
 
 const MainMenu = () => {
   const { t } = useTranslation();
@@ -12,6 +15,8 @@ const MainMenu = () => {
   const authStatus = useAuthStore((s) => s.status);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
+  const debugMode = useUIStore((s) => s.debugMode);
+  const setDebugMode = useUIStore((s) => s.setDebugMode);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // Local login error takes precedence, falling back to the global auth error.
@@ -78,6 +83,19 @@ const MainMenu = () => {
           <p className={styles.loginError} role="alert">
             {t(errorKey)}
           </p>
+        )}
+
+        {DEBUG_ENV && (
+          <div className={styles.debugActions}>
+            <button
+              type="button"
+              className={`${styles.debugBtn} ${debugMode ? styles.debugBtnActive : ""}`}
+              onClick={() => setDebugMode(!debugMode)}
+              title={debugMode ? 'Debug ki' : 'Debug be'}
+            >
+              🛠 Debug {debugMode ? "ON" : "OFF"}
+            </button>
+          </div>
         )}
       </div>
     </div>

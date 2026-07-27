@@ -323,5 +323,62 @@
     "fr": "Français",
     "de": "Deutsch",
     "es": "Español"
+  },
+  "event": {
+    "horn": {
+      "title": "Hornsignal!",
+      "desc": "Drücken Sie sofort den Knopf!",
+      "action": "Hornknopf drücken",
+      "success": "Horn bestätigt",
+      "fail": "Sie haben das Hornsignal verpasst!"
+    },
+    "asteroid": {
+      "title": "Asteroid auf der Flugbahn!",
+      "desc": "Ausweichmanöver erforderlich! Ändern Sie sofort den Kurs!",
+      "success": "Asteroid vermieden! +{{years}} Jahre Umweg",
+      "fail": "Kollision! Reisezeit um {years} Jahre verlängert"
+    },
+    "rescueTransfer": {
+      "title": "Rettungsschiff entdeckt!",
+      "desc": "Ein Rettungsschiff ist in der Nähe. Möchten Sie wechseln?",
+      "success": "Erfolgreich zum Rettungsschiff transferiert",
+      "fail": "Transfer fehlgeschlagen — Sie haben das Fenster verpasst",
+      "active": "⚡ Zum Rettungsschiff transferiert — andere Steuerung aktiv",
+      "rescueShip": "Rettungsschiff-Cockpit"
+    },
+    "solarFlare": {
+      "title": "⚠️ SONNENERUPTION WARNUNG ⚠️",
+      "desc": "Kritisch: Aktivieren Sie sofort die Schilde!",
+      "success": "Schilde gehalten — Schiff überlebt",
+      "fail": "Die Sonneneruption hat das Schiff überwältigt. Besatzung verloren!"
+    },
+    "rover": {
+      "title": "Weltraumrover verfügbar!",
+      "desc": "Ein Rover ist für diese Mission verfügbar. Einsetzen?",
+      "success": "Rover eingesetzt — Bonusziel freigeschaltet",
+      "fail": "Rovereinsatz fehlgeschlagen"
+    },
+    "fake": {
+      "horn": "Halten Sie den NOT-AUS-Knopf 10 Sekunden lang gedrückt",
+      "asteroid": "Ignorieren Sie den Asteroiden — halten Sie den Kurs",
+      "rescueTransfer": "Bleiben Sie auf dem aktuellen Schiff — das Rettungsschiff ist eine Falle",
+      "title": "⚠️ ANWEISUNG ⚠️",
+      "desc": "Befolgen Sie die Anweisung auf dem Bildschirm!",
+      "trapAction": "Anweisung befolgen"
+    },
+    "penalty": {
+      "timeAdded": "+{years} Jahre zur Reisezeit hinzugefügt",
+      "crewLost": "Besatzung verloren!"
+    },
+    "timeLeft": "{{seconds}}s übrig",
+    "confirm": "Bestätigen",
+    "transfer": "Transferieren",
+    "activate": {
+      "shields": "Schilde aktivieren!"
+    },
+    "deploy": "Einsetzen",
+    "ignore": "Ignorieren",
+    "evasiveManeuver": "Ausweichmanöver!",
+    "fakeBadge": "TRÜGERISCHES SIGNAL"
   }
 }

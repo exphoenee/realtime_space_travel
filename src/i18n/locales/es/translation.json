@@ -323,5 +323,62 @@
     "fr": "Français",
     "de": "Deutsch",
     "es": "Español"
+  },
+  "event": {
+    "horn": {
+      "title": "¡Señal de bocina!",
+      "desc": "¡Presiona el botón inmediatamente!",
+      "action": "Presionar botón de bocina",
+      "success": "Bocina confirmada",
+      "fail": "¡Perdiste la señal de bocina!"
+    },
+    "asteroid": {
+      "title": "¡Asteroide en la trayectoria!",
+      "desc": "¡Maniobra evasiva requerida! ¡Cambia el rumbo ahora!",
+      "success": "Asteroide evitado! +{{years}} años de desvío",
+      "fail": "¡Colisión! Tiempo de viaje aumentado en {years} años"
+    },
+    "rescueTransfer": {
+      "title": "¡Nave de rescate detectada!",
+      "desc": "Una nave de rescate está cerca. ¿Quieres transferirte?",
+      "success": "Transferido exitosamente a la nave de rescate",
+      "fail": "Transferencia fallida — perdiste la ventana",
+      "active": "⚡ Transferido a la nave de rescate — controles diferentes activos",
+      "rescueShip": "Cabina de la Nave de Rescate"
+    },
+    "solarFlare": {
+      "title": "⚠️ ALERTA DE LLAMARADA SOLAR ⚠️",
+      "desc": "Crítico: ¡activa los escudos inmediatamente!",
+      "success": "Escudos mantenidos — nave sobrevive",
+      "fail": "La llamarada solar abrumó la nave. ¡Tripulación perdida!"
+    },
+    "rover": {
+      "title": "¡Vehículo espacial disponible!",
+      "desc": "Un vehículo está disponible para esta misión. ¿Desplegarlo?",
+      "success": "Vehículo desplegado — objetivo bonus desbloqueado",
+      "fail": "El despliegue del vehículo falló"
+    },
+    "fake": {
+      "horn": "Mantén presionado el botón de PARADA DE EMERGENCIA durante 10 segundos",
+      "asteroid": "Ignora el asteroide — mantén el rumbo actual",
+      "rescueTransfer": "Quédate en la nave actual — la nave de rescate es una trampa",
+      "title": "⚠️ INSTRUCCIÓN ⚠️",
+      "desc": "¡Sigue la instrucción en pantalla!",
+      "trapAction": "Seguir instrucción"
+    },
+    "penalty": {
+      "timeAdded": "+{years} años añadidos al tiempo de viaje",
+      "crewLost": "¡Tripulación perdida!"
+    },
+    "timeLeft": "{{seconds}}s restantes",
+    "confirm": "Confirmar",
+    "transfer": "Transferir",
+    "activate": {
+      "shields": "¡Activar escudos!"
+    },
+    "deploy": "Desplegar",
+    "ignore": "Ignorar",
+    "evasiveManeuver": "¡Maniobra evasiva!",
+    "fakeBadge": "SEÑAL ENGAÑOSA"
   }
 }
