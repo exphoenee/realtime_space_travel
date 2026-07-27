@@ -2,13 +2,13 @@
 # Auto-generated from plan files — do not edit manually
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
-generated_at: "2026-07-26"
-total_plans: 12
-implemented: 8
+generated_at: "2026-07-27"
+total_plans: 13
+implemented: 9
 in_progress: 1
 not_started: 3
-tasks_done: 241
-tasks_total: 453
+tasks_done: 304
+tasks_total: 519
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -75,37 +75,44 @@ plans:
     dependencies: [007-state-persist-page-refresh]
   - step: 9
     slug: "009-firebase-identity-split-bugfix"
-    status: "not-started"
+    status: "implemented"
     category: "auth"
-    tasks_done: 0
+    tasks_done: 63
     tasks_total: 63
     dependencies: [004-firebase-auth-bugfix]
   - step: 10
-    slug: "010-stripe-fraud-defense"
+    slug: "010-firebase-guest-merge-single-gate"
+    status: "not-started"
+    category: "auth"
+    tasks_done: 0
+    tasks_total: 66
+    dependencies: [009-firebase-identity-split-bugfix]
+  - step: 11
+    slug: "011-stripe-fraud-defense"
     status: "not-started"
     category: "security"
     tasks_done: 0
     tasks_total: 51
-    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix]
-  - step: 11
-    slug: "011-stripe-go-live"
+    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate]
+  - step: 12
+    slug: "012-stripe-go-live"
     status: "not-started"
     category: "payments"
     tasks_done: 0
     tasks_total: 85
-    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-stripe-fraud-defense]
+    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 011-stripe-fraud-defense]
 ---
 
 # Roadmap
 
 > Auto-generated from `./plans/` — **do not edit by hand**. Regenerate before reading:
 > `python .claude/scripts/generate_roadmap.py`
-> Last generated: 2026-07-26
+> Last generated: 2026-07-27
 
 ## Project Status
 
-- **Plans:** 8 implemented · 1 in progress · 3 not started (of 12)
-- **Tasks:** 241/453 done (53%)
+- **Plans:** 9 implemented · 1 in progress · 3 not started (of 13)
+- **Tasks:** 304/519 done (59%)
 
 ## Overview
 
@@ -120,9 +127,10 @@ plans:
 | 6 | Szerkeszthető fantázianév a Settings menüben | ✅ Implemented | — | 1 | auth | 4 |
 | 7 | Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R) | ✅ Implemented | 30/30 | 4 | core | 4 |
 | 8 | Áruház kosár bugfixek + kreditlimit + összérték kijelzés | ✅ Implemented | 14/14 | 4 | core | 7 |
-| 9 | Firebase identitás-szétválás bugfix | ⬜ Not started | 0/63 | — | auth | 4 |
-| 10 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9 |
-| 11 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10 |
+| 9 | Firebase identitás-szétválás bugfix | ✅ Implemented | 63/63 | — | auth | 4 |
+| 10 | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések | ⬜ Not started | 0/66 | — | auth | 9 |
+| 11 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
+| 12 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 11 |
 
 ## Next Open Tasks
 
@@ -133,9 +141,9 @@ plans:
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (52/53): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
 - **Step 5 — Valós pénzes kredit vásárlás** (25/28): Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
-- **Step 9 — Firebase identitás-szétválás bugfix** (0/63): `src/state/useAuthStore.ts` — `rtdbKey: string` **state mező törlése**
-- **Step 10 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
-- **Step 11 — Stripe élesítés** (0/85): `[A]` [[010-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- **Step 10 — Firebase guest→fiók merge egyszeri kapu + figyelmeztetések** (0/66): `src/firebase/userData.ts` — `UserNode.profile` +`guestMergeClaimed?: boolean` (a `migratedFrom` **legacy** kommenttel megmarad, de nem íródik újra)
+- **Step 11 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
+- **Step 12 — Stripe élesítés** (0/85): `[A]` [[011-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 
 ## Insertion Guide
 
@@ -150,13 +158,14 @@ plans:
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
 | 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5 |
 | 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6, 7, 9 |
-| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 10, 11 |
+| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 11, 12 |
 | 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
 | 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | 8 |
 | 8 | `008-shop-cart-bugfixes` | core | 007-state-persist-page-refresh | — |
-| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 11 |
-| 10 | `010-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix | 11 |
-| 11 | `011-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-stripe-fraud-defense | — |
+| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 11, 12 |
+| 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 11, 12 |
+| 11 | `011-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 12 |
+| 12 | `012-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 011-stripe-fraud-defense | — |
 
 ## Phase Details
 
@@ -174,5 +183,6 @@ plans:
 | 7 | `plans/007-state-persist-page-refresh.md` | Játékállapot perzisztálása oldalfrissítésnél (F5/Ctrl+R) |
 | 8 | `plans/008-shop-cart-bugfixes.md` | Áruház kosár bugfixek + kreditlimit + összérték kijelzés |
 | 9 | `plans/009-firebase-identity-split-bugfix.md` | Firebase identitás-szétválás bugfix |
-| 10 | `plans/010-stripe-fraud-defense.md` | Stripe csalásvédelem |
-| 11 | `plans/011-stripe-go-live.md` | Stripe élesítés |
+| 10 | `plans/010-firebase-guest-merge-single-gate.md` | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések |
+| 11 | `plans/011-stripe-fraud-defense.md` | Stripe csalásvédelem |
+| 12 | `plans/012-stripe-go-live.md` | Stripe élesítés |

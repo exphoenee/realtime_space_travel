@@ -1,24 +1,25 @@
 ---
 title: "Stripe csalásvédelem – carding, refund-támadás és az ingyen-kredit rés"
-slug: 010-stripe-fraud-defense
+slug: 011-stripe-fraud-defense
 type: plan
 category: security
 status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-26"
-updated_at: "2026-07-26"
+updated_at: "2026-07-27"
 author: exphoenee
-step: 10
+step: 11
 phases: []
 dependencies:
   - 005-ingame-shop-strapi-stripe
   - 009-firebase-identity-split-bugfix
+  - 010-firebase-guest-merge-single-gate
 related_plans:
   - 002-ingame-shop-frontend
   - 003-firebase-auth-settings
   - 004-firebase-auth-bugfix
-  - 011-stripe-go-live
+  - 012-stripe-go-live
 tags:
   - stripe
   - security
@@ -90,7 +91,7 @@ tags:
 - [ ] `scripts/create_payment_links.mjs`: a redirect URL kapjon `?session_id={CHECKOUT_SESSION_ID}` végződést (mindkét — dev és prod — halmazra), majd a 8 meglévő link **újragenerálása vagy frissítése**
 - [ ] `src/constants/shopCatalog.ts`: az új link URL-ek beírása (`stripePaymentLink` + `stripePaymentLinkDev`)
 
-> ℹ️ **Pontosítás a [[011-stripe-go-live]] tervből:** a fenti első pont („dev Payment Linkek deaktiválása élesítés előtt") **finomítandó**. Élesben a Stripe `https` redirectet követel, ezért a `localhost`-ra visszatérő dev linkek **nem is hozhatók létre éles módban** — teszt módban maradnak, ahol valós pénzt nem tudnak mozgatni. A fejlesztői folyamat megtartása érdekében ezek **aktívak maradhatnak**; amit ténylegesen érdemes deaktiválni, az a **prod-redirectes teszt link-készlet**, mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek (összekeverhető). Ugyanez a terv rögzíti, hogy az itteni `?session_id={CHECKOUT_SESSION_ID}` toldalék **elrontja** a `create_payment_links.mjs` `redirectUrl === PROD_REDIRECT_URL` mező-javaslatát (`stripePaymentLink` helyett `stripePaymentLinkDev`-et írna) — a `startsWith`-alapú összehasonlításra javítás **kötelező**.
+> ℹ️ **Pontosítás a [[012-stripe-go-live]] tervből:** a fenti első pont („dev Payment Linkek deaktiválása élesítés előtt") **finomítandó**. Élesben a Stripe `https` redirectet követel, ezért a `localhost`-ra visszatérő dev linkek **nem is hozhatók létre éles módban** — teszt módban maradnak, ahol valós pénzt nem tudnak mozgatni. A fejlesztői folyamat megtartása érdekében ezek **aktívak maradhatnak**; amit ténylegesen érdemes deaktiválni, az a **prod-redirectes teszt link-készlet**, mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek (összekeverhető). Ugyanez a terv rögzíti, hogy az itteni `?session_id={CHECKOUT_SESSION_ID}` toldalék **elrontja** a `create_payment_links.mjs` `redirectUrl === PROD_REDIRECT_URL` mező-javaslatát (`stripePaymentLink` helyett `stripePaymentLinkDev`-et írna) — a `startsWith`-alapú összehasonlításra javítás **kötelező**.
 
 **E fázis — Az ingyen-kredit rés szűkítése (Spark-on belül)**
 - [ ] `src/components/shop/CreditShopView.tsx`: a `PENDING_PURCHASE_KEY` payloadból a **`credits` mező kikerül** (marad `packId` + `timestamp`) — a kredit értéke a jóváíráskor a `CREDIT_PACKS`-ból származik
@@ -330,6 +331,8 @@ Hatás: egy csaló legfeljebb **2000⭐-ot tud percenként** felírni (a jelenle
 > ⚠️ **Implementációs csapda:** a jelenlegi `updateUserWallet` `set(walletRef, { credits })`-et hív, ami **letörli** a `lastTopUpAt`-ot → a fenti szabály minden növelést elutasítana. Kötelező átállni `update(walletRef, { credits, lastTopUpAt: serverTimestamp() })`-re.
 >
 > ⚠️ **A 2000-es limit és a jövőbeli `awardWage`:** a küldetés végi kredit-jóváírás ([[003-firebase-auth-settings]] 6. pont) ugyanezen a szabályon megy át. Ha a wage egyszerre 2000⭐-nál többet adna, a limitet együtt kell hangolni.
+>
+> ⚠️ **A 2000-es limit és a guest-merge ([[010-firebase-guest-merge-single-gate]]):** az a terv az **első** guest→fiók merge-nél a vendég kreditet **hozzáadja** a fiók walletjéhez (`target + guest`), egyetlen `wallet/credits` írásban. Ha a vendég több pakkot vásárolt, a növekmény **meghaladhatja a 2000⭐-ot** → a fenti szabály **elutasítaná a legitim merge-t**. A `!data.exists()` ág csak akkor fed, ha a targetnek egyáltalán nincs wallet-je; ha van, a merge-írás beleütközik a limitbe. Megoldás: a szabály kapjon **kivételt az egyszeri guest-merge írásra** (pl. a `profile/guestMergeClaimed` `false→true` átmenetéhez kötött megengedőbb növekmény), **vagy** a 010 kapzsizza a merge-kreditet 2000⭐-ra. A duplázás ellen a 010 fiók-flagje + guest-node-törlése véd, nem a limit.
 
 **(e) Időkorlátok**
 
@@ -490,7 +493,7 @@ A felhasználó kifejezetten **Spark-kompatibilis, backend nélküli** védelmet
 ## 14. Kapcsolódó tervek
 
 - [[005-ingame-shop-strapi-stripe]] – **közvetlen előfeltétel.** Ez a terv az ott megépített Payment Links + kliensoldali jóváírás út köré épít védelmet; a 005 „Ismert korlátok" táblájának *„Kliens írja a kreditet"* és *„Nincs webhook → nincs automatikus verifikáció"* sorai itt kapnak konkrét kockázat-elemzést és enyhítést.
-- [[011-stripe-go-live]] – **ráépülő élesítési terv, amelynek ez a terv A és E fázisa blokkoló előfeltétele.** Valós pénzes fizetés nem indulhat a kulcs-higiénia és az ingyen-kredit rés szűkítése nélkül. A 011 az itteni `?session_id={CHECKOUT_SESSION_ID}` redirect-mintát viszi tovább az éles linkekre, `rk_live_` restricted kulccsal generálva, és kiegészíti a fizetési utat a Stripe Tax (`automatic_tax`, `tax_behavior`) valamint a 14 napos elállási jog lemondása (`consent_collection`) elemekkel. Fontos, hogy a 011 sem oldja meg a webhook hiányát: élesben a **refund után a kredit nem vonódik vissza** automatikusan — ez az F fázis melletti további érv.
+- [[012-stripe-go-live]] – **ráépülő élesítési terv, amelynek ez a terv A és E fázisa blokkoló előfeltétele.** Valós pénzes fizetés nem indulhat a kulcs-higiénia és az ingyen-kredit rés szűkítése nélkül. A 012 az itteni `?session_id={CHECKOUT_SESSION_ID}` redirect-mintát viszi tovább az éles linkekre, `rk_live_` restricted kulccsal generálva, és kiegészíti a fizetési utat a Stripe Tax (`automatic_tax`, `tax_behavior`) valamint a 14 napos elállási jog lemondása (`consent_collection`) elemekkel. Fontos, hogy a 012 sem oldja meg a webhook hiányát: élesben a **refund után a kredit nem vonódik vissza** automatikusan — ez az F fázis melletti további érv.
 - [[004-firebase-auth-bugfix]] – a Phase-1 RTDB rules (`wallet` kliens-írható) és a `device_map` alapú `rtdbKey` innen származik; az 5.3 (d) pont ezeket a szabályokat **szigorítja additívan**, a `device_map` logika érintetlenül marad.
 - [[009-firebase-identity-split-bugfix]] – **blokkoló előfeltétel.** A `rtdbKey` ma egy `catch`-ági fallbackkel a `deviceId`-re térülhet, ami ugyanabból a Google fiókból **két RTDB user node-ot** csinál, külön kredittel. Ez a terv a `credit_claims/{sessionId}` ledgert és a `wallet` írási limitet a user node-hoz köti — szétcsúszott identitás mellett a claim és a jóváírás a **rossz** node alá kerülne, azaz valós pénzért fizetett kredit tűnne el. **Forward-compat pont, amit itt kell átvezetni:** a tervezett `wallet` növekmény-limit szabályának **null-safe** ágat kell tartalmaznia (`!data.exists()`), mert első belépéskor és a guest-migráció kredit-átvételekor a `wallet` ág még **nem létezik** — enélkül az `ensureUserNode` create-ágja és a migráció is `PERMISSION_DENIED`-del bukik.
 - [[003-firebase-auth-settings]] – a Phase-2 rules (`wallet.write = false`) és az `awardWage` / `purchaseWithCredits` szerveroldali út itt van felvázolva Cloud Functionökkel; a jelen terv **F fázisa** ugyanezt Blaze terv nélkül, külső serverless futtatóval valósítaná meg.
