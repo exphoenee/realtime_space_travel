@@ -139,7 +139,8 @@
     "nicknamePlaceholder": "Gib einen Anzeigenamen ein",
     "nicknameEdit": "Bearbeiten",
     "nicknameSave": "Speichern",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "guestId": "Gast-ID"
   },
   "login": {
     "error": {
@@ -149,7 +150,8 @@
       "cancelled": "Du hast die Anmeldung abgebrochen.",
       "network": "Netzwerkfehler bei der Anmeldung. Überprüfe deine Verbindung.",
       "generic": "Die Anmeldung ist fehlgeschlagen. Versuche es später erneut."
-    }
+    },
+    "guestMergeAlreadyClaimed": "Nur ein Gastkonto kann mit einem registrierten Konto zusammengeführt werden. Deine letzten Gastkäufe konnten nicht übertragen werden."
   },
   "shipSelect": {
     "title": "Wähle dein Raumschiff",
@@ -240,6 +242,33 @@
       },
       "cosmosSeeker": {
         "desc": "Novas Consortiums Ultra-Langstrecken-Erkundungsschiff. Ausgestattet mit einem hochmodernen Gravitationsantrieb und umfangreichen Laboreinrichtungen für die Tiefenforschung."
+      },
+      "xenomorph": {
+        "desc": "Ein mysteriöses, biotechnisches Raumschiff unbekannter Herkunft. Der organische Rumpf des Xenomorph regeneriert sich mit der Zeit und seine neuronale Schnittstelle passt sich den Gedanken des Piloten an."
+      },
+      "voidWalker": {
+        "desc": "Der Void Walker gleitet in unheimlicher Stille durch die dunkelsten Winkel des Weltraums. Seine außerirdischen Triebwerke verbrauchen kosmische Strahlung und verleihen ihm eine nahezu unbegrenzte Reichweite."
+      },
+      "starSong": {
+        "desc": "Orion Shipyards' melodisches Wunderwerk — der Star Song schwingt im Einklang mit den Sternen. Sein sanfter, effizienter Antrieb macht jede Reise zu einer Symphonie der Präzision."
+      },
+      "siberianStorm": {
+        "desc": "Krasnyi Kosmos' Kaltwetter-Titan. Entwickelt für extreme Bedingungen, verfügt der Siberian Storm über doppelt verstärkte Rümpfe und Triebwerke, die in planetaren Schneestürmen gedeihen."
+      },
+      "santasSleigh": {
+        "desc": "Das legendäre Geschenkeliefer-Schiff aus der Nordpol-Werkstatt. Angetrieben von festlicher Freude und fortschrittlicher Warp-Technologie, ist es im Winter das schnellste Schiff der Galaxie."
+      },
+      "giftCarrier": {
+        "desc": "Das Massengutfrachter der Nordpol-Werkstatt, das die gesamte Produktion einer Werkstatt transportieren kann. Mit seinem geräumigen Frachtraum und der robusten Konstruktion ist kein Geschenk zu groß."
+      },
+      "ironBaron": {
+        "desc": "Steamforge Ateliers ehrgeizigste Schöpfung — eine fliegende Festung aus Messing und Eisen. Der Iron Baron verbindet viktorianische Erhabenheit mit verheerender industrieller Kraft."
+      },
+      "phantom": {
+        "desc": "Ein Geisterschiff jenseits des bekannten Weltraums. Die Triebwerke des Phantoms geben kein Signal ab und sein Rumpf beugt das Licht um sich herum — perfekt für Piloten, die lieber unbemerkt bleiben."
+      },
+      "starPhoenix": {
+        "desc": "Novas Consortiums Wiedergeburt aus der Asche früherer Prototypen. Der Star Phoenix erhebt sich mit revolutionärer Triebwerkstechnologie und einem Kommandodeck, das jeden Befehl des Kapitäns vorwegnimmt."
       }
     },
     "exoplanet": {
@@ -274,8 +303,18 @@
       "successText": "Du hast {{credits}} ⭐ Credits gekauft!",
       "newBalance": "Neues Guthaben: ⭐ {{balance}}",
       "back": "Zurück zum Shop",
-      "notEnoughCreditsHint": "Kaufe Credits auf dem Tab 'Credits kaufen'!"
+      "notEnoughCreditsHint": "Kaufe Credits auf dem Tab 'Credits kaufen'!",
+      "guestWarning": "Achtung: Als Gast gekaufte Credits und Gegenstände gehen verloren, wenn du dich nicht anmeldest. Gastfortschritt kann nur einmal, von einem einzigen Gastkonto, übertragen werden."
     }
+  },
+  "sort": {
+    "default": "Sortieren",
+    "priceAsc": "Preis ↑",
+    "priceDesc": "Preis ↓",
+    "speedAsc": "Geschwindigkeit ↑",
+    "speedDesc": "Geschwindigkeit ↓",
+    "distanceAsc": "Entfernung ↑",
+    "distanceDesc": "Entfernung ↓"
   },
   "language": {
     "label": "Sprache",

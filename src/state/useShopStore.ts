@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { ShopCategory, CartItem, OwnedItems } from "../types";
-import { CREDIT_PACKS, STARTING_CREDITS, DEBUG_STARTING_CREDITS, BASE_EXOPLANET_IDS } from "../constants/shopCatalog";
+import { CREDIT_PACKS, STARTING_CREDITS, DEBUG_STARTING_CREDITS, BASE_EXOPLANET_IDS, DEFAULT_SHIP } from "../constants/shopCatalog";
 import { getRtdbKey } from "./useAuthStore";
 import { updateUserWallet, updateUserInventory } from "../firebase/userData";
 
@@ -50,7 +50,7 @@ const useShopStore = create<ShopState>()(
         const { owned } = get();
         switch (category) {
           case "exoplanet": return owned.exoplanets.includes(id);
-          case "ship": return owned.ships.includes(id);
+          case "ship": return id === DEFAULT_SHIP.id || owned.ships.includes(id);
           case "music": return owned.music.includes(id);
           default: return false;
         }
@@ -129,6 +129,19 @@ const useShopStore = create<ShopState>()(
         return { ok: true };
       },
 
+      /**
+       * Buy credits (DEBUG / non-Stripe path).
+       *
+       * This adds credits to the LOCAL store and then OVERWRITES the server
+       * balance with `updateUserWallet` (set-based). This is used for:
+       * - Debug/add-credits button
+       * - Non-Stripe test flows
+       *
+       * For Stripe Payment Link purchases, the return flow uses
+       * `incrementUserWallet` (runTransaction-based) in ShopScreen.tsx
+       * which ATOMICALLY adds credits to the server balance without
+       * overwriting existing credits.
+       */
       buyCredits: (packId) => {
         const pack = CREDIT_PACKS.find((p) => p.id === packId);
         if (!pack) return;

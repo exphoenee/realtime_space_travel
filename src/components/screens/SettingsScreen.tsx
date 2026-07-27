@@ -31,6 +31,8 @@ const SettingsScreen = () => {
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const deviceId = useAuthStore((s) => s.deviceId);
   const rtdbKey = useAuthStore(selectRtdbKey);
+  const mergeNotice = useAuthStore((s) => s.mergeNotice);
+  const setMergeNotice = useAuthStore((s) => s.setMergeNotice);
   const storeDisplayName = useAuthStore((s) => s.displayName);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
@@ -86,18 +88,21 @@ const SettingsScreen = () => {
     [handleNicknameSave, nickname],
   );
 
-  // Shared deviceId copy handler (copies the stable deviceId to clipboard)
+  // Shared UID copy handler — copies the correct identifier based on auth state:
+  // - Authenticated users: copies the uid (rtdbKey)
+  // - Guest/anonymous users: copies the deviceId
   const handleCopyUid = useCallback(async () => {
-    if (!deviceId) return;
+    const idToCopy = authUser && !isAnonymous ? rtdbKey : deviceId;
+    if (!idToCopy) return;
     try {
-      await navigator.clipboard.writeText(deviceId);
+      await navigator.clipboard.writeText(idToCopy);
       setUidCopied(true);
       if (uidTimerRef.current) clearTimeout(uidTimerRef.current);
       uidTimerRef.current = setTimeout(() => setUidCopied(false), 2000);
     } catch {
       // Clipboard API not available — fall back to user-select: all
     }
-  }, [deviceId]);
+  }, [deviceId, rtdbKey, authUser, isAnonymous]);
 
   const uidKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -207,20 +212,35 @@ const SettingsScreen = () => {
               </div>
             </div>
 
-            {/* Device ID */}
+            {/* User ID (rtdbKey/uid for authenticated users) */}
             <div className={styles.accountField}>
               <span className={styles.fieldLabel}>{t("settings.userId")}</span>
               <span
                 className={`${styles.uidDisplay}${uidCopied ? ` ${styles.uidCopied}` : ""}`}
-                title={uidCopied ? t("settings.uidCopied") : deviceId}
+                title={uidCopied ? t("settings.uidCopied") : rtdbKey}
                 onClick={handleCopyUid}
                 role="button"
                 tabIndex={0}
                 onKeyDown={uidKeyDown}
               >
-                {uidCopied ? t("settings.uidCopied") : deviceId}
+                {uidCopied ? t("settings.uidCopied") : rtdbKey}
               </span>
             </div>
+
+            {/* Merge notice (blocked merge info) */}
+            {mergeNotice && (
+              <div className={styles.mergeNotice}>
+                <span>{t(mergeNotice)}</span>
+                <button
+                  type="button"
+                  className={styles.mergeNoticeDismiss}
+                  onClick={() => setMergeNotice(null)}
+                  aria-label="Dismiss"
+                >
+                  ×
+                </button>
+              </div>
+            )}
 
             {/* Logout */}
             <div className={styles.accountActions}>
@@ -243,16 +263,19 @@ const SettingsScreen = () => {
           <div className={styles.row}>
             <span className={styles.label}>{t("mainMenu.login")}</span>
             <div className={styles.accountInfo}>
-              <span
-                className={`${styles.uidDisplay}${uidCopied ? ` ${styles.uidCopied}` : ""}`}
-                title={uidCopied ? t("settings.uidCopied") : deviceId}
-                onClick={handleCopyUid}
-                role="button"
-                tabIndex={0}
-                onKeyDown={uidKeyDown}
-              >
-                {uidCopied ? t("settings.uidCopied") : deviceId}
-              </span>
+              <div className={styles.guestIdBlock}>
+                <span className={styles.fieldLabel}>{t("settings.guestId")}</span>
+                <span
+                  className={`${styles.uidDisplay}${uidCopied ? ` ${styles.uidCopied}` : ""}`}
+                  title={uidCopied ? t("settings.uidCopied") : deviceId}
+                  onClick={handleCopyUid}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={uidKeyDown}
+                >
+                  {uidCopied ? t("settings.uidCopied") : deviceId}
+                </span>
+              </div>
               <button
                 type="button"
                 className={styles.authBtn}

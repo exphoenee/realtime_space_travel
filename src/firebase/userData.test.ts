@@ -14,13 +14,17 @@ vi.mock("firebase/database", () => ({
   update: mockUpdate,
   set: mockSet,
   onValue: vi.fn(),
+  runTransaction: vi.fn(async (ref: unknown, updater: (current: number) => number) => {
+    const result = updater(2000);
+    return { snapshot: { val: () => result } };
+  }),
 }));
 
 vi.mock("./config", () => ({
   getFirebaseDB: () => ({ name: "mockDb" }),
 }));
 
-import { migrateGuestData, ensureUserNode } from "./userData";
+import { migrateGuestData, ensureUserNode, incrementUserWallet, type MergeResult } from "./userData";
 import type { User } from "firebase/auth";
 
 const createMockUser = (overrides: Partial<User> = {}): User =>
@@ -65,16 +69,16 @@ function getUserUpdates(uid: string): Record<string, unknown> | null {
 }
 
 describe("migrateGuestData", () => {
-  it("returns false if deviceId === targetUid", async () => {
-    const result = await migrateGuestData("same-id", "same-id");
-    expect(result).toBe(false);
+  it("returns noop if deviceId === targetUid", async () => {
+    const result: MergeResult = await migrateGuestData("same-id", "same-id");
+    expect(result).toEqual({ kind: "noop" });
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
-  it("returns false if guest node does not exist", async () => {
+  it("returns noop if guest node does not exist", async () => {
     mockGet.mockResolvedValue({ exists: () => false });
-    const result = await migrateGuestData("guest-abc", "target-123");
-    expect(result).toBe(false);
+    const result: MergeResult = await migrateGuestData("guest-abc", "target-123");
+    expect(result).toEqual({ kind: "noop" });
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
@@ -121,7 +125,7 @@ describe("migrateGuestData", () => {
     ).resolves.not.toThrow();
   });
 
-  it("calls root update with migratedFrom mark", async () => {
+  it("calls root update with guestMergeClaimed mark (not migratedFrom)", async () => {
     mockGet
       .mockResolvedValueOnce({
         exists: () => true,
@@ -136,9 +140,28 @@ describe("migrateGuestData", () => {
 
     const updates = getRootUpdates();
     expect(updates).not.toBeNull();
-    expect(updates!["users/target-123/profile/migratedFrom/guest-abc"]).toBe(
+    // NEW: uses guestMergeClaimed instead of migratedFrom
+    expect(updates!["users/target-123/profile/guestMergeClaimed"]).toBe(
       true,
     );
+  });
+
+  it("adds credits on first merge (target + guest)", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 2000 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ profile: {}, wallet: { credits: 500 }, inventory: {} }),
+      });
+
+    const result: MergeResult = await migrateGuestData("guest-abc", "target-123");
+
+    expect(result).toEqual({ kind: "merged", addedCredits: 2000 });
+    const updates = getRootUpdates();
+    expect(updates!["users/target-123/wallet/credits"]).toBe(2500); // 500 + 2000
   });
 
   it("unions inventory", async () => {
@@ -186,6 +209,148 @@ describe("migrateGuestData", () => {
     expect(updates).not.toBeNull();
     const values = Object.values(updates!);
     expect(values.every((v) => v !== undefined)).toBe(true);
+  });
+
+  it("returns blocked when guestMergeClaimed is already set", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 2000 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({
+          profile: { guestMergeClaimed: true },
+          wallet: { credits: 500 },
+          inventory: {},
+        }),
+      });
+
+    const result: MergeResult = await migrateGuestData("guest-abc", "target-123");
+    expect(result).toEqual({ kind: "blocked" });
+  });
+
+  it("returns blocked when legacy migratedFrom has entries", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 2000 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({
+          profile: { migratedFrom: { x: true } },
+          wallet: { credits: 500 },
+          inventory: {},
+        }),
+      });
+
+    const result: MergeResult = await migrateGuestData("guest-abc", "target-123");
+    expect(result).toEqual({ kind: "blocked" });
+  });
+
+  it("cleans up device_map in blocked branch", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 100 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({
+          profile: { guestMergeClaimed: true },
+          wallet: { credits: 0 },
+          inventory: {},
+        }),
+      });
+
+    await migrateGuestData("guest-abc", "target-123");
+
+    const updates = getRootUpdates();
+    expect(updates).not.toBeNull();
+    expect(updates!["device_map/guest-abc"]).toBeNull();
+  });
+
+  it("cleans up device_map in merged branch", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 100 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ profile: {}, wallet: { credits: 0 }, inventory: {} }),
+      });
+
+    await migrateGuestData("guest-abc", "target-123");
+
+    const updates = getRootUpdates();
+    expect(updates).not.toBeNull();
+    expect(updates!["device_map/guest-abc"]).toBeNull();
+  });
+
+  it("audits orphanDiscardedCredits in blocked branch", async () => {
+    mockGet
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 2000 }, inventory: {} }),
+      })
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({
+          profile: { guestMergeClaimed: true },
+          wallet: { credits: 0 },
+          inventory: {},
+        }),
+      });
+
+    await migrateGuestData("guest-abc", "target-123");
+
+    const updates = getRootUpdates();
+    expect(updates).not.toBeNull();
+    expect(updates!["users/target-123/profile/orphanDiscardedCredits/guest-abc"]).toBe(2000);
+  });
+});
+
+describe("incrementUserWallet", () => {
+  it("adds delta to existing credits", async () => {
+    // runTransaction updater: 2000 + 2000 = 4000
+    const { runTransaction } = await import("firebase/database");
+    (runTransaction as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_ref: unknown, updater: (current: number) => number) => {
+        const result = updater(2000);
+        return { snapshot: { val: () => result } };
+      },
+    );
+
+    const result = await incrementUserWallet("test-uid", 2000);
+    expect(result).toBe(4000);
+  });
+
+  it("handles null/undefined by treating as 0", async () => {
+    const { runTransaction } = await import("firebase/database");
+    (runTransaction as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_ref: unknown, updater: (current: number) => number) => {
+        const result = updater(null as unknown as number);
+        return { snapshot: { val: () => result } };
+      },
+    );
+
+    const result = await incrementUserWallet("test-uid", 300);
+    expect(result).toBe(300);
+  });
+
+  it("adds to zero balance", async () => {
+    const { runTransaction } = await import("firebase/database");
+    (runTransaction as ReturnType<typeof vi.fn>).mockImplementation(
+      async (_ref: unknown, updater: (current: number) => number) => {
+        const result = updater(0);
+        return { snapshot: { val: () => result } };
+      },
+    );
+
+    const result = await incrementUserWallet("test-uid", 2000);
+    expect(result).toBe(2000);
   });
 });
 

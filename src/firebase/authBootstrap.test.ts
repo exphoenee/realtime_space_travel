@@ -21,6 +21,7 @@ vi.mock("./deviceId", () => ({
 }));
 
 import useAuthStore, { getRtdbKey } from "../state/useAuthStore";
+import type { MergeResult } from "./userData";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -35,9 +36,11 @@ beforeEach(() => {
     authError: null,
     nickname: "",
     nicknameLoaded: false,
+    mergeNotice: null,
     setUser: useAuthStore.getState().setUser,
     clearUser: useAuthStore.getState().clearUser,
     setAuthError: useAuthStore.getState().setAuthError,
+    setMergeNotice: useAuthStore.getState().setMergeNotice,
     setNickname: useAuthStore.getState().setNickname,
     setDeviceId: useAuthStore.getState().setDeviceId,
   });
@@ -69,5 +72,37 @@ describe("authBootstrap invariants", () => {
   it("selectRtdbKey returns deviceId when user signs out", () => {
     useAuthStore.getState().setUser(null);
     expect(getRtdbKey()).toBe("mock-device-id");
+  });
+
+  it("setMergeNotice sets mergeNotice in store", () => {
+    useAuthStore.getState().setMergeNotice("login.guestMergeAlreadyClaimed");
+    expect(useAuthStore.getState().mergeNotice).toBe("login.guestMergeAlreadyClaimed");
+
+    useAuthStore.getState().setMergeNotice(null);
+    expect(useAuthStore.getState().mergeNotice).toBeNull();
+  });
+
+  it("setUser resets mergeNotice", () => {
+    useAuthStore.getState().setMergeNotice("login.guestMergeAlreadyClaimed");
+    expect(useAuthStore.getState().mergeNotice).toBe("login.guestMergeAlreadyClaimed");
+
+    // Simulate a Google user signing in
+    const googleUser = {
+      uid: "google-uid-123",
+      isAnonymous: false,
+      displayName: "Test User",
+      email: "test@example.com",
+      photoURL: null,
+    };
+    useAuthStore.getState().setUser(googleUser as any);
+
+    // mergeNotice should be reset
+    expect(useAuthStore.getState().mergeNotice).toBeNull();
+  });
+
+  it("clearUser resets mergeNotice", () => {
+    useAuthStore.getState().setMergeNotice("login.guestMergeAlreadyClaimed");
+    useAuthStore.getState().clearUser();
+    expect(useAuthStore.getState().mergeNotice).toBeNull();
   });
 });

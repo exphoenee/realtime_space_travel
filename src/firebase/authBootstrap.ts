@@ -14,6 +14,7 @@ import {
 } from "./userData";
 import { getDeviceId } from "./deviceId";
 import useAuthStore, { getRtdbKey } from "../state/useAuthStore";
+import type { MergeResult } from "./userData";
 import useGameStore from "../state/useGameStore";
 
 // Module-scope singleton state. Living at module scope (rather than inside a
@@ -113,9 +114,14 @@ export const startAuthBootstrap = (
     let migrationPending = false;
     if (!user.isAnonymous) {
       try {
-        const migrated = await migrateGuestData(deviceId, user.uid);
-        if (migrated) {
-          console.log("Guest data migrated to", user.uid);
+        const result: MergeResult = await migrateGuestData(deviceId, user.uid);
+        if (result.kind === "merged") {
+          console.log("Guest data merged to", user.uid, "— added credits:", result.addedCredits);
+        } else if (result.kind === "blocked") {
+          console.log("Guest merge blocked for", user.uid, "— already claimed");
+          useAuthStore.getState().setMergeNotice("login.guestMergeAlreadyClaimed");
+        } else if (result.kind === "noop") {
+          // Nothing to migrate — silently continue
         }
       } catch (err) {
         console.error("Guest data migration failed:", err);

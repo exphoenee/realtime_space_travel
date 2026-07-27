@@ -139,7 +139,8 @@
     "nicknamePlaceholder": "Choisissez un nom d'affichage",
     "nicknameEdit": "Modifier",
     "nicknameSave": "Sauvegarder",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "guestId": "Identifiant invité"
   },
   "login": {
     "error": {
@@ -149,7 +150,8 @@
       "cancelled": "Vous avez annulé la connexion.",
       "network": "Erreur réseau pendant la connexion. Vérifiez votre connexion.",
       "generic": "La connexion a échoué. Réessayez plus tard."
-    }
+    },
+    "guestMergeAlreadyClaimed": "Un seul compte invité peut être fusionné dans un compte enregistré. Vos achats récents en tant qu'invité n'ont pas pu être transférés."
   },
   "shipSelect": {
     "title": "Choisissez votre vaisseau",
@@ -240,6 +242,33 @@
       },
       "cosmosSeeker": {
         "desc": "Le vaisseau d'exploration ultra-longue distance de Nova Consortium. Équipé d'un propulseur gravitationnel de pointe et d'installations de laboratoire étendues pour la recherche spatiale."
+      },
+      "xenomorph": {
+        "desc": "Un vaisseau bio-ingénierie mystérieux d'origine inconnue. La coque organique du Xenomorph se régénère avec le temps et son interface neuronale s'adapte aux pensées du pilote."
+      },
+      "voidWalker": {
+        "desc": "Le Void Walker glisse dans les recoins les plus sombres de l'espace dans un silence inquiétant. Ses moteurs extraterrestres consomment le rayonnement cosmique, lui offrant une portée quasi illimitée."
+      },
+      "starSong": {
+        "desc": "La merveille mélodique d'Orion Shipyards — le Star Song résonne avec les harmoniques stellaires. Son moteur fluide et efficace fait de chaque voyage une symphonie de précision."
+      },
+      "siberianStorm": {
+        "desc": "Le titan par temps froid de Krasnyi Kosmos. Conçu pour des conditions extrêmes, le Siberian Storm dispose de coques doublement renforcées et de moteurs qui prospèrent dans les blizzards planétaires."
+      },
+      "santasSleigh": {
+        "desc": "Le légendaire vaisseau de livraison de cadeaux de l'Atelier du Pôle Nord. Alimenté par la joie festive et une technologie de distorsion avancée, c'est le vaisseau le plus rapide de la galaxie en hiver."
+      },
+      "giftCarrier": {
+        "desc": "Le cargo de l'Atelier du Pôle Nord, capable de transporter toute la production d'un atelier. Avec sa large soute et sa construction robuste, aucun cadeau n'est trop grand."
+      },
+      "ironBaron": {
+        "desc": "La création la plus ambitieuse de Steamforge Atelier — une forteresse volante en laiton et en fer. L'Iron Baron allie la grandeur victorienne à une puissance industrielle dévastatrice."
+      },
+      "phantom": {
+        "desc": "Un vaisseau fantôme venu de l'au-delà de l'espace connu. Les moteurs du Phantom n'émettent aucun signal et sa coque courbe la lumière autour d'elle — parfait pour les pilotes qui préfèrent passer inaperçus."
+      },
+      "starPhoenix": {
+        "desc": "La renaissance de Nova Consortium des cendres des prototypes antérieurs. Le Star Phoenix s'élève avec une technologie de moteur révolutionnaire et un poste de commandement qui anticipe chaque ordre du capitaine."
       }
     },
     "exoplanet": {
@@ -274,8 +303,18 @@
       "successText": "Vous avez acheté {{credits}} ⭐ crédits !",
       "newBalance": "Nouveau solde : ⭐ {{balance}}",
       "back": "Retour à la boutique",
-      "notEnoughCreditsHint": "Achetez des crédits dans l'onglet 'Acheter des crédits' !"
+      "notEnoughCreditsHint": "Achetez des crédits dans l'onglet 'Acheter des crédits' !",
+      "guestWarning": "Attention : les crédits et objets achetés en tant qu'invité sont perdus si vous ne vous connectez pas. La progression d'invité ne peut être transférée qu'une seule fois, depuis un seul compte invité."
     }
+  },
+  "sort": {
+    "default": "Trier",
+    "priceAsc": "Prix ↑",
+    "priceDesc": "Prix ↓",
+    "speedAsc": "Vitesse ↑",
+    "speedDesc": "Vitesse ↓",
+    "distanceAsc": "Distance ↑",
+    "distanceDesc": "Distance ↓"
   },
   "language": {
     "label": "Langue",

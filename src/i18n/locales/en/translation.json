@@ -139,7 +139,8 @@
     "nicknamePlaceholder": "Enter a display name",
     "nicknameEdit": "Edit",
     "nicknameSave": "Save",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "guestId": "Guest ID"
   },
   "login": {
     "error": {
@@ -149,7 +150,8 @@
       "cancelled": "You cancelled the sign-in.",
       "network": "Network error during sign-in. Check your connection.",
       "generic": "Sign-in failed. Please try again later."
-    }
+    },
+    "guestMergeAlreadyClaimed": "Only one guest account can be merged into a registered account. Your recent guest purchases could not be transferred."
   },
   "shipSelect": {
     "title": "Choose Your Ship",
@@ -248,6 +250,33 @@
       },
       "cosmosSeeker": {
         "desc": "Nova Consortium's ultra-long-range exploration vessel. Equipped with a state-of-the-art gravity drive and extensive laboratory facilities for deep-space research."
+      },
+      "xenomorph": {
+        "desc": "A mysterious bio-engineered vessel of unknown origin. The Xenomorph's organic hull regenerates over time, and its neural interface adapts to the pilot's thoughts."
+      },
+      "voidWalker": {
+        "desc": "The Void Walker glides through the darkest reaches of space with eerie silence. Its alien engines consume cosmic radiation, granting it near-limitless range."
+      },
+      "starSong": {
+        "desc": "Orion Shipyards' melodic marvel — the Star Song resonates with stellar harmonics. Its smooth, efficient drive makes every journey a symphony of precision."
+      },
+      "siberianStorm": {
+        "desc": "Krasnyi Kosmos' cold-weather titan. Designed for extreme conditions, the Siberian Storm has double-reinforced hulls and engines that thrive in planetary blizzards."
+      },
+      "santasSleigh": {
+        "desc": "The legendary gift-delivery vessel from the North Pole Workshop. Powered by festive cheer and advanced warp technology, it is the fastest ship in the galaxy during winter."
+      },
+      "giftCarrier": {
+        "desc": "North Pole Workshop's bulk freighter, capable of carrying an entire workshop's production. With its wide cargo bay and sturdy construction, no present is too large."
+      },
+      "ironBaron": {
+        "desc": "Steamforge Atelier's most ambitious creation — a flying fortress of brass and iron. The Iron Baron combines Victorian grandeur with devastating industrial power."
+      },
+      "phantom": {
+        "desc": "A ghost ship from beyond known space. The Phantom's drives emit no signature, and its hull bends light around it — perfect for pilots who prefer to go unnoticed."
+      },
+      "starPhoenix": {
+        "desc": "Nova Consortium's rebirth from the ashes of earlier prototypes. The Star Phoenix rises with revolutionary engine tech and a command deck that anticipates the captain's every command."
       }
     },
     "exoplanet": {
@@ -282,7 +311,17 @@
       "successText": "You bought {{credits}} ⭐ credits!",
       "newBalance": "New balance: ⭐ {{balance}}",
       "back": "Back to shop",
-      "notEnoughCreditsHint": "Buy credits on the 'Buy Credits' tab!"
+      "notEnoughCreditsHint": "Buy credits on the 'Buy Credits' tab!",
+      "guestWarning": "Heads up: credits and items bought as a guest are lost unless you sign in. Guest progress can be transferred to a registered account only once, from a single guest account."
     }
+  },
+  "sort": {
+    "default": "Sort",
+    "priceAsc": "Price ↑",
+    "priceDesc": "Price ↓",
+    "speedAsc": "Speed ↑",
+    "speedDesc": "Speed ↓",
+    "distanceAsc": "Distance ↑",
+    "distanceDesc": "Distance ↓"
   }
 }

@@ -25,11 +25,14 @@ interface AuthState {
   nickname: string;
   /** Whether nickname has been loaded from RTDB */
   nicknameLoaded: boolean;
+  /** Merge notice (info-level message, not an error). Shown once then cleared. */
+  mergeNotice: string | null;
 
   setUser: (user: User | null) => void;
   setDisplayName: (name: string) => void;
   clearUser: () => void;
   setAuthError: (msg: string | null) => void;
+  setMergeNotice: (msg: string | null) => void;
   setNickname: (nickname: string) => void;
   setDeviceId: (id: string) => void;
 }
@@ -59,6 +62,7 @@ const useAuthStore = create<AuthState>()((set) => ({
   authError: null,
   nickname: "",
   nicknameLoaded: false,
+  mergeNotice: null,
 
   setUser: (user) =>
     set(() => {
@@ -74,6 +78,7 @@ const useAuthStore = create<AuthState>()((set) => ({
         displayName: user?.displayName ?? null,
         isAnonymous: user?.isAnonymous ?? true,
         uid: user?.uid ?? null,
+        mergeNotice: null, // reset merge notice on user change
       };
     }),
 
@@ -90,9 +95,12 @@ const useAuthStore = create<AuthState>()((set) => ({
       deviceId: getDeviceId(),
       nickname: "",
       nicknameLoaded: false,
+      mergeNotice: null,
     }),
 
   setAuthError: (msg) => set({ authError: msg }),
+
+  setMergeNotice: (msg) => set({ mergeNotice: msg }),
 
   setNickname: (nickname) => set({ nickname, nicknameLoaded: true }),
 

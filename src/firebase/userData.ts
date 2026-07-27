@@ -1,4 +1,4 @@
-import { ref, onValue, update, set, type Unsubscribe, type DatabaseReference } from "firebase/database";
+import { ref, onValue, update, set, runTransaction, type Unsubscribe, type DatabaseReference } from "firebase/database";
 import { getFirebaseDB } from "./config";
 import type { User } from "firebase/auth";
 import {
@@ -8,6 +8,17 @@ import {
 } from "../constants/shopCatalog";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+
+/**
+ * Result of a guest data migration attempt.
+ * - "noop": nothing to do (same key, or no guest node)
+ * - "blocked": the target account has already claimed a guest merge
+ * - "merged": first-time merge with credits transferred
+ */
+export type MergeResult =
+  | { kind: "noop" }
+  | { kind: "blocked" }
+  | { kind: "merged"; addedCredits: number };
 
 /** Default user data for first-time users. */
 export interface UserNode {
@@ -20,8 +31,18 @@ export interface UserNode {
     lastLoginAt: number;
     /** Custom nickname editable by the user. */
     nickname: string;
-    /** Idempotence mark: maps deviceId → true once that guest node has been merged. */
+    /**
+     * DEPRECATED (legacy): per-deviceId idempotence mark.
+     * Do NOT write new entries here — use `guestMergeClaimed` instead.
+     * Non-empty migratedFrom is treated as "claimed" by isGuestMergeClaimed().
+     */
     migratedFrom?: Record<string, boolean>;
+    /**
+     * Per-account gate: once true, this account has merged a guest session.
+     * Further merge attempts are blocked (guest node cleaned, credits audited).
+     * This is the REPLACEMENT for the per-deviceId migratedFrom map.
+     */
+    guestMergeClaimed?: boolean;
     /** Audit trail: orphan credits that were discarded because the target already had a wallet. */
     orphanDiscardedCredits?: Record<string, number>;
   };
@@ -180,41 +201,73 @@ export const ensureUserNode = async (
  *   credits are logged via console.warn and written to an audit field
  *   (`profile/orphanDiscardedCredits/{deviceId}`).
  * - If the target has NO `wallet` branch: guest credits are transferred.
+/**
+ * Check if a target account has already claimed a guest merge.
+ * Returns true if:
+ * - guestMergeClaimed === true (new flag), OR
+ * - migratedFrom has any keys (legacy — non-empty means already claimed)
+ */
+export const isGuestMergeClaimed = (
+  targetData: DeepPartial<UserNode> | null,
+): boolean => {
+  if (!targetData?.profile) return false;
+  if (targetData.profile.guestMergeClaimed === true) return true;
+  const migratedFrom = targetData.profile.migratedFrom;
+  if (migratedFrom && typeof migratedFrom === "object" && Object.keys(migratedFrom).length > 0) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Migrate guest data from `users/{deviceId}` to `users/{targetUid}`.
  *
- * @returns true if guest data was found and migrated, false otherwise.
+ * When a guest user signs in with Google, this:
+ * 1. Reads the guest data at `users/{deviceId}`
+ * 2. If the target has NOT claimed a merge yet:
+ *    - Merges guest data INTO the target (ADDITION for credits, union for inventory,
+ *      max for stats, settings only if target has none)
+ *    - Sets `profile/guestMergeClaimed = true`
+ * 3. If the target HAS claimed a merge:
+ *    - BLOCKS the merge (no credit/item transfer)
+ *    - Audits orphan credits to `profile/orphanDiscardedCredits/{deviceId}`
+ * 4. Always: deletes guest node children + device_map/{deviceId}
+ *
+ * All writes happen in a SINGLE atomic root multi-path `update()` call
+ * (or a fallback lépésenkénti sequence if the root-update fails).
+ *
+ * Wallet policy:
+ * - FIRST merge: guest credits ADD to target credits (`target + guest`).
+ * - BLOCKED (already claimed): no wallet write; orphan credits audited.
+ *
+ * @returns MergeResult indicating what happened.
  */
 export const migrateGuestData = async (
   deviceId: string,
   targetUid: string,
-): Promise<boolean> => {
+): Promise<MergeResult> => {
   // No migration needed if the keys are the same (theoretical edge case)
-  if (deviceId === targetUid) return false;
+  if (deviceId === targetUid) return { kind: "noop" };
 
   const db = getFirebaseDB();
-  const guestRef = ref(db, `users/${deviceId}`);
-
   const { get } = await import("firebase/database");
+
+  // Read guest node
+  const guestRef = ref(db, `users/${deviceId}`);
   const guestSnapshot = await get(guestRef);
 
   // No guest data to migrate
-  if (!guestSnapshot.exists()) return false;
+  if (!guestSnapshot.exists()) return { kind: "noop" };
 
   const guestData = guestSnapshot.val() as DeepPartial<UserNode>;
 
-  // Check if the target already has data
+  // Read target node
   const targetRef = ref(db, `users/${targetUid}`);
   const targetSnapshot = await get(targetRef);
 
   let targetData: DeepPartial<UserNode> | null = null;
   if (targetSnapshot.exists()) {
     targetData = targetSnapshot.val() as DeepPartial<UserNode>;
-
-    // Idempotence guard: if this deviceId was already migrated, skip merge.
-    if (targetData.profile?.migratedFrom?.[deviceId] === true) {
-      // Already migrated — just clean up the orphan guest node.
-      await cleanupGuestNode(db, deviceId);
-      return true;
-    }
   }
 
   // --- Build the atomic updates object ---
@@ -222,36 +275,64 @@ export const migrateGuestData = async (
   // Uses ONLY leaf-level paths to avoid RTDB path overlap errors.
   const updates: Record<string, unknown> = {};
 
-  // Idempotence mark (always written)
-  updates[`users/${targetUid}/profile/migratedFrom/${deviceId}`] = true;
-
-  // --- Wallet ---
   const guestCredits = guestData.wallet?.credits ?? 0;
-  const targetCredits = targetData?.wallet?.credits ?? 0;
 
-  if (targetData?.wallet === undefined || targetData.wallet === null) {
-    // Target has NO wallet → transfer guest credits
-    updates[`users/${targetUid}/wallet/credits`] = guestCredits;
-  } else {
-    // Target has a wallet → target wins
+  // --- CAPU CHECK: is merge already claimed? ---
+  if (isGuestMergeClaimed(targetData)) {
+    // BLOCKED: no credit/item transfer, just audit + cleanup
     if (guestCredits > 0) {
       console.warn(
-        `Guest data migration: orphan credits discarded. deviceId=${deviceId}, ` +
-        `credits=${guestCredits}. Target uid=${targetUid} already has wallet.`,
+        `Guest merge BLOCKED: orphan credits discarded. deviceId=${deviceId}, ` +
+        `credits=${guestCredits}. Target uid=${targetUid} already claimed a merge.`,
       );
-      // Audit trail so the orphan credits can be manually restored if needed
       updates[`users/${targetUid}/profile/orphanDiscardedCredits/${deviceId}`] = guestCredits;
     }
+
+    // Ensure flag is set (idempotent)
+    updates[`users/${targetUid}/profile/guestMergeClaimed`] = true;
+
+    // Cleanup: delete guest node children + device_map
+    const guestKeys = Object.keys(guestSnapshot.val() || {});
+    for (const key of guestKeys) {
+      updates[`users/${deviceId}/${key}`] = null;
+    }
+    updates[`device_map/${deviceId}`] = null;
+
+    // --- Validate: no undefined values ---
+    for (const [path, val] of Object.entries(updates)) {
+      if (val === undefined) {
+        console.warn(`migrateGuestData: skipping undefined value at ${path}`);
+        delete updates[path];
+      }
+    }
+
+    // Execute atomic multi-path update
+    await executeAtomicUpdate(db, updates, deviceId);
+
+    return { kind: "blocked" };
   }
 
-  // --- Inventory (union) ---
+  // --- FIRST MERGE: target + guest ADDITION ---
+  // Idempotence mark: DO NOT write migratedFrom (deprecated) — use guestMergeClaimed
+  updates[`users/${targetUid}/profile/guestMergeClaimed`] = true;
+
+  // --- Wallet: ADDITION (NOT overwrite) ---
+  const targetCredits = targetData?.wallet?.credits ?? 0;
+  const newCredits = targetCredits + guestCredits;
+  updates[`users/${targetUid}/wallet/credits`] = newCredits;
+
+  // --- Inventory (union: guest items only where target doesn't have them) ---
   const categories = ["ships", "music", "exoplanets"] as const;
   for (const cat of categories) {
     const guestCat = guestData.inventory?.[cat];
     if (!guestCat) continue;
     for (const [key, val] of Object.entries(guestCat)) {
       if (val === true) {
-        updates[`users/${targetUid}/inventory/${cat}/${key}`] = true;
+        // Only write if target doesn't already have this item
+        const targetHas = targetData?.inventory?.[cat]?.[key] === true;
+        if (!targetHas) {
+          updates[`users/${targetUid}/inventory/${cat}/${key}`] = true;
+        }
       }
     }
   }
@@ -266,7 +347,6 @@ export const migrateGuestData = async (
   // --- Settings (only if target has none) ---
   if (!targetData?.settings) {
     if (guestData.settings) {
-      // Write individual leaf fields
       if (guestData.settings.activeShipId !== undefined)
         updates[`users/${targetUid}/settings/activeShipId`] = guestData.settings.activeShipId;
       if (guestData.settings.activeMusicId !== undefined)
@@ -291,7 +371,6 @@ export const migrateGuestData = async (
   }
 
   // --- Cleanup: delete guest node children + device_map ---
-  // Get the actual keys from the guest snapshot to delete them
   const guestKeys = Object.keys(guestSnapshot.val() || {});
   for (const key of guestKeys) {
     updates[`users/${deviceId}/${key}`] = null;
@@ -306,33 +385,72 @@ export const migrateGuestData = async (
     }
   }
 
+  // Verify no prefix-overlapping paths (leaf-level only)
+  const paths = Object.keys(updates);
+  for (let i = 0; i < paths.length; i++) {
+    for (let j = i + 1; j < paths.length; j++) {
+      if (paths[i].startsWith(paths[j] + "/") || paths[j].startsWith(paths[i] + "/")) {
+        console.warn(`migrateGuestData: overlapping paths detected: ${paths[i]} vs ${paths[j]}`);
+      }
+    }
+  }
+
   // --- Execute atomic multi-path update ---
-  const rootRef = ref(db); // root reference for multi-path update
+  await executeAtomicUpdate(db, updates, deviceId);
+
+  return { kind: "merged", addedCredits: guestCredits };
+};
+
+/**
+ * Execute the atomic multi-path update with fallback.
+ * Tries root-level update first; if that fails, does lépésenkénti sequence.
+ */
+async function executeAtomicUpdate(
+  db: ReturnType<typeof getFirebaseDB>,
+  updates: Record<string, unknown>,
+  deviceId: string,
+): Promise<void> {
+  const rootRef = ref(db);
   try {
     await update(rootRef, updates);
   } catch (err) {
     console.error("migrateGuestData: atomic multi-path update failed:", err);
 
     // Fallback: lépésenkénti sequence (rollback-barát)
-    // 1. Write target data + migratedFrom mark
+    // Extract target updates (any path starting with `users/${targetUid}/`)
     const targetUpdates: Record<string, unknown> = {};
+    const targetUidPath = Object.keys(updates).find(k => k.startsWith("users/") && !k.startsWith("users/$"));
+    // Find all target paths (anything that's not a cleanup path)
     for (const [path, val] of Object.entries(updates)) {
-      if (path.startsWith(`users/${targetUid}/`)) {
-        targetUpdates[path.replace(`users/${targetUid}/`, "")] = val;
+      if (!path.startsWith(`users/${deviceId}/`) && !path.startsWith(`device_map/`)) {
+        // Extract the relative path from the first segment
+        const match = path.match(/^users\/[^/]+\/(.+)$/);
+        if (match) {
+          targetUpdates[match[1]] = val;
+        }
       }
     }
-    await update(ref(db, `users/${targetUid}`), targetUpdates as Record<string, unknown>);
 
-    // 2. Delete guest node children
+    if (Object.keys(targetUpdates).length > 0) {
+      // Write target data (guestMergeClaimed flag + all merge values)
+      // We need to find the targetUid from the updates
+      const targetUidKey = Object.keys(updates).find(k =>
+        k.startsWith("users/") && !k.startsWith(`users/${deviceId}/`)
+      );
+      if (targetUidKey) {
+        const uid = targetUidKey.split("/")[1];
+        await update(ref(db, `users/${uid}`), targetUpdates as Record<string, unknown>);
+      }
+    }
+
+    // Delete guest node children
     await cleanupGuestNode(db, deviceId);
 
-    // 3. Delete device_map
+    // Delete device_map
     const mapRef = ref(db, `device_map/${deviceId}`);
     await set(mapRef, null);
   }
-
-  return true;
-};
+}
 
 /**
  * Type helper: all fields optional (for null-safe guest data access).
@@ -342,22 +460,33 @@ type DeepPartial<T> = {
 };
 
 /**
- * Delete all children of a guest node.
+ * Delete all children of a guest node AND its device_map entry.
+ * This is the universal cleanup — every code path that deletes a guest node
+ * MUST also delete `device_map/{deviceId}` to prevent mapping leaks.
  */
 const cleanupGuestNode = async (db: ReturnType<typeof getFirebaseDB>, deviceId: string): Promise<void> => {
   const guestRef = ref(db, `users/${deviceId}`);
   const { get } = await import("firebase/database");
   const snap = await get(guestRef);
-  if (!snap.exists()) return;
 
-  const keys = Object.keys(snap.val());
-  if (keys.length === 0) return;
-
-  const cleanup: Record<string, null> = {};
-  for (const key of keys) {
-    cleanup[key] = null;
+  // Build the cleanup updates (guest node children + device_map)
+  const cleanup: Record<string, unknown> = {};
+  if (snap.exists()) {
+    const keys = Object.keys(snap.val());
+    if (keys.length > 0) {
+      for (const key of keys) {
+        cleanup[`users/${deviceId}/${key}`] = null;
+      }
+    }
   }
-  await update(guestRef, cleanup);
+  // Always delete device_map too
+  cleanup[`device_map/${deviceId}`] = null;
+
+  if (Object.keys(cleanup).length === 0) return;
+
+  // Use root update for atomicity (both guest node and device_map in one call)
+  const rootRef = ref(db);
+  await update(rootRef, cleanup);
 };
 
 /**
@@ -466,7 +595,11 @@ export const updateUserStats = async (
 };
 
 /**
- * Update the user's credit balance in RTDB.
+ * Update the user's credit balance in RTDB (set-based overwrite).
+ *
+ * Used by the DEBUG / non-Stripe flow (useShopStore.buyCredits).
+ * For Stripe purchases, use `incrementUserWallet` instead — it uses
+ * runTransaction for atomic credit addition.
  */
 export const updateUserWallet = async (
   uid: string,
@@ -475,6 +608,33 @@ export const updateUserWallet = async (
   const db = getFirebaseDB();
   const walletRef = ref(db, `users/${uid}/wallet`);
   await set(walletRef, { credits });
+};
+
+/**
+ * Atomically increment the user's credit balance using runTransaction.
+ *
+ * This is the Stripe-flow entry point: it reads the current server-side
+ * balance in a transaction, adds `delta`, and writes the result.
+ * Unlike `updateUserWallet` (which uses `set()` and OVERWRITES), this
+ * ADDS to the existing balance and is race-condition safe.
+ *
+ * Automatically handles null/undefined by treating missing credits as 0.
+ *
+ * @returns The new credit balance after the increment.
+ */
+export const incrementUserWallet = async (
+  uid: string,
+  delta: number,
+): Promise<number> => {
+  const db = getFirebaseDB();
+  const creditRef = ref(db, `users/${uid}/wallet/credits`);
+
+  const result = await runTransaction(creditRef, (current) => {
+    return (current ?? 0) + delta;
+  });
+
+  // result.snapshot.val() is the new value after the transaction
+  return (result.snapshot.val() as number) ?? 0;
 };
 
 /**

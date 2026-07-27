@@ -139,7 +139,8 @@
     "nicknamePlaceholder": "Adj meg egy megjelenítendő nevet",
     "nicknameEdit": "Szerkesztés",
     "nicknameSave": "Mentés",
-    "signIn": "Bejelentkezés"
+    "signIn": "Bejelentkezés",
+    "guestId": "Vendég azonosító"
   },
   "login": {
     "error": {
@@ -149,7 +150,8 @@
       "cancelled": "A bejelentkezést megszakítottad.",
       "network": "Hálózati hiba a bejelentkezés közben. Ellenőrizd a kapcsolatot.",
       "generic": "A bejelentkezés nem sikerült. Próbáld újra később."
-    }
+    },
+    "guestMergeAlreadyClaimed": "Csak egy vendég fiók olvasztható be egy regisztrált fiókba. A legutóbbi vendég vásárlásaid nem kerültek átvitelre."
   },
   "shipSelect": {
     "title": "Válassz Űrhajót",
@@ -248,6 +250,33 @@
       },
       "cosmosSeeker": {
         "desc": "A Nova Consortium ultrahosszú távú felfedezőhajója. Csúcskategóriás gravitációs meghajtással és kiterjedt laboratóriumi létesítményekkel felszerelve a mélyűri kutatáshoz."
+      },
+      "xenomorph": {
+        "desc": "Egy rejtélyes, bio-mérnöki hajó ismeretlen eredetből. A Xenomorph szerves külső borítása idővel regenerálódik, idegi interfésze pedig a pilóta gondolataihoz alkalmazkodik."
+      },
+      "voidWalker": {
+        "desc": "A Void Walker kísérteties csendben siklát a tér legsötétebb zugaiban. Idegen hajtóművei kozmikus sugárzást nyelnek el, szinte korlátlan hatótávot biztosítva."
+      },
+      "starSong": {
+        "desc": "Az Orion Shipyards melodikus csodája — a Star Song a csillagok harmóniájával rezonál. Sima, hatékony hajtóműve minden utazást a precizitás szimfóniájává tesz."
+      },
+      "siberianStorm": {
+        "desc": "A Krasnyi Kosmos hideg-időjárás titánja. Extrém körülményekre tervezve, a Siberian Storm duplán megerősített külső borítással és hajtóművekkel rendelkezik, amelyek bolygóközi hóviharokban is jól teljesítenek."
+      },
+      "santasSleigh": {
+        "desc": "A legendás ajándékszállító hajó az Északi-sarki Műhelyből. Ünnepi lelkesedés és fejlett warp technológia hajtja, ez a leggyorsabb hajó a galaxisban télen."
+      },
+      "giftCarrier": {
+        "desc": "Az Északi-sarki Műhely nagy űrtartalmú szállítóhajója, amely egy egész műhely termelését képes elszállítani. Széles rakterének és masszív felépítésének köszönhetően egyetlen ajándék sem túl nagy."
+      },
+      "ironBaron": {
+        "desc": "A Steamforge Atelier legambiciózusabb alkotása — egy repülő erőd sárgarézből és vasból. Az Iron Baron a viktoriánus grandiozitást ötvözi a pusztító ipari erővel."
+      },
+      "phantom": {
+        "desc": "Egy kísértethajó az ismert űrön túlról. A Phantom hajtóművei nem bocsátanak ki jelet, külső borítása pedig megtöri a fényt — tökéletes azon pilótáknak, akik szeretnek észrevétlenek maradni."
+      },
+      "starPhoenix": {
+        "desc": "A Nova Consortium újjászületése a korábbi prototípusok hamvaiból. A Star Phoenix forradalmi hajtómű-technológiával és egy parancsnoki fedélzettel emelkedik a magasba, amely előre látja a kapitány minden parancsát."
       }
     },
     "exoplanet": {
@@ -282,7 +311,17 @@
       "successText": "{{credits}} ⭐ kreditet vettél!",
       "newBalance": "Új egyenleg: ⭐ {{balance}}",
       "back": "Vissza a boltba",
-      "notEnoughCreditsHint": "Vegyél kreditet a 'Kredit vásárlás' fülön!"
+      "notEnoughCreditsHint": "Vegyél kreditet a 'Kredit vásárlás' fülön!",
+      "guestWarning": "Figyelem: a vendégként vásárolt kreditek és tárgyak elvesznek, ha nem jelentkezel be. A vendég haladás csak egyszer, egyetlen vendég fiókból vihető át regisztrált fiókba."
     }
+  },
+  "sort": {
+    "default": "Rendezés",
+    "priceAsc": "Ár ↑",
+    "priceDesc": "Ár ↓",
+    "speedAsc": "Sebesség ↑",
+    "speedDesc": "Sebesség ↓",
+    "distanceAsc": "Távolság ↑",
+    "distanceDesc": "Távolság ↓"
   }
 }
