@@ -549,4 +549,4 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - [[003-firebase-auth-settings]] – a kredit/birtoklás/beállítás per-felhasználós Firebase-mentése.
 - [[005-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
 - [[000-i18n-nyelvesites]] – a `shop.*` nyelvi réteg; a tulajdonnevek nem fordítandók.
-- [[010-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.
+- [[011-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.

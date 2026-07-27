@@ -25,8 +25,9 @@ You are the **roadmap management agent** for the Realtime Space Travel project. 
 2. Rename in **reverse order** (highest number first) to avoid collisions; use `git mv` when the file is tracked, plain `mv` when untracked.
 3. Update each file's YAML: `slug` = filename without `.md`; `step` = numeric prefix; fix changed `dependencies`/`related_plans`; set `updated_at`.
 4. Update cross-references: search all `plans/*.md`, `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/references/*.md` for old `[[old-slug]]` and replace with `[[new-slug]]`. Also check YAML arrays and plain markdown links.
-5. Regenerate `roadmap.md` (Section B).
-6. Verify: prefixes match steps 0,1,2,… with no gaps; 0 matches for old references; slugs match filenames.
+5. **Update bare-number prose references too** — Hungarian plan text refers to plans by number alone: `a 010-es tervből`, `010 E fázis`, `(010 C fázis)`, `a 010-et`, `a 010-ben számolva`. A slug search will NOT find these, and they fail silently: the sentence still reads fine while pointing at the wrong plan. After renumbering, grep every renumbered plan's **old and new** number (`\b0(09|10|11)\b` style) across `plans/*.md` and check each hit by hand — a bare `010` may legitimately mean the plan that just became 010, or the one that just left it. Guard against over-replacement with a before/after count: each number's occurrences must balance 1:1.
+6. Regenerate `roadmap.md` (Section B).
+7. Verify: prefixes match steps 0,1,2,… with no gaps; 0 matches for old slugs **and** no stale bare-number references; slugs match filenames.
 
 > `step` 0 and 1 are stable — do not renumber them unless explicitly asked.
 
