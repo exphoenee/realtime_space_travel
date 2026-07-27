@@ -1,4 +1,35 @@
-export type CrewLostReason = "attention" | "buttons" | null;
+export type EventType = "horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction";
+
+export type EventPenaltyType = "time" | "crewLost";
+
+export interface EventDefinition {
+  id: EventType;
+  /** Minimum difficulty required for this event to appear */
+  minDifficulty: Difficulty;
+  /** Minimum interval between this event and any other event (ms) */
+  minIntervalMs: number;
+  /** Base random interval range [min, max] in ms */
+  baseIntervalMs: [number, number];
+  /** How long the player has to respond (ms) */
+  durationMs: number;
+  /** Penalty type on failure */
+  penaltyType: EventPenaltyType;
+  /** Penalty amount in years (for time penalties) */
+  penaltyAmount: number;
+  /** i18n key prefix */
+  i18nKey: string;
+  /** Whether this is a rare event (10-20 min cooldown) */
+  isRare: boolean;
+}
+
+export interface EventInstance {
+  id: EventType;
+  definition: EventDefinition;
+  triggeredAt: number;
+  data?: Record<string, unknown>;
+}
+
+export type CrewLostReason = "attention" | "buttons" | "event" | null;
 
 export type Difficulty = "easy" | "medium" | "hard";
 

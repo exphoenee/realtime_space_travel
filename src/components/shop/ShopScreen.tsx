@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
+import useAuthStore, { getRtdbKey } from "../../state/useAuthStore";
 import useShopStore from "../../state/useShopStore";
 import { CREDIT_PACKS } from "../../constants/shopCatalog";
+import { incrementUserWallet } from "../../firebase/userData";
 import CreditBalance from "./CreditBalance";
 import CartButton from "./CartButton";
 import ShopTabs from "./ShopTabs";
@@ -18,6 +20,9 @@ type ShopView = "browse" | "cart" | "success" | "creditSuccess";
 /** Max age for a pending purchase (10 minutes). */
 const PENDING_PURCHASE_TTL = 10 * 60 * 1000;
 
+/** Module-scope marker: true while a pending purchase is being processed. */
+let processingPending = false;
+
 const ShopScreen = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
@@ -26,12 +31,27 @@ const ShopScreen = () => {
   const setActiveTab = useShopStore((s) => s.setActiveShopTab);
   const [lastCredits, setLastCredits] = useState(0);
   const lastCreditsAmount = useShopStore((s) => s.credits);
+  const authStatus = useAuthStore((s) => s.status);
+  const creditsLoaded = useShopStore((s) => s.creditsLoaded);
 
   // On mount, check for a pending Stripe purchase (user returning from Payment Link).
-  // Reads from both sessionStorage and localStorage — the data was saved to both
-  // before redirecting to Stripe (see CreditShopView), and localStorage survives
-  // a full page load on the same origin.
+  // Double gate: only process when auth is ready AND credits are loaded from RTDB.
+  // This prevents writing to a stale/guest node or overwriting server balance.
   useEffect(() => {
+    // Cleanup: reset module-scope flag on unmount to prevent it getting stuck
+    return () => {
+      processingPending = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    // Double gate: auth must be ready AND credits must be loaded from RTDB
+    if (authStatus === "loading") return;
+    if (!creditsLoaded) return;
+
+    // Idempotence: prevent duplicate processing (StrictMode / double mount)
+    if (processingPending) return;
+
     let raw = sessionStorage.getItem(PENDING_PURCHASE_KEY);
     if (!raw) {
       // Fall back to localStorage (persists across page loads on same origin)
@@ -59,19 +79,32 @@ const ShopScreen = () => {
         return;
       }
 
-      // Add credits locally + persist to RTDB (buyCredits handles the write)
-      useShopStore.getState().buyCredits(pack.id);
+      // Mark as processing BEFORE the async operation (idempotence)
+      processingPending = true;
 
-      // Show success screen
-      setLastCredits(pack.credits);
-      setView("creditSuccess");
-
-      // Clean up both storages
-      clear();
+      // Use atomic runTransaction increment — NOT stale-locals buyCredits
+      getRtdbKey()
+        ? incrementUserWallet(getRtdbKey(), pack.credits)
+            .then((newBalance) => {
+              // Update local store with the server-returned balance
+              useShopStore.getState().setCredits(newBalance);
+              processingPending = false;
+              clear();
+              // Show success screen
+              setLastCredits(pack.credits);
+              setView("creditSuccess");
+            })
+            .catch((err) => {
+              console.error("Failed to increment wallet for pending purchase:", err);
+              processingPending = false;
+              // Keep the pending marker — can retry on next mount
+            })
+        : processingPending = false;
     } catch {
+      processingPending = false;
       clear();
     }
-  }, []);
+  }, [authStatus, creditsLoaded]); // Re-trigger when auth or credits become ready
 
   /**
    * Clean up the URL by removing the /shop/success path segment,
@@ -142,17 +175,19 @@ const ShopScreen = () => {
           {view === "browse" && (
             <>
               <ShopTabs activeTab={activeTab} onTabChange={setActiveTab} />
-              <div className={styles.tabPanel}>
-                {activeTab === "credits" ? (
-                  <CreditShopView />
-                ) : (
-                  <ProductGrid
-                    category={activeTab}
-                    onAddToCart={(item) => {
-                      useShopStore.getState().addToCart(item);
-                    }}
-                  />
-                )}
+              <div className={styles.tabPanelWrapper}>
+                <div className={styles.tabPanel}>
+                  {activeTab === "credits" ? (
+                    <CreditShopView />
+                  ) : (
+                    <ProductGrid
+                      category={activeTab}
+                      onAddToCart={(item) => {
+                        useShopStore.getState().addToCart(item);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             </>
           )}

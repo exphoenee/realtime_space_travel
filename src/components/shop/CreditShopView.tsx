@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { CREDIT_PACKS, getPaymentLinkUrl } from "../../constants/shopCatalog";
+import useAuthStore from "../../state/useAuthStore";
 import styles from "./ShopScreen.module.css";
 
 /** Key used in sessionStorage + localStorage for pending credit purchases. */
@@ -7,6 +8,7 @@ export const PENDING_PURCHASE_KEY = "realtime_space_travel_pending_credit";
 
 const CreditShopView = () => {
   const { t } = useTranslation();
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
 
   const handleBuy = (packId: string) => {
     const pack = CREDIT_PACKS.find((p) => p.id === packId);
@@ -30,7 +32,17 @@ const CreditShopView = () => {
   };
 
   return (
-    <div className={styles.productGrid}>
+    <>
+      {/* Guest warning banner — shown for anonymous users */}
+      {isAnonymous && (
+        <div className={styles.guestWarning}>
+          <span className={styles.guestWarningIcon}>⚠️</span>
+          <span className={styles.guestWarningText}>
+            {t("shop.credits.guestWarning")}
+          </span>
+        </div>
+      )}
+      <div className={styles.productGrid}>
       {CREDIT_PACKS.map((pack) => (
         <div key={pack.id} className={`${styles.productCard} ${styles.creditCard}`}>
           <div className={styles.creditAmount}>⭐ {pack.credits}</div>
@@ -48,7 +60,8 @@ const CreditShopView = () => {
           </div>
         </div>
       ))}
-    </div>
+      </div>
+    </>
   );
 };
 

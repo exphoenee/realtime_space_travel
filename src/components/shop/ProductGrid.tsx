@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { CartItem, ShipProduct } from "../../types";
-import { SHOP_SHIPS, SHOP_MUSIC, BASE_EXOPLANETS } from "../../constants/shopCatalog";
+import type { CartItem, ShipProduct, ExoplanetProduct } from "../../types";
+import { DEFAULT_SHIP, SHOP_SHIPS, SHOP_MUSIC, BASE_EXOPLANETS } from "../../constants/shopCatalog";
 import { mapExoplanet } from "../../constants/shopCatalog";
 import type { ExoplanetRaw } from "../../constants/shopCatalog";
 import ProductCard from "./ProductCard";
@@ -22,9 +22,23 @@ interface ExoplanetWithRaw {
   raw: ExoplanetRaw;
 }
 
+/** Extract sortable values from any product item. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getSortValues = (item: any) => {
+  if ("product" in item && item.product) {
+    return { priceCredits: item.product.priceCredits ?? 0, distanceLy: item.product.distanceLy ?? 0, speedKmPerSecond: 0 };
+  }
+  return {
+    priceCredits: item.priceCredits ?? 0,
+    distanceLy: "distanceLy" in item ? (item.distanceLy ?? 0) : 0,
+    speedKmPerSecond: "speedKmPerSecond" in item ? (item.speedKmPerSecond ?? 0) : 0,
+  };
+};
+
 const ProductGrid = ({ category, onAddToCart }: ProductGridProps) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("price-asc");
   const [previewExoplanet, setPreviewExoplanet] = useState<ExoplanetWithRaw | null>(null);
   const [previewShip, setPreviewShip] = useState<ShipProduct | null>(null);
 
@@ -45,29 +59,76 @@ const ProductGrid = ({ category, onAddToCart }: ProductGridProps) => {
     if (category === "exoplanets")
       return [...BASE_EXOPLANETS, ...exoplanets];
     if (category === "ships")
-      return [...SHOP_SHIPS].sort((a, b) => a.priceCredits - b.priceCredits);
+      return [DEFAULT_SHIP, ...SHOP_SHIPS];
     if (category === "music") return SHOP_MUSIC;
     return [];
   }, [category, exoplanets]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter((p) => {
-      const name = "product" in p ? p.product.name : p.name;
-      return name.toLowerCase().includes(q);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any[] = products;
+
+    // Apply search filter
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((p) => {
+        const name = "product" in p ? p.product.name : p.name;
+        return name.toLowerCase().includes(q);
+      });
+    }
+
+    // Apply sorting (always active — default is price-asc)
+    const [field, dir] = sortBy.split("-") as [string, "asc" | "desc"];
+    const multiplier = dir === "asc" ? 1 : -1;
+
+    result = [...result].sort((a, b) => {
+      const va = getSortValues(a);
+      const vb = getSortValues(b);
+      let diff = 0;
+      if (field === "price") diff = va.priceCredits - vb.priceCredits;
+      else if (field === "speed") diff = va.speedKmPerSecond - vb.speedKmPerSecond;
+      else if (field === "distance") diff = va.distanceLy - vb.distanceLy;
+      return diff * multiplier;
     });
-  }, [products, search]);
+
+    return result;
+  }, [products, search, sortBy]);
 
   return (
     <div className={styles.productGridWrapper}>
-      <input
-        type="text"
-        className={styles.searchInput}
-        placeholder={t("shop.search")}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className={styles.filterRow}>
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder={t("shop.search")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {category !== "music" && (
+          <select
+            className={styles.sortSelect}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            {category === "ships" && (
+              <>
+                <option value="price-asc">{t("shop.sort.priceAsc")}</option>
+                <option value="price-desc">{t("shop.sort.priceDesc")}</option>
+                <option value="speed-asc">{t("shop.sort.speedAsc")}</option>
+                <option value="speed-desc">{t("shop.sort.speedDesc")}</option>
+              </>
+            )}
+            {category === "exoplanets" && (
+              <>
+                <option value="price-asc">{t("shop.sort.priceAsc")}</option>
+                <option value="price-desc">{t("shop.sort.priceDesc")}</option>
+                <option value="distance-asc">{t("shop.sort.distanceAsc")}</option>
+                <option value="distance-desc">{t("shop.sort.distanceDesc")}</option>
+              </>
+            )}
+          </select>
+        )}
+      </div>
       {filtered.length === 0 ? (
         <p className={styles.noResult}>{t("shop.searchNoResult")}</p>
       ) : (

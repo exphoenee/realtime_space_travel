@@ -33,7 +33,7 @@ tags:
 
 **Cél:** a bejelentkezett Google user identitása **mindig és kizárólag a Firebase Auth uid** legyen. A `deviceId` csak pre-auth (anonim) guest kulcs. **Egyetlen kódútvonal se térítse el az írásokat a uid-ről — hibák esetén sem.** A jelenlegi „non-fatal fallback" ezt megsérti, és ugyanabból a Google fiókból két különböző játékost gyárt.
 
-> ⚠️ **Ez a terv a [[011-stripe-fraud-defense]] és a [[012-stripe-go-live]] előfeltétele.** Valós pénzes kredit nem mehet szétcsúszott identitásra: élesben egy ilyen fallback **kifizetett** kreditet tüntetne el, a felhasználó számára visszakövethetetlenül → chargeback / dispute.
+> ⚠️ **Ez a terv a [[012-stripe-fraud-defense]] és a [[013-stripe-go-live]] előfeltétele.** Valós pénzes kredit nem mehet szétcsúszott identitásra: élesben egy ilyen fallback **kifizetett** kreditet tüntetne el, a felhasználó számára visszakövethetetlenül → chargeback / dispute.
 
 ---
 
@@ -320,7 +320,7 @@ type MigrationResult =
 
 > **Előfeltétel:** az `ensureDeviceMap(deviceId, user.uid)` **le kell hogy futott legyen** a migráció előtt — ma is így van (`authBootstrap.ts:102-107`). Ez adja a `users/{deviceId}` olvasási **és** írási jogot. A sorrendet a kódban kommenttel rögzítjük.
 
-**„B" forgatókönyv — ha a root-update mégis elhasal** (pl. a rules egy jövőbeli szigorítása után, lásd [[011-stripe-fraud-defense]] `wallet` növekmény-limit):
+**„B" forgatókönyv — ha a root-update mégis elhasal** (pl. a rules egy jövőbeli szigorítása után, lásd [[012-stripe-fraud-defense]] `wallet` növekmény-limit):
 
 Lépésenkénti alternatíva, **rollback-barát sorrendben**:
 
@@ -366,7 +366,7 @@ Ha bármilyen okból mégis marad rotáció, akkor **kötelezően a migráció e
 - A `users` gyűjteményt **enumerálni**: nincs `.read` a `users` szinten, csak `users/$key`-en.
 - Ezért **idegen origin vagy idegen gép** árva node-ja klienstől **nem felderíthető**.
 
-**Kimondott limitáció:** a self-healing a **saját origin `deviceId`-jére szorítkozik**. Egy másik originon (pl. `localhost` vs. hosztolt domain) vagy másik gépen keletkezett árva node **csak akkor** gyógyul, amikor a user **onnan** legközelebb bejelentkezik. A teljes, szerveroldali árva-söprés Admin SDK-t (Cloud Function / szkript) igényelne — ez **kívül esik a Spark-terv hatókörén** ([[011-stripe-fraud-defense]] döntése: nincs Blaze, nincs Cloud Functions), ezért **nem része ennek a tervnek**. A mostani egyetlen ismert árva node-ot az **E blokk kézi checklistje** rendezi.
+**Kimondott limitáció:** a self-healing a **saját origin `deviceId`-jére szorítkozik**. Egy másik originon (pl. `localhost` vs. hosztolt domain) vagy másik gépen keletkezett árva node **csak akkor** gyógyul, amikor a user **onnan** legközelebb bejelentkezik. A teljes, szerveroldali árva-söprés Admin SDK-t (Cloud Function / szkript) igényelne — ez **kívül esik a Spark-terv hatókörén** ([[012-stripe-fraud-defense]] döntése: nincs Blaze, nincs Cloud Functions), ezért **nem része ennek a tervnek**. A mostani egyetlen ismert árva node-ot az **E blokk kézi checklistje** rendezi.
 
 **Opcionális jövőbeli fejlesztés (nem TODO):** `users/{uid}/profile/knownDevices/{deviceId}: true` írása minden belépéskor. Ez a uid-node alatt van (olvasható, írható), és lehetővé tenné a **cross-origin** felderítést — de a `users/{idegenDeviceId}` **olvasása** akkor is bukna, mert a `device_map/{idegenDeviceId}` a **másik** origin utolsó anonim uid-jére mutat, nem a mostani auth.uid-re. Backend nélkül tehát ez sem old meg semmit; csak akkor érdemes, ha egyszer lesz Admin SDK.
 
@@ -410,7 +410,7 @@ users/{uid}/profile/
 ## 4. Függőségek
 
 - **Előfeltétel:** [[004-firebase-auth-bugfix]] — az O. (guest→Google migráció), P. (deviceId rotáció) és L. (device-alapú guest identitás) blokkok. **Ez a terv azokat javítja**, nem nulláról ír.
-- **Blokkolja:** [[011-stripe-fraud-defense]] és [[012-stripe-go-live]] — mindkettő a `wallet` node integritására épül (lásd 7.).
+- **Blokkolja:** [[012-stripe-fraud-defense]] és [[013-stripe-go-live]] — mindkettő a `wallet` node integritására épül (lásd 7.).
 - **Érinti:** [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`).
 - **Kézi (nem kódolható) lépések:** Firebase Console (E blokk: node-export, nickname-átmásolás, két törlés), böngésző DevTools (localStorage-kulcs törlése két originon).
 - **Végrehajtási branch:** `develop`. A `main` nem tartalmazza a Firebase integrációt.
@@ -461,19 +461,19 @@ Mindkét Stripe-terv **közvetlenül a `wallet` node-ra épül**, ezért a köve
 
 | Terület | Miért érintett | Újratesztelendő |
 |---|---|---|
-| [[011-stripe-fraud-defense]] E fázis — `credit_claims/{sessionId}` ledger | a ledger a user node-hoz kötött; szétcsúszott identitás mellett a claim a **rossz** node alatt köt ki | `session_id` kapu + a claim egyszer-felhasználhatósága a **uid** node-on |
-| [[011-stripe-fraud-defense]] — `wallet` **írásonkénti növekmény-limit** (max 2000⭐) | a `migrateGuestData` **első belépéskor** egy lépésben írhat `wallet/credits`-et; ha az érték > 2000, a jövőbeli rule **elutasítja** a migrációt | ⚠️ **Nyitott forward-compat pont** — lásd 7.2 |
-| [[011-stripe-fraud-defense]] — `lastTopUpAt` ütemkorlát | a migrációs írás nem top-up, mégis a `wallet` alá esik | a rule ne akadjon meg a migráción |
-| [[012-stripe-go-live]] | valós pénz | az élesítés **előtt** ennek a tervnek **késznek kell lennie** — ez a [[012-stripe-go-live]] A fázisának de facto bővítése |
+| [[012-stripe-fraud-defense]] E fázis — `credit_claims/{sessionId}` ledger | a ledger a user node-hoz kötött; szétcsúszott identitás mellett a claim a **rossz** node alatt köt ki | `session_id` kapu + a claim egyszer-felhasználhatósága a **uid** node-on |
+| [[012-stripe-fraud-defense]] — `wallet` **írásonkénti növekmény-limit** (max 2000⭐) | a `migrateGuestData` **első belépéskor** egy lépésben írhat `wallet/credits`-et; ha az érték > 2000, a jövőbeli rule **elutasítja** a migrációt | ⚠️ **Nyitott forward-compat pont** — lásd 7.2 |
+| [[012-stripe-fraud-defense]] — `lastTopUpAt` ütemkorlát | a migrációs írás nem top-up, mégis a `wallet` alá esik | a rule ne akadjon meg a migráción |
+| [[013-stripe-go-live]] | valós pénz | az élesítés **előtt** ennek a tervnek **késznek kell lennie** — ez a [[013-stripe-go-live]] A fázisának de facto bővítése |
 
-### 7.2 Nyitott forward-compat pont a [[011-stripe-fraud-defense]] felé
+### 7.2 Nyitott forward-compat pont a [[012-stripe-fraud-defense]] felé
 
-A [[011-stripe-fraud-defense]] tervezett `wallet` növekmény-limit szabálya (`newData.val() <= data.val() + 2000` jellegű) **két helyen ütközik** ezzel a tervvel:
+A [[012-stripe-fraud-defense]] tervezett `wallet` növekmény-limit szabálya (`newData.val() <= data.val() + 2000` jellegű) **két helyen ütközik** ezzel a tervvel:
 
 1. **Első belépés:** `data.val()` **`null`** (nincs `wallet` ág) → a szabálynak **null-safe** ágat kell tartalmaznia (`!data.exists()`), különben az `ensureUserNode` create-ág **és** a migrációs kredit-átvétel is bukik.
 2. **Migrációs átvétel:** ha egy guest node > 2000⭐-ot hozna, az egylépéses írás túllépi a limitet.
 
-Mivel a wallet-politika szerint a migráció **csak akkor** ír kreditet, ha a targetnek **egyáltalán nincs** `wallet` ága, a (2) eset a (1) alá esik → **egy jól megírt, `!data.exists()`-re felkészített szabály mindkettőt megoldja.** Ezt a [[011-stripe-fraud-defense]] E fázisában rögzíteni kell.
+Mivel a wallet-politika szerint a migráció **csak akkor** ír kreditet, ha a targetnek **egyáltalán nincs** `wallet` ága, a (2) eset a (1) alá esik → **egy jól megírt, `!data.exists()`-re felkészített szabály mindkettőt megoldja.** Ezt a [[012-stripe-fraud-defense]] E fázisában rögzíteni kell.
 
 ### 7.3 További kockázatok
 
@@ -584,7 +584,7 @@ vi.mock("firebase/database", () => ({
 - A saját origin árva node-ja **belépéskor automatikusan beolvad és törlődik**; a cross-origin limitáció **kódban és tervben is kimondva**.
 - A mostani `df4ea95f` árva node és a hozzá tartozó `device_map` bejegyzés **eltűnt**, a `nickname` a uid-node-on van, az `1837` kredit **érintetlen**.
 - `npm run test` (18 új eset), `npm run build`, `npm run build:gh-pages`, `tsc --noEmit` — **mind zöld**; `grep -r "setRtdbKey" src/` → **0 találat**.
-- A [[011-stripe-fraud-defense]] `wallet`-szabályaira vonatkozó **forward-compat pont** (7.2) átvezetve abba a tervbe.
+- A [[012-stripe-fraud-defense]] `wallet`-szabályaira vonatkozó **forward-compat pont** (7.2) átvezetve abba a tervbe.
 
 ---
 
@@ -593,8 +593,8 @@ vi.mock("firebase/database", () => ({
 > 🔧 **Utólagos javítás:** [[010-firebase-guest-merge-single-gate]] — az itt bevezetett per-`deviceId` `migratedFrom` idempotencia-jelölés a `deviceId`-rotáció megszüntetése után **adatvesztővé** vált (a visszatérő `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor a `cleanupGuestNode`-on át törlődött, merge és audit nélkül; ráadásul a `device_map/{deviceId}` nem törlődött → árva mappingek). A 010 ezt **fiók-szintű** `guestMergeClaimed` kapura cseréli, az első merge-nél **összeadja** a kreditet, és minden ágon takarítja a `device_map`-et.
 
 - [[004-firebase-auth-bugfix]] — **közvetlen előfeltétel.** Ez a terv az ottani **O.** blokk (`migrateGuestData`, `rtdbKey`, `setRtdbKey`) és **P.** blokk (`deviceId`-rotáció) hibáit javítja: a `catch`-ági fallback törlődik, a rotáció kikerül a migrációs útból, a `rtdbKey` derivált értékké válik.
-- [[011-stripe-fraud-defense]] — **erre a tervre épül.** A `credit_claims/{sessionId}` ledger és a `wallet` növekmény-limit csak stabil identitás fölött értelmes. A 7.2 forward-compat pont (`!data.exists()` ág a wallet-szabályban) ott rögzítendő.
-- [[012-stripe-go-live]] — **erre a tervre épül.** Valós pénzes fizetés **nem indulhat** azelőtt, hogy ez a terv kész: egy identitás-szétválás kifizetett kreditet tüntetne el → chargeback / dispute.
+- [[012-stripe-fraud-defense]] — **erre a tervre épül.** A `credit_claims/{sessionId}` ledger és a `wallet` növekmény-limit csak stabil identitás fölött értelmes. A 7.2 forward-compat pont (`!data.exists()` ág a wallet-szabályban) ott rögzítendő.
+- [[013-stripe-go-live]] — **erre a tervre épül.** Valós pénzes fizetés **nem indulhat** azelőtt, hogy ez a terv kész: egy identitás-szétválás kifizetett kreditet tüntetne el → chargeback / dispute.
 - [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`) itt válik megbízhatóvá.
 - [[003-firebase-auth-settings]] — az RTDB séma és a Phase-1/Phase-2 rules eredeti forrása; a séma itt **additívan** bővül (`profile.migratedFrom`, `profile.orphanDiscardedCredits`).
 - [[002-ingame-shop-frontend]] — a `useShopStore` kredit/birtoklás modellje; a `partialize` viselkedése itt **bizonyítékként** szolgál (a kredit nem perzisztálódik lokálisan).

@@ -139,7 +139,8 @@
     "nicknamePlaceholder": "Introduce un nombre para mostrar",
     "nicknameEdit": "Editar",
     "nicknameSave": "Guardar",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "guestId": "ID de invitado"
   },
   "login": {
     "error": {
@@ -149,7 +150,8 @@
       "cancelled": "Cancelaste el inicio de sesión.",
       "network": "Error de red durante el inicio de sesión. Comprueba tu conexión.",
       "generic": "Error al iniciar sesión. Inténtalo de nuevo más tarde."
-    }
+    },
+    "guestMergeAlreadyClaimed": "Solo se puede fusionar una cuenta de invitado con una cuenta registrada. Tus compras recientes como invitado no se pudieron transferir."
   },
   "shipSelect": {
     "title": "Elige tu nave",
@@ -240,6 +242,33 @@
       },
       "cosmosSeeker": {
         "desc": "La nave de exploración de ultra largo alcance de Nova Consortium. Equipada con un propulsor de gravedad de última generación y extensas instalaciones de laboratorio para la investigación del espacio profundo."
+      },
+      "xenomorph": {
+        "desc": "Una misteriosa nave bio-ingeniería de origen desconocido. El casco orgánico del Xenomorph se regenera con el tiempo y su interfaz neuronal se adapta a los pensamientos del piloto."
+      },
+      "voidWalker": {
+        "desc": "El Void Walker se desliza por los rincones más oscuros del espacio en un silencio inquietante. Sus motores alienígenas consumen radiación cósmica, otorgándole un alcance casi ilimitado."
+      },
+      "starSong": {
+        "desc": "La maravilla melódica de Orion Shipyards — el Star Song resuena con las armonías estelares. Su motor suave y eficiente convierte cada viaje en una sinfonía de precisión."
+      },
+      "siberianStorm": {
+        "desc": "El titán de clima frío de Krasnyi Kosmos. Diseñado para condiciones extremas, el Siberian Storm tiene cascos doblemente reforzados y motores que prosperan en ventiscas planetarias."
+      },
+      "santasSleigh": {
+        "desc": "El legendario vehículo de reparto de regalos del Taller del Polo Norte. Impulsado por alegría festiva y tecnología warp avanzada, es la nave más rápida de la galaxia durante el invierno."
+      },
+      "giftCarrier": {
+        "desc": "El carguero del Taller del Polo Norte, capaz de transportar toda la producción de un taller. Con su amplia bodega de carga y construcción robusta, ningún regalo es demasiado grande."
+      },
+      "ironBaron": {
+        "desc": "La creación más ambiciosa de Steamforge Atelier — una fortaleza volante de latón y hierro. El Iron Baron combina la grandeza victoriana con un poder industrial devastador."
+      },
+      "phantom": {
+        "desc": "Un barco fantasma del más allá del espacio conocido. Los motores del Phantom no emiten ninguna señal y su casco dobla la luz a su alrededor — perfecto para pilotos que prefieren pasar desapercibidos."
+      },
+      "starPhoenix": {
+        "desc": "El renacimiento de Nova Consortium de las cenizas de prototipos anteriores. El Star Phoenix se eleva con tecnología de motor revolucionaria y una cubierta de mando que anticipa cada orden del capitán."
       }
     },
     "exoplanet": {
@@ -274,8 +303,18 @@
       "successText": "¡Has comprado {{credits}} ⭐ créditos!",
       "newBalance": "Nuevo saldo: ⭐ {{balance}}",
       "back": "Volver a la tienda",
-      "notEnoughCreditsHint": "¡Compra créditos en la pestaña 'Comprar créditos'!"
+      "notEnoughCreditsHint": "¡Compra créditos en la pestaña 'Comprar créditos'!",
+      "guestWarning": "Atención: los créditos y objetos comprados como invitado se pierden si no inicias sesión. El progreso de invitado solo se puede transferir una vez, desde una única cuenta de invitado."
     }
+  },
+  "sort": {
+    "default": "Ordenar",
+    "priceAsc": "Precio ↑",
+    "priceDesc": "Precio ↓",
+    "speedAsc": "Velocidad ↑",
+    "speedDesc": "Velocidad ↓",
+    "distanceAsc": "Distancia ↑",
+    "distanceDesc": "Distancia ↓"
   },
   "language": {
     "label": "Idioma",

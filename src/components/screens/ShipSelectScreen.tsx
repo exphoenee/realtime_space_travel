@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { SHIP_SPEED_KM_PER_SECOND } from "../../constants/constants";
-import { SHOP_SHIPS } from "../../constants/shopCatalog";
+import { DEFAULT_SHIP, SHOP_SHIPS } from "../../constants/shopCatalog";
 import type { ShipProduct } from "../../types";
 import useGameStore from "../../state/useGameStore";
 import useShopStore from "../../state/useShopStore";
@@ -13,21 +13,6 @@ interface ShipEntry {
   ship: ShipProduct & { isDefault?: boolean };
   isOwned: boolean;
 }
-
-const DEFAULT_SHIP: ShipProduct & { isDefault: boolean } = {
-  id: "ship-default",
-  category: "ship",
-  name: "Alap Hajó",
-  priceCredits: 0,
-  priceEur: 0,
-  speedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
-  manufacturer: "Standard",
-  capacity: 2,
-  rangeLy: 10,
-  descriptionKey: "ship.default.description",
-  image: "cockpit.png",
-  isDefault: true,
-};
 
 interface ShipSelectScreenProps {
   onCheckCamera?: () => Promise<boolean>;
@@ -67,7 +52,7 @@ const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
   }, [pendingDestination, transitionTo]);
 
   const availableShips: ShipEntry[] = useMemo(() => {
-    const ships: ShipEntry[] = [{ ship: DEFAULT_SHIP, isOwned: true }];
+    const ships: ShipEntry[] = [{ ship: { ...DEFAULT_SHIP, isDefault: true }, isOwned: true }];
     SHOP_SHIPS.forEach((shopShip) => {
       if (ownedShipIds.includes(shopShip.id)) {
         ships.push({ ship: shopShip, isOwned: true });

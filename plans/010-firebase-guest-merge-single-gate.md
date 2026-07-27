@@ -3,11 +3,11 @@ title: "Firebase guest→fiók merge egyszeri kapu + figyelmeztetések"
 slug: 010-firebase-guest-merge-single-gate
 type: plan
 category: auth
-status: not-started
-implemented: false
+status: implemented
+implemented: true
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-27"
+updated_at: "2026-07-27T10:00:00Z"
 author: exphoenee
 step: 10
 phases: []
@@ -34,7 +34,7 @@ tags:
 
 **Cél:** a [[009-firebase-identity-split-bugfix]] által bevezetett per-`deviceId` `migratedFrom` idempotencia-jelölés **adatvesztő** viselkedésének felszámolása. A guest→regisztrált-fiók beolvasztás **fiók-szintű, életében-egyszer** kapuvá alakul (`profile/guestMergeClaimed`), az **első** merge a vendég kreditet és tárgyait **hozzáadja** a fiókhoz, a további merge-kísérletek **blokkolódnak** (figyelmeztetéssel), a `device_map` szivárgás minden ágon megszűnik, és a felhasználó **vásárláskor** figyelmeztetést kap a vendég-adat elvesztésének kockázatáról.
 
-> ⚠️ **Ez a terv a [[009-firebase-identity-split-bugfix]] FOLYTATÁSA/JAVÍTÁSA, és a [[011-stripe-fraud-defense]] + [[012-stripe-go-live]] ELŐFELTÉTELE.** A 009 megszüntette a `deviceId`-rotációt — ezzel viszont az idempotencia-jelölés (`migratedFrom/{deviceId}`) **csapdává** vált: a visszatérő, változatlan `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor **nyomtalanul törlődik**. Valós pénzes kredit ([[011-stripe-fraud-defense]], [[012-stripe-go-live]]) ilyen adatvesztés fölé nem tehető.
+> ⚠️ **Ez a terv a [[009-firebase-identity-split-bugfix]] FOLYTATÁSA/JAVÍTÁSA, és a [[012-stripe-fraud-defense]] + [[013-stripe-go-live]] ELŐFELTÉTELE.** A 009 megszüntette a `deviceId`-rotációt — ezzel viszont az idempotencia-jelölés (`migratedFrom/{deviceId}`) **csapdává** vált: a visszatérő, változatlan `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor **nyomtalanul törlődik**. Valós pénzes kredit ([[012-stripe-fraud-defense]], [[013-stripe-go-live]]) ilyen adatvesztés fölé nem tehető.
 
 ---
 
@@ -92,97 +92,97 @@ A `deviceId`-t jeleníti meg **„User ID"** (`settings.userId`) néven a bejele
 
 ## ✅ Haladás (TODO)
 
-> Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
+> Jelölés: `[x]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A. Fiók-szintű merge-kapu (`migratedFrom` map → `guestMergeClaimed` bool)**
-- [ ] `src/firebase/userData.ts` — `UserNode.profile` +`guestMergeClaimed?: boolean` (a `migratedFrom` **legacy** kommenttel megmarad, de nem íródik újra)
-- [ ] Kapu-olvasás segédfüggvény: `isGuestMergeClaimed(targetData)` = `targetData?.profile?.guestMergeClaimed === true || Object.keys(targetData?.profile?.migratedFrom ?? {}).length > 0` (a legacy map „claimed"-nek számít)
-- [ ] `security.rules.json` — séma-komment: `profile.guestMergeClaimed` (új), `profile.migratedFrom` **DEPRECATED (legacy)** megjegyzés
+- [x] `src/firebase/userData.ts` — `UserNode.profile` +`guestMergeClaimed?: boolean` (a `migratedFrom` **legacy** kommenttel megmarad, de nem íródik újra)
+- [x] Kapu-olvasás segédfüggvény: `isGuestMergeClaimed(targetData)` = `targetData?.profile?.guestMergeClaimed === true || Object.keys(targetData?.profile?.migratedFrom ?? {}).length > 0` (a legacy map „claimed"-nek számít)
+- [x] `security.rules.json` — séma-komment: `profile.guestMergeClaimed` (új), `profile.migratedFrom` **DEPRECATED (legacy)** megjegyzés
 
 **B. `migrateGuestData` újraírás — első merge = ÖSSZEADÁS, ismételt = BLOKK + takarítás**
-- [ ] Visszatérési típus: `boolean` → **`MergeResult`** (`"noop" | "blocked" | { kind: "merged"; addedCredits }`) — lásd 2.2
-- [ ] `if (deviceId === targetUid)` → `{ kind: "noop" }`; nem létező/üres guest node → `{ kind: "noop" }`, **semmilyen írás**
-- [ ] **Kapu:** `isGuestMergeClaimed(targetData) === true` → **BLOKK-ág**: nincs wallet/inventory átvétel; guest node + `device_map/{deviceId}` törlés; nem-nulla vendég-kredit → `console.warn` + `profile/orphanDiscardedCredits/{deviceId}` audit; `{ kind: "blocked" }`
-- [ ] **Első merge** (kapu nyitva, van guest node): `users/{uid}/wallet/credits = (target.credits ?? 0) + (guest.credits ?? 0)`
-- [ ] Inventory **unió** (`ships`/`music`/`exoplanets`, csak `=== true`, csak ha a targeten még nem `true`)
-- [ ] Stats **max** (`bestServiceSeconds`)
-- [ ] Settings: csak ha a targetnek **egyáltalán nincs** `settings` ága; `profile.nickname`/`createdAt`: csak ha a targeten nincs
-- [ ] **Flag beállítása:** `users/{uid}/profile/guestMergeClaimed = true`
-- [ ] Guest node **tényleges** gyerekei (`Object.keys(guestSnapshot.val())`) → `null`; `device_map/{deviceId} = null`
-- [ ] **Egyetlen** `update(ref(db), updates)` root multi-path írás; `undefined` **tilos**; **csak leaf-szintű** kulcsok, **átfedő útvonal tilos**
-- [ ] Ha a root-update rules-okon elhasal → dokumentált **lépésenkénti** fallback (2.3, a 009 mintája szerint)
-- [ ] `cleanupGuestNode` bővítése / kiváltása: a `device_map/{deviceId}` törlése **mindig** benne legyen
+- [x] Visszatérési típus: `boolean` → **`MergeResult`** (`"noop" | "blocked" | { kind: "merged"; addedCredits }`) — lásd 2.2
+- [x] `if (deviceId === targetUid)` → `{ kind: "noop" }`; nem létező/üres guest node → `{ kind: "noop" }`, **semmilyen írás**
+- [x] **Kapu:** `isGuestMergeClaimed(targetData) === true` → **BLOKK-ág**: nincs wallet/inventory átvétel; guest node + `device_map/{deviceId}` törlés; nem-nulla vendég-kredit → `console.warn` + `profile/orphanDiscardedCredits/{deviceId}` audit; `{ kind: "blocked" }`
+- [x] **Első merge** (kapu nyitva, van guest node): `users/{uid}/wallet/credits = (target.credits ?? 0) + (guest.credits ?? 0)`
+- [x] Inventory **unió** (`ships`/`music`/`exoplanets`, csak `=== true`, csak ha a targeten még nem `true`)
+- [x] Stats **max** (`bestServiceSeconds`)
+- [x] Settings: csak ha a targetnek **egyáltalán nincs** `settings` ága; `profile.nickname`/`createdAt`: csak ha a targeten nincs
+- [x] **Flag beállítása:** `users/{uid}/profile/guestMergeClaimed = true`
+- [x] Guest node **tényleges** gyerekei (`Object.keys(guestSnapshot.val())`) → `null`; `device_map/{deviceId} = null`
+- [x] **Egyetlen** `update(ref(db), updates)` root multi-path írás; `undefined` **tilos**; **csak leaf-szintű** kulcsok, **átfedő útvonal tilos**
+- [x] Ha a root-update rules-okon elhasal → dokumentált **lépésenkénti** fallback (2.3, a 009 mintája szerint)
+- [x] `cleanupGuestNode` bővítése / kiváltása: a `device_map/{deviceId}` törlése **mindig** benne legyen
 
 **C. `authBootstrap` — a `MergeResult` felszínre hozása**
-- [ ] `src/firebase/authBootstrap.ts:116` — a `migrateGuestData` visszatérése `MergeResult`
-- [ ] `{ kind: "blocked" }` → `useAuthStore.setMergeNotice("login.guestMergeAlreadyClaimed")` (informatív, **nem** `authError`)
-- [ ] `{ kind: "merged" }` → `console.log("Guest data merged", addedCredits)`; a `seedWallet` logika változatlan (a merge írja a wallet-et, az `ensureUserNode` exists-ága nem seedel újra — lásd 2.4)
-- [ ] Kivétel esetén továbbra is `migrationPending = true` + `setAuthError` (a 009 viselkedés marad)
+- [x] `src/firebase/authBootstrap.ts:116` — a `migrateGuestData` visszatérése `MergeResult`
+- [x] `{ kind: "blocked" }` → `useAuthStore.setMergeNotice("login.guestMergeAlreadyClaimed")` (informatív, **nem** `authError`)
+- [x] `{ kind: "merged" }` → `console.log("Guest data merged", addedCredits)`; a `seedWallet` logika változatlan (a merge írja a wallet-et, az `ensureUserNode` exists-ága nem seedel újra — lásd 2.4)
+- [x] Kivétel esetén továbbra is `migrationPending = true` + `setAuthError` (a 009 viselkedés marad)
 
 **D. `device_map` szivárgás javítása**
-- [ ] Minden ág (első merge / blokkolt / legacy) az atomikus update-ben törli a `device_map/{deviceId}`-t is
-- [ ] A `cleanupGuestNode`-nak **soha** ne maradjon `device_map`-et nem törlő útvonala
+- [x] Minden ág (első merge / blokkolt / legacy) az atomikus update-ben törli a `device_map/{deviceId}`-t is
+- [x] A `cleanupGuestNode`-nak **soha** ne maradjon `device_map`-et nem törlő útvonala
 
 **E. SettingsScreen azonosító-kijelzés**
-- [ ] `src/components/screens/SettingsScreen.tsx` — a **bejelentkezett** blokk (`authUser && !isAnonymous`) a `rtdbKey`-t (uid) jelenítse meg `settings.userId` címkével
-- [ ] A **guest** blokk a `deviceId`-t jelenítse meg **külön** `settings.guestId` címkével
-- [ ] `handleCopyUid` a kontextusnak megfelelő azonosítót másolja (bejelentkezve uid, guestként deviceId)
+- [x] `src/components/screens/SettingsScreen.tsx` — a **bejelentkezett** blokk (`authUser && !isAnonymous`) a `rtdbKey`-t (uid) jelenítse meg `settings.userId` címkével
+- [x] A **guest** blokk a `deviceId`-t jelenítse meg **külön** `settings.guestId` címkével
+- [x] `handleCopyUid` a kontextusnak megfelelő azonosítót másolja (bejelentkezve uid, guestként deviceId)
 
 **F. Vendég-vásárlás figyelmeztetés (shop UI)**
-- [ ] `src/components/shop/CreditShopView.tsx` — ha `useAuthStore(s => s.isAnonymous)` → figyelmeztető sáv a kredit-pakkok fölött (`shop.credits.guestWarning`)
-- [ ] `src/components/screens/SettingsScreen.tsx` (vagy a login felület) — a `mergeNotice` megjelenítése egyszer (`login.guestMergeAlreadyClaimed`), majd `setMergeNotice(null)`
+- [x] `src/components/shop/CreditShopView.tsx` — ha `useAuthStore(s => s.isAnonymous)` → figyelmeztető sáv a kredit-pakkok fölött (`shop.credits.guestWarning`)
+- [x] `src/components/screens/SettingsScreen.tsx` (vagy a login felület) — a `mergeNotice` megjelenítése egyszer (`login.guestMergeAlreadyClaimed`), majd `setMergeNotice(null)`
 
 **G. i18n — ÚJ kulcsok mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`)**
-- [ ] `shop.credits.guestWarning` (vendég-vásárlás figyelmeztetés)
-- [ ] `login.guestMergeAlreadyClaimed` (ismételt merge blokk üzenet)
-- [ ] `settings.guestId` (guest azonosító címke)
-- [ ] Teljes paritás mind az 5 fájlban ([[000-i18n-nyelvesites]])
+- [x] `shop.credits.guestWarning` (vendég-vásárlás figyelmeztetés)
+- [x] `login.guestMergeAlreadyClaimed` (ismételt merge blokk üzenet)
+- [x] `settings.guestId` (guest azonosító címke)
+- [x] Teljes paritás mind az 5 fájlban ([[000-i18n-nyelvesites]])
 
 **H. `useAuthStore` — értesítés-mechanizmus**
-- [ ] `src/state/useAuthStore.ts` — +`mergeNotice: string | null`, +`setMergeNotice(msg: string | null)`
-- [ ] `clearUser` resetelje a `mergeNotice`-t
+- [x] `src/state/useAuthStore.ts` — +`mergeNotice: string | null`, +`setMergeNotice(msg: string | null)`
+- [x] `clearUser` resetelje a `mergeNotice`-t
 
 **I. Tesztek**
-- [ ] `src/firebase/userData.test.ts` (a 009 firebase-mock mintája szerint bővítve)
-  - [ ] első merge: `target 500 + guest 2000` → `wallet/credits === 2500`; `guestMergeClaimed === true`; guest node + `device_map` törölve; `{ kind: "merged", addedCredits: 2000 }`
-  - [ ] első merge, target `wallet` nélkül: `guest 2000` → `wallet/credits === 2000`
-  - [ ] ismételt merge: `guestMergeClaimed === true`, `guest 2000` → **nincs** `wallet/credits` írás; guest node + `device_map` törölve; `orphanDiscardedCredits/{deviceId} === 2000`; `{ kind: "blocked" }`
-  - [ ] legacy: `migratedFrom: { x: true }`, nincs `guestMergeClaimed` → **blokk**-ág (claimed)
-  - [ ] guest node nélkül → `{ kind: "noop" }`, **semmilyen** írás
-  - [ ] `deviceId === targetUid` → `{ kind: "noop" }`
-  - [ ] inventory unió + stats max (első merge)
-  - [ ] `device_map/{deviceId} === null` **minden** guest-node-t érintő ágban (merged **és** blocked)
-  - [ ] `Object.values(updates)` egyetlen `undefined`-ot sem tartalmaz; nincs prefix-átfedő útvonalpár
-- [ ] `src/firebase/authBootstrap.test.ts` — `{ kind: "blocked" }` → `getState().mergeNotice === "login.guestMergeAlreadyClaimed"`; `{ kind: "merged" }` → nincs `mergeNotice`
-- [ ] `npm run test` + `npm run build` + `npm run build:gh-pages` + `tsc --noEmit` — zöld
+- [x] `src/firebase/userData.test.ts` (a 009 firebase-mock mintája szerint bővítve)
+  - [x] első merge: `target 500 + guest 2000` → `wallet/credits === 2500`; `guestMergeClaimed === true`; guest node + `device_map` törölve; `{ kind: "merged", addedCredits: 2000 }`
+  - [x] első merge, target `wallet` nélkül: `guest 2000` → `wallet/credits === 2000`
+  - [x] ismételt merge: `guestMergeClaimed === true`, `guest 2000` → **nincs** `wallet/credits` írás; guest node + `device_map` törölve; `orphanDiscardedCredits/{deviceId} === 2000`; `{ kind: "blocked" }`
+  - [x] legacy: `migratedFrom: { x: true }`, nincs `guestMergeClaimed` → **blokk**-ág (claimed)
+  - [x] guest node nélkül → `{ kind: "noop" }`, **semmilyen** írás
+  - [x] `deviceId === targetUid` → `{ kind: "noop" }`
+  - [x] inventory unió + stats max (első merge)
+  - [x] `device_map/{deviceId} === null` **minden** guest-node-t érintő ágban (merged **és** blocked)
+  - [x] `Object.values(updates)` egyetlen `undefined`-ot sem tartalmaz; nincs prefix-átfedő útvonalpár
+- [x] `src/firebase/authBootstrap.test.ts` — `{ kind: "blocked" }` → `getState().mergeNotice === "login.guestMergeAlreadyClaimed"`; `{ kind: "merged" }` → nincs `mergeNotice`
+- [x] `npm run test` + `npm run build` + `npm run build:gh-pages` + `tsc --noEmit` — zöld
 
 **J. Egyszeri kézi takarítás (a mostani éles állapotra)**
-- [ ] Firebase Console → RTDB: a **5 árva** `device_map` bejegyzés törlése (mind → `MCyVmgd2…`, köztük `7e7e74de`, `b458ab5f`)
-- [ ] Opcionális (felhasználó dönt): a reprodukcióban elvesztett **2000** kredit kézi jóváírása a `users/MCyVmgd2yGYM5IWBTxA8WJHYHPu2/wallet/credits`-re
-- [ ] Opcionális: `users/MCyVmgd2…/profile/guestMergeClaimed = true` beállítása + a legacy `migratedFrom` map törlése (a kód enélkül is „claimed"-nek látja)
-- [ ] Dokumentálva: a **22 anonim auth-user** kliensről **nem** törölhető (Admin SDK / Cloud Function kellene, ami a Spark-terv szerint nincs — 7.4)
+- [x] Firebase Console → RTDB: a **5 árva** `device_map` bejegyzés törlése (mind → `MCyVmgd2…`, köztük `7e7e74de`, `b458ab5f`)
+- [x] Opcionális (felhasználó dönt): a reprodukcióban elvesztett **2000** kredit kézi jóváírása a `users/MCyVmgd2yGYM5IWBTxA8WJHYHPu2/wallet/credits`-re
+- [x] Opcionális: `users/MCyVmgd2…/profile/guestMergeClaimed = true` beállítása + a legacy `migratedFrom` map törlése (a kód enélkül is „claimed"-nek látja)
+- [x] Dokumentálva: a **22 anonim auth-user** kliensről **nem** törölhető (Admin SDK / Cloud Function kellene, ami a Spark-terv szerint nincs — 7.4)
 
 **K. Dokumentáció / kereszthivatkozás**
-- [ ] `database.rules.json` — regenerálva a `security.rules.json`-ból (tartalmi változás **nincs**)
-- [ ] [[009-firebase-identity-split-bugfix]] — additív kereszthivatkozás erre a tervre (a `migratedFrom` idempotencia csapdája)
-- [ ] [[011-stripe-fraud-defense]] — a wallet-növekmény-limit forward-compat pont frissítése (7.2)
-- [ ] `.claude/lessons-learned.md` — bejegyzés: „a rotáció megszüntetése után a per-deviceId idempotencia-jelölés adatvesztő lett"
+- [x] `database.rules.json` — regenerálva a `security.rules.json`-ból (tartalmi változás **nincs**)
+- [x] [[009-firebase-identity-split-bugfix]] — additív kereszthivatkozás erre a tervre (a `migratedFrom` idempotencia csapdája)
+- [x] [[012-stripe-fraud-defense]] — a wallet-növekmény-limit forward-compat pont frissítése (7.2)
+- [x] `.claude/lessons-learned.md` — bejegyzés: „a rotáció megszüntetése után a per-deviceId idempotencia-jelölés adatvesztő lett"
 
 **L. Stripe-visszatérési kredit-jóváírási race javítása (kifizetett kredit nem veszhet el) — lásd 11.**
-- [ ] `src/firebase/userData.ts` — új `incrementUserWallet(uid, delta)` **`runTransaction`**-nel a `users/{uid}/wallet/credits` node-on: updater `current => (current ?? 0) + delta`; `runTransaction` import a `firebase/database`-ből; visszatér az új (szerveroldali) egyenleggel. **NEM** `set()`-tel felülír (szemben a jelenlegi `updateUserWallet`-tel, `userData.ts:471–478`)
-- [ ] `src/components/shop/ShopScreen.tsx` — a pending-feldolgozó `useEffect` (34–74) **kapu**-vá alakítása: csak akkor dolgozza fel a pendinget, ha **(a)** az auth kész (`useAuthStore` `status !== "loading"`, a hitelesített user ismert — nem tranziens null/guest) **ÉS (b)** `useShopStore` `creditsLoaded === true` (az első `subscribeUser`/`handleUserData` szinkron lefutott). Amíg ezek nem teljesülnek: **NE** dolgozza fel, a pending **maradjon** a storage-ban (TTL-en belül)
-- [ ] `ShopScreen` — az effekt dependency-listája `[]` helyett tartalmazza az `authStatus`-t és a `creditsLoaded`-et, hogy az állapotváltozás (auth ready / creditsLoaded true) **újratriggerelje** a feldolgozást
-- [ ] `ShopScreen` — a jóváírás `incrementUserWallet(getRtdbKey(), pack.credits)`-t hívjon a stale-lokális-összeadó `buyCredits(pack.id)` **helyett** (`ShopScreen.tsx:63`); a lokális `credits` a tranzakció eredményéből / a soron következő `onValue` szinkronból frissüljön, ne stale-lokális összeadásból
-- [ ] **Idempotencia:** a pending kulcs törlése (`sessionStorage` + `localStorage`) CSAK a `incrementUserWallet` **sikeres** Promise-a után; feldolgozás-közbeni marker (modul-szintű `processingPending` ref és/vagy a `PENDING_PURCHASE_KEY` objektumba írt `claimedAt`) a dupla mount / React StrictMode / kétszeri visszatérés ellen — ugyanaz a pending **kétszer nem** íródhat jóvá
-- [ ] **Hitelesített kulcs:** a jóváírás a `selectRtdbKey`/`getRtdbKey` szerinti **hitelesített** uid-ra menjen; anonim (guest) vásárlás guest node-ra — de a kapu (auth-ready) garantálja, hogy tranziens `loading`/null auth-állapotban **NE** íródjon a guest `deviceId`-node-ra bejelentkezett vásárlásnál (a guest-vásárlás figyelmeztetés — F blokk — itt is érvényes)
-- [ ] `src/state/useShopStore.ts` — a Stripe-visszatérési kredit-jóváírási út **ne** a `set()`-alapú `updateUserWallet`-en menjen (`buyCredits`, 132–142); dokumentáld a két utat: `buyCredits` marad a debug/azonnali (nem-Stripe) jóváíráshoz, a Stripe-flow az atomikus `incrementUserWallet`-et használja (opcionálisan a `buyCredits` is átállítható inkrementre a `creditSuccess`-út egységesítéséhez)
-- [ ] i18n (**opcionális**, lásd 11.4) — csak ha a „jóváírás folyamatban / várakozás a szinkronra" jelzést hozzáadjuk (`shop.credits.creditPending`); ha nem, nem kell új kulcs
-- [ ] `src/firebase/userData.test.ts` — `incrementUserWallet`: `runTransaction` updater `2000 + 2000 → 4000` (NEM 2000); `null/undefined + 300 → 300`; `0 + 2000 → 2000`
-- [ ] `ShopScreen` pending-feldolgozás teszt — **stale-egyenleg regresszió:** szerveren meglévő 2000, 2000-es pakk pending → végeredmény **4000**, NEM 2000
-- [ ] Teszt: auth **nem kész** (`status === "loading"`) → a pending **nem** dolgozódik fel, guest `deviceId`-node-ra **nem** ír; auth-ready + `creditsLoaded` váltás után **egyszer** lefut a hitelesített uid-ra
-- [ ] Teszt: `creditsLoaded === false` → nem dolgoz fel; `true`-ra váltáskor triggerel (dependency-alapú újrafutás)
-- [ ] Teszt: **dupla feldolgozás** (kétszeri mount / StrictMode / kétszeri `/shop/success` visszatérés) → **pontosan egyszer** ír, nincs duplikáció; a pending kulcs csak siker után törlődik
-- [ ] `npm run test` + `npm run build` + `npm run build:gh-pages` + `tsc --noEmit` — zöld (L blokk)
+- [x] `src/firebase/userData.ts` — új `incrementUserWallet(uid, delta)` **`runTransaction`**-nel a `users/{uid}/wallet/credits` node-on: updater `current => (current ?? 0) + delta`; `runTransaction` import a `firebase/database`-ből; visszatér az új (szerveroldali) egyenleggel. **NEM** `set()`-tel felülír (szemben a jelenlegi `updateUserWallet`-tel, `userData.ts:471–478`)
+- [x] `src/components/shop/ShopScreen.tsx` — a pending-feldolgozó `useEffect` (34–74) **kapu**-vá alakítása: csak akkor dolgozza fel a pendinget, ha **(a)** az auth kész (`useAuthStore` `status !== "loading"`, a hitelesített user ismert — nem tranziens null/guest) **ÉS (b)** `useShopStore` `creditsLoaded === true` (az első `subscribeUser`/`handleUserData` szinkron lefutott). Amíg ezek nem teljesülnek: **NE** dolgozza fel, a pending **maradjon** a storage-ban (TTL-en belül)
+- [x] `ShopScreen` — az effekt dependency-listája `[]` helyett tartalmazza az `authStatus`-t és a `creditsLoaded`-et, hogy az állapotváltozás (auth ready / creditsLoaded true) **újratriggerelje** a feldolgozást
+- [x] `ShopScreen` — a jóváírás `incrementUserWallet(getRtdbKey(), pack.credits)`-t hívjon a stale-lokális-összeadó `buyCredits(pack.id)` **helyett** (`ShopScreen.tsx:63`); a lokális `credits` a tranzakció eredményéből / a soron következő `onValue` szinkronból frissüljön, ne stale-lokális összeadásból
+- [x] **Idempotencia:** a pending kulcs törlése (`sessionStorage` + `localStorage`) CSAK a `incrementUserWallet` **sikeres** Promise-a után; feldolgozás-közbeni marker (modul-szintű `processingPending` ref és/vagy a `PENDING_PURCHASE_KEY` objektumba írt `claimedAt`) a dupla mount / React StrictMode / kétszeri visszatérés ellen — ugyanaz a pending **kétszer nem** íródhat jóvá
+- [x] **Hitelesített kulcs:** a jóváírás a `selectRtdbKey`/`getRtdbKey` szerinti **hitelesített** uid-ra menjen; anonim (guest) vásárlás guest node-ra — de a kapu (auth-ready) garantálja, hogy tranziens `loading`/null auth-állapotban **NE** íródjon a guest `deviceId`-node-ra bejelentkezett vásárlásnál (a guest-vásárlás figyelmeztetés — F blokk — itt is érvényes)
+- [x] `src/state/useShopStore.ts` — a Stripe-visszatérési kredit-jóváírási út **ne** a `set()`-alapú `updateUserWallet`-en menjen (`buyCredits`, 132–142); dokumentáld a két utat: `buyCredits` marad a debug/azonnali (nem-Stripe) jóváíráshoz, a Stripe-flow az atomikus `incrementUserWallet`-et használja (opcionálisan a `buyCredits` is átállítható inkrementre a `creditSuccess`-út egységesítéséhez)
+- [x] i18n (**opcionális**, lásd 11.4) — csak ha a „jóváírás folyamatban / várakozás a szinkronra" jelzést hozzáadjuk (`shop.credits.creditPending`); ha nem, nem kell új kulcs
+- [x] `src/firebase/userData.test.ts` — `incrementUserWallet`: `runTransaction` updater `2000 + 2000 → 4000` (NEM 2000); `null/undefined + 300 → 300`; `0 + 2000 → 2000`
+- [x] `ShopScreen` pending-feldolgozás teszt — **stale-egyenleg regresszió:** szerveren meglévő 2000, 2000-es pakk pending → végeredmény **4000**, NEM 2000
+- [x] Teszt: auth **nem kész** (`status === "loading"`) → a pending **nem** dolgozódik fel, guest `deviceId`-node-ra **nem** ír; auth-ready + `creditsLoaded` váltás után **egyszer** lefut a hitelesített uid-ra
+- [x] Teszt: `creditsLoaded === false` → nem dolgoz fel; `true`-ra váltáskor triggerel (dependency-alapú újrafutás)
+- [x] Teszt: **dupla feldolgozás** (kétszeri mount / StrictMode / kétszeri `/shop/success` visszatérés) → **pontosan egyszer** ír, nincs duplikáció; a pending kulcs csak siker után törlődik
+- [x] `npm run test` + `npm run build` + `npm run build:gh-pages` + `tsc --noEmit` — zöld (L blokk)
 
 ---
 
@@ -249,7 +249,7 @@ A `authBootstrap` sorrendje változatlan: `ensureDeviceMap` → `migrateGuestDat
 
 **Igen, új rule nélkül.** A `guestMergeClaimed` a `profile/*` alá esik, amit a `database.rules.json` `.write`-ja fed (`$key == auth.uid` ág). A guest-törlés + `device_map/{deviceId}: null` biztonságos ugyanabban a tranzakcióban: a `.write` a **művelet ELŐTTI** állapot (`root`) alapján értékelődik, így az `device_map/{deviceId}` ugyanebben az update-ben történő törlése **nem** vonja ki a `users/{deviceId}` írásjog alól (009 2.3 elemzés). **Előfeltétel:** az `ensureDeviceMap(deviceId, uid)` a merge **előtt** lefutott (ma is így van, `authBootstrap.ts:104`).
 
-**„B" forgatókönyv (ha a root-update elhasal, pl. [[011-stripe-fraud-defense]] wallet-limit után):** lépésenkénti, rollback-barát sorrend (009 2.3): (1) `update(users/{targetUid}, { …leaf…, "profile/guestMergeClaimed": true })`, (2) guest node gyerekek `null`, (3) `set(device_map/{deviceId}, null)`. Egy megszakadás után a következő belépés a **blokk-ágon** újrapróbálja a takarítást — adatvesztés/duplázás nélkül.
+**„B" forgatókönyv (ha a root-update elhasal, pl. [[012-stripe-fraud-defense]] wallet-limit után):** lépésenkénti, rollback-barát sorrend (009 2.3): (1) `update(users/{targetUid}, { …leaf…, "profile/guestMergeClaimed": true })`, (2) guest node gyerekek `null`, (3) `set(device_map/{deviceId}, null)`. Egy megszakadás után a következő belépés a **blokk-ágon** újrapróbálja a takarítást — adatvesztés/duplázás nélkül.
 
 ---
 
@@ -293,7 +293,7 @@ users/{uid}/profile/
 ## 3. Függőségek
 
 - **Előfeltétel:** [[009-firebase-identity-split-bugfix]] — annak `migrateGuestData` / `rtdbKey` / self-healing kódját javítja/folytatja (a per-`deviceId` idempotencia csapdáját).
-- **Blokkolja:** [[011-stripe-fraud-defense]] és [[012-stripe-go-live]] — mindkettő a `wallet` node integritására épül; valós pénzes kredit nem mehet adatvesztő merge fölé.
+- **Blokkolja:** [[012-stripe-fraud-defense]] és [[013-stripe-go-live]] — mindkettő a `wallet` node integritására épül; valós pénzes kredit nem mehet adatvesztő merge fölé.
 - **Érinti:** [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`); [[004-firebase-auth-bugfix]] — az eredeti guest→Google migráció és `deviceId`-modell.
 - **Kézi lépések:** Firebase Console (J blokk: 5 árva `device_map` törlés, opcionális kredit-jóváírás, opcionális flag-beállítás).
 - **Végrehajtási branch:** `develop`.
@@ -322,7 +322,7 @@ Az `guestMergeClaimed` / `migratedFrom` / `orphanDiscardedCredits` **belső audi
 
 ## 5. Kockázatok / figyelmeztetések / regresszió
 
-### 5.1 Forward-compat a [[011-stripe-fraud-defense]] wallet-szabálya felé (frissített 009/7.2)
+### 5.1 Forward-compat a [[012-stripe-fraud-defense]] wallet-szabálya felé (frissített 009/7.2)
 
 A 009 már rögzítette: a tervezett `wallet` növekmény-limit (`newData.val() <= data.val() + 2000`) szabálynak **null-safe** ágra van szüksége (`!data.exists()`). **Ez a terv tovább élezi:** az **első merge ÖSSZEAD**, így az egylépéses `wallet/credits` írás növekménye = a **vendég teljes kreditje**, ami több pakk vásárlásával **meghaladhatja a 2000⭐-ot**. A 011 wallet-limit szabályának ezért:
 
@@ -345,7 +345,7 @@ A felhalmozódott anonim auth-userek **kliensről nem törölhetők** (`deleteUs
 
 ### 5.4 Stripe-visszatérési kredit-jóváírási race (kifizetett kredit elveszik) — lásd 11.
 
-A Payment Link-visszatérés utáni jóváírás jelenleg a mount-effektben **azonnal**, a szinkron **előtt**, `set()`-tel (felülírva) fut → a meglévő szerver-egyenleg elveszhet, és tranziens auth-állapotban a guest node-ra írhat. Javítás: **kettős kapu** (auth-ready + `creditsLoaded`) + **atomikus `runTransaction` inkrement** + **kliensoldali idempotencia** (11.3). Regresszió-veszély a jelenlegi `buyCredits` / `updateUserWallet` (`set()`) útra: ezt a Stripe-flow-ból ki kell váltani az inkrementre; a `buyCredits` a nem-Stripe (debug) úton maradhat. Ez a wallet-integritási ág a [[012-stripe-go-live]] élesítés előfeltétele; a szerveroldali `session_id`-ledger a [[011-stripe-fraud-defense]] hatóköre.
+A Payment Link-visszatérés utáni jóváírás jelenleg a mount-effektben **azonnal**, a szinkron **előtt**, `set()`-tel (felülírva) fut → a meglévő szerver-egyenleg elveszhet, és tranziens auth-állapotban a guest node-ra írhat. Javítás: **kettős kapu** (auth-ready + `creditsLoaded`) + **atomikus `runTransaction` inkrement** + **kliensoldali idempotencia** (11.3). Regresszió-veszély a jelenlegi `buyCredits` / `updateUserWallet` (`set()`) útra: ezt a Stripe-flow-ból ki kell váltani az inkrementre; a `buyCredits` a nem-Stripe (debug) úton maradhat. Ez a wallet-integritási ág a [[013-stripe-go-live]] élesítés előfeltétele; a szerveroldali `session_id`-ledger a [[012-stripe-fraud-defense]] hatóköre.
 
 ---
 
@@ -429,7 +429,7 @@ vi.mock("firebase/database", () => ({
 - A kredit-vásárlás UI anonim usernek **figyelmezteti** a vendég-adat elvesztésének kockázatát (`shop.credits.guestWarning`), mind az 5 nyelven.
 - A mostani **5 árva** `device_map` bejegyzés törölve; a 22 anonim auth-user korlátozása **dokumentálva**.
 - `npm run test` (új/frissített esetek), `npm run build`, `npm run build:gh-pages`, `tsc --noEmit` — mind zöld.
-- A [[011-stripe-fraud-defense]] wallet-limit **forward-compat pontja** (5.1) átvezetve.
+- A [[012-stripe-fraud-defense]] wallet-limit **forward-compat pontja** (5.1) átvezetve.
 - A **Stripe-visszatérési kredit-jóváírás** (11.) a fizetett kreditet **atomikus `runTransaction` inkrementtel** írja a **hitelesített** uid `wallet/credits` node-jára, **kettős kapu** (auth-ready + `creditsLoaded`) mögött; a normál flow-ban **nem veszít** (meglévő 2000 + 2000 pakk → 4000, nem 2000) és **nem duplikál** (dupla mount / StrictMode / kétszeri visszatérés esetén sem), tranziens auth-állapotban pedig **nem** ír a guest node-ra. A `set()`-alapú felülírás a Stripe-flow-ból eltűnt.
 
 ---
@@ -437,8 +437,8 @@ vi.mock("firebase/database", () => ({
 ## 10. Kapcsolódó tervek
 
 - [[009-firebase-identity-split-bugfix]] — **közvetlen előfeltétel.** Ez a terv annak per-`deviceId` `migratedFrom` idempotencia-csapdáját és a `device_map`-szivárgást javítja, és a wallet-politikát „target győz"-ről „első merge = összeadás + fiók-flag"-re cseréli.
-- [[011-stripe-fraud-defense]] — **erre a tervre épül.** A wallet-növekmény-limit szabálynak `!data.exists()` ágra **és** az egyszeri guest-merge írás kivételére van szüksége (5.1).
-- [[012-stripe-go-live]] — **erre a tervre épül.** Valós pénzes kredit nem indulhat adatvesztő guest-merge fölött.
+- [[012-stripe-fraud-defense]] — **erre a tervre épül.** A wallet-növekmény-limit szabálynak `!data.exists()` ágra **és** az egyszeri guest-merge írás kivételére van szüksége (5.1).
+- [[013-stripe-go-live]] — **erre a tervre épül.** Valós pénzes kredit nem indulhat adatvesztő guest-merge fölött.
 - [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`).
 - [[004-firebase-auth-bugfix]] — az eredeti guest→Google migráció, `deviceId`-modell és `device_map` forrása.
 - [[000-i18n-nyelvesites]] — a 3 új kulcs teljes paritása mind az 5 nyelven.
@@ -447,7 +447,7 @@ vi.mock("firebase/database", () => ({
 
 ## 11. Stripe-visszatérési kredit-jóváírási race (kifizetett kredit elveszik)
 
-> ⚠️ **Ez az ág a [[012-stripe-go-live]] ÉLESÍTÉS EGYIK ELŐFELTÉTELE** (dependency-lánc: 012 → 011 → 010). Valós pénzes kredit nem veszhet el a Stripe-visszatérés utáni jóváíráskor. Ugyanahhoz a wallet-integritáshoz tartozik, amit ez a terv úgyis érint (A–B blokk, `useShopStore` / `userData` wallet-írás); a robusztus **szerveroldali** `session_id`-ledger (`credit_claims/{sessionId}`) és a wallet-növekmény-limit a [[011-stripe-fraud-defense]] hatóköre — itt a **kliensoldali minimum** kell, ami a normál flow-ban **nem veszít és nem duplikál**.
+> ⚠️ **Ez az ág a [[013-stripe-go-live]] ÉLESÍTÉS EGYIK ELŐFELTÉTELE** (dependency-lánc: 012 → 011 → 010). Valós pénzes kredit nem veszhet el a Stripe-visszatérés utáni jóváíráskor. Ugyanahhoz a wallet-integritáshoz tartozik, amit ez a terv úgyis érint (A–B blokk, `useShopStore` / `userData` wallet-írás); a robusztus **szerveroldali** `session_id`-ledger (`credit_claims/{sessionId}`) és a wallet-növekmény-limit a [[012-stripe-fraud-defense]] hatóköre — itt a **kliensoldali minimum** kell, ami a normál flow-ban **nem veszít és nem duplikál**.
 
 ### 11.1 Tünet (élő adatból + kódból igazolva)
 
@@ -508,7 +508,7 @@ Ugyanaz a pending **egyszer** íródhat jóvá:
 - a `PENDING_PURCHASE_KEY` törlése (`sessionStorage` + `localStorage`) **csak** a tranzakció **sikere után**;
 - modul-szintű `processingPending` ref és/vagy a pending objektumba írt `claimedAt` marker a dupla mount / React StrictMode / kétszeri `/shop/success` visszatérés ellen.
 
-> A robusztus, **szerveroldali** `session_id`-alapú ledger (`credit_claims/{sessionId}`) a [[011-stripe-fraud-defense]] hatóköre; itt a kliensoldali minimum a cél. A jelenlegi pending nem hordoz Stripe `session_id`-t (Payment Link, nem Checkout Session) — a kliens-idempotencia a pending `timestamp`+`packId` kulcsra és a siker-utáni törlésre épül; a `session_id`-ledgert a 011 vezeti be.
+> A robusztus, **szerveroldali** `session_id`-alapú ledger (`credit_claims/{sessionId}`) a [[012-stripe-fraud-defense]] hatóköre; itt a kliensoldali minimum a cél. A jelenlegi pending nem hordoz Stripe `session_id`-t (Payment Link, nem Checkout Session) — a kliens-idempotencia a pending `timestamp`+`packId` kulcsra és a siker-utáni törlésre épül; a `session_id`-ledgert a 011 vezeti be.
 
 ### 11.4 A hitelesített kulcs
 
@@ -536,6 +536,6 @@ Ha nincs ilyen UI, **nincs új i18n kulcs** ehhez az ághoz. A `credits` **objec
 | 6 | dupla feldolgozás (kétszeri mount / StrictMode / kétszeri visszatérés) | **pontosan egyszer** ír; nincs duplikáció; pending csak siker után törlődik |
 | 7 | build/típus | `npm run test` + `npm run build` + `npm run build:gh-pages` + `tsc --noEmit` zöld |
 
-### 11.7 Forward-compat a [[011-stripe-fraud-defense]] felé
+### 11.7 Forward-compat a [[012-stripe-fraud-defense]] felé
 
 Az itt bevezetett **atomikus inkrement** (`incrementUserWallet` / `runTransaction`) és a 011 tervezett **wallet-növekmény-limitje** együtt kell éljen: a limit-szabály nem tilthatja a legitim, egy-pakknyi (max 2000⭐) inkrementet. A 011 `session_id`-ledgere (`credit_claims/{sessionId}`) a jóváírás **szerveroldali** idempotenciáját adja majd — a kliensoldali marker (11.3/3) ennek előfutára. Az „első-merge additív wallet-írás" (A–B blokk, 5.1) és ez az „inkrementális Stripe-jóváírás" **ugyanazon** a `wallet/credits` node-on osztozik → a 011 limit-szabályának **mindkét** additív írást engednie kell (nyitott pont, lásd 5.1).

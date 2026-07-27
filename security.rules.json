@@ -54,7 +54,10 @@
  *
  *  users/
  *    {uid}/
- *      profile:   { displayName, photoURL, provider, isAnonymous, createdAt, lastLoginAt }
+ *      profile:   { displayName, photoURL, provider, isAnonymous, createdAt, lastLoginAt,
+ *                   guestMergeClaimed (bool — per-account merge gate, REPLACEMENT for migratedFrom),
+ *                   migratedFrom (DEPRECATED legacy — do NOT write new entries),
+ *                   orphanDiscardedCredits (audit) }
  *      settings:  { activeShipId, activeMusicId, musicMuted, musicVolume, difficulty, language }
  *      wallet:    { credits }
  *      inventory:

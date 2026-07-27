@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Destination, GamePhase, CrewLostReason } from "../types";
+import { Destination, GamePhase, CrewLostReason, EventInstance } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
 import { SHIP_SPEED_KM_PER_SECOND } from "../constants/constants";
@@ -28,6 +28,12 @@ interface GameState {
   isInitializing: boolean;
   debugIgnoreAttention: boolean;
 
+  // --- event system ---
+  /** Currently active event (null = no event) */
+  activeEvent: EventInstance | null;
+  /** Accumulated penalty years from failed events */
+  eventPenaltyYears: number;
+
   // --- setters (kept for backward compat) ---
   setDestination: (updater: StateUpdater<Destination | null>) => void;
   setRemainingYears: (updater: StateUpdater<number>) => void;
@@ -42,6 +48,14 @@ interface GameState {
   setBestServiceSeconds: (updater: StateUpdater<number>) => void;
   setIsInitializing: (updater: StateUpdater<boolean>) => void;
   setDebugIgnoreAttention: (updater: StateUpdater<boolean>) => void;
+
+  // --- event actions ---
+  /** Trigger an event immediately by its type */
+  triggerEvent: (event: EventInstance) => void;
+  /** Resolve the current event (success or failure) */
+  resolveEvent: (success: boolean) => void;
+  /** Dismiss the current event without penalty */
+  dismissEvent: () => void;
 
   // --- phase-based transitions ---
   transitionTo: (phase: GamePhase) => void;
@@ -163,6 +177,8 @@ const useGameStore = create<GameState>()(
       serviceSeconds: 0,
       bestServiceSeconds: 0,
       debugIgnoreAttention: false,
+      activeEvent: null,
+      eventPenaltyYears: 0,
 
       // Derived from gamePhase
       ...phaseToFlags(initialPhase),
@@ -228,6 +244,39 @@ const useGameStore = create<GameState>()(
           ...phaseToFlags(phase),
           crewLostReason:
             phase === "crewLost" ? state.crewLostReason : null,
+        })),
+
+      // --- event actions ---
+      triggerEvent: (event) =>
+        set(() => ({
+          activeEvent: event,
+        })),
+      resolveEvent: (success) =>
+        set((state) => {
+          if (!state.activeEvent) return {};
+          const def = state.activeEvent.definition;
+          if (success) {
+            return { activeEvent: null };
+          }
+          // Failure: apply penalty
+          if (def.penaltyType === "time") {
+            return {
+              activeEvent: null,
+              eventPenaltyYears: state.eventPenaltyYears + def.penaltyAmount,
+              remainingYears: state.remainingYears + def.penaltyAmount,
+            };
+          }
+          // crewLost penalty
+          return {
+            activeEvent: null,
+            crewLost: true,
+            crewLostReason: "event",
+            isPaused: true,
+          };
+        }),
+      dismissEvent: () =>
+        set(() => ({
+          activeEvent: null,
         })),
 
       // --- ship select ---
