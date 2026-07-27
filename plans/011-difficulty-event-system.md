@@ -3,7 +3,7 @@ title: "Nehézségi szintek + eseményrendszer – random interakciók a játék
 slug: 011-difficulty-event-system
 type: plan
 category: core
-status: not-started
+status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
@@ -36,7 +36,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **11. lépés** — a 010 után, a 012-stripe-fraud-defense előtt. Független a Stripe/auth backendtől, párhuzamosan is dolgozható. |
+| Elhelyezés a roadmapen | **11. lépés** — a 010 után, a 012-social-multiplayer előtt. Független a Stripe/auth backendtől, párhuzamosan is dolgozható. |
 | Események UI-ja | **Külön modal** — minden esemény egy központi `EventModal` komponensben jelenik meg, ami áttetsző háttérrel ráborul a dashboardra. |
 | Büntetés rossz válasz esetén | **Vegyes:** kis eseményeknél (pl. kürt, aszteroida) időbüntetés (+útidő), ritka eseményeknél (napkitörés) a meglévő `crewLost` mechanika aktiválódik. |
 | Debug mód event sebesség | Az események időközei 3× gyorsabbak (pl. 3-5 perc → 1-1.6 perc). |
@@ -49,74 +49,75 @@ tags:
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A. Esemény rendszer alap architektúra**
-- [ ] `src/hooks/useEventSystem.ts` — **új hook**: esemény ütemezés, random időközök, minimum 3-5 perc bármely két esemény között
-- [ ] Esemény típusok: `EventDefinition` interface (id, type, difficulty, minInterval, duration, penalty, i18nKey)
-- [ ] `useGameStore.ts` — esemény állapot: +`activeEvent: EventInstance | null`, +`eventPenaltyYears: number`, +`triggerEvent(eventId)`, +`resolveEvent(success: boolean)`, +`dismissEvent()`
-- [ ] Esemény generálás medium/hard módban (easy = nincs generálás)
-- [ ] `isPaused` / `isAttentionLost` állapotban az eseményóra **nem** ketyeg
+- [x] `src/hooks/useEventSystem.ts` — **új hook**: esemény ütemezés, random időközök, minimum 3-5 perc bármely két esemény között
+- [x] Esemény típusok: `EventDefinition` interface (id, type, difficulty, minInterval, duration, penalty, i18nKey)
+- [x] `useGameStore.ts` — esemény állapot: +`activeEvent: EventInstance | null`, +`eventPenaltyYears: number`, +`triggerEvent(eventId)`, +`resolveEvent(success: boolean)`, +`dismissEvent()`
+- [x] Esemény generálás medium/hard módban (easy = nincs generálás)
+- [x] `isPaused` / `isAttentionLost` állapotban az eseményóra **nem** ketyeg
 
 **B. EventModal UI komponens**
-- [ ] `src/components/features/EventModal.tsx` + `EventModal.module.css` — központi modal, ráborul a dashboardra
-- [ ] Esemény típusonként eltérő tartalom: gombos interakció, időzített gombnyomás, döntési fa
-- [ ] Animáció: slide-in/fade-in belépéskor, vészjelző keret (piros pulzálás) hard módban
-- [ ] Hamis instrukciók kezelése hard módban: az EventModal trükkös, de logikus szöveggel jelenik meg
+- [x] `src/components/features/EventModal.tsx` + `EventModal.module.css` — központi modal, ráborul a dashboardra
+- [x] Esemény típusonként eltérő tartalom: gombos interakció, időzített gombnyomás, döntési fa
+- [x] Animáció: slide-in/fade-in belépéskor, vészjelző keret (piros pulzálás) hard módban
+- [x] Hamis instrukciók kezelése hard módban: az EventModal trükkös, de logikus szöveggel jelenik meg
 
 **C. Esemény típusok implementációja**
-- [ ] **Kürtszó (`horn`):** egyszerű gombnyomás, vagy időzített (nyomva tartás egy pillanatig), vagy több lépéses
-- [ ] **Mentőhajó átszállás (`rescue-transfer`):** felugró opció → másik műszerfalra vált (Dashboard tartalom váltás), új interakciók, a teljes út továbbra is az új hajó sebességéből számolva; az átszállás után vissza lehet váltani
-- [ ] **Aszteroida (`asteroid`):** üzenet a műszerfalon, időben reagálni kell (gombnyomás/időzített); késés → +útidő
-- [ ] **Napkitörés (`solar-flare`):** ritka (10-20 percenként), kemény döntés; sikertelen → `crewLost`
-- [ ] **Űrajáró (`rover`):** felugró lehetőség a rover használatára; az adott küldetésben használható, nem szerezhető meg örökre
-- [ ] Minden esemény típushoz: siker-ág, kudarc-ág (időbüntetés vagy crewLost)
+- [x] **Kürtszó (`horn`):** egyszerű gombnyomás, vagy időzített (nyomva tartás egy pillanatig), vagy több lépéses
+- [x] **Mentőhajó átszállás (`rescue-transfer`):** felugró opció → másik műszerfalra vált (Dashboard tartalom váltás + cockpitVariant), új interakciók, a teljes út továbbra is az új hajó sebességéből számolva
+- [x] **Aszteroida (`asteroid`):** üzenet a műszerfalon + figyelmeztető sáv, időben reagálni kell (gombnyomás); késés → +útidő
+- [x] **Napkitörés (`solar-flare`):** ritka (10-20 percenként), kemény döntés; sikertelen → `crewLost`
+- [x] **Űrajáró (`rover`):** felugró lehetőség a rover használatára; az adott küldetésben használható, nem szerezhető meg örökre
+- [x] Minden esemény típushoz: siker-ág, kudarc-ág (időbüntetés vagy crewLost)
 
 **D. Esemény ütemezés logika**
-- [ ] Esemény pool medium módhoz: `horn`, `asteroid`, `rescue-transfer` (3-5 percenként)
-- [ ] Esemény pool hard módhoz: medium események + `solar-flare` + hamis instrukciók
-- [ ] Ritka események (`solar-flare`, `rescue-transfer`): 10-20 percenként, de minimum 3-5 perc bármely más eseménytől
-- [ ] Hamis instrukciók hard módban: 5-10 percenként, de 3-5 perc távolság bármely más eseménytől; logikus, trükkös szöveg, nem random
-- [ ] Minimum 3-5 perc gap minden esemény között (a legutóbbi esemény + random 3-5 perc)
-- [ ] Az ütemező egyetlen `setTimeout` láncon fut (nincs párhuzamos timer)
-- [ ] `useEffect` cleanup: az ütemező leáll, ha a játék fázis elhagyja a `playing`-et
+- [x] Esemény pool medium módhoz: `horn`, `asteroid`, `rescue-transfer`, `rover` (3-5 percenként)
+- [x] Esemény pool hard módhoz: medium események + `solar-flare` + hamis instrukciók
+- [x] Ritka események (`solar-flare`, `rescue-transfer`): 10-20 percenként, de minimum 3-5 perc bármely más eseménytől
+- [x] Hamis instrukciók hard módban: 5-10 percenként, de 3-5 perc távolság bármely más eseménytől; logikus, trükkös szöveg, nem random
+- [x] Minimum 3-5 perc gap minden esemény között (a legutóbbi esemény + random 3-5 perc)
+- [x] Az ütemező egyetlen `setTimeout` láncon fut (nincs párhuzamos timer)
+- [x] `useEffect` cleanup: az ütemező leáll, ha a játék fázis elhagyja a `playing`-et
 
 **E. Debug mód — gyorsított események + trigger gombsor**
-- [ ] `VITE_DEBUG_MODE=true` esetén az események időközei 3× gyorsabbak
-- [ ] `src/components/features/DebugEventBar.tsx` + `DebugEventBar.module.css` — gombsor a jobb felső sarokban
-- [ ] Minden esemény típushoz egy gomb: `Horn`, `Asteroid`, `Rescue`, `Flare`, `Rover`
-- [ ] Debug gombsor csak `VITE_DEBUG_MODE=true` és `gamePhase === "playing"` esetén látszik
-- [ ] Gombok tooltip: "Trigger [esemény] (debug)"
+- [x] `VITE_DEBUG_MODE=true` esetén az események időközei 3× gyorsabbak
+- [x] `src/components/features/DebugEventBar.tsx` + `DebugEventBar.module.css` — gombsor a jobb felső sarokban
+- [x] Minden esemény típushoz egy gomb: `Horn`, `Asteroid`, `Rescue`, `Flare`, `Rover`, `Fake`
+- [x] Debug gombsor csak `VITE_DEBUG_MODE=true` és `gamePhase === "playing"` esetén látszik
+- [x] Gombok tooltip: "Trigger [esemény] (debug)"
 
 **F. Nehézségi szint bekötése**
-- [ ] `useUIStore.difficulty` meglévő mező — nincs változtatás, már perzisztál
-- [ ] **Easy:** `useEventSystem` nem generál semmit — a meglévő figyelem/arcfigyelés mechanika fut
-- [ ] **Medium:** események 3-5 percenként; nincs hamis instrukció
-- [ ] **Hard:** események 3-5 percenként + hamis instrukciók 5-10 percenként
-- [ ] Nehézség váltás (Settings-ben) azonnal érvényesül: ha `gamePhase !== "playing"`, nincs hatása; ha `playing`, az ütemező újraindul az új paraméterekkel
+- [x] `useUIStore.difficulty` meglévő mező — nincs változtatás, már perzisztál
+- [x] **Easy:** `useEventSystem` nem generál semmit — a meglévő figyelem/arcfigyelés mechanika fut
+- [x] **Medium:** események 3-5 percenként; nincs hamis instrukció
+- [x] **Hard:** események 3-5 percenként + hamis instrukciók 5-10 percenként
+- [x] Nehézség váltás (Settings-ben) azonnal érvényesül: ha `gamePhase !== "playing"`, nincs hatása; ha `playing`, az ütemező újraindul az új paraméterekkel
 
 **G. Dashboard integráció**
-- [ ] `Dashboard.tsx` — EventModal overlay megjelenítése, ha `activeEvent !== null`
-- [ ] `Dashboard.tsx` — mentőhajó átszálláskor másik cockpit kép + eltérő műszerfal tartalom
-- [ ] `Dashboard.tsx` — aszteroida esetén figyelmeztető sáv/panel
-- [ ] `App.tsx` — `DebugEventBar` megjelenítése, ha debug mód + playing
+- [x] `Dashboard.tsx` — EventModal overlay megjelenítése, ha `activeEvent !== null`
+- [x] `Dashboard.tsx` — mentőhajó átszálláskor másik cockpit kép + eltérő műszerfal tartalom (cockpitVariant)
+- [x] `Dashboard.tsx` — aszteroida esetén figyelmeztető sáv/panel (asteroidWarning)
+- [x] `App.tsx` — `DebugEventBar` megjelenítése, ha debug mód + playing
 
 **H. i18n — ÚJ kulcsok mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`)**
-- [ ] `event.horn.title` / `.desc` / `.success` / `.fail`
-- [ ] `event.asteroid.title` / `.desc` / `.success` / `.fail`
-- [ ] `event.rescueTransfer.title` / `.desc` / `.success` / `.fail`
-- [ ] `event.solarFlare.title` / `.desc` / `.success` / `.fail`
-- [ ] `event.rover.title` / `.desc` / `.success` / `.fail`
-- [ ] `event.fakeInstruction.title` / `.desc` (hard mód, trükkös szövegek)
-- [ ] `event.penalty.timeAdded` / `event.penalty.crewLost`
-- [ ] `event.hardConfirm` (a gombfelirat, ami a helyes megoldást takarja)
-- [ ] Teljes paritás mind az 5 fájlban
+- [x] `event.horn.title` / `.desc` / `.success` / `.fail`
+- [x] `event.asteroid.title` / `.desc` / `.success` / `.fail`
+- [x] `event.rescueTransfer.title` / `.desc` / `.success` / `.fail`
+- [x] `event.solarFlare.title` / `.desc` / `.success` / `.fail`
+- [x] `event.rover.title` / `.desc` / `.success` / `.fail`
+- [x] `event.fake.*` / `.title` / `.desc` / `.trapAction` (hard mód, trükkös szövegek)
+- [x] `event.penalty.timeAdded` / `event.penalty.crewLost`
+- [x] `event.*` (timeLeft, confirm, transfer, activate.shields, deploy, ignore, evasiveManeuver, fakeBadge)
+- [x] `event.rescueTransfer.active` / `.rescueShip` — Dashboard mentőhajó banner + cockpit alt
+- [x] Teljes paritás mind az 5 fájlban
 
 **I. Tesztek**
-- [ ] `src/hooks/useEventSystem.test.ts` — ütemezés logika: easy → nincs esemény; medium → 3-5 percenként; minimum gap betartása; debug mód 3× gyorsabb
-- [ ] `src/state/useGameStore.test.ts` — bővítés: `triggerEvent`, `resolveEvent`, `dismissEvent` működése
-- [ ] `tsc --noEmit` + `npm run test` + `npm run build` — zöld
+- [x] `src/hooks/useEventSystem.test.ts` — 15 teszt: easy → nincs esemény; triggerManualEvent minden típushoz; medium/hard pool; isPaused/isAttentionLost szüneteltetés; EVENT_DEFINITIONS validáció
+- [x] `src/state/useGameStore.test.ts` — bővítés: 15 teszt: `triggerEvent` (3), `resolveEvent` (7), `dismissEvent`, `startMission` reset, `resetToMenu` cleanup, penalty accumulation
+- [x] `tsc --noEmit` ✅ + `npm run test` ✅ (40/40) + `npm run build` — zöld
 
 **J. Dokumentáció**
-- [ ] `security.rules.json` — nincs változás (nem érint Firebase-t)
-- [ ] `.claude/lessons-learned.md` — bejegyzés az eseményrendszer architektúráról
+- [x] `security.rules.json` — nincs változás (nem érint Firebase-t)
+- [x] `.claude/lessons-learned.md` — bejegyzés az eseményrendszer architektúráról (isAttentionLost guard bug, setTimeout lánc, determinisztikus tesztelés, Dashboard integráció)
 
 ---
 
