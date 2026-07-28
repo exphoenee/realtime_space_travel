@@ -59,6 +59,7 @@
     "gameOverTitle": "Game over",
     "crewLostButtons": "The entire hibernating crew perished because you tampered with the buttons!",
     "crewLostAttention": "Game over — the entire crew died because you didn't pay attention.",
+    "crewLostExit": "The crew was lost because you abandoned the ship.",
     "exitConfirmTitle": "Are you sure you want to exit?",
     "exitConfirmText": "The game does not save your progress so far!",
     "yes": "Yes",
@@ -120,6 +121,7 @@
     "shop": "Shop",
     "settings": "Settings",
     "intro": "Watch intro",
+    "wallOfShame": "Wall of Shame",
     "loginComingSoon": "Sign-in will be available soon.",
     "shopComingSoon": "The shop will be available soon."
   },
@@ -336,7 +338,7 @@
       "title": "Asteroid on trajectory!",
       "desc": "Evasive maneuver required! Change course now!",
       "success": "Asteroid avoided! +{{years}} years detour",
-      "fail": "Collision! Travel time increased by {years} years"
+      "fail": "Collision! Travel time increased by {{years}} years"
     },
     "rescueTransfer": {
       "title": "Rescue ship detected!",
@@ -367,7 +369,7 @@
       "trapAction": "Follow instruction"
     },
     "penalty": {
-      "timeAdded": "+{years} years added to travel time",
+      "timeAdded": "+{{years}} years added to travel time",
       "crewLost": "Crew lost!"
     },
     "timeLeft": "{{seconds}}s left",
@@ -380,5 +382,38 @@
     "ignore": "Ignore",
     "evasiveManeuver": "Evasive maneuver!",
     "fakeBadge": "DECEPTIVE SIGNAL"
+  },
+  "wallOfShame": {
+    "title": "Wall of Shame",
+    "subtitle": "{{count}} mission(s) recorded",
+    "emptyMissions": "No missions yet. Launch a mission to see it here!",
+    "empty": "No failures yet. The Wall remains empty... for now.",
+    "events": "Events ({{count}})",
+    "success": "✓ Success",
+    "fail": "✗ Fail",
+    "reason": {
+      "attention": "Lost Attention",
+      "buttons": "Button Tampering",
+      "event": "Critical Event",
+      "exit": "Abandoned Ship",
+      "success": "Arrived",
+      "unknown": "Unknown"
+    },
+    "stat": {
+      "total": "Total",
+      "solved": "Solved",
+      "failed": "Failed"
+    },
+    "stats": {
+      "totalMissions": "Total Missions",
+      "totalFailures": "Total Failures",
+      "totalSuccesses": "Successful",
+      "successRate": "Success Rate",
+      "mostCommonDeath": "Most Common Cause",
+      "mostUsedShip": "Most Used Ship",
+      "longestService": "Longest Service",
+      "shortestService": "Shortest Service",
+      "totalDistance": "Total Distance"
+    }
   }
 }

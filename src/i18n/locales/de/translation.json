@@ -59,6 +59,7 @@
     "gameOverTitle": "Spiel vorbei",
     "crewLostButtons": "Die gesamte Besatzung im Kälteschlaf ist umgekommen, weil du an den Knöpfen herumgespielt hast!",
     "crewLostAttention": "Spiel vorbei — die gesamte Besatzung ist gestorben, weil du nicht aufgepasst hast.",
+    "crewLostExit": "Die Besatzung kam ums Leben, weil du das Schiff verlassen hast.",
     "exitConfirmTitle": "Möchtest du wirklich beenden?",
     "exitConfirmText": "Das Spiel speichert deinen bisherigen Fortschritt nicht!",
     "yes": "Ja",
@@ -120,6 +121,7 @@
     "shop": "Shop",
     "settings": "Einstellungen",
     "intro": "Intro ansehen",
+    "wallOfShame": "Wand der Schande",
     "loginComingSoon": "Die Anmeldung wird bald verfügbar sein.",
     "shopComingSoon": "Der Shop wird bald verfügbar sein."
   },
@@ -336,7 +338,7 @@
       "title": "Asteroid auf der Flugbahn!",
       "desc": "Ausweichmanöver erforderlich! Ändern Sie sofort den Kurs!",
       "success": "Asteroid vermieden! +{{years}} Jahre Umweg",
-      "fail": "Kollision! Reisezeit um {years} Jahre verlängert"
+      "fail": "Kollision! Reisezeit um {{years}} Jahre verlängert"
     },
     "rescueTransfer": {
       "title": "Rettungsschiff entdeckt!",
@@ -367,7 +369,7 @@
       "trapAction": "Anweisung befolgen"
     },
     "penalty": {
-      "timeAdded": "+{years} Jahre zur Reisezeit hinzugefügt",
+      "timeAdded": "+{{years}} Jahre zur Reisezeit hinzugefügt",
       "crewLost": "Besatzung verloren!"
     },
     "timeLeft": "{{seconds}}s übrig",
@@ -380,5 +382,38 @@
     "ignore": "Ignorieren",
     "evasiveManeuver": "Ausweichmanöver!",
     "fakeBadge": "TRÜGERISCHES SIGNAL"
+  },
+  "wallOfShame": {
+    "title": "Wand der Schande",
+    "subtitle": "{{count}} Mission(en) aufgezeichnet",
+    "emptyMissions": "Noch keine Missionen. Starte eine Mission, um sie hier zu sehen!",
+    "empty": "Noch keine Niederlagen. Die Wand bleibt leer... vorerst.",
+    "events": "Ereignisse ({{count}})",
+    "success": "✓ Erfolg",
+    "fail": "✗ Fehlschlag",
+    "reason": {
+      "attention": "Aufmerksamkeit verloren",
+      "buttons": "Knopfmanipulation",
+      "event": "Kritisches Ereignis",
+      "exit": "Schiff verlassen",
+      "success": "Angekommen",
+      "unknown": "Unbekannt"
+    },
+    "stat": {
+      "total": "Gesamt",
+      "solved": "Gelöst",
+      "failed": "Gescheitert"
+    },
+    "stats": {
+      "totalMissions": "Missionen gesamt",
+      "totalFailures": "Fehlschläge gesamt",
+      "totalSuccesses": "Erfolgreich",
+      "successRate": "Erfolgsquote",
+      "mostCommonDeath": "Häufigste Ursache",
+      "mostUsedShip": "Meistgenutztes Schiff",
+      "longestService": "Längster Dienst",
+      "shortestService": "Kürzester Dienst",
+      "totalDistance": "Gesamtdistanz"
+    }
   }
 }

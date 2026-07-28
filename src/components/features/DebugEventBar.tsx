@@ -4,6 +4,8 @@ import { EVENT_DEFINITIONS } from "../../hooks/useEventSystem";
 import useGameStore from "../../state/useGameStore";
 import styles from "./DebugEventBar.module.css";
 
+const useAddDummySuccessRecord = () => useGameStore((s) => s.addDummySuccessRecord);
+
 interface DebugEventBarProps {
   onTrigger: (eventType: EventType) => void;
 }
@@ -24,6 +26,7 @@ const eventLabel = (type: EventType): string => {
     case "solar-flare": return "Flare";
     case "rover": return "Rover";
     case "fake-instruction": return "Fake";
+    case "doom": return "☠️ Doom";
   }
 };
 
@@ -56,6 +59,8 @@ const DebugEventBar = ({ onTrigger }: DebugEventBarProps) => {
     },
     [onTrigger],
   );
+
+  const addDummySuccessRecord = useAddDummySuccessRecord();
 
   // Unique event types for the debug buttons
   const eventTypes: EventType[] = [
@@ -119,6 +124,16 @@ const DebugEventBar = ({ onTrigger }: DebugEventBarProps) => {
                 </button>
               );
             })}
+            {/* Spacer + success record debug button */}
+            <span style={{ width: 4, background: "rgba(251,191,36,0.2)", borderRadius: 2, alignSelf: "stretch" }} />
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnSuccess}`}
+              onClick={() => addDummySuccessRecord()}
+              title="Create a dummy arrival record on the Wall of Shame"
+            >
+              🎉 Arrival
+            </button>
           </div>
         </>
       )}

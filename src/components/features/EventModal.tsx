@@ -16,6 +16,7 @@ const I18N_MAP: Record<EventType, string> = {
   "solar-flare": "event.solarFlare",
   rover: "event.rover",
   "fake-instruction": "event.fake",
+  doom: "event.doom",
 };
 
 const RESULT_DISPLAY_MS = 2000;
@@ -103,8 +104,19 @@ const EventModal = ({ event }: EventModalProps) => {
     setResult("success");
     closeTimerRef.current = setTimeout(() => {
       if (currentEvent?.id === "rescue-transfer") {
-        // Ignoring the rescue ship = delayed destruction (random 4-6 minutes)
-        const delayMs = Math.floor(Math.random() * 120_000) + 240_000;
+        // Ignoring the rescue ship = delayed destruction (random 2-5 minutes)
+        const delayMs = Math.floor(Math.random() * 180_000) + 120_000;
+        // Log the ignore to missionEventLog so the Wall of Shame records it
+        useGameStore.setState((state) => ({
+          missionEventLog: [
+            ...state.missionEventLog,
+            {
+              type: "rescue-transfer",
+              result: "fail",
+              timestamp: Date.now(),
+            },
+          ],
+        }));
         useGameStore.getState().scheduleDestruction(delayMs);
       }
       dismissEvent();

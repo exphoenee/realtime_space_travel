@@ -16,6 +16,29 @@ export const baseDestinations = [
   },
 ];
 
+/**
+ * Look up the mission reward (wage) for a destination by its name.
+ * Falls back to a formula based on travelYears if the destination is not found.
+ */
+export const getDestinationWage = (
+  destinationName: string,
+  fallbackYears: number,
+): number => {
+  // Look up in base destinations first
+  const found = baseDestinations.find(
+    (d) => d.name.toLowerCase() === destinationName.toLowerCase(),
+  );
+  if (found) return found.wage;
+
+  // Fallback: proportional to travelYears (for custom/dummy destinations)
+  // ~5% of travel years as credits
+  if (fallbackYears > 0) {
+    return Math.max(10, Math.round(fallbackYears * 0.05));
+  }
+
+  return 25; // absolute minimum fallback
+};
+
 export interface WeatherCondition {
   /** i18n kulcs a `weather` névtér alatt */
   key: string;

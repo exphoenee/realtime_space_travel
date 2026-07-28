@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Destination, GamePhase, CrewLostReason, EventType, EventInstance } from "../types";
+import { Destination, GamePhase, CrewLostReason, EventType, EventInstance, FailureRecord, SuccessRecord, EventLogEntry } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
 import { SHIP_SPEED_KM_PER_SECOND } from "../constants/constants";
-import { SHOP_SHIPS } from "../constants/shopCatalog";
+import { SHOP_SHIPS, DEFAULT_SHIP } from "../constants/shopCatalog";
+import { getDestinationWage } from "../constants/universeData";
 import type { ShipProduct } from "../types";
 import useUIStore from "./useUIStore";
 
@@ -44,6 +45,20 @@ interface GameState {
   nextScheduledEvent: { eventType: EventType; triggerAt: number } | null;
   /** Timestamp (Date.now()) when the ship will be destroyed after ignoring rescue transfer, or null */
   pendingDestructionAt: number | null;
+
+  // --- Wall of Shame / failure tracking ---
+  /** All recorded failure events (persisted to localStorage + RTDB) */
+  failureRecords: FailureRecord[];
+  /** All recorded successful missions (persisted to localStorage) */
+  successRecords: SuccessRecord[];
+  /** Events encountered during the current mission (cleared on new mission) */
+  missionEventLog: EventLogEntry[];
+  /** Timestamp when the current mission was launched */
+  launchTimestamp: number;
+  /** Name of the ship used for the current mission */
+  selectedShipName: string;
+  /** ID of the ship used for the current mission */
+  selectedShipId: string | null;
 
   // --- setters (kept for backward compat) ---
   setDestination: (updater: StateUpdater<Destination | null>) => void;
@@ -87,6 +102,16 @@ interface GameState {
 
   // --- composite actions ---
   startMission: (destination: Destination, shipSpeedKmPerSecond?: number) => void;
+  /** Record the current mission as a failure in the Wall of Shame */
+  recordFailure: () => void;
+  /** Record an exit as a failure (player abandoned ship) and reset to menu */
+  exitMission: () => void;
+  /** Record the current mission as a successful arrival */
+  recordMissionComplete: () => void;
+  /** Debug: inject a dummy success record */
+  addDummySuccessRecord: () => void;
+  /** Debug: inject a dummy failure record */
+  addDummyFailureRecord: () => void;
   resetToMenu: () => void;
 }
 
@@ -179,6 +204,16 @@ const phaseToFlags = (phase: GamePhase) => {
         missionComplete: true,
         isInitializing: false,
       };
+    case "wallOfShame":
+      return {
+        showIntro: false,
+        isPaused: true,
+        isAttentionLost: false,
+        crewLost: false,
+        crewLostReason: null as CrewLostReason,
+        missionComplete: false,
+        isInitializing: false,
+      };
   }
 };
 
@@ -229,6 +264,14 @@ const useGameStore = create<GameState>()(
       asteroidWarning: false,
       nextScheduledEvent: null,
       pendingDestructionAt: null,
+
+      // --- Wall of Shame ---
+      failureRecords: [],
+      successRecords: [],
+      missionEventLog: [],
+      launchTimestamp: 0,
+      selectedShipName: "",
+      selectedShipId: null,
 
       // Derived from gamePhase
       ...phaseToFlags(initialPhase),
@@ -315,17 +358,30 @@ const useGameStore = create<GameState>()(
           const isRescueTransfer = state.activeEvent.id === "rescue-transfer";
           const isAsteroid = state.activeEvent.id === "asteroid";
 
+          // Create event log entry for this resolution
+          const logEntry: EventLogEntry = {
+            type: state.activeEvent.id,
+            result: success ? "success" : "fail",
+            timestamp: Date.now(),
+          };
+          const updatedLog = [...state.missionEventLog, logEntry];
+
           if (success) {
             const updates: Record<string, unknown> = {
               activeEvent: null,
+              missionEventLog: updatedLog,
             };
             // Rescue transfer success → pick a random cheap ship
             if (isRescueTransfer) {
               const rescueShip = pickRandomRescueShip();
               updates.shipSpeedKmPerSecond = rescueShip.speedKmPerSecond;
-              updates.cockpitVariant = "default";
+              updates.cockpitVariant = "rescue";
               // Update UI store so the starfield shows the new ship's image
               useUIStore.getState().setActiveShipId(rescueShip.id);
+              // Also update failure-tracking ship name so the Wall of Shame
+              // reflects the vessel actually in use at the time of failure
+              updates.selectedShipName = rescueShip.name;
+              updates.selectedShipId = rescueShip.id;
             }
             // Asteroid avoided → clear warning + add random 5-10 year detour penalty
             if (isAsteroid) {
@@ -338,11 +394,24 @@ const useGameStore = create<GameState>()(
           }
           // Auto-fail (timer expired): random severe consequence
           if (isAutoFail && def.penaltyType === "time") {
+            // Asteroid auto-fail always causes crew death (collision)
+            if (isAsteroid) {
+              return {
+                activeEvent: null,
+                asteroidWarning: false,
+                missionEventLog: updatedLog,
+                gamePhase: "crewLost" as GamePhase,
+                ...phaseToFlags("crewLost"),
+                crewLostReason: "event",
+              };
+            }
+            // Other events: 50% crew death, 50% massive time penalty
             const isCrewLost = Math.random() < 0.5;
             if (isCrewLost) {
               return {
                 activeEvent: null,
                 asteroidWarning: false,
+                missionEventLog: updatedLog,
                 gamePhase: "crewLost" as GamePhase,
                 ...phaseToFlags("crewLost"),
                 crewLostReason: "event",
@@ -353,6 +422,7 @@ const useGameStore = create<GameState>()(
             return {
               activeEvent: null,
               asteroidWarning: false,
+              missionEventLog: updatedLog,
               eventPenaltyYears: state.eventPenaltyYears + massivePenalty,
               remainingYears: state.remainingYears + massivePenalty,
             };
@@ -362,6 +432,7 @@ const useGameStore = create<GameState>()(
             return {
               activeEvent: null,
               asteroidWarning: false,
+              missionEventLog: updatedLog,
               eventPenaltyYears: state.eventPenaltyYears + def.penaltyAmount,
               remainingYears: state.remainingYears + def.penaltyAmount,
             };
@@ -369,6 +440,7 @@ const useGameStore = create<GameState>()(
           if (def.penaltyType === "time") {
             return {
               activeEvent: null,
+              missionEventLog: updatedLog,
               eventPenaltyYears: state.eventPenaltyYears + def.penaltyAmount,
               remainingYears: state.remainingYears + def.penaltyAmount,
             };
@@ -376,6 +448,7 @@ const useGameStore = create<GameState>()(
           // crewLost penalty — use phaseToFlags then override reason
           return {
             activeEvent: null,
+            missionEventLog: updatedLog,
             gamePhase: "crewLost" as GamePhase,
             ...phaseToFlags("crewLost"),
             crewLostReason: "event",
@@ -387,23 +460,231 @@ const useGameStore = create<GameState>()(
           asteroidWarning: false,
         })),
       scheduleDestruction: (delayMs) =>
-        set({ pendingDestructionAt: Date.now() + delayMs }),
-      cancelDestruction: () => set({ pendingDestructionAt: null }),
+        set((state) => {
+          const pendingAt = Date.now() + delayMs;
+          return {
+            pendingDestructionAt: pendingAt,
+            nextScheduledEvent: {
+              eventType: "doom" as EventType,
+              triggerAt: pendingAt,
+            },
+          };
+        }),
+      cancelDestruction: () =>
+        set({ pendingDestructionAt: null, nextScheduledEvent: null }),
       setNextScheduledEvent: (info) => set({ nextScheduledEvent: info }),
 
       // --- reset cockpit variant when starting a mission ---
       startMission: (destination, shipSpeedKmPerSecond) =>
-        set(() => ({
-          destination,
-          pendingDestination: null,
-          remainingYears: destination.travelYears,
-          shipSpeedKmPerSecond: shipSpeedKmPerSecond ?? SHIP_SPEED_KM_PER_SECOND,
-          gamePhase: "loading",
-          inactivitySeconds: 0,
-          serviceSeconds: 0,
-          cockpitVariant: "default",
-          ...phaseToFlags("loading"),
-        })),
+        set(() => {
+          // Read the active ship from UI store for Wall of Shame tracking
+          const activeShipId = useUIStore.getState().activeShipId;
+          let selectedShipName = DEFAULT_SHIP.name;
+          if (activeShipId) {
+            const shopShip = SHOP_SHIPS.find((s) => s.id === activeShipId);
+            if (shopShip) selectedShipName = shopShip.name;
+          }
+          return {
+            destination,
+            pendingDestination: null,
+            remainingYears: destination.travelYears,
+            shipSpeedKmPerSecond: shipSpeedKmPerSecond ?? SHIP_SPEED_KM_PER_SECOND,
+            gamePhase: "loading",
+            inactivitySeconds: 0,
+            serviceSeconds: 0,
+            cockpitVariant: "default",
+            // Reset mission tracking for Wall of Shame
+            missionEventLog: [],
+            launchTimestamp: Date.now(),
+            selectedShipName,
+            selectedShipId: activeShipId,
+            ...phaseToFlags("loading"),
+          };
+        }),
+
+      // --- record mission success for Wall of Shame ---
+      recordMissionComplete: () =>
+        set((state) => {
+          // Only record if we have destination info (valid mission)
+          if (!state.destination) return {};
+
+          const rewardCredits = getDestinationWage(
+            state.destination.name,
+            state.destination.travelYears,
+          );
+
+          const record: SuccessRecord = {
+            id: `success-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            shipName: state.selectedShipName || DEFAULT_SHIP.name,
+            shipId: state.selectedShipId,
+            destinationName: state.destination.name,
+            launchedAt: state.launchTimestamp || Date.now(),
+            completedAt: Date.now(),
+            serviceSeconds: state.serviceSeconds,
+            travelYears: state.destination.travelYears,
+            events: [...state.missionEventLog],
+            rewardCredits,
+          };
+
+          return {
+            successRecords: [...state.successRecords, record],
+          };
+        }),
+
+      // --- debug: inject a dummy success record ---
+      addDummySuccessRecord: () =>
+        set((state) => {
+          const dummyDestinations = ["Proxima b", "TRAPPIST-1e", "Kepler-442b", "TOI-700 d", "GJ 1061 c", "Barnard's Star b"];
+          const dest = dummyDestinations[Math.floor(Math.random() * dummyDestinations.length)];
+          const randomSeconds = Math.floor(Math.random() * 600) + 60; // 1-10 min
+          const launchedAt = Date.now() - randomSeconds * 1000;
+
+          // Generate 5–8 random events
+          const allTypes: EventType[] = ["horn", "asteroid", "rescue-transfer", "solar-flare", "rover", "fake-instruction"];
+          const eventCount = Math.floor(Math.random() * 4) + 5; // 5–8
+          const events: EventLogEntry[] = [];
+          for (let i = 0; i < eventCount; i++) {
+            const type = allTypes[Math.floor(Math.random() * allTypes.length)];
+            // Roughly 70% success / 30% fail — realistic distribution
+            const result: "success" | "fail" = Math.random() < 0.7 ? "success" : "fail";
+            // Spread timestamps evenly across the mission duration
+            const offset = (randomSeconds * 1000) * ((i + 1) / (eventCount + 1));
+            events.push({ type, result, timestamp: launchedAt + offset });
+          }          const travelYears = Math.floor(Math.random() * 74001) + 6000; // 6,000 - 80,000
+          const rewardCredits = getDestinationWage(dest, travelYears);
+
+          const record: SuccessRecord = {
+            id: `success-debug-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            shipName: state.selectedShipName || DEFAULT_SHIP.name,
+            shipId: state.selectedShipId,
+            destinationName: dest,
+            launchedAt,
+            completedAt: Date.now(),
+            serviceSeconds: randomSeconds,
+            travelYears,
+            events,
+            rewardCredits,
+          };
+
+          return {
+            successRecords: [...state.successRecords, record],
+          };
+        }),
+
+      // --- debug: inject a dummy failure record ---
+      addDummyFailureRecord: () =>
+        set((state) => {
+          const dummyDestinations = ["Proxima b", "TRAPPIST-1e", "Kepler-442b", "TOI-700 d", "GJ 1061 c", "Barnard's Star b"];
+          const dummyShips = ["Odyssey", "Starhopper", "Voyager", "Pioneer", "Enterprise", "Mercury"];
+          const dest = dummyDestinations[Math.floor(Math.random() * dummyDestinations.length)];
+          const ship = dummyShips[Math.floor(Math.random() * dummyShips.length)];
+          const randomSeconds = Math.floor(Math.random() * 600) + 60; // 1-10 min
+          const launchedAt = Date.now() - randomSeconds * 1000;
+
+          // Random death reason
+          const reasons: CrewLostReason[] = ["attention", "buttons", "event", "exit"];
+          const reason = reasons[Math.floor(Math.random() * reasons.length)];
+
+          // Generate 5-8 random events
+          const allTypes: EventType[] = ["horn", "asteroid", "rescue-transfer", "solar-flare", "rover", "fake-instruction"];
+          const eventCount = Math.floor(Math.random() * 4) + 5;
+          const events: EventLogEntry[] = [];
+          for (let i = 0; i < eventCount; i++) {
+            const type = allTypes[Math.floor(Math.random() * allTypes.length)];
+            const result: "success" | "fail" = Math.random() < 0.7 ? "success" : "fail";
+            const offset = (randomSeconds * 1000) * ((i + 1) / (eventCount + 1));
+            events.push({ type, result, timestamp: launchedAt + offset });
+          }
+
+          const travelYears = Math.floor(Math.random() * 74001) + 6000; // 6,000 - 80,000
+
+          const record: FailureRecord = {
+            id: `fail-debug-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            shipName: ship,
+            shipId: null,
+            destinationName: dest,
+            launchedAt,
+            failedAt: Date.now(),
+            serviceSeconds: randomSeconds,
+            travelYears,
+            crewLostReason: reason,
+            events,
+          };
+
+          return {
+            failureRecords: [...state.failureRecords, record],
+          };
+        }),
+
+      // --- record failure for Wall of Shame ---
+      recordFailure: () =>
+        set((state) => {
+          // Avoid duplicate recording if already recorded for this failure
+          if (state.gamePhase !== "crewLost") return {};
+
+          // Only record if we have destination info (valid mission)
+          if (!state.destination) return {};
+
+          const record: FailureRecord = {
+            id: `fail-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            shipName: state.selectedShipName || DEFAULT_SHIP.name,
+            shipId: state.selectedShipId,
+            destinationName: state.destination.name,
+            launchedAt: state.launchTimestamp || Date.now(),
+            failedAt: Date.now(),
+            serviceSeconds: state.serviceSeconds,
+            travelYears: state.destination.travelYears,
+            crewLostReason: state.crewLostReason || "attention",
+            events: [...state.missionEventLog],
+          };
+
+          return {
+            failureRecords: [...state.failureRecords, record],
+            // Keep missionEventLog so the just-recorded record is complete
+          };
+        }),
+
+      // --- exit mission (player abandoned ship) ---
+      exitMission: () =>
+        set((state) => {
+          // Only record if we have destination info (valid mission)
+          if (!state.destination) return {};
+
+          const record: FailureRecord = {
+            id: `fail-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            shipName: state.selectedShipName || DEFAULT_SHIP.name,
+            shipId: state.selectedShipId,
+            destinationName: state.destination.name,
+            launchedAt: state.launchTimestamp || Date.now(),
+            failedAt: Date.now(),
+            serviceSeconds: state.serviceSeconds,
+            travelYears: state.destination.travelYears,
+            crewLostReason: "exit" as CrewLostReason,
+            events: [...state.missionEventLog],
+          };
+
+          return {
+            failureRecords: [...state.failureRecords, record],
+            destination: null,
+            pendingDestination: null,
+            remainingYears: 0,
+            shipSpeedKmPerSecond: SHIP_SPEED_KM_PER_SECOND,
+            inactivitySeconds: 0,
+            serviceSeconds: 0,
+            gamePhase: "mainMenu" as GamePhase,
+            ...phaseToFlags("mainMenu"),
+            bestServiceSeconds: state.bestServiceSeconds,
+            cockpitVariant: "default",
+            asteroidWarning: false,
+            activeEvent: null,
+            eventPenaltyYears: 0,
+            pendingDestructionAt: null,
+            missionEventLog: [],
+            launchTimestamp: 0,
+            selectedShipName: "",
+            selectedShipId: null,
+          };
+        }),
 
       // --- ship select ---
       selectDestinationForShip: (destination) =>
@@ -429,6 +710,11 @@ const useGameStore = create<GameState>()(
           activeEvent: null,
           eventPenaltyYears: 0,
           pendingDestructionAt: null,
+          // Clear mission-specific tracking
+          missionEventLog: [],
+          launchTimestamp: 0,
+          selectedShipName: "",
+          selectedShipId: null,
         })),
     }),
     {
@@ -445,6 +731,8 @@ const useGameStore = create<GameState>()(
         shipSpeedKmPerSecond: state.shipSpeedKmPerSecond,
         serviceSeconds: state.serviceSeconds,
         bestServiceSeconds: state.bestServiceSeconds,
+        failureRecords: state.failureRecords,
+        successRecords: state.successRecords,
         // inactivitySeconds is stored but recalculated on page leave return
       }),
     },
