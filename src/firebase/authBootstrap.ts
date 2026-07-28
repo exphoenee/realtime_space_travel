@@ -12,6 +12,7 @@ import {
   subscribeUser,
   migrateGuestData,
   updateOnlineStatus,
+  updateUserPublicProfile,
   type UserNode,
 } from "./userData";
 import { getDeviceId } from "./deviceId";
@@ -168,6 +169,13 @@ export const startAuthBootstrap = (
     const db = getFirebaseDB();
     const statusRef = ref(db, `usersPublic/${rtdbKey}/onlineStatus`);
     rtdbOnDisconnect(statusRef).set("offline").catch(console.error);
+
+    // --- Public profile (for search) ---
+    // Create/update usersPublic entry so other players can find this user.
+    // Use displayName from Firestore fallback if not provided by auth.
+    const publicNickname = useAuthStore.getState().nickname || "";
+    const publicDisplayName = user.displayName || (user.email ? user.email : null);
+    updateUserPublicProfile(rtdbKey, publicNickname, publicDisplayName).catch(console.error);
   });
 };
 
