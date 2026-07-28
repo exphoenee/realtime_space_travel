@@ -1,5 +1,6 @@
 import React from "react";
 import { Destination, GamePhase } from "../../types";
+import useGameStore from "../../state/useGameStore";
 import IntroScreen from "../screens/IntroScreen";
 import MainMenu from "../screens/MainMenu";
 import MissionSelector from "../screens/MissionSelector";
@@ -7,6 +8,7 @@ import SettingsScreen from "../screens/SettingsScreen";
 import LoadingScreen from "../screens/LoadingScreen";
 import ShopScreen from "../shop/ShopScreen";
 import ShipSelectScreen from "../screens/ShipSelectScreen";
+import WallOfShame from "../screens/WallOfShame";
 
 interface ScreenRouterProps {
   phase: GamePhase;
@@ -29,6 +31,7 @@ interface ScreenRouterProps {
  * - 'settings'     → SettingsScreen (music volume, language, difficulty)
  * - 'shop'         → ShopScreen (in-game shop)
  * - 'loading'      → LoadingScreen (camera/model initialization)
+ * - 'wallOfShame'  → WallOfShame (failure log)
  * - All others     → children (the game view with overlays)
  */
 const ScreenRouter: React.FC<ScreenRouterProps> = ({
@@ -52,6 +55,10 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
       return <SettingsScreen />;
     case "shop":
       return <ShopScreen />;
+    case "wallOfShame":
+      return (
+        <WallOfShame onBack={() => useGameStore.getState().transitionTo("mainMenu")} />
+      );
     case "loading":
       return <LoadingScreen onComplete={onLoadingComplete} />;
     default:

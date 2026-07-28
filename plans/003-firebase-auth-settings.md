@@ -106,12 +106,12 @@ Ez a terv a **Firebase oldalt** részletezi (auth, RTDB séma, betöltés, Setti
 **Kredit-út — ❌ KIVÉVE: lásd alább**
 
 > ⚠️ **Tervváltozás (2026-07-26):** Az alábbi 3 pont **NEM része** ennek a tervnek. A Spark (ingyenes) Firebase terv nem támogatja a Cloud Functionöket, ezért az architektúra megváltozott:
-> - **`awardWage`** + **`purchaseWithCredits`** Cloud Functionök → ❌ **Eltávolítva.** A kliensoldali kredites vásárlás és a küldetés végi wage jóváírás a Phase-1 RTDB rules alatt, kliens-írható `wallet`-tel működik. A Phase-2 rules (`wallet.write = false`) és a szerveroldali validáció a [[013-stripe-fraud-defense]] terv opcionális (F) fázisa — Cloudflare Workerrel vagy Blaze tervre váltással.
+> - **`awardWage`** + **`purchaseWithCredits`** Cloud Functionök → ❌ **Eltávolítva.** A kliensoldali kredites vásárlás és a küldetés végi wage jóváírás a Phase-1 RTDB rules alatt, kliens-írható `wallet`-tel működik. A Phase-2 rules (`wallet.write = false`) és a szerveroldali validáció a [[014-stripe-fraud-defense]] terv opcionális (F) fázisa — Cloudflare Workerrel vagy Blaze tervre váltással.
 > - **Stripe→Firebase híd** (Stripe webhook → Admin SDK → `inventory`) → ❌ **Eltávolítva.** Helyette a [[005-ingame-shop-strapi-stripe]] terv **Stripe Payment Links + kliensoldali jóváírás** architektúrát használ, amihez nincs szükség backendre.
 >
-> **Követő tervek:** [[005-ingame-shop-strapi-stripe]] (Stripe Payment Links, kliensoldali kredit-írás), [[013-stripe-fraud-defense]] (Spark-kompatibilis csalásvédelem, opcionális serverless webhook)
+> **Követő tervek:** [[005-ingame-shop-strapi-stripe]] (Stripe Payment Links, kliensoldali kredit-írás), [[014-stripe-fraud-defense]] (Spark-kompatibilis csalásvédelem, opcionális serverless webhook)
 
-- [~] `awardWage` + `purchaseWithCredits` Cloud Functionök → ~~eltávolítva, lásd [[005-ingame-shop-strapi-stripe]] + [[013-stripe-fraud-defense]]~~
+- [~] `awardWage` + `purchaseWithCredits` Cloud Functionök → ~~eltávolítva, lásd [[005-ingame-shop-strapi-stripe]] + [[014-stripe-fraud-defense]]~~
 - [~] Stripe→Firebase híd → ~~eltávolítva, lásd [[005-ingame-shop-strapi-stripe]]~~
 
 ---
@@ -322,4 +322,4 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 - [[002-ingame-shop-frontend]] – a **helyi (frontend-only) bolt** ELŐBB valósul meg: a `useShopStore` (localStorage) kredit/birtoklás/aktív-hajó/aktív-zene állapotát ez a terv **per-felhasználós Firebase-mentésre** cseréli (RTDB `wallet`/`inventory`/`settings`), a localStorage offline tükör lesz; a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function. Az „aktív hajó sebessége" és a „Settings zeneválasztó" integráció közös — ott úgy épül, hogy itt csak a forrás cserélődjön.
 - [[005-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
 - [[000-i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.
-- [[013-stripe-fraud-defense]] – a 6. pont **Cloud Function** útjának (`awardWage`, `purchaseWithCredits`) Blaze-mentes alternatívája: külső serverless futtató (Cloudflare Worker) + RTDB REST API, amivel a **Phase-2 rules** (`wallet.write = false`) Spark terven is bevezethető. A terv addig is szigorítja a Phase-1 `wallet` szabályt (írásonkénti növekmény-limit + ütemkorlát) — ezt az `awardWage` későbbi bevezetésekor együtt kell hangolni.
+- [[014-stripe-fraud-defense]] – a 6. pont **Cloud Function** útjának (`awardWage`, `purchaseWithCredits`) Blaze-mentes alternatívája: külső serverless futtató (Cloudflare Worker) + RTDB REST API, amivel a **Phase-2 rules** (`wallet.write = false`) Spark terven is bevezethető. A terv addig is szigorítja a Phase-1 `wallet` szabályt (írásonkénti növekmény-limit + ütemkorlát) — ezt az `awardWage` későbbi bevezetésekor együtt kell hangolni.

@@ -1,15 +1,15 @@
 ---
 title: "Social és multiplayer – barátok, chat, közös küldetések"
-slug: 012-social-multiplayer
+slug: 013-social-multiplayer
 type: plan
 category: core
 status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-27"
+updated_at: "2026-07-28"
 author: exphoenee
-step: 12
+step: 13
 phases: []
 dependencies:
   - 011-difficulty-event-system

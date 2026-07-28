@@ -115,3 +115,14 @@
   background: rgba(251, 191, 36, 0.2);
   border-color: rgba(251, 191, 36, 0.5);
 }
+
+.btnSuccess {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+
+.btnSuccess:hover {
+  background: rgba(74, 222, 128, 0.25);
+  border-color: rgba(74, 222, 128, 0.6);
+}

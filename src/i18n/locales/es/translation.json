@@ -59,6 +59,7 @@
     "gameOverTitle": "Fin del juego",
     "crewLostButtons": "¡Toda la tripulación en hibernación pereció porque manipulaste los botones!",
     "crewLostAttention": "Fin del juego: toda la tripulación murió porque no prestaste atención.",
+    "crewLostExit": "La tripulación pereció porque abandonaste la nave.",
     "exitConfirmTitle": "¿Seguro que quieres salir?",
     "exitConfirmText": "¡El juego no guarda tu progreso actual!",
     "yes": "Sí",
@@ -120,6 +121,7 @@
     "shop": "Tienda",
     "settings": "Ajustes",
     "intro": "Ver la introducción",
+    "wallOfShame": "Muro de la Vergüenza",
     "loginComingSoon": "El inicio de sesión estará disponible pronto.",
     "shopComingSoon": "La tienda estará disponible pronto."
   },
@@ -336,7 +338,7 @@
       "title": "¡Asteroide en la trayectoria!",
       "desc": "¡Maniobra evasiva requerida! ¡Cambia el rumbo ahora!",
       "success": "Asteroide evitado! +{{years}} años de desvío",
-      "fail": "¡Colisión! Tiempo de viaje aumentado en {years} años"
+      "fail": "¡Colisión! Tiempo de viaje aumentado en {{years}} años"
     },
     "rescueTransfer": {
       "title": "¡Nave de rescate detectada!",
@@ -367,7 +369,7 @@
       "trapAction": "Seguir instrucción"
     },
     "penalty": {
-      "timeAdded": "+{years} años añadidos al tiempo de viaje",
+      "timeAdded": "+{{years}} años añadidos al tiempo de viaje",
       "crewLost": "¡Tripulación perdida!"
     },
     "timeLeft": "{{seconds}}s restantes",
@@ -380,5 +382,38 @@
     "ignore": "Ignorar",
     "evasiveManeuver": "¡Maniobra evasiva!",
     "fakeBadge": "SEÑAL ENGAÑOSA"
+  },
+  "wallOfShame": {
+    "title": "Muro de la Vergüenza",
+    "subtitle": "{{count}} misión(es) registrada(s)",
+    "emptyMissions": "Aún no hay misiones. ¡Lanza una misión para verla aquí!",
+    "empty": "Aún no hay fracasos. El muro permanece vacío... por ahora.",
+    "events": "Eventos ({{count}})",
+    "success": "✓ Éxito",
+    "fail": "✗ Fracaso",
+    "reason": {
+      "attention": "Pérdida de atención",
+      "buttons": "Manipulación de botones",
+      "event": "Evento Crítico",
+      "exit": "Nave abandonada",
+      "success": "Llegado",
+      "unknown": "Desconocido"
+    },
+    "stat": {
+      "total": "Total",
+      "solved": "Resueltos",
+      "failed": "Fallidos"
+    },
+    "stats": {
+      "totalMissions": "Misiones totales",
+      "totalFailures": "Fracasos totales",
+      "totalSuccesses": "Exitosas",
+      "successRate": "Tasa de éxito",
+      "mostCommonDeath": "Causa más común",
+      "mostUsedShip": "Nave más usada",
+      "longestService": "Servicio más largo",
+      "shortestService": "Servicio más corto",
+      "totalDistance": "Distancia total"
+    }
   }
 }

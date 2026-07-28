@@ -27,6 +27,7 @@ import type { UserNode } from "./firebase/userData";
 import { BASE_EXOPLANET_IDS, getShipImageById } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
+import { saveFailureRecord } from "./firebase/userData";
 import {
   ATTENTION_INTERVAL_MS,
   INACTIVITY_LIMIT_SECONDS,
@@ -95,6 +96,29 @@ const App: React.FC = () => {
   useAttentionMonitor(faceStatus, destination);
   usePageLeave();
   const { triggerManualEvent } = useEventSystem();
+
+  // Auto-record failure when crewLost is triggered (all paths)
+  useEffect(() => {
+    const unsub = useGameStore.subscribe((state, prevState) => {
+      if (state.gamePhase === "crewLost" && prevState.gamePhase !== "crewLost") {
+        // Record failure in local store first
+        const gs = useGameStore.getState();
+        gs.recordFailure();
+
+        // Then persist to RTDB if signed in
+        const rtdbKey = getRtdbKey();
+        if (rtdbKey) {
+          // Read the just-recorded failure from the updated store
+          const updated = useGameStore.getState();
+          const latest = updated.failureRecords[updated.failureRecords.length - 1];
+          if (latest) {
+            saveFailureRecord(rtdbKey, latest).catch(console.error);
+          }
+        }
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Watch isMusicMuted changes → persist to RTDB.
   // Guard against the initial mount: the auth bootstrap (ensureDeviceMap +
@@ -309,7 +333,24 @@ const App: React.FC = () => {
     updateBestServiceTime(serviceSeconds);
     setShowExitConfirm(false);
     setCameraError(null);
-    resetToMenu();
+
+    const gs = useGameStore.getState();
+    if (gs.destination) {
+      // Record the exit as a failure and reset to menu
+      gs.exitMission();
+
+      // Persist to RTDB if signed in
+      const rtdbKey = getRtdbKey();
+      if (rtdbKey) {
+        const updated = useGameStore.getState();
+        const latest = updated.failureRecords[updated.failureRecords.length - 1];
+        if (latest) {
+          saveFailureRecord(rtdbKey, latest).catch(console.error);
+        }
+      }
+    } else {
+      resetToMenu();
+    }
   };
 
   const handleCancelExit = () => {
@@ -330,7 +371,8 @@ const App: React.FC = () => {
     gamePhase === "shipSelect" ||
     gamePhase === "settings" ||
     gamePhase === "shop" ||
-    gamePhase === "loading";
+    gamePhase === "loading" ||
+    gamePhase === "wallOfShame";
 
   const attentionCountdown =
     gamePhase === "countdown"
@@ -357,7 +399,9 @@ const App: React.FC = () => {
   const crewLostMessage =
     crewLostReason === "buttons"
       ? t("app.crewLostButtons")
-      : t("app.crewLostAttention");
+      : crewLostReason === "exit"
+        ? t("app.crewLostExit")
+        : t("app.crewLostAttention");
 
   // Pause overlay visible when in paused/countdown phase and no blocking overlays
   const isPauseOverlayVisible =
@@ -530,6 +574,7 @@ const App: React.FC = () => {
     if (remainingYears <= 0) {
       const gs = useGameStore.getState();
       updateBestServiceTime(gs.serviceSeconds);
+      gs.recordMissionComplete();
       gs.transitionTo("missionComplete");
       setShowExitConfirm(false);
     }

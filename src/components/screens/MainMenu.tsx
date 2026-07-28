@@ -57,6 +57,9 @@ const MainMenu = () => {
           <button type="button" className={styles.button} onClick={handleShop}>
             {t("mainMenu.shop")}
           </button>
+          <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
+            {t("mainMenu.wallOfShame")}
+          </button>
           <button
             type="button"
             className={styles.button}

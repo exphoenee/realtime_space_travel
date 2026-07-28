@@ -176,6 +176,12 @@ export const useEventSystem = () => {
       return;
     }
 
+    // Destruction is pending (e.g. rescue-transfer ignored) — show doom countdown instead
+    if (state.pendingDestructionAt) {
+      timerRef.current = null;
+      return;
+    }
+
     // Paused / attention lost — don't schedule, will retry when unpaused
     if (state.isPaused || state.isAttentionLost) {
       // Check again in 1 second

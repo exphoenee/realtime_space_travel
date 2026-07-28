@@ -1,4 +1,4 @@
-import { ref, onValue, update, set, runTransaction, type Unsubscribe, type DatabaseReference } from "firebase/database";
+import { ref, onValue, update, set, runTransaction, push, type Unsubscribe, type DatabaseReference } from "firebase/database";
 import { getFirebaseDB } from "./config";
 import type { User } from "firebase/auth";
 import {
@@ -6,6 +6,7 @@ import {
   DEBUG_STARTING_CREDITS,
   BASE_EXOPLANET_IDS,
 } from "../constants/shopCatalog";
+import type { FailureRecord, SuccessRecord } from "../types";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
@@ -660,4 +661,90 @@ export const updateUserInventory = async (
   const db = getFirebaseDB();
   const invRef = ref(db, `users/${uid}/inventory/${category}`);
   await set(invRef, items);
+};
+
+// --- Wall of Shame ---
+
+/**
+ * Save a failure record to RTDB under `users/{uid}/failures`.
+ * Uses push() to create a new entry with an auto-generated key.
+ */
+export const saveFailureRecord = async (
+  uid: string,
+  record: FailureRecord,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const failuresRef = ref(db, `users/${uid}/failures`);
+  await push(failuresRef, record);
+};
+
+/**
+ * Subscribe to failure records in RTDB.
+ * Calls callback with an array of FailureRecord every time data changes.
+ * Returns an unsubscribe function.
+ */
+export const subscribeFailures = (
+  uid: string,
+  callback: (records: FailureRecord[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const failuresRef = ref(db, `users/${uid}/failures`);
+
+  return onValue(failuresRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    // Convert the object of push-IDs → array of FailureRecords
+    const records: FailureRecord[] = Object.entries(data).map(([pushId, value]) => {
+      const record = value as FailureRecord;
+      return { ...record, id: record.id || pushId };
+    });
+    // Sort by failedAt descending (most recent first)
+    records.sort((a, b) => b.failedAt - a.failedAt);
+    callback(records);
+  });
+};
+
+// --- Success Records (debug / Firebase sync) ---
+
+/**
+ * Save a success record to RTDB under `users/{uid}/successes`.
+ * Uses push() to create a new entry with an auto-generated key.
+ */
+export const saveSuccessRecord = async (
+  uid: string,
+  record: SuccessRecord,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const successesRef = ref(db, `users/${uid}/successes`);
+  await push(successesRef, record);
+};
+
+/**
+ * Subscribe to success records in RTDB.
+ * Calls callback with an array of SuccessRecord every time data changes.
+ * Returns an unsubscribe function.
+ */
+export const subscribeSuccesses = (
+  uid: string,
+  callback: (records: SuccessRecord[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const successesRef = ref(db, `users/${uid}/successes`);
+
+  return onValue(successesRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const records: SuccessRecord[] = Object.entries(data).map(([pushId, value]) => {
+      const record = value as SuccessRecord;
+      return { ...record, id: record.id || pushId };
+    });
+    records.sort((a, b) => b.completedAt - a.completedAt);
+    callback(records);
+  });
 };

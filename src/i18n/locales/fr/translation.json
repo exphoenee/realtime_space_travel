@@ -59,6 +59,7 @@
     "gameOverTitle": "Partie terminée",
     "crewLostButtons": "Tout l'équipage en hibernation a péri parce que vous avez touché aux boutons !",
     "crewLostAttention": "Partie terminée — tout l'équipage est mort parce que vous n'avez pas fait attention.",
+    "crewLostExit": "L'équipage a péri parce que vous avez abandonné le vaisseau.",
     "exitConfirmTitle": "Êtes-vous sûr de vouloir quitter ?",
     "exitConfirmText": "Le jeu n'enregistre pas votre progression actuelle !",
     "yes": "Oui",
@@ -120,6 +121,7 @@
     "shop": "Boutique",
     "settings": "Paramètres",
     "intro": "Voir l'intro",
+    "wallOfShame": "Mur de la Honte",
     "loginComingSoon": "La connexion sera bientôt disponible.",
     "shopComingSoon": "La boutique sera bientôt disponible."
   },
@@ -336,7 +338,7 @@
       "title": "Astéroïde sur la trajectoire !",
       "desc": "Manœuvre d'évitement requise ! Changez de cap immédiatement !",
       "success": "Astéroïde évité ! +{{years}} ans de détour",
-      "fail": "Collision ! Le temps de voyage augmenté de {years} ans"
+      "fail": "Collision ! Le temps de voyage augmenté de {{years}} ans"
     },
     "rescueTransfer": {
       "title": "Vaisseau de secours détecté !",
@@ -367,7 +369,7 @@
       "trapAction": "Suivre l'instruction"
     },
     "penalty": {
-      "timeAdded": "+{years} ans ajoutés au temps de voyage",
+      "timeAdded": "+{{years}} ans ajoutés au temps de voyage",
       "crewLost": "Équipage perdu !"
     },
     "timeLeft": "{{seconds}}s restantes",
@@ -380,5 +382,38 @@
     "ignore": "Ignorer",
     "evasiveManeuver": "Manœuvre d'évitement !",
     "fakeBadge": "SIGNAL TROMPEUR"
+  },
+  "wallOfShame": {
+    "title": "Mur de la Honte",
+    "subtitle": "{{count}} mission(s) enregistrée(s)",
+    "emptyMissions": "Aucune mission pour l'instant. Lancez une mission pour la voir ici !",
+    "empty": "Aucun échec pour l'instant. Le mur reste vide... pour l'instant.",
+    "events": "Événements ({{count}})",
+    "success": "✓ Réussi",
+    "fail": "✗ Échec",
+    "reason": {
+      "attention": "Perte d'attention",
+      "buttons": "Manipulation des boutons",
+      "event": "Événement Critique",
+      "exit": "Vaisseau abandonné",
+      "success": "Arrivé",
+      "unknown": "Inconnu"
+    },
+    "stat": {
+      "total": "Total",
+      "solved": "Résolus",
+      "failed": "Échoués"
+    },
+    "stats": {
+      "totalMissions": "Missions totales",
+      "totalFailures": "Échecs totaux",
+      "totalSuccesses": "Réussies",
+      "successRate": "Taux de réussite",
+      "mostCommonDeath": "Cause la plus fréquente",
+      "mostUsedShip": "Vaisseau le plus utilisé",
+      "longestService": "Plus long service",
+      "shortestService": "Plus court service",
+      "totalDistance": "Distance totale"
+    }
   }
 }

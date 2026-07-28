@@ -59,6 +59,7 @@
     "gameOverTitle": "Vége a játéknak",
     "crewLostButtons": "Az egész hibernált legénység elpusztult, mert piszkáltad a gombokat!",
     "crewLostAttention": "Vége játéknak, a teljes legénység meghalt, mert nem figyeltél oda.",
+    "crewLostExit": "A legénység odaveszett, mert elhagytad a hajót.",
     "exitConfirmTitle": "Biztosan kilépsz?",
     "exitConfirmText": "A játék nem menti az eddigi elért eredményeidet!",
     "yes": "Igen",
@@ -120,6 +121,7 @@
     "shop": "Áruház",
     "settings": "Beállítások",
     "intro": "Intro megtekintése",
+    "wallOfShame": "Szégyenfal",
     "loginComingSoon": "A bejelentkezés hamarosan elérhető lesz.",
     "shopComingSoon": "Az áruház hamarosan elérhető lesz."
   },
@@ -336,7 +338,7 @@
       "title": "Aszteroida a pályán!",
       "desc": "Kitérő manőver szükséges! Változtass irányt azonnal!",
       "success": "Aszteroida elkerülve! +{{years}} év kitérő",
-      "fail": "Ütközés! Az útidő {years} évvel megnőtt"
+      "fail": "Ütközés! Az útidő {{years}} évvel megnőtt"
     },
     "rescueTransfer": {
       "title": "Mentőhajó érzékelve!",
@@ -367,7 +369,7 @@
       "trapAction": "Utasítás követése"
     },
     "penalty": {
-      "timeAdded": "+{years} év hozzáadva az útidőhöz",
+      "timeAdded": "+{{years}} év hozzáadva az útidőhöz",
       "crewLost": "Legénység elveszett!"
     },
     "timeLeft": "{{seconds}} másodperc",
@@ -380,5 +382,38 @@
     "ignore": "Figyelmen kívül hagyás",
     "evasiveManeuver": "Kitérő manőver!",
     "fakeBadge": "FÉLREVEZETŐ JELZÉS"
+  },
+  "wallOfShame": {
+    "title": "Szégyenfal",
+    "subtitle": "{{count}} küldetés rögzítve",
+    "emptyMissions": "Még nincs küldetés. Indíts egy küldetést, hogy itt lássad!",
+    "empty": "Még nincs kudarc. A fal üres... egyelőre.",
+    "events": "Események ({{count}})",
+    "success": "✓ Siker",
+    "fail": "✗ Kudarc",
+    "reason": {
+      "attention": "Figyelem elvesztése",
+      "buttons": "Gombok piszkálása",
+      "event": "Kritikus Esemény",
+      "exit": "Hajó elhagyása",
+      "success": "Megérkezett",
+      "unknown": "Ismeretlen"
+    },
+    "stat": {
+      "total": "Összesen",
+      "solved": "Megoldott",
+      "failed": "Elbukott"
+    },
+    "stats": {
+      "totalMissions": "Összes küldetés",
+      "totalFailures": "Összes kudarc",
+      "totalSuccesses": "Sikeres",
+      "successRate": "Sikerességi arány",
+      "mostCommonDeath": "Gyakori halálok",
+      "mostUsedShip": "Legtöbbet használt hajó",
+      "longestService": "Leghosszabb szolgálat",
+      "shortestService": "Legrövidebb szolgálat",
+      "totalDistance": "Teljes távolság"
+    }
   }
 }

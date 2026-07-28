@@ -1,4 +1,4 @@
-export type EventType = "horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction";
+export type EventType = "horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction" | "doom";
 
 export type EventPenaltyType = "time" | "crewLost";
 
@@ -29,7 +29,7 @@ export interface EventInstance {
   data?: Record<string, unknown>;
 }
 
-export type CrewLostReason = "attention" | "buttons" | "event" | null;
+export type CrewLostReason = "attention" | "buttons" | "event" | "exit" | null;
 
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -45,7 +45,8 @@ export type GamePhase =
   | "countdown"
   | "crewLost"
   | "missionComplete"
-  | "shop";
+  | "shop"
+  | "wallOfShame";
 
 export interface Star {
   x: number;
@@ -121,4 +122,59 @@ export interface OwnedItems {
   ships: string[];
   music: string[];
   exoplanets: string[];
+}
+
+// --- Wall of Shame types ---
+
+export interface EventLogEntry {
+  type: EventType;
+  result: "success" | "fail";
+  timestamp: number;
+}
+
+export interface FailureRecord {
+  /** Firebase push ID or generated UUID */
+  id: string;
+  /** Selected ship name at launch */
+  shipName: string;
+  /** Selected ship id at launch (null = default ship) */
+  shipId: string | null;
+  /** Destination planet name */
+  destinationName: string;
+  /** Timestamp when the mission started */
+  launchedAt: number;
+  /** Timestamp when the crew was lost */
+  failedAt: number;
+  /** How long the player lasted (seconds) */
+  serviceSeconds: number;
+  /** Planned travel time in years (from destination distance & ship speed) */
+  travelYears: number;
+  /** Why the crew was lost */
+  crewLostReason: CrewLostReason;
+  /** Events encountered during the mission */
+  events: EventLogEntry[];
+}
+
+/** A successful mission — ship arrived safely at destination */
+export interface SuccessRecord {
+  /** Generated UUID */
+  id: string;
+  /** Selected ship name at launch */
+  shipName: string;
+  /** Selected ship id at launch (null = default ship) */
+  shipId: string | null;
+  /** Destination planet name */
+  destinationName: string;
+  /** Timestamp when the mission started */
+  launchedAt: number;
+  /** Timestamp when the ship arrived */
+  completedAt: number;
+  /** How long the journey took (seconds) */
+  serviceSeconds: number;
+  /** Planned travel time in years (from destination distance & ship speed) */
+  travelYears: number;
+  /** Events encountered during the mission */
+  events: EventLogEntry[];
+  /** Credits rewarded for completing the mission */
+  rewardCredits?: number;
 }
