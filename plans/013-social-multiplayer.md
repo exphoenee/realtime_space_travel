@@ -3,7 +3,7 @@ title: "Social és multiplayer – barátok, chat, közös küldetések"
 slug: 013-social-multiplayer
 type: plan
 category: core
-status: not-started
+status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
@@ -67,31 +67,34 @@ tags:
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A. Firebase RTDB séma bővítése — barátok, chat, multiplayer session**
-- [ ] RTDB új node-ok: `friends/{uid}/{friendUid}: true`, `friendRequests/{uid}/{fromUid}: { from, at, status }`, `chats/{chatId}: { participants, messages }`
-- [ ] `users/{uid}/profile` bővítése: `+onlineStatus: string` (offline/online/játékban)
+- [x] RTDB új node-ok: `friends/{uid}/{friendUid}: true`, `friendRequests/{uid}/{fromUid}: { from, at, status }`, `chats/{chatId}: { participants, messages }`
+- [x] `users/{uid}/profile` bővítése: `+onlineStatus: string` (offline/online/játékban) — `usersPublic/{uid}/onlineStatus`
 - [ ] `sessions/{sessionId}: { host, participants, status, createdAt }` — multiplayer session node
-- [ ] `security.rules.json` frissítése: `friends`, `friendRequests`, `chats`, `sessions` node-ok írási/olvasási szabályai
-- [ ] `security.rules.json` — `users/{uid}/failures` és `users/{uid}/successes` olvasási joga: csak a barátok (`friends/{requestUid}/{targetUid} === true`) számára engedélyezett
-- [ ] `database.rules.json` regenerálása
+- [x] `security.rules.json` frissítése: `friends`, `friendRequests`, `chats` node-ok írási/olvasási szabályai
+- [x] `security.rules.json` — `users/{uid}/failures` és `users/{uid}/successes` olvasási joga: csak a barátok számára engedélyezett
+- [x] `database.rules.json` regenerálása
 
 **B. Barátlista — UI és logika**
-- [ ] `src/components/screens/FriendsScreen.tsx` + `FriendsScreen.module.css` — **új GamePhase képernyő**
-- [ ] `src/components/screens/FriendsScreen.tsx` — barátlista online státusszal
-- [ ] `src/components/screens/FriendsScreen.tsx` — barátkereső (nickname, email, user ID)
-- [ ] `src/components/screens/FriendsScreen.tsx` — friend request küldése
-- [ ] `src/components/screens/FriendsScreen.tsx` — bejövő friend request-ek listája (elfogadás/elutasítás)
-- [ ] `src/types/index.ts` — új GamePhase: `"friends"`; új típusok: `FriendRequest`, `FriendStatus`, `UserOnlineStatus`
-- [ ] `src/components/routing/ScreenRouter.tsx` — `case "friends"` ág
-- [ ] `src/components/screens/MainMenu.tsx` — „Barátok" gomb → `transitionTo("friends")`
+- [x] `src/components/screens/FriendsScreen.tsx` + `FriendsScreen.module.css` — **új GamePhase képernyő**
+- [x] `src/components/screens/FriendsScreen.tsx` — barátlista online státusszal
+- [x] `src/components/screens/FriendsScreen.tsx` — barátkereső (nickname, email, user ID)
+- [x] `src/components/screens/FriendsScreen.tsx` — friend request küldése
+- [x] `src/components/screens/FriendsScreen.tsx` — bejövő friend request-ek listája (elfogadás/elutasítás)
+- [x] `src/types/index.ts` — új GamePhase: `"friends"`; új típusok: `FriendRequest`, `FriendStatus`, `UserOnlineStatus`
+- [x] `src/components/routing/ScreenRouter.tsx` — `case "friends"` ág
+- [x] `src/components/screens/MainMenu.tsx` — „Barátok" gomb → `transitionTo("friends")`
+- [x] `MainMenu.tsx` — notification badge az olvasatlan üzenetekhez
 
 **C. Privát chat — UI és logika**
-- [ ] `src/components/features/ChatPanel.tsx` + `ChatPanel.module.css` — chat panel komponens
-- [ ] `ChatPanel.tsx` — üzenet lista, időbélyeg, olvasatlan jelzés
-- [ ] `ChatPanel.tsx` — üzenet küldése (RTDB push)
-- [ ] `ChatPanel.tsx` — chat a Barátok menüben (teljes képernyős nézet)
+- [x] `src/components/features/ChatPanel.tsx` + `ChatPanel.module.css` — chat panel komponens
+- [x] `ChatPanel.tsx` — üzenet lista, időbélyeg
+- [x] `ChatPanel.tsx` — üzenet küldése (RTDB push)
+- [x] `ChatPanel.tsx` — chat a Barátok menüben (teljes képernyős nézet)
 - [ ] `ChatPanel.tsx` — chat játék közben (kisebb panel, jobb alsó sarok)
-- [ ] RTDB listener: valós idejű üzenet frissítés
-- [ ] Olvasatlan üzenet jelzés a Barátok gombon / barát listában
+- [x] RTDB listener: valós idejű üzenet frissítés
+- [x] Olvasatlan üzenet jelzés a Barátok gombon / barát listában
+- [x] `ChatPanel.tsx` — typing indicator (gépelés jelző)
+- [x] `userData.ts` — `markChatRead`, `subscribeUnreadCount`, `updateTypingStatus`, `subscribeTypingStatus`
 
 **D. Multiplayer session kezelés**
 - [ ] `src/hooks/useMultiplayerSession.ts` — **új hook**: session létrehozás, csatlakozás, kilépés, host átadás
@@ -103,6 +106,7 @@ tags:
 - [ ] Host átadás: ha host kilép, a rendszer a következő aktív résztvevőt jelöli ki
 - [ ] Max 8 fő limit
 - [ ] `useGameStore` bővítése: +`multiplayerSession: MultiplayerSession | null`, +`multiplayerParticipants: Participant[]`
+- [x] Online status broadcast: `updateOnlineStatus` + `onDisconnect` + gamePhase watcher
 
 **E. Figyelmi állapot multiplayerben**
 - [ ] `src/hooks/useMultiplayerAttention.ts` — **új hook**: résztvevők figyelmi állapotának szinkronizálása
@@ -131,30 +135,29 @@ tags:
 - [ ] Ha a csapat elbukik, minden résztvevő veszít (crewLost mindenkinél)
 
 **H. i18n — ÚJ kulcsok mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`)**
-- [ ] `friends.title` / `friends.back` / `friends.search` / `friends.searchPlaceholder`
-- [ ] `friends.addFriend` / `friends.removeFriend` / `friends.friendRequestSent`
-- [ ] `friends.pendingRequests` / `friends.accept` / `friends.reject`
-- [ ] `friends.online` / `friends.offline` / `friends.inGame` / `friends.watching` / `friends.notWatching`
-- [ ] `friends.noResults` / `friends.empty`
-- [ ] `chat.title` / `chat.inputPlaceholder` / `chat.send` / `chat.unread`
+- [x] `friends.title` / `friends.back` / `friends.search` / `friends.searchPlaceholder`
+- [x] `friends.addFriend` / `friends.removeFriend` / `friends.friendRequestSent`
+- [x] `friends.pendingRequests` / `friends.accept` / `friends.reject`
+- [x] `friends.online` / `friends.offline` / `friends.inGame` / `friends.watching` / `friends.notWatching`
+- [x] `friends.noResults` / `friends.empty`
+- [x] `chat.title` / `chat.inputPlaceholder` / `chat.send` / `chat.unread` / `chat.typing` / `chat.empty`
 - [ ] `multiplayer.invite` / `multiplayer.join` / `multiplayer.leave` / `multiplayer.host`
 - [ ] `multiplayer.participants` / `multiplayer.maxReached`
 - [ ] `multiplayer.eventToast.horn` / `.asteroid` / `.rescueTransfer` / `.solarFlare` / `.rover`
 - [ ] `multiplayer.eventToast.timePenalty` / `.crewLost`
 - [ ] `multiplayer.hostTransferred` / `multiplayer.sessionEnded`
-- [ ] Teljes paritás mind az 5 fájlban
+- [x] `friendWall.title` / `friendWall.back` / `friendWall.viewWall`
+- [x] Teljes paritás mind az 5 fájlban
 
 **I. Barát szégyenfala — read-only Wall of Shame megtekintése**
-- [ ] `src/components/screens/FriendWallScreen.tsx` + `FriendWallScreen.module.css` — **új GamePhase képernyő**
-- [ ] `FriendWallScreen.tsx` — meglévő WallOfShame komponens **újrahasználása** read-only módban
-- [ ] `FriendWallScreen.tsx` — barát neve a headerben („{friendName} Wall of Shame")
-- [ ] `src/types/index.ts` — új GamePhase: `"friendWall"`
-- [ ] `firebase/userData.ts` — új `subscribeFriendFailures(uid, callback)` és `subscribeFriendSuccesses(uid, callback)` — ugyanaz, mint a meglévő subscribe, de barát uid-jével hívva
-- [ ] `FriendsScreen.tsx` — barátra kattintva opció: „View Wall of Shame" → `transitionTo("friendWall")` + barát uid átadása
-- [ ] `useGameStore` bővítése: +`friendWallTargetUid: string | null`, +`friendWallTargetName: string | null`
-- [ ] `ScreenRouter.tsx` — `case "friendWall"` ág → `FriendWallScreen`
-- [ ] Security rules: a `users/{uid}/failures` és `users/{uid}/successes` node-ok olvasása **csak barátok számára** engedélyezett
-- [ ] i18n: `friendWall.*` kulcsok (lásd H blokk)
+- [x] WallOfShame komponens **újrahasználása** read-only módban (opcionális `friendUid`/`friendName` propok)
+- [x] `src/types/index.ts` — új GamePhase: `"friendWall"`
+- [x] `FriendsScreen.tsx` — barátra kattintva opció: „View Wall of Shame" → `transitionTo("friendWall")` + barát uid átadása
+- [x] `useGameStore` bővítése: +`friendWallTargetUid: string | null`, +`friendWallTargetName: string | null`
+- [x] `ScreenRouter.tsx` — `case "friendWall"` ág → WallOfShame friend propokkal
+- [x] Security rules: a `users/{uid}/failures` és `users/{uid}/successes` node-ok olvasása **csak barátok számára** engedélyezett
+- [x] `App.tsx` — `friendWall` hozzáadva az `isPreGame` listához
+- [x] i18n: `friendWall.*` kulcsok (lásd H blokk)
 
 **J. Tesztek**
 - [ ] `src/hooks/useMultiplayerSession.test.ts` — session létrehozás, csatlakozás, host átadás
@@ -163,7 +166,7 @@ tags:
 - [ ] `tsc --noEmit` + `npm run test` + `npm run build` — zöld
 
 **K. Dokumentáció**
-- [ ] `security.rules.json` frissítése: új node-ok (friends, friendRequests, chats, sessions)
+- [x] `security.rules.json` frissítése: új node-ok (friends, friendRequests, chats)
 - [ ] `.claude/lessons-learned.md` — bejegyzés a multiplayer architektúráról
 - [ ] `.claude/references/architecture-current.md` frissítése
 

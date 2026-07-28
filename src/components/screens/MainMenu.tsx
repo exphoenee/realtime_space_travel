@@ -20,15 +20,15 @@ const MainMenu = () => {
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [totalUnread, setTotalUnread] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Local login error takes precedence, falling back to the global auth error.
   const errorKey = loginError ?? authError;
 
-  // Subscribe to total unread message count across all friends
+  // Subscribe to unread message counts per friend (map-based, avoids double-counting)
   useEffect(() => {
     if (!authUid) {
-      setTotalUnread(0);
+      setUnreadCounts({});
       return;
     }
 
@@ -39,30 +39,18 @@ const MainMenu = () => {
       for (const unsub of unsubs) unsub();
       unsubs.length = 0;
 
-      if (friendUids.length === 0) {
-        setTotalUnread(0);
-        return;
-      }
+      // Reset counts
+      setUnreadCounts({});
 
-      let runningTotal = 0;
+      if (friendUids.length === 0) return;
 
       for (const fuid of friendUids) {
         const chatId = getChatId(authUid, fuid);
         const unsub = subscribeUnreadCount(chatId, authUid, (count) => {
-          // Recalculate total: subtract old value, add new value
-          // Using delta approach to avoid full re-scan
-          runningTotal += count;
-          // Run a fresh calculation to ensure accuracy
-          // (The closure captures the latest count per friend)
-          setTotalUnread((prev) => Math.max(0, prev + count));
-          // Reset total after first batch to avoid double counting
-          // Actually, better approach: recalculate from all subscriptions
+          setUnreadCounts((prev) => ({ ...prev, [fuid]: count }));
         });
         unsubs.push(unsub);
       }
-
-      // After all subscriptions are set up, reset total to force re-count
-      setTotalUnread(0);
     });
 
     return () => {
@@ -71,7 +59,9 @@ const MainMenu = () => {
     };
   }, [authUid]);
 
-  // Simpler approach: use a ref-based accumulator that resets when friends change
+  // Compute total from the map
+  const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
+
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
   const handleIntro = () => transitionTo("intro");
