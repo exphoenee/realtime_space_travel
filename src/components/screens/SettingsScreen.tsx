@@ -7,7 +7,7 @@ import useShopStore from "../../state/useShopStore";
 import useAuthStore, { selectRtdbKey, getRtdbKey } from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/auth";
-import { updateUserSettings, updateUserNickname } from "../../firebase/userData";
+import { updateUserSettings, updateUserNickname, updateUserPublicProfile } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import CustomSelect from "../ui/CustomSelect";
 import styles from "./SettingsScreen.module.css";
@@ -69,11 +69,13 @@ const SettingsScreen = () => {
     if (key) {
       try {
         await updateUserNickname(key, trimmed);
+        // Also update public profile for search
+        await updateUserPublicProfile(key, trimmed, storeDisplayName);
       } catch (err) {
         console.error("Failed to save nickname:", err);
       }
     }
-  }, [nicknameInput, setNickname]);
+  }, [nicknameInput, setNickname, storeDisplayName]);
 
   const handleNicknameKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
