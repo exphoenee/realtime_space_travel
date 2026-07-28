@@ -34,11 +34,15 @@ const SettingsScreen = () => {
   const mergeNotice = useAuthStore((s) => s.mergeNotice);
   const setMergeNotice = useAuthStore((s) => s.setMergeNotice);
   const storeDisplayName = useAuthStore((s) => s.displayName);
+  const cameraConsent = useUIStore((s) => s.cameraConsent);
+  const setCameraConsent = useUIStore((s) => s.setCameraConsent);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const clearUser = useAuthStore((s) => s.clearUser);
   const nickname = useAuthStore((s) => s.nickname);
   const nicknameLoaded = useAuthStore((s) => s.nicknameLoaded);
+  const [cameraBtnError, setCameraBtnError] = useState<string | null>(null);
+  const [isCameraEnabling, setIsCameraEnabling] = useState(false);
   const setNickname = useAuthStore((s) => s.setNickname);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [editingNickname, setEditingNickname] = useState(false);
@@ -131,6 +135,24 @@ const SettingsScreen = () => {
   }, [ownedMusicIds]);
 
   const hasOwnedMusic = ownedMusicTracks.length > 0;
+
+  const handleEnableCamera = useCallback(async () => {
+    setIsCameraEnabling(true);
+    setCameraBtnError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setCameraConsent("granted");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "NotAllowedError") {
+        setCameraBtnError(t("cameraConsent.browserDenied"));
+      } else {
+        setCameraBtnError(t("cameraConsent.error"));
+      }
+    } finally {
+      setIsCameraEnabling(false);
+    }
+  }, [setCameraConsent, t]);
 
   const handleBack = () => transitionTo("mainMenu");
 
@@ -377,6 +399,25 @@ const SettingsScreen = () => {
             ))}
           </div>
         </div>
+
+        {cameraConsent !== "granted" && (
+          <div className={styles.row}>
+            <span className={styles.label}>{t(cameraConsent === "undecided" ? "settings.cameraGranted" : "settings.enableCamera")}</span>
+            <div className={styles.control}>
+              <button
+                type="button"
+                className={styles.authBtn}
+                onClick={handleEnableCamera}
+                disabled={isCameraEnabling}
+              >
+                {isCameraEnabling ? "..." : t("settings.enableCamera")}
+              </button>
+              {cameraBtnError && (
+                <span className={styles.loginError}>{cameraBtnError}</span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className={styles.row}>
           <span className={styles.label}>{t("language.label")}</span>

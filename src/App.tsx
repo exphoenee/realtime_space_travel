@@ -22,12 +22,12 @@ import { useEventSystem } from "./hooks/useEventSystem";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
-import { updateUserSettings, updateOnlineStatus } from "./firebase/userData";
+import { updateUserSettings, updateOnlineStatus, migrateWallData, updateUserPublicProfile } from "./firebase/userData";
 import type { UserNode } from "./firebase/userData";
 import { BASE_EXOPLANET_IDS, getShipImageById } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
-import { saveFailureRecord } from "./firebase/userData";
+import { saveFailureRecord, saveSuccessRecord } from "./firebase/userData";
 import {
   ATTENTION_INTERVAL_MS,
   INACTIVITY_LIMIT_SECONDS,
@@ -191,13 +191,32 @@ const App: React.FC = () => {
 
       // Profile → useAuthStore (nickname + displayName)
       if (data.profile) {
-        if (data.profile.nickname !== undefined) {
-          useAuthStore.getState().setNickname(data.profile.nickname);
+        const storeNickname = data.profile.nickname;
+        const storeDisplayName = data.profile.displayName;
+
+        if (storeNickname !== undefined) {
+          useAuthStore.getState().setNickname(storeNickname);
         }
         // Sync RTDB displayName as fallback (some linked accounts lack
         // Firebase Auth user.displayName, but RTDB persists the correct value).
-        if (data.profile.displayName) {
-          useAuthStore.getState().setDisplayName(data.profile.displayName);
+        if (storeDisplayName) {
+          useAuthStore.getState().setDisplayName(storeDisplayName);
+        }
+
+        // Sync nickname to usersPublic so friends searching can find the user
+        // by their nickname, and the friend wall title shows the nickname.
+        // authBootstrap.ts also calls updateUserPublicProfile, but at that point
+        // the auth store's nickname may still be empty (synced async via RTDB).
+        // This ensures usersPublic has the correct nickname once RTDB data loads.
+        if (storeNickname !== undefined) {
+          const rtdbKey = getRtdbKey();
+          if (rtdbKey) {
+            updateUserPublicProfile(
+              rtdbKey,
+              storeNickname,
+              storeDisplayName ?? null,
+            ).catch(console.error);
+          }
         }
       }
 
@@ -258,17 +277,45 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // One-time wall data migration: when uid becomes available, copy old
+  // failure/success data from users/{uid}/ to walls/{uid}/ so friends can
+  // read them (users/$key/.read blocks friends at the parent level).
+  useEffect(() => {
+    const unsub = useAuthStore.subscribe((state, prev) => {
+      if (state.uid && state.uid !== prev.uid) {
+        migrateWallData(state.uid).catch(console.error);
+      }
+    });
+    return () => unsub();
+  }, []);
+
   // After Zustand persist rehydrates the saved game state on page refresh,
   // re-apply the boolean flags (showIntro, isPaused, isAttentionLost, etc.)
-  // so they are consistent with the restored gamePhase.
+  // so they are consistent with the restored gamePhase. Also check if the
+  // browser already has camera permission and auto-grant if so.
   useEffect(() => {
     // Use a macrotask so it runs after persist has finished rehydrating
     // (which happens in a microtask after create()).
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const gs = useGameStore.getState();
+      const ui = useUIStore.getState();
+
+      // Re-apply phase flags
       if (gs.gamePhase !== "intro") {
-        // Re-derive flags from the restored phase without changing the phase
         gs.transitionTo(gs.gamePhase);
+      }
+
+      // Auto-check camera permission if undecided and browser already has
+      // permission from a previous session (browser-level grant persists).
+      if (ui.cameraConsent === "undecided") {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream.getTracks().forEach((track) => track.stop());
+          ui.setCameraConsent("granted");
+        } catch {
+          // Browser denied — stay undecided; the camera consent modal or
+          // Settings button will handle it.
+        }
       }
     }, 0);
     return () => clearTimeout(timer);
@@ -366,6 +413,7 @@ const App: React.FC = () => {
 
   const isPreGame =
     gamePhase === "intro" ||
+    gamePhase === "cameraConsent" ||
     gamePhase === "mainMenu" ||
     gamePhase === "missionSelect" ||
     gamePhase === "shipSelect" ||
@@ -389,7 +437,12 @@ const App: React.FC = () => {
   );
 
   const handleSkipIntro = useCallback(() => {
-    useGameStore.getState().transitionTo("mainMenu");
+    const cc = useUIStore.getState().cameraConsent;
+    if (cc === "undecided") {
+      useGameStore.getState().transitionTo("cameraConsent");
+    } else {
+      useGameStore.getState().transitionTo("mainMenu");
+    }
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -610,6 +663,15 @@ const App: React.FC = () => {
       const gs = useGameStore.getState();
       updateBestServiceTime(gs.serviceSeconds);
       gs.recordMissionComplete();
+      // Persist success record to RTDB so friends can see it
+      const rtdbKey = getRtdbKey();
+      if (rtdbKey) {
+        const updated = useGameStore.getState();
+        const latest = updated.successRecords[updated.successRecords.length - 1];
+        if (latest) {
+          saveSuccessRecord(rtdbKey, latest).catch(console.error);
+        }
+      }
       gs.transitionTo("missionComplete");
       setShowExitConfirm(false);
     }

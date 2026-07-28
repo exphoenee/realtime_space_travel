@@ -1,42 +1,35 @@
 {
-
-
   "rules": {
-    
     "device_map": {
       "$deviceId": {
-        
         ".write": "auth != null && (newData.val() == auth.uid || data.val() == auth.uid)",
         ".read": false
       }
     },
-
-    
     "usersPublic": {
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && $uid == auth.uid"
       }
     },
-
-    
     "friends": {
       "$uid": {
         ".read": "auth != null && $uid == auth.uid",
-        ".write": "auth != null && $uid == auth.uid"
+        ".write": "auth != null && ($uid == auth.uid || (root.child('friendRequests').child(auth.uid).child($uid).exists() && newData.child(auth.uid).val() === true) || (data.child(auth.uid).val() === true && newData.child(auth.uid).val() === null))"
       }
     },
-
-    
+    "outgoingRequests": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && ($uid == auth.uid || root.child('friendRequests').child(auth.uid).child($uid).exists())"
+      }
+    },
     "friendRequests": {
       "$uid": {
         ".read": "auth != null && $uid == auth.uid",
-        
         ".write": "auth != null && ($uid == auth.uid || newData.hasChild(auth.uid))"
       }
     },
-
-    
     "chats": {
       "$chatId": {
         "participants": {
@@ -45,68 +38,77 @@
         },
         "messages": {
           "$msgId": {
-            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
-            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            ".read": "auth != null",
+            ".write": "auth != null"
           }
         },
         "unread": {
           "$uid": {
             ".read": "auth != null && $uid == auth.uid",
-            
-            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            ".write": "auth != null"
           }
         },
         "typing": {
           "$uid": {
-            
-            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
-            ".write": "auth != null && $uid == auth.uid && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            ".read": "auth != null",
+            ".write": "auth != null && $uid == auth.uid"
           }
         }
       }
     },
-
+    "sessions": {
+      "$sessionId": {
+        ".read": "auth != null",
+        ".write": "auth != null && !data.exists()",
+        "host": {
+          ".write": "auth != null && (!data.exists() || data.val() == auth.uid)"
+        },
+        "status": {
+          ".write": "auth != null && root.child('sessions').child($sessionId).child('host').val() == auth.uid"
+        },
+        "createdAt": {
+          ".write": "auth != null && !data.exists()"
+        },
+        "participants": {
+          "$uid": {
+            ".write": "auth != null && ($uid == auth.uid || root.child('sessions').child($sessionId).child('host').val() == auth.uid)"
+          }
+        }
+      }
+    },
+    "walls": {
+      "$uid": {
+        ".read": "auth != null && ($uid == auth.uid || root.child('friends').child(auth.uid).child($uid).val() === true)",
+        "failures": {
+          ".write": "auth != null && $uid == auth.uid"
+        },
+        "successes": {
+          ".write": "auth != null && $uid == auth.uid"
+        }
+      }
+    },
     "users": {
       "$key": {
-        
         ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
-
-        
         "profile": {
-          
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "settings": {
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "wallet": {
-          
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "inventory": {
-          
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "stats": {
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "failures": {
-          
           ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
-
-        
         "successes": {
           ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"

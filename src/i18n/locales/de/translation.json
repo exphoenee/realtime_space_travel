@@ -79,6 +79,14 @@
       "denied": "Kamerazugriff verweigert. Bitte erlaube die Kamera in den Browsereinstellungen.",
       "notFound": "Keine Kamera gefunden. Schließe eine Webcam an und versuche es erneut.",
       "notReadable": "Die Kamera konnte nicht gelesen werden. Möglicherweise wird sie von einer anderen Anwendung verwendet."
+    },
+    "cameraConsent": {
+      "title": "Kamerazugriff",
+      "description": "Dieses Spiel verwendet Gesichtserkennung, um deine Aufmerksamkeit während der Mission zu verfolgen.\n\nDein Kamerabild wird ausschließlich auf deinem Gerät verarbeitet. Es werden niemals Bilder oder Videos an einen Server gesendet, gespeichert oder mit Dritten geteilt.\n\nDu kannst den Kamerazugriff jederzeit im Einstellungsmenü aktivieren oder deaktivieren.",
+      "allow": "Erlauben",
+      "deny": "Ablehnen",
+      "browserDenied": "Der Kamerazugriff wurde in deinem Browser blockiert. Bitte erlaube ihn in den Browsereinstellungen.",
+      "error": "Die Kamera konnte nicht gestartet werden. Bitte versuche es erneut."
     }
   },
   "screenCheck": {
@@ -123,6 +131,7 @@
     "intro": "Intro ansehen",
     "wallOfShame": "Wand der Schande",
     "friends": "Freunde",
+    "cameraRequired": "Kamerazugriff erforderlich, um das Spiel zu starten",
     "loginComingSoon": "Die Anmeldung wird bald verfügbar sein.",
     "shopComingSoon": "Der Shop wird bald verfügbar sein."
   },
@@ -142,6 +151,8 @@
     "nicknamePlaceholder": "Gib einen Anzeigenamen ein",
     "nicknameEdit": "Bearbeiten",
     "nicknameSave": "Speichern",
+    "enableCamera": "Kamera aktivieren",
+    "cameraGranted": "Kamera verfügbar",
     "signIn": "Anmelden",
     "guestId": "Gast-ID"
   },
@@ -272,6 +283,9 @@
       },
       "starPhoenix": {
         "desc": "Novas Consortiums Wiedergeburt aus der Asche früherer Prototypen. Der Star Phoenix erhebt sich mit revolutionärer Triebwerkstechnologie und einem Kommandodeck, das jeden Befehl des Kapitäns vorwegnimmt."
+      },
+      "asdasd123": {
+        "desc": "⚠️ DEBUG-SCHIFF ⚠️ Das solltest du nicht sehen. 1234 km/s. 1234 Credits. Keine Fragen. 'Das ist kein Bug — das ist ein Feature.' — Debug Dynamics Ltd."
       }
     },
     "exoplanet": {
@@ -414,7 +428,7 @@
       "mostUsedShip": "Meistgenutztes Schiff",
       "longestService": "Längster Dienst",
       "shortestService": "Kürzester Dienst",
-      "totalDistance": "Gesamtdistanz"
+      "totalTravelTime": "Gesamtreisezeit"
     }
   },
   "friends": {
@@ -454,6 +468,27 @@
     "send": "Senden",
     "unread": "Ungelesene Nachrichten",
     "empty": "Noch keine Nachrichten",
-    "typing": "schreibt..."
+    "typing": "schreibt...",
+    "forbiddenWord": "Die Nachricht enthält unangemessene Sprache"
+  },
+  "multiplayer": {
+    "invite": "Zur Mission einladen",
+    "join": "Mission beitreten",
+    "leave": "Mission verlassen",
+    "host": "Gastgeber",
+    "participants": "Teilnehmer ({{count}}/8)",
+    "maxReached": "Maximal 8 Teilnehmer",
+    "eventToast": {
+      "horn": "{{name}} reagiert auf ein Hornsignal!",
+      "asteroid": "{{name}} weicht einem Asteroiden aus!",
+      "rescueTransfer": "{{name}} wurde auf ein Rettungsschiff überstellt!",
+      "solarFlare": "{{name}} bekämpft eine Sonneneruption!",
+      "rover": "{{name}} setzt einen Rover ein!",
+      "timePenalty": "{{name}} gescheitert — +{{years}} Jahre zur Reisezeit",
+      "crewLost": "{{name}} gescheitert — die Besatzung ist verloren!"
+    },
+    "hostTransferred": "{{name}} ist der neue Gastgeber!",
+    "sessionEnded": "Die Sitzung ist beendet",
+    "inviteReceived": "{{name}} hat dich zu einer Mission eingeladen!"
   }
 }

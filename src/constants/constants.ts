@@ -29,3 +29,117 @@ export const MUSIC_ACTIVE_VOLUME = 0.6;
 
 export const STAR_COUNT = 400;
 export const STAR_SPEED = 0.05;
+
+/**
+ * Forbidden words for chat. Comparison is case-insensitive.
+ * Message is rejected if it contains any of these words.
+ */
+export const FORBIDDEN_WORDS: string[] = [
+  // ── English ──
+  "sex",
+  "porn",
+  "fuck",
+  "shit",
+  "bitch",
+  "asshole",
+  "bastard",
+  "cock",
+  "dick",
+  "nigg",
+  "faggot",
+  "whore",
+  "slut",
+  "pussy",
+  "cunt",
+  // ── Hungarian ──
+  "szex",
+  "kurva",
+  "bazdmeg",
+  "faszkivan",
+  "geci",
+  "kibaszott",
+  "anyád",
+  "anyad",
+  "fasz",
+  "szar",
+  "picsa",
+  "seggfej",
+  "balfasz",
+  "kúr",
+  "fos",
+  "hülye",
+  // ── French ──
+  "merde",
+  "putain",
+  "connard",
+  "salope",
+  "enculé",
+  "encule",
+  "bordel",
+  "foutre",
+  "bite",
+  "chatte",
+  "niquer",
+  "pute",
+  "bâtard",
+  "batard",
+  "chier",
+  "dégage",
+  "degage",
+  "conne",
+  "couille",
+  "salaud",
+  // ── German ──
+  "scheisse",
+  "scheiße",
+  "fick",
+  "arschloch",
+  "verdammt",
+  "miststück",
+  "miststueck",
+  "hure",
+  "wichser",
+  "schwuchtel",
+  "schlampe",
+  "fotze",
+  "arsch",
+  "verfickt",
+  "kacke",
+  "missgeburt",
+  "drecksau",
+  // ── Spanish ──
+  "puta",
+  "mierda",
+  "cabrón",
+  "cabron",
+  "joder",
+  "coño",
+  "gilipollas",
+  "hijoputa",
+  "maricón",
+  "maricon",
+  "zorra",
+  "polla",
+  "culo",
+  "carajo",
+  "pendejo",
+  "verga",
+  "puto",
+  "concha",
+  "chingar",
+  "chinga",
+];
+
+/** Check if text contains any forbidden word (case-insensitive) */
+export const containsForbiddenWords = (text: string): string | null => {
+  const lower = text.toLowerCase();
+  for (const word of FORBIDDEN_WORDS) {
+    // Check as whole-word match: word boundary via regex
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`(^|\\s|[^a-zA-Z])${escaped}([^a-zA-Z]|$)`, "i");
+    if (pattern.test(lower)) {
+      return word;
+    }
+  }
+  return null;
+};

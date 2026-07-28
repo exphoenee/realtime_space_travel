@@ -4,9 +4,13 @@ import type { Difficulty } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
 
+export type CameraConsent = "undecided" | "granted" | "denied";
+
 interface UIState {
   /** Camera error message (null = no error) */
   cameraError: string | null;
+  /** Camera consent state — undecided (default), granted, or denied */
+  cameraConsent: CameraConsent;
   /** Exit confirmation dialog visible */
   showExitConfirm: boolean;
   /** Music muted state (persisted) */
@@ -23,6 +27,7 @@ interface UIState {
   debugMode: boolean;
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
+  setCameraConsent: (status: CameraConsent) => void;
   setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
   setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setMusicVolume: (updater: StateUpdater<number>) => void;
@@ -34,6 +39,7 @@ interface UIState {
 
 const useUIStore = create<UIState>()((set) => ({
   cameraError: null,
+  cameraConsent: "undecided" as CameraConsent,
   showExitConfirm: false,
   isMusicMuted: false,
   musicVolume: MUSIC_ACTIVE_VOLUME,
@@ -50,6 +56,7 @@ const useUIStore = create<UIState>()((set) => ({
     set((state) => ({
       cameraError: resolveState(updater, state.cameraError),
     })),
+  setCameraConsent: (status) => set({ cameraConsent: status }),
   setShowExitConfirm: (updater) =>
     set((state) => ({
       showExitConfirm: resolveState(updater, state.showExitConfirm),

@@ -275,6 +275,19 @@ export const SHOP_SHIPS: ShipProduct[] = [
     descriptionKey: "shop.ship.starPhoenix.desc",
     image: "ultramodern2.webp",
   },
+  {
+    id: "ship-debug",
+    category: "ship",
+    name: "ASDasd123!",
+    priceCredits: 1234,
+    priceEur: 12.34,
+    speedKmPerSecond: 1234,
+    manufacturer: "Debug Dynamics Ltd.",
+    capacity: 1,
+    rangeLy: 9999,
+    descriptionKey: "shop.ship.asdasd123.desc",
+    image: "russian1.webp",
+  },
 ];
 
 export const DEFAULT_SHIP: ShipProduct = {

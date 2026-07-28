@@ -62,24 +62,28 @@ tags:
 
 ---
 
-## ✅ Haladás (TODO)
+## ✅ Haladás (TODO — 48/87 kész)
 
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
+> **Új kész tételek (2026-07-28):** `sessions` node security rules + `createSession/joinSession/leaveSession/subscribeSession` RTDB függvények, `useMultiplayerSession` hook (ref→state fix), `MultiplayerStatusBar` overlay, `EventToast` értesítő komponens, multiplayer.* i18n kulcsok mind 5 nyelven, `database.rules.json` regenerálva.
 
 **A. Firebase RTDB séma bővítése — barátok, chat, multiplayer session**
 - [x] RTDB új node-ok: `friends/{uid}/{friendUid}: true`, `friendRequests/{uid}/{fromUid}: { from, at, status }`, `chats/{chatId}: { participants, messages }`
 - [x] `users/{uid}/profile` bővítése: `+onlineStatus: string` (offline/online/játékban) — `usersPublic/{uid}/onlineStatus`
-- [ ] `sessions/{sessionId}: { host, participants, status, createdAt }` — multiplayer session node
+- [x] `sessions/{sessionId}: { host, participants, status, createdAt }` — multiplayer session node (+ security rules)
+- [x] `sessions` security rules: new session creation only, host transfer, participant self/host management
 - [x] `security.rules.json` frissítése: `friends`, `friendRequests`, `chats` node-ok írási/olvasási szabályai
 - [x] `security.rules.json` — `users/{uid}/failures` és `users/{uid}/successes` olvasási joga: csak a barátok számára engedélyezett
-- [x] `database.rules.json` regenerálása
+- [x] `database.rules.json` regenerálva
 
 **B. Barátlista — UI és logika**
 - [x] `src/components/screens/FriendsScreen.tsx` + `FriendsScreen.module.css` — **új GamePhase képernyő**
 - [x] `src/components/screens/FriendsScreen.tsx` — barátlista online státusszal
-- [x] `src/components/screens/FriendsScreen.tsx` — barátkereső (nickname, email, user ID)
+- [x] `src/components/screens/FriendsScreen.tsx` — barátkereső név/becenév alapján (min. 3 karakter)
+- [x] `src/components/screens/FriendsScreen.tsx` — UID lookup külön mező (pontos UID alapján)
 - [x] `src/components/screens/FriendsScreen.tsx` — friend request küldése
 - [x] `src/components/screens/FriendsScreen.tsx` — bejövő friend request-ek listája (elfogadás/elutasítás)
+- [x] `src/components/screens/FriendsScreen.tsx` — valós idejű outgoing request státusz (Firebase subscription)
 - [x] `src/types/index.ts` — új GamePhase: `"friends"`; új típusok: `FriendRequest`, `FriendStatus`, `UserOnlineStatus`
 - [x] `src/components/routing/ScreenRouter.tsx` — `case "friends"` ág
 - [x] `src/components/screens/MainMenu.tsx` — „Barátok" gomb → `transitionTo("friends")`
@@ -90,31 +94,30 @@ tags:
 - [x] `ChatPanel.tsx` — üzenet lista, időbélyeg
 - [x] `ChatPanel.tsx` — üzenet küldése (RTDB push)
 - [x] `ChatPanel.tsx` — chat a Barátok menüben (teljes képernyős nézet)
-- [ ] `ChatPanel.tsx` — chat játék közben (kisebb panel, jobb alsó sarok)
+- [ ] Chat játék közben (kisebb panel, jobb alsó sarok)
 - [x] RTDB listener: valós idejű üzenet frissítés
 - [x] Olvasatlan üzenet jelzés a Barátok gombon / barát listában
 - [x] `ChatPanel.tsx` — typing indicator (gépelés jelző)
 - [x] `userData.ts` — `markChatRead`, `subscribeUnreadCount`, `updateTypingStatus`, `subscribeTypingStatus`
+- [x] `userData.ts` — `outgoingRequests/{from}/{to}` node + `subscribeOutgoingRequests` (valós idejű kérésstátusz)
 
 **D. Multiplayer session kezelés**
-- [ ] `src/hooks/useMultiplayerSession.ts` — **új hook**: session létrehozás, csatlakozás, kilépés, host átadás
-- [ ] `useMultiplayerSession.ts` — session state: `MultiplayerSession` interface + `useGameStore` bővítése
-- [ ] Session létrehozás: host indít egy küldetést → `sessions/{sessionId}` létrehozása
-- [ ] Meghívás: host barátot hív → RTDB notification / friend request alapú
-- [ ] Csatlakozás: meghívott játékos elfogad → `sessions/{sessionId}/participants` frissítése
-- [ ] Csatlakozás futó küldetéshez: host jóváhagyás szükséges
-- [ ] Host átadás: ha host kilép, a rendszer a következő aktív résztvevőt jelöli ki
-- [ ] Max 8 fő limit
-- [ ] `useGameStore` bővítése: +`multiplayerSession: MultiplayerSession | null`, +`multiplayerParticipants: Participant[]`
+- [x] `src/hooks/useMultiplayerSession.ts` — **új hook**: session létrehozás, csatlakozás, kilépés, host átadás (state-based currentSessionId, unmount cleanup)
+- [x] `useGameStore.ts` bővítése: +`multiplayerSession: MultiplayerSession | null`, +`setMultiplayerSession` action
+- [x] Session létrehozás: `createSession(uid, nickname)` → `sessions/{sessionId}` létrehozása hostként
+- [x] Csatlakozás: `joinSession(sessionId, uid, nickname)` → `sessions/{sessionId}/participants` frissítése
+- [x] Kilépés: `leaveSession(sessionId, uid)` → host átadás (következő résztvevőnek) vagy session törlés
+- [x] Host átadás: ha host kilép, a rendszer a következő aktív résztvevőt jelöli ki
+- [x] Max 8 fő limit
+- [x] `subscribeMySessions` + `subscribeSession` — valós idejű session állapot figyelés
 - [x] Online status broadcast: `updateOnlineStatus` + `onDisconnect` + gamePhase watcher
 
 **E. Figyelmi állapot multiplayerben**
-- [ ] `src/hooks/useMultiplayerAttention.ts` — **új hook**: résztvevők figyelmi állapotának szinkronizálása
-- [ ] Figyelmi állapot RTDB-be írása: `sessions/{sessionId}/participants/{uid}/attention: boolean`
-- [ ] Figyelmi állapot olvasása: RTDB listener a többi résztvevő állapotára
+- [x] `updateSessionAttention` — figyelmi állapot RTDB-be írása: `sessions/{sessionId}/participants/{uid}/attention: boolean`
+- [x] Figyelmi állapot olvasása: `subscribeSession` → `participants[uid].attention` (élő RTDB listener)
 - [ ] Csapatszintű figyelmi döntés: easy/medium = legalább egy figyel; hard = mindenki figyel
 - [ ] Ha senki nem figyel: a meglévő `INACTIVITY_LIMIT_SECONDS` óra indul csapatszinten
-- [ ] `src/components/features/MultiplayerStatusBar.tsx` + `MultiplayerStatusBar.module.css` — résztvevő lista a jobb felső sarokban, név + figyel/nem figyel ikonnal
+- [x] `src/components/features/MultiplayerStatusBar.tsx` + `MultiplayerStatusBar.module.css` — résztvevő lista a jobb felső sarokban, név + figyel/nem figyel ikonnal + korona ikon
 
 **F. Események multiplayerben — a 011-es terv kiterjesztése**
 - [ ] `useEventSystem.ts` bővítése: ha `multiplayerSession !== null`, az event ütemezés és kiosztás multiplayer módba vált
@@ -369,6 +372,12 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 | `friends.notWatching` | Not watching | Nem figyel |
 | `friends.noResults` | No players found | Nincs találat |
 | `friends.empty` | Your friend list is empty | A barátlistád üres |
+| `friends.minSearchLength` | Type at least 3 characters to search | Írj legalább 3 karaktert a kereséshez |
+| `friends.uidLookupPlaceholder` | Paste exact User ID... | Illeszd be a pontos User ID-t... |
+| `friends.lookup` | Look up | Keresés |
+| `friends.uidNotFound` | No user found with this ID | Nincs felhasználó ezzel az ID-val |
+| `friends.uidLookupError` | Lookup failed. Try again. | A keresés nem sikerült. Próbáld újra. |
+| `friends.thisIsYou` | This is you! | Ez te vagy! |
 | `friendWall.title` | {{name}}'s Wall of Shame | {{name}} Szégyenfala |
 | `friendWall.back` | Back to Friends | Vissza a barátokhoz |
 | `friendWall.emptyFailures` | No failures recorded | Nincs rögzített kudarc |

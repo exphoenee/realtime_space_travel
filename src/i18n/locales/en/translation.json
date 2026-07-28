@@ -79,6 +79,14 @@
       "denied": "Camera access denied. Please allow the camera in your browser settings.",
       "notFound": "No camera found. Connect a webcam and try again.",
       "notReadable": "The camera could not be read. Another application may be using it."
+    },
+    "cameraConsent": {
+      "title": "Camera Access",
+      "description": "This game uses face recognition to track your attention during the mission.\n\nYour camera feed is processed entirely on your device. No images or video are ever sent to any server, stored, or shared with third parties.\n\nYou can enable or disable camera access at any time in the Settings menu.",
+      "allow": "Allow",
+      "deny": "Deny",
+      "browserDenied": "Camera access has been blocked in your browser. Please allow it in your browser settings.",
+      "error": "Could not start the camera. Please try again."
     }
   },
   "screenCheck": {
@@ -123,6 +131,7 @@
     "intro": "Watch intro",
     "wallOfShame": "Wall of Shame",
     "friends": "Friends",
+    "cameraRequired": "Camera access required to start the game",
     "loginComingSoon": "Sign-in will be available soon.",
     "shopComingSoon": "The shop will be available soon."
   },
@@ -142,6 +151,8 @@
     "nicknamePlaceholder": "Enter a display name",
     "nicknameEdit": "Edit",
     "nicknameSave": "Save",
+    "enableCamera": "Enable Camera",
+    "cameraGranted": "Camera available",
     "signIn": "Sign in",
     "guestId": "Guest ID"
   },
@@ -280,6 +291,9 @@
       },
       "starPhoenix": {
         "desc": "Nova Consortium's rebirth from the ashes of earlier prototypes. The Star Phoenix rises with revolutionary engine tech and a command deck that anticipates the captain's every command."
+      },
+      "asdasd123": {
+        "desc": "⚠️ DEBUG SHIP ⚠️ You shouldn't be seeing this. 1234 km/s. 1234 credits. No questions asked. 'It's not a bug — it's a feature.' — Debug Dynamics Ltd."
       }
     },
     "exoplanet": {
@@ -414,7 +428,7 @@
       "mostUsedShip": "Most Used Ship",
       "longestService": "Longest Service",
       "shortestService": "Shortest Service",
-      "totalDistance": "Total Distance"
+      "totalTravelTime": "Total Travel Time"
     }
   },
   "friends": {
@@ -447,6 +461,26 @@
     "back": "Back to Friends",
     "viewWall": "View Wall of Shame"
   },
+  "multiplayer": {
+    "invite": "Invite to mission",
+    "join": "Join mission",
+    "leave": "Leave mission",
+    "host": "Host",
+    "participants": "Participants ({{count}}/8)",
+    "maxReached": "Maximum 8 participants",
+    "eventToast": {
+      "horn": "{{name}} is responding to a horn signal!",
+      "asteroid": "{{name}} is evading an asteroid!",
+      "rescueTransfer": "{{name}} transferred to a rescue ship!",
+      "solarFlare": "{{name}} is dealing with a solar flare!",
+      "rover": "{{name}} is deploying a rover!",
+      "timePenalty": "{{name}} failed — +{{years}} years added to travel time",
+      "crewLost": "{{name}} failed — the crew is lost!"
+    },
+    "hostTransferred": "{{name}} is the new host!",
+    "sessionEnded": "The session has ended",
+    "inviteReceived": "{{name}} invited you to a mission!"
+  },
   "chat": {
     "title": "Chat",
     "back": "Back",
@@ -454,6 +488,7 @@
     "send": "Send",
     "unread": "Unread messages",
     "empty": "No messages yet",
-    "typing": "typing..."
+    "typing": "typing...",
+    "forbiddenWord": "Message contains inappropriate language"
   }
 }

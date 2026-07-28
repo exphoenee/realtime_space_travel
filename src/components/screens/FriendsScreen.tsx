@@ -9,6 +9,7 @@ import {
   rejectFriendRequest,
   removeFriend,
   subscribeFriends,
+  subscribeOutgoingRequests,
   subscribeFriendRequests,
   subscribeUserOnlineStatus,
   subscribeUnreadCount,
@@ -17,6 +18,7 @@ import {
   lookupUserByUid,
 } from "../../firebase/userData";
 import type { FriendRequest, UserOnlineStatus, UserPublicProfile } from "../../types";
+import { containsForbiddenWords } from "../../constants/constants";
 import styles from "./FriendsScreen.module.css";
 
 type Tab = "friends" | "search" | "requests";
@@ -44,6 +46,7 @@ const FriendsScreen: React.FC = () => {
   const [searchResults, setSearchResults] = useState<UserPublicProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [requestStatus, setRequestStatus] = useState<Record<string, "idle" | "sending" | "sent" | "error">>({});
+  const [outgoingPending, setOutgoingPending] = useState<Set<string>>(new Set());
   const [activeChatFriend, setActiveChatFriend] = useState<FriendWithStatus | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [uidLookupTerm, setUidLookupTerm] = useState("");
@@ -64,6 +67,15 @@ const FriendsScreen: React.FC = () => {
     if (!authUid) return;
     const unsub = subscribeFriendRequests(authUid, (reqs) => {
       setRequests(reqs);
+    });
+    return unsub;
+  }, [authUid]);
+
+  // Subscribe to outgoing requests (real-time): when recipient rejects, this fires immediately
+  useEffect(() => {
+    if (!authUid) return;
+    const unsub = subscribeOutgoingRequests(authUid, (pending) => {
+      setOutgoingPending(pending);
     });
     return unsub;
   }, [authUid]);
@@ -159,8 +171,15 @@ const FriendsScreen: React.FC = () => {
 
     const timer = setTimeout(async () => {
       setIsSearching(true);
-      const results = await searchUsersPublic(trimmed, authUid);
+      let results = await searchUsersPublic(trimmed, authUid);
+      // Filter out users with forbidden words in their name
+      results = results.filter(
+        (p) =>
+          !containsForbiddenWords(p.nickname || "") &&
+          !containsForbiddenWords(p.displayName || ""),
+      );
       setSearchResults(results);
+      setRequestStatus({});
       setIsSearching(false);
     }, 300);
 
@@ -171,12 +190,24 @@ const FriendsScreen: React.FC = () => {
     async (toUid: string, toNickname: string) => {
       if (!authUid) return;
       setRequestStatus((prev) => ({ ...prev, [toUid]: "sending" }));
+      // Optimistic update: immediately show "Request sent!"
+      // The real-time subscription will confirm/replace this later
+      setOutgoingPending((prev) => {
+        const next = new Set(prev);
+        next.add(toUid);
+        return next;
+      });
       try {
         const fromNickname = nickname || displayName || authUser?.displayName || "Anonymous";
         await sendFriendRequest(authUid, toUid, fromNickname);
-        setRequestStatus((prev) => ({ ...prev, [toUid]: "sent" }));
       } catch (err) {
         console.error("Failed to send friend request:", err);
+        // Rollback optimistic update on failure
+        setOutgoingPending((prev) => {
+          const next = new Set(prev);
+          next.delete(toUid);
+          return next;
+        });
         setRequestStatus((prev) => ({ ...prev, [toUid]: "error" }));
       }
     },
@@ -259,8 +290,17 @@ const FriendsScreen: React.FC = () => {
     try {
       const profile = await lookupUserByUid(trimmed);
       if (profile) {
-        setUidLookupResult(profile);
-        setUidLookupStatus("found");
+        // Filter out users with forbidden words in their name
+        if (
+          containsForbiddenWords(profile.nickname || "") ||
+          containsForbiddenWords(profile.displayName || "")
+        ) {
+          setUidLookupResult(null);
+          setUidLookupStatus("not-found");
+        } else {
+          setUidLookupResult(profile);
+          setUidLookupStatus("found");
+        }
       } else {
         setUidLookupResult(null);
         setUidLookupStatus("not-found");
@@ -397,7 +437,10 @@ const FriendsScreen: React.FC = () => {
                     className={styles.searchInput}
                     placeholder={t("friends.searchPlaceholder")}
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setRequestStatus({});
+                    }}
                     autoFocus
                   />
                   <div className={styles.list}>
@@ -420,7 +463,7 @@ const FriendsScreen: React.FC = () => {
                             </span>
                           </div>
                           <div className={styles.cardRight}>
-                            {requestStatus[profile.uid] === "sent" ? (
+                            {outgoingPending.has(profile.uid) ? (
                               <span className={styles.sentLabel}>
                                 {t("friends.friendRequestSent")}
                               </span>
@@ -495,7 +538,7 @@ const FriendsScreen: React.FC = () => {
                           <span className={styles.uidLabel}>{uidLookupResult.uid.slice(0, 12)}...</span>
                         </div>
                         <div className={styles.cardRight}>
-                          {requestStatus[uidLookupResult.uid] === "sent" ? (
+                          {outgoingPending.has(uidLookupResult.uid) ? (
                             <span className={styles.sentLabel}>
                               {t("friends.friendRequestSent")}
                             </span>

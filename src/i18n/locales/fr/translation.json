@@ -79,6 +79,14 @@
       "denied": "Accès à la caméra refusé. Veuillez autoriser la caméra dans les paramètres de votre navigateur.",
       "notFound": "Aucune caméra trouvée. Connectez une webcam et réessayez.",
       "notReadable": "La caméra n'a pas pu être lue. Une autre application l'utilise peut-être."
+    },
+    "cameraConsent": {
+      "title": "Accès à la caméra",
+      "description": "Ce jeu utilise la reconnaissance faciale pour suivre votre attention pendant la mission.\n\nLe flux de votre caméra est traité entièrement sur votre appareil. Aucune image ou vidéo n'est jamais envoyée à un serveur, stockée ou partagée avec des tiers.\n\nVous pouvez activer ou désactiver l'accès à la caméra à tout moment dans le menu Paramètres.",
+      "allow": "Autoriser",
+      "deny": "Refuser",
+      "browserDenied": "L'accès à la caméra a été bloqué dans votre navigateur. Veuillez l'autoriser dans les paramètres de votre navigateur.",
+      "error": "Impossible de démarrer la caméra. Veuillez réessayer."
     }
   },
   "screenCheck": {
@@ -123,6 +131,7 @@
     "intro": "Voir l'intro",
     "wallOfShame": "Mur de la Honte",
     "friends": "Amis",
+    "cameraRequired": "Accès à la caméra requis pour démarrer le jeu",
     "loginComingSoon": "La connexion sera bientôt disponible.",
     "shopComingSoon": "La boutique sera bientôt disponible."
   },
@@ -142,6 +151,8 @@
     "nicknamePlaceholder": "Choisissez un nom d'affichage",
     "nicknameEdit": "Modifier",
     "nicknameSave": "Sauvegarder",
+    "enableCamera": "Activer la caméra",
+    "cameraGranted": "Caméra disponible",
     "signIn": "Se connecter",
     "guestId": "Identifiant invité"
   },
@@ -272,6 +283,9 @@
       },
       "starPhoenix": {
         "desc": "La renaissance de Nova Consortium des cendres des prototypes antérieurs. Le Star Phoenix s'élève avec une technologie de moteur révolutionnaire et un poste de commandement qui anticipe chaque ordre du capitaine."
+      },
+      "asdasd123": {
+        "desc": "⚠️ VAISSEAU DEBUG ⚠️ Tu ne devrais pas voir ça. 1234 km/s. 1234 crédits. Ne pose pas de questions. 'Ce n'est pas un bug — c'est une fonctionnalité.' — Debug Dynamics Ltd."
       }
     },
     "exoplanet": {
@@ -414,7 +428,7 @@
       "mostUsedShip": "Vaisseau le plus utilisé",
       "longestService": "Plus long service",
       "shortestService": "Plus court service",
-      "totalDistance": "Distance totale"
+      "totalTravelTime": "Temps de voyage total"
     }
   },
   "friends": {
@@ -454,6 +468,27 @@
     "send": "Envoyer",
     "unread": "Messages non lus",
     "empty": "Aucun message pour l'instant",
-    "typing": "écrit..."
+    "typing": "écrit...",
+    "forbiddenWord": "Le message contient un langage inapproprié"
+  },
+  "multiplayer": {
+    "invite": "Inviter à la mission",
+    "join": "Rejoindre la mission",
+    "leave": "Quitter la mission",
+    "host": "Hôte",
+    "participants": "Participants ({{count}}/8)",
+    "maxReached": "Maximum 8 participants",
+    "eventToast": {
+      "horn": "{{name}} répond à un signal de corne !",
+      "asteroid": "{{name}} évite un astéroïde !",
+      "rescueTransfer": "{{name}} transféré au vaisseau de secours !",
+      "solarFlare": "{{name}} fait face à une éruption solaire !",
+      "rover": "{{name}} déploie un rover !",
+      "timePenalty": "{{name}} a échoué — +{{years}} ans ajoutés",
+      "crewLost": "{{name}} a échoué — l'équipage est perdu !"
+    },
+    "hostTransferred": "{{name}} est le nouvel hôte !",
+    "sessionEnded": "La session est terminée",
+    "inviteReceived": "{{name}} vous a invité à une mission !"
   }
 }

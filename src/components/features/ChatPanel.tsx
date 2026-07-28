@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getChatId, initChat, sendMessage, subscribeChatMessages, markChatRead, updateTypingStatus, subscribeTypingStatus } from "../../firebase/userData";
+import { containsForbiddenWords } from "../../constants/constants";
 import type { ChatMessage } from "../../types";
 import styles from "./ChatPanel.module.css";
 
@@ -22,6 +23,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [friendTyping, setFriendTyping] = useState(false);
+  const [inputWarn, setInputWarn] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chatIdRef = useRef(chatId);
@@ -72,24 +74,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
     updateTypingStatus(cid, uid, isTyping).catch(console.error);
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(e.target.value);
-
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Send typing=true
-    broadcastTyping(true);
-
-    // Set auto-clear after 3 seconds
-    typingTimeoutRef.current = setTimeout(() => {
-      broadcastTyping(false);
-      typingTimeoutRef.current = null;
-    }, 3000);
-  };
-
   const clearTyping = useCallback(() => {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -101,6 +85,16 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
   const handleSend = async () => {
     const text = inputText.trim();
     if (!text || isSending) return;
+
+    // Check for forbidden words
+    const foundWord = containsForbiddenWords(text);
+    if (foundWord) {
+      setInputWarn(foundWord);
+      // Auto-clear warning after 3 seconds
+      setTimeout(() => setInputWarn(null), 3000);
+      return;
+    }
+    setInputWarn(null);
 
     setIsSending(true);
     clearTyping();
@@ -196,16 +190,35 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
 
       {/* Input */}
       <div className={styles.inputArea}>
-        <input
-          type="text"
-          className={styles.input}
-          placeholder={t("chat.inputPlaceholder")}
-          value={inputText}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          disabled={isSending}
-          autoFocus
-        />
+        <div className={styles.inputWrapper}>
+          <input
+            type="text"
+            className={`${styles.input} ${inputWarn ? styles.inputWarn : ""}`}
+            placeholder={t("chat.inputPlaceholder")}
+            value={inputText}
+            onChange={(e) => {
+              setInputText(e.target.value);
+              if (inputWarn) setInputWarn(null);
+              // Broadcast typing status
+              if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+              }
+              broadcastTyping(true);
+              typingTimeoutRef.current = setTimeout(() => {
+                broadcastTyping(false);
+                typingTimeoutRef.current = null;
+              }, 3000);
+            }}
+            onKeyDown={handleKeyDown}
+            disabled={isSending}
+            autoFocus
+          />
+          {inputWarn && (
+            <span className={styles.warnText}>
+              {t("chat.forbiddenWord")}
+            </span>
+          )}
+        </div>
         <button
           type="button"
           className={styles.sendBtn}

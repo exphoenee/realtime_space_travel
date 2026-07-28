@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
 import { getRtdbKey } from "../../state/useAuthStore";
-import { subscribeFailures, subscribeSuccesses, saveSuccessRecord, saveFailureRecord, incrementUserWallet } from "../../firebase/userData";
+import { subscribeFailures, subscribeSuccesses, saveSuccessRecord, saveFailureRecord, incrementUserWallet, migrateWallData } from "../../firebase/userData";
 import useShopStore from "../../state/useShopStore";
 import Collapse from "../ui/Collapse";
 import type { FailureRecord, SuccessRecord } from "../../types";
@@ -93,6 +93,9 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
     const rtdbKey = getRtdbKey();
     if (!rtdbKey) return;
 
+    // One-time migration: copy old data from users/{uid}/ to walls/{uid}/
+    migrateWallData(rtdbKey).catch(console.error);
+
     const unsub = subscribeFailures(rtdbKey, (rtdbRecords) => {
       if (rtdbRecords.length > 0) {
         useGameStore.setState((state) => {
@@ -112,6 +115,9 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
   }, [friendUid]);
 
   // In friend mode: subscribe to friend's failures + successes
+  // NOTE: migration is NOT called here — it would need to read the OLD path
+  // users/{friendUid}/failures which is blocked by users/$key/.read.
+  // The migration runs automatically when the owner opens their OWN wall.
   useEffect(() => {
     if (!friendUid) return;
 
@@ -287,7 +293,7 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
                     {formatYears(stats.totalTravelYears)}
                   </span>
                   <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.totalDistance")}
+                    {t("wallOfShame.stats.totalTravelTime")}
                   </span>
                 </div>
                 <div className={styles.statCard}>

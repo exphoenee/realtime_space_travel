@@ -215,8 +215,16 @@
   flex-shrink: 0;
 }
 
-.input {
+.inputWrapper {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  position: relative;
+}
+
+.input {
+  width: 100%;
   padding: 0.6rem 0.8rem;
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(103, 232, 249, 0.2);
@@ -226,6 +234,7 @@
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .input::placeholder {
@@ -234,6 +243,42 @@
 
 .input:focus {
   border-color: rgba(103, 232, 249, 0.6);
+}
+
+.inputWarn {
+  border-color: rgba(239, 68, 68, 0.6);
+  animation: warnShake 0.4s ease-in-out;
+}
+
+.inputWarn:focus {
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+@keyframes warnShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.warnText {
+  color: rgba(239, 68, 68, 0.85);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding-left: 0.2rem;
+  animation: warnFadeIn 0.25s ease-out;
+}
+
+@keyframes warnFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sendBtn {

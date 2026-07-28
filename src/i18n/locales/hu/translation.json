@@ -79,6 +79,14 @@
       "denied": "Kamera hozzáférés megtagadva. Kérjük, engedélyezd a kamerát a böngésző beállításaiban.",
       "notFound": "Nem található kamera. Csatlakoztass egy webkamerát és próbáld újra.",
       "notReadable": "A kamera nem olvasható. Lehet, hogy egy másik alkalmazás használja."
+    },
+    "cameraConsent": {
+      "title": "Kamera hozzáférés",
+      "description": "Ez a játék arcfelismerést használ a figyelmed követésére a küldetés során.\n\nA kamera képe kizárólag a te eszközödön kerül feldolgozásra. Semmilyen kép vagy videó nem kerül elküldésre szerverre, tárolásra vagy harmadik féllel való megosztásra.\n\nA kamera hozzáférését bármikor engedélyezheted vagy letilthatod a Beállítások menüben.",
+      "allow": "Engedélyez",
+      "deny": "Elutasít",
+      "browserDenied": "A kamera hozzáférés le van tiltva a böngésződben. Kérjük, engedélyezd a böngésző beállításaiban.",
+      "error": "Nem sikerült elindítani a kamerát."
     }
   },
   "screenCheck": {
@@ -123,6 +131,7 @@
     "intro": "Intro megtekintése",
     "wallOfShame": "Szégyenfal",
     "friends": "Barátok",
+    "cameraRequired": "Kamera hozzáférés szükséges a játék indításához",
     "loginComingSoon": "A bejelentkezés hamarosan elérhető lesz.",
     "shopComingSoon": "Az áruház hamarosan elérhető lesz."
   },
@@ -142,6 +151,8 @@
     "nicknamePlaceholder": "Adj meg egy megjelenítendő nevet",
     "nicknameEdit": "Szerkesztés",
     "nicknameSave": "Mentés",
+    "enableCamera": "Kamera engedélyezése",
+    "cameraGranted": "Kamera elérhető",
     "signIn": "Bejelentkezés",
     "guestId": "Vendég azonosító"
   },
@@ -280,6 +291,9 @@
       },
       "starPhoenix": {
         "desc": "A Nova Consortium újjászületése a korábbi prototípusok hamvaiból. A Star Phoenix forradalmi hajtómű-technológiával és egy parancsnoki fedélzettel emelkedik a magasba, amely előre látja a kapitány minden parancsát."
+      },
+      "asdasd123": {
+        "desc": "⚠️ DEBUG HAJÓ ⚠️ Ezt nem kéne látnod. 1234 km/s. 1234 kredit. Ne kérdezz semmit. 'Nem bug — ez egy feature.' — Debug Dynamics Ltd."
       }
     },
     "exoplanet": {
@@ -414,7 +428,7 @@
       "mostUsedShip": "Legtöbbet használt hajó",
       "longestService": "Leghosszabb szolgálat",
       "shortestService": "Legrövidebb szolgálat",
-      "totalDistance": "Teljes távolság"
+      "totalTravelTime": "Összes útidő"
     }
   },
   "friends": {
@@ -454,6 +468,27 @@
     "send": "Küldés",
     "unread": "Olvasatlan üzenetek",
     "empty": "Még nincs üzenet",
-    "typing": "gépel..."
+    "typing": "gépel...",
+    "forbiddenWord": "Az üzenet nem megfelelő szavakat tartalmaz"
+  },
+  "multiplayer": {
+    "invite": "Meghívás küldetésbe",
+    "join": "Csatlakozás küldetéshez",
+    "leave": "Kilépés a küldetésből",
+    "host": "Házigazda",
+    "participants": "Résztvevők ({{count}}/8)",
+    "maxReached": "Maximum 8 résztvevő",
+    "eventToast": {
+      "horn": "{{name}} egy kürtszóra reagál!",
+      "asteroid": "{{name}} kitér egy aszteroida elől!",
+      "rescueTransfer": "{{name}} átszállt egy mentőhajóra!",
+      "solarFlare": "{{name}} egy napkitöréssel küzd!",
+      "rover": "{{name}} egy űrajárót vet be!",
+      "timePenalty": "{{name}} elbukta — +{{years}} év az útidőhöz",
+      "crewLost": "{{name}} elbukta — a legénység odaveszett!"
+    },
+    "hostTransferred": "{{name}} az új házigazda!",
+    "sessionEnded": "A munkamenet véget ért",
+    "inviteReceived": "{{name}} meghívott egy küldetésbe!"
   }
 }

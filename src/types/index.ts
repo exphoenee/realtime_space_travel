@@ -35,6 +35,7 @@ export type Difficulty = "easy" | "medium" | "hard";
 
 export type GamePhase =
   | "intro"
+  | "cameraConsent"
   | "mainMenu"
   | "missionSelect"
   | "shipSelect"
@@ -49,6 +50,28 @@ export type GamePhase =
   | "wallOfShame"
   | "friends"
   | "friendWall";
+
+// --- Multiplayer session types ---
+
+export type SessionStatus = "waiting" | "playing" | "ended";
+
+export interface Participant {
+  uid: string;
+  nickname: string;
+  attention: boolean;
+  joinedAt: number;
+}
+
+export interface MultiplayerSession {
+  /** UID of the host player */
+  host: string;
+  /** Current session status */
+  status: SessionStatus;
+  /** Timestamp when the session was created */
+  createdAt: number;
+  /** Map of participant UIDs to their data */
+  participants: Record<string, Participant>;
+}
 
 // --- Chat types ---
 
