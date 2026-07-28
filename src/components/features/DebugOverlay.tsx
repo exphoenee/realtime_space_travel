@@ -1,4 +1,4 @@
-import React, { type RefObject } from "react";
+import React, { useState, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import type { FaceAnalysis } from "../../services/faceRecognition";
 import type { Destination } from "../../types";
@@ -26,6 +26,8 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   destination,
 }) => {
   const { t } = useTranslation();
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   if (!destination) return null;
 
   const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
@@ -41,48 +43,68 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   );
 
   return (
-    <div className={styles.overlay}>
-      <canvas
-        ref={debugCanvasRef as React.RefObject<HTMLCanvasElement>}
-        className={styles.canvas}
-        style={{
-          width: `${debugWidth}px`,
-          height: `${debugHeight}px`,
-        }}
-      />
-      <div className={styles.info}>
-        <p>
-          {t("debug.cameraStatus")}{" "}
-          <span style={{ color: faceStatus.detected ? "#22c55e" : "#f87171" }}>
-            {faceStatus.detected ? t("debug.faceDetected") : t("debug.noFace")}
-          </span>
-        </p>
-        <p>{t("debug.lastUpdate", { value: lastUpdateAgoSeconds.toFixed(1) })}</p>
-        <p>
-          {t("debug.balanceRatio")}{" "}
-          {debugMetrics
-            ? `${debugMetrics.balanceRatio.toFixed(2)}`
-            : "N/A"}
-        </p>
-        <p>
-          {t("debug.eyeVerticalRatio")}{" "}
-          {debugMetrics
-            ? `${debugMetrics.eyeVerticalRatio.toFixed(2)}`
-            : "N/A"}
-        </p>
-        <p>
-          {t("debug.eyeEarMargin")}{" "}
-          {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"}
-        </p>
-        <label className={styles.toggle}>
-          <input
-            type="checkbox"
-            checked={debugIgnoreAttention}
-            onChange={(e) => setDebugIgnoreAttention(e.target.checked)}
+    <div className={`${styles.overlay} ${isCollapsed ? styles.collapsed : ""}`}>
+      {/* Toggle header — always visible */}
+      <button
+        type="button"
+        className={styles.toggleHeader}
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        aria-expanded={!isCollapsed}
+      >
+        <span className={styles.chevron}>{isCollapsed ? "▶" : "▼"}</span>
+        <span className={styles.headerLabel}>
+          {isCollapsed ? "Debug Camera" : "Camera"}
+        </span>
+        {isCollapsed && faceStatus.detected && (
+          <span className={styles.statusDot} />
+        )}
+      </button>
+
+      {!isCollapsed && (
+        <>
+          <canvas
+            ref={debugCanvasRef as React.RefObject<HTMLCanvasElement>}
+            className={styles.canvas}
+            style={{
+              width: `${debugWidth}px`,
+              height: `${debugHeight}px`,
+            }}
           />
-          <span>{t("debug.ignore")}</span>
-        </label>
-      </div>
+          <div className={styles.info}>
+            <p>
+              {t("debug.cameraStatus")}{" "}
+              <span style={{ color: faceStatus.detected ? "#22c55e" : "#f87171" }}>
+                {faceStatus.detected ? t("debug.faceDetected") : t("debug.noFace")}
+              </span>
+            </p>
+            <p>{t("debug.lastUpdate", { value: lastUpdateAgoSeconds.toFixed(1) })}</p>
+            <p>
+              {t("debug.balanceRatio")}{" "}
+              {debugMetrics
+                ? `${debugMetrics.balanceRatio.toFixed(2)}`
+                : "N/A"}
+            </p>
+            <p>
+              {t("debug.eyeVerticalRatio")}{" "}
+              {debugMetrics
+                ? `${debugMetrics.eyeVerticalRatio.toFixed(2)}`
+                : "N/A"}
+            </p>
+            <p>
+              {t("debug.eyeEarMargin")}{" "}
+              {debugMetrics ? `${debugMetrics.eyeEarMargin.toFixed(2)}` : "N/A"}
+            </p>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={debugIgnoreAttention}
+                onChange={(e) => setDebugIgnoreAttention(e.target.checked)}
+              />
+              <span>{t("debug.ignore")}</span>
+            </label>
+          </div>
+        </>
+      )}
     </div>
   );
 };

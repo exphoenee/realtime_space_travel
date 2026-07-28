@@ -323,5 +323,62 @@
     "speedDesc": "Sebesség ↓",
     "distanceAsc": "Távolság ↑",
     "distanceDesc": "Távolság ↓"
+  },
+  "event": {
+    "horn": {
+      "title": "Kürtszó!",
+      "desc": "Nyomd meg a gombot azonnal!",
+      "action": "Kürt gomb megnyomása",
+      "success": "Kürt elfogadva",
+      "fail": "Elkéstél a kürtszóval!"
+    },
+    "asteroid": {
+      "title": "Aszteroida a pályán!",
+      "desc": "Kitérő manőver szükséges! Változtass irányt azonnal!",
+      "success": "Aszteroida elkerülve! +{{years}} év kitérő",
+      "fail": "Ütközés! Az útidő {years} évvel megnőtt"
+    },
+    "rescueTransfer": {
+      "title": "Mentőhajó érzékelve!",
+      "desc": "Egy mentőhajó van a közelben. Átszállsz?",
+      "success": "Sikeres átszállás a mentőhajóra",
+      "fail": "Az átszállás sikertelen — lekésted az ablakot",
+      "active": "⚡ Átszállva a mentőhajóra — eltérő vezérlés aktív",
+      "rescueShip": "Mentőhajó Pilótafülke"
+    },
+    "solarFlare": {
+      "title": "⚠️ NAPKITÖRÉS FIGYELMEZTETÉS ⚠️",
+      "desc": "Kritikus: aktiváld a pajzsokat azonnal!",
+      "success": "Pajzsok kitartottak — a hajó túlélte",
+      "fail": "A napkitörés elborította a hajót. A legénység odaveszett!"
+    },
+    "rover": {
+      "title": "Űrajáró elérhető!",
+      "desc": "Egy űrajáró elérhető ehhez a küldetéshez. Beveted?",
+      "success": "Rover bevetve — bónusz feladat elérhető",
+      "fail": "A rover bevetése sikertelen"
+    },
+    "fake": {
+      "horn": "Tartsd lenyomva a VÉSZLEÁLLÍTÓ gombot 10 másodpercig",
+      "asteroid": "Hagyd figyelmen kívül az aszteroidát — tartsd az irányt",
+      "rescueTransfer": "Maradj az aktuális hajón — a mentőhajó csapda",
+      "title": "⚠️ UTASÍTÁS ⚠️",
+      "desc": "Kövesd a képernyőn lévő utasítást!",
+      "trapAction": "Utasítás követése"
+    },
+    "penalty": {
+      "timeAdded": "+{years} év hozzáadva az útidőhöz",
+      "crewLost": "Legénység elveszett!"
+    },
+    "timeLeft": "{{seconds}} másodperc",
+    "confirm": "Megerősítés",
+    "transfer": "Átszállás",
+    "activate": {
+      "shields": "Pajzsok aktiválása!"
+    },
+    "deploy": "Bevetés",
+    "ignore": "Figyelmen kívül hagyás",
+    "evasiveManeuver": "Kitérő manőver!",
+    "fakeBadge": "FÉLREVEZETŐ JELZÉS"
   }
 }

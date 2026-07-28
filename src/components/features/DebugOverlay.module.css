@@ -9,6 +9,69 @@
   gap: 0.5rem;
 }
 
+.collapsed {
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+.collapsed:hover {
+  opacity: 1;
+}
+
+/* Toggle header */
+.toggleHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  pointer-events: auto;
+  font-family: inherit;
+  font-size: 0.7rem;
+  color: #cffafe;
+  width: fit-content;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.toggleHeader:hover {
+  border-color: rgba(103, 232, 249, 0.7);
+  background: rgba(2, 6, 23, 0.95);
+}
+
+.chevron {
+  font-size: 0.5rem;
+  color: #67e8f9;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.headerLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  user-select: none;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .canvas {
   width: 100%;
   border: 1px solid rgba(103, 232, 249, 0.6);

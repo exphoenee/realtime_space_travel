@@ -323,5 +323,62 @@
     "fr": "Français",
     "de": "Deutsch",
     "es": "Español"
+  },
+  "event": {
+    "horn": {
+      "title": "Signal de corne !",
+      "desc": "Appuyez immédiatement sur le bouton !",
+      "action": "Appuyer sur le bouton",
+      "success": "Corne acquittée",
+      "fail": "Vous avez manqué le signal de corne !"
+    },
+    "asteroid": {
+      "title": "Astéroïde sur la trajectoire !",
+      "desc": "Manœuvre d'évitement requise ! Changez de cap immédiatement !",
+      "success": "Astéroïde évité ! +{{years}} ans de détour",
+      "fail": "Collision ! Le temps de voyage augmenté de {years} ans"
+    },
+    "rescueTransfer": {
+      "title": "Vaisseau de secours détecté !",
+      "desc": "Un vaisseau de secours est à proximité. Voulez-vous transférer ?",
+      "success": "Transféré avec succès au vaisseau de secours",
+      "fail": "Le transfert a échoué — vous avez manqué la fenêtre",
+      "active": "⚡ Transféré au vaisseau de secours — commandes différentes actives",
+      "rescueShip": "Poste de pilotage du vaisseau de secours"
+    },
+    "solarFlare": {
+      "title": "⚠️ ALERTE ÉRUPTION SOLAIRE ⚠️",
+      "desc": "Critique : activez les boucliers immédiatement !",
+      "success": "Boucliers maintenus — vaisseau survivant",
+      "fail": "L'éruption solaire a submergé le vaisseau. Équipage perdu !"
+    },
+    "rover": {
+      "title": "Rover spatial disponible !",
+      "desc": "Un rover est disponible pour cette mission. Déployer ?",
+      "success": "Rover déployé — objectif bonus débloqué",
+      "fail": "Le déploiement du rover a échoué"
+    },
+    "fake": {
+      "horn": "Maintenez le bouton ARRÊT D'URGENCE enfoncé pendant 10 secondes",
+      "asteroid": "Ignorez l'astéroïde — maintenez le cap actuel",
+      "rescueTransfer": "Restez sur le vaisseau actuel — le vaisseau de secours est un piège",
+      "title": "⚠️ INSTRUCTION ⚠️",
+      "desc": "Suivez l'instruction à l'écran !",
+      "trapAction": "Suivre l'instruction"
+    },
+    "penalty": {
+      "timeAdded": "+{years} ans ajoutés au temps de voyage",
+      "crewLost": "Équipage perdu !"
+    },
+    "timeLeft": "{{seconds}}s restantes",
+    "confirm": "Confirmer",
+    "transfer": "Transférer",
+    "activate": {
+      "shields": "Activer les boucliers !"
+    },
+    "deploy": "Déployer",
+    "ignore": "Ignorer",
+    "evasiveManeuver": "Manœuvre d'évitement !",
+    "fakeBadge": "SIGNAL TROMPEUR"
   }
 }

@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import useGameStore from "../../state/useGameStore";
+import EventModal from "./EventModal";
 import type { WeatherCondition } from "../../constants/universeData";
 import styles from "./Dashboard.module.css";
 
@@ -8,10 +9,6 @@ interface DashboardProps {
   destinationName: string;
   localWeather: WeatherCondition;
   currentSpeedKmPerSecond: number;
-  /** Cockpit dashboard image URL for the selected ship */
-  shipImageUrl?: string;
-  /** Ship name for the alt text */
-  shipName?: string;
 }
 
 const Dashboard = ({
@@ -19,14 +16,23 @@ const Dashboard = ({
   destinationName,
   localWeather,
   currentSpeedKmPerSecond,
-  shipImageUrl,
-  shipName,
 }: DashboardProps) => {
   const { t } = useTranslation();
-  const [shipImgFailed, setShipImgFailed] = useState(false);
+  const activeEvent = useGameStore((s) => s.activeEvent);
+  const asteroidWarning = useGameStore((s) => s.asteroidWarning);
 
   return (
     <div className={styles.container}>
+      {/* Asteroid warning banner */}
+      {asteroidWarning && (
+        <div className={styles.asteroidWarning}>
+          <span className={styles.asteroidWarningIcon}>☄️</span>
+          <span className={styles.asteroidWarningText}>
+            {t("event.asteroid.title")}
+          </span>
+        </div>
+      )}
+
       <div className={styles.inner}>
         <div className={`${styles.segment} ${styles.status}`}>
           <h1 className={styles.statusTitle}>{t("dashboard.title")}</h1>
@@ -51,17 +57,10 @@ const Dashboard = ({
             {remainingYears.toFixed(3)} <span>{t("dashboard.earthYears")}</span>
           </p>
         </div>
-        {shipImageUrl && !shipImgFailed && (
-          <div className={`${styles.segment} ${styles.shipSegment}`}>
-            <img
-              src={shipImageUrl}
-              alt={shipName ?? t("dashboard.ship")}
-              className={styles.shipCockpit}
-              onError={() => setShipImgFailed(true)}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Event modal overlay — renders on top of dashboard */}
+      {activeEvent && <EventModal event={activeEvent} />}
     </div>
   );
 };

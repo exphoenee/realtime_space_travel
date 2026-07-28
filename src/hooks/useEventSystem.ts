@@ -91,8 +91,8 @@ const EVENT_DEFINITIONS: EventDefinition[] = [
     minIntervalMs: MIN_EVENT_GAP_MS,
     baseIntervalMs: FAKE_INSTRUCTION_INTERVAL,
     durationMs: 10_000,
-    penaltyType: "time",
-    penaltyAmount: 15, // +15 years — harsh penalty for falling for fake
+    penaltyType: "crewLost", // Falling for the fake instruction = instant crew loss
+    penaltyAmount: 0,
     i18nKey: "event.fake",
     isRare: false,
   },
@@ -204,6 +204,13 @@ export const useEventSystem = () => {
     const gap = Math.max(0, MIN_EVENT_GAP_MS - timeSinceLast);
     delay = Math.max(delay, gap);
 
+    // Store the next event preview for the debug bar
+    const triggerAt = Date.now() + delay;
+    useGameStore.getState().setNextScheduledEvent({
+      eventType: picked.id,
+      triggerAt,
+    });
+
     timerRef.current = setTimeout(() => {
       // Double-check we're still playing and not paused
       const currentState = useGameStore.getState();
@@ -212,6 +219,7 @@ export const useEventSystem = () => {
         currentState.gamePhase !== "playing" ||
         currentState.activeEvent ||
         currentState.isPaused ||
+        currentState.isAttentionLost ||
         currentDifficulty !== difficulty
       ) {
         // State changed — reschedule
@@ -227,6 +235,9 @@ export const useEventSystem = () => {
       };
       lastEventTimeRef.current = Date.now();
       lastEventTypeRef.current = picked.id;
+
+      // Clear preview — this event is now active
+      useGameStore.getState().setNextScheduledEvent(null);
       useGameStore.getState().triggerEvent(instance);
 
       // Schedule the next event
@@ -316,7 +327,28 @@ export const useEventSystem = () => {
         timerRef.current = null;
       }
 
+      // Clear preview — we're triggering now
+      useGameStore.getState().setNextScheduledEvent(null);
       useGameStore.getState().triggerEvent(instance);
+
+      // Immediately re-roll the next event preview
+      const state = useGameStore.getState();
+      const difficulty = useUIStore.getState().difficulty;
+      if (state.gamePhase === "playing" && difficulty !== "easy") {
+        const pool = getEventPool(difficulty);
+        if (pool.length > 0) {
+          const newPicked = pickRandomEvent(pool, eventType);
+          const [minInterval, maxInterval] = newPicked.baseIntervalMs;
+          let newDelay = randomBetween(minInterval, maxInterval);
+          if (DEBUG_MODE) {
+            newDelay = Math.floor(newDelay / DEBUG_SPEED_MULTIPLIER);
+          }
+          useGameStore.getState().setNextScheduledEvent({
+            eventType: newPicked.id,
+            triggerAt: Date.now() + newDelay,
+          });
+        }
+      }
     },
     [],
   );
