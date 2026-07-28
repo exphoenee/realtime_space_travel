@@ -1,9 +1,9 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
 import { getRtdbKey } from "../../state/useAuthStore";
-import { subscribeFailures, saveSuccessRecord, saveFailureRecord, incrementUserWallet } from "../../firebase/userData";
+import { subscribeFailures, subscribeSuccesses, saveSuccessRecord, saveFailureRecord, incrementUserWallet } from "../../firebase/userData";
 import useShopStore from "../../state/useShopStore";
 import Collapse from "../ui/Collapse";
 import type { FailureRecord, SuccessRecord } from "../../types";
@@ -70,17 +70,26 @@ type DisplayRecord =
 
 interface WallOfShameProps {
   onBack: () => void;
+  /** When set, shows the friend's Wall of Shame in read-only mode */
+  friendUid?: string;
+  friendName?: string;
 }
 
-const WallOfShame = ({ onBack }: WallOfShameProps) => {
+const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
   const { t } = useTranslation();
   const failureRecords = useGameStore((s) => s.failureRecords);
   const successRecords = useGameStore((s) => s.successRecords);
 
   const debugMode = useUIStore((s) => s.debugMode);
 
-  // Sync failure records from RTDB on mount
+  // In friend mode, we subscribe to the friend's RTDB records (local state)
+  const [friendFailures, setFriendFailures] = useState<FailureRecord[]>([]);
+  const [friendSuccesses, setFriendSuccesses] = useState<SuccessRecord[]>([]);
+
+  // Sync failure records from RTDB on mount (self mode)
   useEffect(() => {
+    if (friendUid) return; // Skip in friend mode
+
     const rtdbKey = getRtdbKey();
     if (!rtdbKey) return;
 
@@ -100,24 +109,42 @@ const WallOfShame = ({ onBack }: WallOfShameProps) => {
     });
 
     return () => unsub();
-  }, []);
+  }, [friendUid]);
+
+  // In friend mode: subscribe to friend's failures + successes
+  useEffect(() => {
+    if (!friendUid) return;
+
+    const unsub1 = subscribeFailures(friendUid, (records) => {
+      setFriendFailures(records);
+    });
+    const unsub2 = subscribeSuccesses(friendUid, (records) => {
+      setFriendSuccesses(records);
+    });
+
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  }, [friendUid]);
 
   // Merge & sort all records by timestamp (descending)
   const allRecords = useMemo(() => {
-    const failures: DisplayRecord[] = failureRecords.map((r) => ({
-      kind: "failure" as const,
-      data: r,
-    }));
-    const successes: DisplayRecord[] = successRecords.map((r) => ({
-      kind: "success" as const,
-      data: r,
-    }));
-    return [...failures, ...successes].sort((a, b) => {
+    const records = friendUid
+      ? [
+          ...friendFailures.map((r) => ({ kind: "failure" as const, data: r })),
+          ...friendSuccesses.map((r) => ({ kind: "success" as const, data: r })),
+        ]
+      : [
+          ...failureRecords.map((r) => ({ kind: "failure" as const, data: r })),
+          ...successRecords.map((r) => ({ kind: "success" as const, data: r })),
+        ];
+    return records.sort((a, b) => {
       const tsA = a.kind === "failure" ? a.data.failedAt : a.data.completedAt;
       const tsB = b.kind === "failure" ? b.data.failedAt : b.data.completedAt;
       return tsB - tsA;
     });
-  }, [failureRecords, successRecords]);
+  }, [failureRecords, successRecords, friendFailures, friendSuccesses, friendUid]);
 
   // ─── Summary statistics ───
   const stats = useMemo(() => {
@@ -182,13 +209,17 @@ const WallOfShame = ({ onBack }: WallOfShameProps) => {
         {/* Header */}
         <div className={styles.header}>
           <div>
-            <h1 className={styles.title}>{t("wallOfShame.title")}</h1>
+            <h1 className={styles.title}>
+              {friendUid && friendName
+                ? t("friendWall.title", { name: friendName })
+                : t("wallOfShame.title")}
+            </h1>
             <p className={styles.subtitle}>
               {t("wallOfShame.subtitle", { count: allRecords.length })}
             </p>
           </div>
           <button type="button" className={styles.backButton} onClick={onBack}>
-            ← {t("settings.back")}
+            ← {friendUid ? t("friendWall.back") : t("settings.back")}
           </button>
         </div>
 
@@ -272,8 +303,8 @@ const WallOfShame = ({ onBack }: WallOfShameProps) => {
           </div>
         )}
 
-        {/* Debug: generate random records + save to Firebase */}
-        {debugMode && (
+        {/* Debug: generate random records + save to Firebase (self only) */}
+        {debugMode && !friendUid && (
           <div className={styles.debugActions}>
             <button
               type="button"

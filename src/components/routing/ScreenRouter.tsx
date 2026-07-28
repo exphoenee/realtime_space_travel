@@ -9,6 +9,7 @@ import LoadingScreen from "../screens/LoadingScreen";
 import ShopScreen from "../shop/ShopScreen";
 import ShipSelectScreen from "../screens/ShipSelectScreen";
 import WallOfShame from "../screens/WallOfShame";
+import FriendsScreen from "../screens/FriendsScreen";
 
 interface ScreenRouterProps {
   phase: GamePhase;
@@ -59,6 +60,24 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
       return (
         <WallOfShame onBack={() => useGameStore.getState().transitionTo("mainMenu")} />
       );
+    case "friends":
+      return <FriendsScreen />;
+    case "friendWall": {
+      const { friendWallTargetUid, friendWallTargetName, transitionTo } = useGameStore.getState();
+      return (
+        <WallOfShame
+          onBack={() => {
+            useGameStore.setState({
+              friendWallTargetUid: null,
+              friendWallTargetName: null,
+            });
+            transitionTo("friends");
+          }}
+          friendUid={friendWallTargetUid ?? undefined}
+          friendName={friendWallTargetName ?? undefined}
+        />
+      );
+    }
     case "loading":
       return <LoadingScreen onComplete={onLoadingComplete} />;
     default:

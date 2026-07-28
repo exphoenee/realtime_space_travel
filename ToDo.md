@@ -1,1 +1,0 @@
-Szégyenfal funkció/menüpont a fõmenüben, legyen itt logolva, hogy milyen hajóval, mikor indult a player és melyik bolgyó volt a cél, hány és milyen jellegû eventet oldott meg, és mennyi idõ múlva érte a kudarc

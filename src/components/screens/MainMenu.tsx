@@ -60,6 +60,9 @@ const MainMenu = () => {
           <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
             {t("mainMenu.wallOfShame")}
           </button>
+          <button type="button" className={styles.button} onClick={() => transitionTo("friends")}>
+            {t("mainMenu.friends")}
+          </button>
           <button
             type="button"
             className={styles.button}

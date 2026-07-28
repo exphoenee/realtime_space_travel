@@ -46,6 +46,12 @@ interface GameState {
   /** Timestamp (Date.now()) when the ship will be destroyed after ignoring rescue transfer, or null */
   pendingDestructionAt: number | null;
 
+  // --- Social / Friend Wall ---
+  /** UID of the friend whose wall is being viewed */
+  friendWallTargetUid: string | null;
+  /** Display name of the friend whose wall is being viewed */
+  friendWallTargetName: string | null;
+
   // --- Wall of Shame / failure tracking ---
   /** All recorded failure events (persisted to localStorage + RTDB) */
   failureRecords: FailureRecord[];
@@ -205,6 +211,8 @@ const phaseToFlags = (phase: GamePhase) => {
         isInitializing: false,
       };
     case "wallOfShame":
+    case "friends":
+    case "friendWall":
       return {
         showIntro: false,
         isPaused: true,
@@ -264,6 +272,10 @@ const useGameStore = create<GameState>()(
       asteroidWarning: false,
       nextScheduledEvent: null,
       pendingDestructionAt: null,
+
+      // --- Social ---
+      friendWallTargetUid: null,
+      friendWallTargetName: null,
 
       // --- Wall of Shame ---
       failureRecords: [],

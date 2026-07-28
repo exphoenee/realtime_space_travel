@@ -46,7 +46,48 @@ export type GamePhase =
   | "crewLost"
   | "missionComplete"
   | "shop"
-  | "wallOfShame";
+  | "wallOfShame"
+  | "friends"
+  | "friendWall";
+
+// --- Chat types ---
+
+export interface ChatMessage {
+  /** UID of the sender */
+  from: string;
+  /** Message text */
+  text: string;
+  /** Timestamp when the message was sent */
+  at: number;
+}
+
+// --- Social / Friends types ---
+
+export type FriendStatus = "pending" | "accepted" | "rejected";
+
+export type UserOnlineStatus = "offline" | "online" | "in-game";
+
+export interface FriendRequest {
+  /** UID of the user who sent the request */
+  from: string;
+  /** Display name / nickname of the sender */
+  fromNickname: string;
+  /** Timestamp when the request was sent */
+  at: number;
+  /** Current status of the request */
+  status: FriendStatus;
+}
+
+export interface UserPublicProfile {
+  /** UID of the user */
+  uid: string;
+  /** User's display name from Google Auth */
+  displayName: string | null;
+  /** User's custom nickname */
+  nickname: string;
+  /** Online status */
+  onlineStatus: UserOnlineStatus;
+}
 
 export interface Star {
   x: number;

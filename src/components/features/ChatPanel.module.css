@@ -1,0 +1,261 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 85vh;
+  background: rgba(3, 7, 18, 0.85);
+  border: 1px solid rgba(103, 232, 249, 0.25);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.15);
+  flex-shrink: 0;
+}
+
+.backBtn {
+  background: none;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  border-radius: 0.5rem;
+  color: #7dd3fc;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.backBtn:hover {
+  border-color: rgba(103, 232, 249, 0.7);
+  background: rgba(6, 182, 212, 0.15);
+  color: #67e8f9;
+}
+
+.friendInfo {
+  flex: 1;
+  text-align: center;
+}
+
+.friendName {
+  color: #e0f2fe;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.headerSpacer {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+/* Messages area */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(103, 232, 249, 0.15) transparent;
+}
+
+.messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(103, 232, 249, 0.15);
+  border-radius: 3px;
+}
+
+/* Empty state */
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.emptyText {
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Message bubbles */
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.own {
+  align-self: flex-end;
+}
+
+.other {
+  align-self: flex-start;
+}
+
+.messageBubble {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  position: relative;
+}
+
+.own .messageBubble {
+  background: rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-bottom-right-radius: 0.2rem;
+}
+
+.other .messageBubble {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(103, 232, 249, 0.1);
+  border-bottom-left-radius: 0.2rem;
+}
+
+.senderLabel {
+  color: #67e8f9;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.messageText {
+  color: #e0f2fe;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.messageTime {
+  color: #64748b;
+  font-size: 0.65rem;
+  text-align: right;
+  margin-top: 0.15rem;
+}
+
+/* Typing indicator */
+.typingBubble {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(103, 232, 249, 0.08);
+  border-bottom-left-radius: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-direction: row;
+  padding: 0.5rem 0.75rem;
+}
+
+.typingDots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #67e8f9;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.typingLabel {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+/* Input area */
+.inputArea {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid rgba(103, 232, 249, 0.12);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 0.5rem;
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input::placeholder {
+  color: #64748b;
+}
+
+.input:focus {
+  border-color: rgba(103, 232, 249, 0.6);
+}
+
+.sendBtn {
+  padding: 0.6rem 1rem;
+  background: rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 0.5rem;
+  color: #67e8f9;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: rgba(6, 182, 212, 0.35);
+  border-color: rgba(6, 182, 212, 0.7);
+}
+
+.sendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

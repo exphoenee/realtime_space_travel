@@ -1,0 +1,467 @@
+import ChatPanel from "../features/ChatPanel";
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import useGameStore from "../../state/useGameStore";
+import useAuthStore from "../../state/useAuthStore";
+import {
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
+  subscribeFriends,
+  subscribeFriendRequests,
+  subscribeUserOnlineStatus,
+  subscribeUnreadCount,
+  getChatId,
+  searchUsersPublic,
+} from "../../firebase/userData";
+import type { FriendRequest, UserOnlineStatus, UserPublicProfile } from "../../types";
+import styles from "./FriendsScreen.module.css";
+
+type Tab = "friends" | "search" | "requests";
+
+interface FriendWithStatus {
+  uid: string;
+  displayName: string | null;
+  nickname: string;
+  onlineStatus: UserOnlineStatus;
+}
+
+const FriendsScreen: React.FC = () => {
+  const { t } = useTranslation();
+  const transitionTo = useGameStore((s) => s.transitionTo);
+  const authUser = useAuthStore((s) => s.user);
+  const authUid = useAuthStore((s) => s.uid);
+  const nickname = useAuthStore((s) => s.nickname);
+  const displayName = useAuthStore((s) => s.displayName);
+
+  const [activeTab, setActiveTab] = useState<Tab>("friends");
+  const [friendUids, setFriendUids] = useState<string[]>([]);
+  const [friendsWithStatus, setFriendsWithStatus] = useState<FriendWithStatus[]>([]);
+  const [requests, setRequests] = useState<(FriendRequest & { uid: string })[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<UserPublicProfile[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<Record<string, "idle" | "sending" | "sent" | "error">>({});
+  const [activeChatFriend, setActiveChatFriend] = useState<FriendWithStatus | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+
+  // Subscribe to friends list
+  useEffect(() => {
+    if (!authUid) return;
+    const unsub = subscribeFriends(authUid, (uids) => {
+      setFriendUids(uids);
+    });
+    return unsub;
+  }, [authUid]);
+
+  // Subscribe to friend requests
+  useEffect(() => {
+    if (!authUid) return;
+    const unsub = subscribeFriendRequests(authUid, (reqs) => {
+      setRequests(reqs);
+    });
+    return unsub;
+  }, [authUid]);
+
+  // Subscribe to online status for each friend
+  useEffect(() => {
+    if (!authUid) return;
+
+    const unsubs: (() => void)[] = [];
+
+    const updateFriendStatus = (uid: string, status: UserOnlineStatus) => {
+      setFriendsWithStatus((prev) => {
+        const existing = prev.find((f) => f.uid === uid);
+        if (existing) {
+          return prev.map((f) =>
+            f.uid === uid ? { ...f, onlineStatus: status } : f,
+          );
+        }
+        return prev;
+      });
+    };
+
+    // Initialize friends status list
+    const loadFriendProfiles = async () => {
+      const { ref, get } = await import("firebase/database");
+      const db = (await import("../../firebase/config")).getFirebaseDB();
+
+      for (const fuid of friendUids) {
+        const publicRef = ref(db, `usersPublic/${fuid}`);
+        const snap = await get(publicRef);
+        const profile = snap.val() as { nickname?: string; displayName?: string | null; onlineStatus?: UserOnlineStatus } | null;
+        setFriendsWithStatus((prev) => {
+          if (prev.find((f) => f.uid === fuid)) return prev;
+          return [
+            ...prev,
+            {
+              uid: fuid,
+              displayName: profile?.displayName ?? null,
+              nickname: profile?.nickname ?? "",
+              onlineStatus: profile?.onlineStatus ?? "offline",
+            },
+          ];
+        });
+
+        const unsub = subscribeUserOnlineStatus(fuid, (status) => {
+          updateFriendStatus(fuid, status);
+        });
+        unsubs.push(unsub);
+      }
+    };
+
+    loadFriendProfiles();
+
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
+  }, [authUid, friendUids.length]);
+
+  // Subscribe to unread message counts for each friend
+  useEffect(() => {
+    if (!authUid) return;
+
+    const unsubs: (() => void)[] = [];
+
+    for (const fuid of friendUids) {
+      const chatId = getChatId(authUid, fuid);
+      const unsub = subscribeUnreadCount(chatId, authUid, (count) => {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [fuid]: count,
+        }));
+      });
+      unsubs.push(unsub);
+    }
+
+    return () => {
+      for (const unsub of unsubs) unsub();
+    };
+  }, [authUid, friendUids.length]);
+
+  // Clean up removed friends
+  useEffect(() => {
+    setFriendsWithStatus((prev) => prev.filter((f) => friendUids.includes(f.uid)));
+  }, [friendUids]);
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchTerm.trim() || !authUid) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      const results = await searchUsersPublic(searchTerm, authUid);
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, authUid]);
+
+  const handleSendRequest = useCallback(
+    async (toUid: string, toNickname: string) => {
+      if (!authUid) return;
+      setRequestStatus((prev) => ({ ...prev, [toUid]: "sending" }));
+      try {
+        const fromNickname = nickname || displayName || authUser?.displayName || "Anonymous";
+        await sendFriendRequest(authUid, toUid, fromNickname);
+        setRequestStatus((prev) => ({ ...prev, [toUid]: "sent" }));
+      } catch (err) {
+        console.error("Failed to send friend request:", err);
+        setRequestStatus((prev) => ({ ...prev, [toUid]: "error" }));
+      }
+    },
+    [authUid, nickname, displayName, authUser],
+  );
+
+  const handleAccept = useCallback(
+    async (fromUid: string) => {
+      if (!authUid) return;
+      try {
+        await acceptFriendRequest(authUid, fromUid);
+      } catch (err) {
+        console.error("Failed to accept friend request:", err);
+      }
+    },
+    [authUid],
+  );
+
+  const handleReject = useCallback(
+    async (fromUid: string) => {
+      if (!authUid) return;
+      try {
+        await rejectFriendRequest(authUid, fromUid);
+      } catch (err) {
+        console.error("Failed to reject friend request:", err);
+      }
+    },
+    [authUid],
+  );
+
+  const handleRemove = useCallback(
+    async (friendUid: string) => {
+      if (!authUid) return;
+      try {
+        await removeFriend(authUid, friendUid);
+      } catch (err) {
+        console.error("Failed to remove friend:", err);
+      }
+    },
+    [authUid],
+  );
+
+  const getStatusIcon = (status: UserOnlineStatus): string => {
+    switch (status) {
+      case "online":
+        return "🟢";
+      case "in-game":
+        return "🟡";
+      case "offline":
+      default:
+        return "⚫";
+    }
+  };
+
+  const getStatusLabel = (status: UserOnlineStatus): string => {
+    switch (status) {
+      case "online":
+        return t("friends.online");
+      case "in-game":
+        return t("friends.inGame");
+      case "offline":
+      default:
+        return t("friends.offline");
+    }
+  };
+
+  const getFriendDisplayName = (friend: FriendWithStatus): string => {
+    return friend.nickname || friend.displayName || friend.uid.slice(0, 8);
+  };
+
+  const getPublicDisplayName = (profile: UserPublicProfile): string => {
+    return profile.nickname || profile.displayName || profile.uid.slice(0, 8);
+  };
+
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.panel}>
+        <div className={styles.header}>
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => transitionTo("mainMenu")}
+          >
+            ← {t("friends.back")}
+          </button>
+          <h2 className={styles.title}>{t("friends.title")}</h2>
+        </div>
+
+        {/* Tabs */}
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === "friends" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("friends")}
+          >
+            {t("friends.title")}
+            {friendUids.length > 0 && (
+              <span className={styles.badge}>{friendUids.length}</span>
+            )}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === "search" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("search")}
+          >
+            {t("friends.search")}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === "requests" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("requests")}
+          >
+            {t("friends.pendingRequests")}
+            {requests.length > 0 && (
+              <span className={styles.badgeWarning}>{requests.length}</span>
+            )}
+          </button>
+        </div>
+
+        {/* Tab content */}
+        <div className={styles.content}>
+          {activeChatFriend && authUid ? (
+            <ChatPanel
+              authUid={authUid}
+              friendUid={activeChatFriend.uid}
+              friendName={getFriendDisplayName(activeChatFriend)}
+              onBack={() => setActiveChatFriend(null)}
+            />
+          ) : (
+            <>
+              {/* Friends List */}
+              {activeTab === "friends" && (
+                <div className={styles.list}>
+                  {friendUids.length === 0 ? (
+                    <p className={styles.empty}>{t("friends.empty")}</p>
+                  ) : (
+                    friendsWithStatus.map((friend) => (
+                      <div key={friend.uid} className={styles.card}>
+                        <div className={styles.cardLeft}>
+                          <span className={styles.statusIcon} title={getStatusLabel(friend.onlineStatus)}>
+                            {getStatusIcon(friend.onlineStatus)}
+                          </span>
+                          <span className={styles.cardName}>{getFriendDisplayName(friend)}</span>
+                          {unreadCounts[friend.uid] > 0 && (
+                            <span className={styles.unreadBadge}>
+                              {unreadCounts[friend.uid] > 99 ? "99+" : unreadCounts[friend.uid]}
+                            </span>
+                          )}
+                        </div>
+                        <div className={styles.cardRight}>
+                          <span className={styles.statusLabel}>
+                            {getStatusLabel(friend.onlineStatus)}
+                          </span>
+                          <button
+                            type="button"
+                            className={styles.chatBtn}
+                            onClick={() => setActiveChatFriend(friend)}
+                            title={t("chat.send")}
+                          >
+                            💬
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.wallBtn}
+                            onClick={() => {
+                              useGameStore.setState({
+                                friendWallTargetUid: friend.uid,
+                                friendWallTargetName: getFriendDisplayName(friend),
+                              });
+                              useGameStore.getState().transitionTo("friendWall");
+                            }}
+                            title={t("friendWall.viewWall")}
+                          >
+                            🏛️
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.removeBtn}
+                            onClick={() => handleRemove(friend.uid)}
+                            title={t("friends.removeFriend")}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Search */}
+              {activeTab === "search" && (
+                <div className={styles.searchContainer}>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder={t("friends.searchPlaceholder")}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                  <div className={styles.list}>
+                    {isSearching && <p className={styles.loading}>...</p>}
+                    {!isSearching && searchTerm.trim() && searchResults.length === 0 && (
+                      <p className={styles.empty}>{t("friends.noResults")}</p>
+                    )}
+                    {!isSearching &&
+                      searchResults.map((profile) => (
+                        <div key={profile.uid} className={styles.card}>
+                          <div className={styles.cardLeft}>
+                            <span className={styles.statusIcon} title={getStatusLabel(profile.onlineStatus)}>
+                              {getStatusIcon(profile.onlineStatus)}
+                            </span>
+                            <span className={styles.cardName}>
+                              {getPublicDisplayName(profile)}
+                            </span>
+                          </div>
+                          <div className={styles.cardRight}>
+                            {requestStatus[profile.uid] === "sent" ? (
+                              <span className={styles.sentLabel}>
+                                {t("friends.friendRequestSent")}
+                              </span>
+                            ) : friendUids.includes(profile.uid) ? (
+                              <span className={styles.alreadyFriendLabel}>
+                                ✓
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                className={styles.addBtn}
+                                onClick={() =>
+                                  handleSendRequest(profile.uid, getPublicDisplayName(profile))
+                                }
+                                disabled={requestStatus[profile.uid] === "sending"}
+                              >
+                                {requestStatus[profile.uid] === "sending"
+                                  ? "..."
+                                  : t("friends.addFriend")}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Friend Requests */}
+              {activeTab === "requests" && (
+                <div className={styles.list}>
+                  {requests.length === 0 ? (
+                    <p className={styles.empty}>
+                      {t("friends.empty")}
+                    </p>
+                  ) : (
+                    requests.map((req) => (
+                      <div key={req.uid} className={styles.card}>
+                        <div className={styles.cardLeft}>
+                          <span className={styles.requestIcon}>📩</span>
+                          <span className={styles.cardName}>
+                            {req.fromNickname || req.uid.slice(0, 8)}
+                          </span>
+                        </div>
+                        <div className={styles.cardRight}>
+                          <button
+                            type="button"
+                            className={styles.acceptBtn}
+                            onClick={() => handleAccept(req.uid)}
+                          >
+                            {t("friends.accept")}
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.rejectBtn}
+                            onClick={() => handleReject(req.uid)}
+                          >
+                            {t("friends.reject")}
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FriendsScreen;

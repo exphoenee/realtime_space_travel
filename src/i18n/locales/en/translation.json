@@ -122,6 +122,7 @@
     "settings": "Settings",
     "intro": "Watch intro",
     "wallOfShame": "Wall of Shame",
+    "friends": "Friends",
     "loginComingSoon": "Sign-in will be available soon.",
     "shopComingSoon": "The shop will be available soon."
   },
@@ -415,5 +416,38 @@
       "shortestService": "Shortest Service",
       "totalDistance": "Total Distance"
     }
+  },
+  "friends": {
+    "title": "Friends",
+    "back": "Back",
+    "search": "Search",
+    "searchPlaceholder": "Search by nickname, name or user ID...",
+    "addFriend": "Add friend",
+    "removeFriend": "Remove",
+    "friendRequestSent": "Request sent!",
+    "pendingRequests": "Requests",
+    "accept": "Accept",
+    "reject": "Reject",
+    "online": "Online",
+    "offline": "Offline",
+    "inGame": "In game",
+    "watching": "Watching",
+    "notWatching": "Not watching",
+    "noResults": "No players found",
+    "empty": "Your friend list is empty"
+  },
+  "friendWall": {
+    "title": "{{name}}'s Wall of Shame",
+    "back": "Back to Friends",
+    "viewWall": "View Wall of Shame"
+  },
+  "chat": {
+    "title": "Chat",
+    "back": "Back",
+    "inputPlaceholder": "Write a message...",
+    "send": "Send",
+    "unread": "Unread messages",
+    "empty": "No messages yet",
+    "typing": "typing..."
   }
 }

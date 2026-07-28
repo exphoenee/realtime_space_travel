@@ -372,7 +372,9 @@ const App: React.FC = () => {
     gamePhase === "settings" ||
     gamePhase === "shop" ||
     gamePhase === "loading" ||
-    gamePhase === "wallOfShame";
+    gamePhase === "wallOfShame" ||
+    gamePhase === "friends" ||
+    gamePhase === "friendWall";
 
   const attentionCountdown =
     gamePhase === "countdown"

@@ -8,7 +8,7 @@ implemented: 11
 in_progress: 2
 not_started: 3
 tasks_done: 487
-tasks_total: 704
+tasks_total: 715
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -106,7 +106,7 @@ plans:
     status: "not-started"
     category: "core"
     tasks_done: 0
-    tasks_total: 68
+    tasks_total: 79
     dependencies: [011-difficulty-event-system, 010-firebase-guest-merge-single-gate, 003-firebase-auth-settings]
   - step: 14
     slug: "014-stripe-fraud-defense"
@@ -133,7 +133,7 @@ plans:
 ## Project Status
 
 - **Plans:** 11 implemented · 2 in progress · 3 not started (of 16)
-- **Tasks:** 487/704 done (69%)
+- **Tasks:** 487/715 done (68%)
 
 ## Overview
 
@@ -152,7 +152,7 @@ plans:
 | 10 | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések | ✅ Implemented | 66/66 | — | auth | 9 |
 | 11 | Nehézségi szintek + eseményrendszer | 🟨 In progress | 51/51 | — | core | 1 |
 | 12 | Szégyenfal | ✅ Implemented | 66/66 | — | ui | 11 |
-| 13 | Social és multiplayer | ⬜ Not started | 0/68 | — | core | 3, 10, 11 |
+| 13 | Social és multiplayer | ⬜ Not started | 0/79 | — | core | 3, 10, 11 |
 | 14 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 15 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 14 |
 
@@ -165,7 +165,7 @@ plans:
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (52/53): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
 - **Step 5 — Valós pénzes kredit vásárlás** (25/28): Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
-- **Step 13 — Social és multiplayer** (0/68): RTDB új node-ok: `friends/{uid}/{friendUid}: true`, `friendRequests/{uid}/{fromUid}: { from, at, status }`, `chats/{chatId}: { participants, messages }`
+- **Step 13 — Social és multiplayer** (0/79): RTDB új node-ok: `friends/{uid}/{friendUid}: true`, `friendRequests/{uid}/{fromUid}: { from, at, status }`, `chats/{chatId}: { participants, messages }`
 - **Step 14 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 15 — Stripe élesítés** (0/85): `[A]` [[014-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 

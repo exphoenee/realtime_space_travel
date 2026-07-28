@@ -7,7 +7,7 @@ status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-28"
+updated_at: "2026-07-29"
 author: exphoenee
 step: 13
 phases: []
@@ -18,6 +18,7 @@ dependencies:
 related_plans:
   - 007-state-persist-page-refresh
   - 009-firebase-identity-split-bugfix
+  - 012-wall-of-shame
 tags:
   - social
   - multiplayer
@@ -31,7 +32,7 @@ tags:
 
 # Social és multiplayer – barátok, chat, közös küldetések
 
-**Cél:** A játékosok kapcsolatba léphessenek egymással — barátokat kezeljenek, privát üzeneteket küldjenek, és közös multiplayer küldetésekben vegyenek részt, ahol a figyelem és az események csapatszinten kezelődnek.
+**Cél:** A játékosok kapcsolatba léphessenek egymással — barátokat kezeljenek, privát üzeneteket küldjenek, **megtekinthessék egymás Szégyenfalát (kudarcok + sikerek, read-only)**, és közös multiplayer küldetésekben vegyenek részt, ahol a figyelem és az események csapatszinten kezelődnek.
 
 > ⚠️ **Ez a terv a [[011-difficulty-event-system]] tervre épül** — a multiplayer eseménykezelés (ki kapja az eventet, hogyan értesülnek a többiek) a 011-es terv eseményrendszerét használja. **A 011-es terv előfeltétel.** Firebase RTDB szükséges a barátlistához és a chathez — ez a [[003-firebase-auth-settings]] és [[010-firebase-guest-merge-single-gate]] tervek Firebase infrastruktúrájára épül.
 
@@ -44,8 +45,9 @@ tags:
 | Elhelyezés a roadmapen | **12. lépés** — a 011-difficulty-event-system után, a 013-stripe-fraud-defense előtt. A multiplayer az eseményrendszerre épül, de a Stripe-tól független. |
 | Barát keresés | **Nickname + email + user ID** alapján is lehessen keresni |
 | Barát hozzáadás | Mindig barátkérés (friend request) útján — a másik fél elfogadhatja vagy elutasíthatja |
-| MVP scope | **Teljes MVP**: barátlista + invite/join + figyelmi lista + privát chat + friend request |
+| MVP scope | **Teljes MVP**: barátlista + invite/join + figyelmi lista + privát chat + friend request + **barát szégyenfala** |
 | Privát chat helye | **Mind a Barátok menüben, mind játék közben** elérhető legyen |
+| Barát szégyenfala | **Barát listából** elérhető — read-only nézet minden rekorddal (kudarc + siker), **élő** RTDB subscription |
 | Host kilépés | **Host átadás** — a következő legaktívabb játékos lesz az új host |
 | Max létszám | **8 fő** egy multiplayer küldetésben |
 | Event timeout multiplayerben | **Csapat büntetés** — ha az érintett játékos nem reagál időben, a teljes csapat kapja a büntetést |
@@ -69,6 +71,7 @@ tags:
 - [ ] `users/{uid}/profile` bővítése: `+onlineStatus: string` (offline/online/játékban)
 - [ ] `sessions/{sessionId}: { host, participants, status, createdAt }` — multiplayer session node
 - [ ] `security.rules.json` frissítése: `friends`, `friendRequests`, `chats`, `sessions` node-ok írási/olvasási szabályai
+- [ ] `security.rules.json` — `users/{uid}/failures` és `users/{uid}/successes` olvasási joga: csak a barátok (`friends/{requestUid}/{targetUid} === true`) számára engedélyezett
 - [ ] `database.rules.json` regenerálása
 
 **B. Barátlista — UI és logika**
@@ -141,13 +144,25 @@ tags:
 - [ ] `multiplayer.hostTransferred` / `multiplayer.sessionEnded`
 - [ ] Teljes paritás mind az 5 fájlban
 
-**I. Tesztek**
+**I. Barát szégyenfala — read-only Wall of Shame megtekintése**
+- [ ] `src/components/screens/FriendWallScreen.tsx` + `FriendWallScreen.module.css` — **új GamePhase képernyő**
+- [ ] `FriendWallScreen.tsx` — meglévő WallOfShame komponens **újrahasználása** read-only módban
+- [ ] `FriendWallScreen.tsx` — barát neve a headerben („{friendName} Wall of Shame")
+- [ ] `src/types/index.ts` — új GamePhase: `"friendWall"`
+- [ ] `firebase/userData.ts` — új `subscribeFriendFailures(uid, callback)` és `subscribeFriendSuccesses(uid, callback)` — ugyanaz, mint a meglévő subscribe, de barát uid-jével hívva
+- [ ] `FriendsScreen.tsx` — barátra kattintva opció: „View Wall of Shame" → `transitionTo("friendWall")` + barát uid átadása
+- [ ] `useGameStore` bővítése: +`friendWallTargetUid: string | null`, +`friendWallTargetName: string | null`
+- [ ] `ScreenRouter.tsx` — `case "friendWall"` ág → `FriendWallScreen`
+- [ ] Security rules: a `users/{uid}/failures` és `users/{uid}/successes` node-ok olvasása **csak barátok számára** engedélyezett
+- [ ] i18n: `friendWall.*` kulcsok (lásd H blokk)
+
+**J. Tesztek**
 - [ ] `src/hooks/useMultiplayerSession.test.ts` — session létrehozás, csatlakozás, host átadás
 - [ ] `src/hooks/useMultiplayerAttention.test.ts` — figyelmi állapot szinkron, csapatszintű döntés
 - [ ] `src/hooks/useEventSystem.test.ts` — bővítés: multiplayer event kiosztás
 - [ ] `tsc --noEmit` + `npm run test` + `npm run build` — zöld
 
-**J. Dokumentáció**
+**K. Dokumentáció**
 - [ ] `security.rules.json` frissítése: új node-ok (friends, friendRequests, chats, sessions)
 - [ ] `.claude/lessons-learned.md` — bejegyzés a multiplayer architektúráról
 - [ ] `.claude/references/architecture-current.md` frissítése
@@ -221,10 +236,15 @@ MainMenu ──► "Barátok" gomb ──► FriendsScreen (GamePhase: "friends"
                               ▼            ▼            ▼
                          Barátlista    Keresés     Friend Request-ek
                               │
-                         [Kattintás barátra]
-                              │
-                              ▼
-                         ChatPanel (teljes képernyő a FriendsScreen-ben)
+                    ┌─────────┴──────────┐
+                    ▼                    ▼
+              ChatPanel       „View Wall of Shame" ──► FriendWallScreen
+              (teljes           (read-only, élő RTDB    (GamePhase: "friendWall")
+               képernyő)        subscription)               │
+                                                      ┌─────┴──────┐
+                                                      ▼            ▼
+                                                 Failures     Successes
+                                                 (sírkövek)   (trófeák)
 
 Játék közben (gamePhase === "playing"):
 
@@ -280,6 +300,8 @@ useMultiplayerAttention
 ```
 src/components/screens/FriendsScreen.tsx          # Barátok képernyő
 src/components/screens/FriendsScreen.module.css
+src/components/screens/FriendWallScreen.tsx       # Barát szégyenfala (read-only)
+src/components/screens/FriendWallScreen.module.css
 src/components/features/ChatPanel.tsx             # Privát chat panel
 src/components/features/ChatPanel.module.css
 src/components/features/MultiplayerStatusBar.tsx  # Résztvevő lista játék közben
@@ -292,18 +314,20 @@ src/hooks/useMultiplayerAttention.ts              # Figyelmi állapot szinkron
 
 ### Módosuló fájlok
 ```
-src/types/index.ts                                # +GamePhase "friends", +MultiplayerSession, +FriendRequest, +UserOnlineStatus
-src/state/useGameStore.ts                         # +multiplayerSession, +multiplayerParticipants
-src/components/routing/ScreenRouter.tsx           # "friends" case
+src/types/index.ts                                # +GamePhase "friends", "friendWall", +MultiplayerSession, +FriendRequest, +UserOnlineStatus
+src/state/useGameStore.ts                         # +multiplayerSession, +multiplayerParticipants, +friendWallTargetUid, +friendWallTargetName
+src/components/routing/ScreenRouter.tsx           # +"friends", +"friendWall" case
 src/components/screens/MainMenu.tsx               # "Barátok" gomb
+src/components/screens/FriendsScreen.tsx          # +"View Wall of Shame" gomb → transitionTo("friendWall")
+src/components/screens/WallOfShame.tsx            # +read-only mód paraméter (opcionális, újrahasználható)
 src/hooks/useEventSystem.ts                       # Multiplayer event kiosztás
 src/components/features/EventModal.tsx             # Multiplayer-aware (opcionális)
 src/components/features/Dashboard.tsx              # MultiplayerStatusBar integráció
-src/App.tsx                                        # FriendsScreen routing
-src/firebase/userData.ts                          # (ha szükséges)
-security.rules.json                                # Új node-ok
+src/App.tsx                                        # FriendsScreen + FriendWallScreen routing
+src/firebase/userData.ts                          # +subscribeFriendFailures(), +subscribeFriendSuccesses()
+security.rules.json                                # Új node-ok + friend-only olvasás failures/successes
 database.rules.json                                # Regenerálva
-src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 30+ új kulcs
+src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 ```
 
 ---
@@ -342,6 +366,10 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 30+ új kulcs
 | `friends.notWatching` | Not watching | Nem figyel |
 | `friends.noResults` | No players found | Nincs találat |
 | `friends.empty` | Your friend list is empty | A barátlistád üres |
+| `friendWall.title` | {{name}}'s Wall of Shame | {{name}} Szégyenfala |
+| `friendWall.back` | Back to Friends | Vissza a barátokhoz |
+| `friendWall.emptyFailures` | No failures recorded | Nincs rögzített kudarc |
+| `friendWall.emptySuccesses` | No successful missions | Nincs sikeres küldetés |
 | `chat.title` | Chat | Csevegés |
 | `chat.inputPlaceholder` | Write a message... | Írj egy üzenetet... |
 | `chat.send` | Send | Küldés |
@@ -401,5 +429,7 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 30+ új kulcs
 - **Események multiplayerben:** a 011-es terv eventjei multiplayer módban csak egy (figyelő) játékost érintenek közvetlenül; a többiek toast értesítést kapnak. Ha az érintett nem reagál időben, a teljes csapat büntetést kap.
 - **Jutalom:** a küldetés végén a jutalom felosztásra kerül a résztvevők között. Csak az kap, aki a végén online van. Ha a csapat elbukik, mindenki veszít.
 - **Firebase struktúra:** `friends`, `friendRequests`, `chats`, `sessions` új node-ok a megfelelő security rules-szal.
-- i18n: mind az 5 nyelven teljes paritás (30+ új kulcs)
+- **Barát szégyenfala:** a FriendsScreen-en a barátra kattintva elérhető a `FriendWallScreen` (GamePhase: `"friendWall"`), amely a meglévő `WallOfShame` komponenst használja újra read-only módban. A barát neve a headerben jelenik meg („{name} Szégyenfala"). A rekordok élő RTDB subscription-nel szinkronizálódnak.
+- **Security:** a `users/{uid}/failures` és `users/{uid}/successes` node-ok olvasása csak barátok számára engedélyezett a security rules-ban.
+- i18n: mind az 5 nyelven teljes paritás (35+ új kulcs)
 - `npm run test` + `npm run build` + `tsc --noEmit` — zöld
