@@ -344,6 +344,84 @@
   font-size: 0.9rem;
 }
 
+/* UID Lookup */
+.uidLookupSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(103, 232, 249, 0.12);
+}
+
+.uidLookupRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.uidLookupRow .searchInput {
+  flex: 1;
+}
+
+.lookupBtn {
+  padding: 0.65rem 1rem;
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 0.5rem;
+  color: #c084fc;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lookupBtn:hover:not(:disabled) {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+.lookupBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uidLabel {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uidLookupNotFound,
+.uidLookupError {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.uidLookupNotFound {
+  color: #94a3b8;
+}
+
+.uidLookupError {
+  color: #f87171;
+}
+
+/* Min chars hint */
+.minCharHint {
+  color: #64748b;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 /* Empty / loading */
 .empty {
   color: #64748b;

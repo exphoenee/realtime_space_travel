@@ -421,7 +421,7 @@
     "title": "Freunde",
     "back": "Zurück",
     "search": "Suchen",
-    "searchPlaceholder": "Suche nach Spitzname, Name oder Benutzer-ID...",
+    "searchPlaceholder": "Suche nach Spitzname oder Name...",
     "addFriend": "Hinzufügen",
     "removeFriend": "Entfernen",
     "friendRequestSent": "Anfrage gesendet!",
@@ -434,7 +434,13 @@
     "watching": "Aufpassend",
     "notWatching": "Nicht aufpassend",
     "noResults": "Keine Spieler gefunden",
-    "empty": "Deine Freundesliste ist leer"
+    "minSearchLength": "Gib mindestens 3 Zeichen für die Suche ein",
+    "empty": "Deine Freundesliste ist leer",
+    "uidLookupPlaceholder": "Exakte Benutzer-ID einfügen...",
+    "lookup": "Suchen",
+    "uidNotFound": "Kein Benutzer mit dieser ID gefunden",
+    "uidLookupError": "Suche fehlgeschlagen. Versuche es erneut.",
+    "thisIsYou": "Das bist du!"
   },
   "friendWall": {
     "title": "{{name}}s Wand der Schande",

@@ -421,7 +421,7 @@
     "title": "Friends",
     "back": "Back",
     "search": "Search",
-    "searchPlaceholder": "Search by nickname, name or user ID...",
+    "searchPlaceholder": "Search by nickname or name...",
     "addFriend": "Add friend",
     "removeFriend": "Remove",
     "friendRequestSent": "Request sent!",
@@ -434,7 +434,13 @@
     "watching": "Watching",
     "notWatching": "Not watching",
     "noResults": "No players found",
-    "empty": "Your friend list is empty"
+    "minSearchLength": "Type at least 3 characters to search",
+    "empty": "Your friend list is empty",
+    "uidLookupPlaceholder": "Paste exact User ID...",
+    "lookup": "Look up",
+    "uidNotFound": "No user found with this ID",
+    "uidLookupError": "Lookup failed. Try again.",
+    "thisIsYou": "This is you!"
   },
   "friendWall": {
     "title": "{{name}}'s Wall of Shame",

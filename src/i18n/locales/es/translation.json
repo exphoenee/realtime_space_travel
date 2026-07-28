@@ -421,7 +421,7 @@
     "title": "Amigos",
     "back": "Volver",
     "search": "Buscar",
-    "searchPlaceholder": "Buscar por apodo, nombre o ID de usuario...",
+    "searchPlaceholder": "Buscar por apodo o nombre...",
     "addFriend": "Agregar",
     "removeFriend": "Eliminar",
     "friendRequestSent": "¡Solicitud enviada!",
@@ -434,7 +434,13 @@
     "watching": "Vigilando",
     "notWatching": "No vigilando",
     "noResults": "No se encontraron jugadores",
-    "empty": "Tu lista de amigos está vacía"
+    "minSearchLength": "Escribe al menos 3 caracteres para buscar",
+    "empty": "Tu lista de amigos está vacía",
+    "uidLookupPlaceholder": "Pega el ID de usuario exacto...",
+    "lookup": "Buscar",
+    "uidNotFound": "No se encontró ningún usuario con este ID",
+    "uidLookupError": "Búsqueda fallida. Inténtalo de nuevo.",
+    "thisIsYou": "¡Eres tú!"
   },
   "friendWall": {
     "title": "Muro de la Vergüenza de {{name}}",

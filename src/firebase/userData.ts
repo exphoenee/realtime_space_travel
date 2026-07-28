@@ -872,6 +872,34 @@ export const updateUserPublicProfile = async (
 };
 
 /**
+ * Look up a user by their exact Firebase UID.
+ * Returns the public profile if found, or null if not found.
+ */
+export const lookupUserByUid = async (
+  uid: string,
+): Promise<UserPublicProfile | null> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+  const userRef = ref(db, `usersPublic/${uid}`);
+  const snapshot = await get(userRef);
+
+  if (!snapshot.exists()) return null;
+
+  const data = snapshot.val() as {
+    nickname?: string;
+    displayName?: string | null;
+    onlineStatus?: UserOnlineStatus;
+  };
+
+  return {
+    uid,
+    displayName: data.displayName ?? null,
+    nickname: data.nickname ?? "",
+    onlineStatus: data.onlineStatus ?? "offline",
+  };
+};
+
+/**
  * Search the usersPublic index for matching users.
  * Client-side filtering on nickname and displayName.
  * Returns up to 20 results sorted by nickname.

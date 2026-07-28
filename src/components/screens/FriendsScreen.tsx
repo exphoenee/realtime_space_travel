@@ -14,6 +14,7 @@ import {
   subscribeUnreadCount,
   getChatId,
   searchUsersPublic,
+  lookupUserByUid,
 } from "../../firebase/userData";
 import type { FriendRequest, UserOnlineStatus, UserPublicProfile } from "../../types";
 import styles from "./FriendsScreen.module.css";
@@ -45,6 +46,9 @@ const FriendsScreen: React.FC = () => {
   const [requestStatus, setRequestStatus] = useState<Record<string, "idle" | "sending" | "sent" | "error">>({});
   const [activeChatFriend, setActiveChatFriend] = useState<FriendWithStatus | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [uidLookupTerm, setUidLookupTerm] = useState("");
+  const [uidLookupResult, setUidLookupResult] = useState<UserPublicProfile | null | undefined>(undefined);
+  const [uidLookupStatus, setUidLookupStatus] = useState<"idle" | "looking" | "not-found" | "found" | "error">("idle");
 
   // Subscribe to friends list
   useEffect(() => {
@@ -145,16 +149,17 @@ const FriendsScreen: React.FC = () => {
     setFriendsWithStatus((prev) => prev.filter((f) => friendUids.includes(f.uid)));
   }, [friendUids]);
 
-  // Debounced search
+  // Debounced search — minimum 3 characters
   useEffect(() => {
-    if (!searchTerm.trim() || !authUid) {
+    const trimmed = searchTerm.trim();
+    if (!trimmed || trimmed.length < 3 || !authUid) {
       setSearchResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
       setIsSearching(true);
-      const results = await searchUsersPublic(searchTerm, authUid);
+      const results = await searchUsersPublic(trimmed, authUid);
       setSearchResults(results);
       setIsSearching(false);
     }, 300);
@@ -245,6 +250,27 @@ const FriendsScreen: React.FC = () => {
   const getPublicDisplayName = (profile: UserPublicProfile): string => {
     return profile.nickname || profile.displayName || profile.uid.slice(0, 8);
   };
+
+  // --- UID Lookup ---
+  const handleUidLookup = useCallback(async () => {
+    const trimmed = uidLookupTerm.trim();
+    if (!trimmed || !authUid) return;
+    setUidLookupStatus("looking");
+    try {
+      const profile = await lookupUserByUid(trimmed);
+      if (profile) {
+        setUidLookupResult(profile);
+        setUidLookupStatus("found");
+      } else {
+        setUidLookupResult(null);
+        setUidLookupStatus("not-found");
+      }
+    } catch (err) {
+      console.error("UID lookup failed:", err);
+      setUidLookupResult(null);
+      setUidLookupStatus("error");
+    }
+  }, [uidLookupTerm, authUid]);
 
   return (
     <div className={styles.overlay}>
@@ -365,6 +391,7 @@ const FriendsScreen: React.FC = () => {
               {/* Search */}
               {activeTab === "search" && (
                 <div className={styles.searchContainer}>
+                  {/* Name search */}
                   <input
                     type="text"
                     className={styles.searchInput}
@@ -375,7 +402,10 @@ const FriendsScreen: React.FC = () => {
                   />
                   <div className={styles.list}>
                     {isSearching && <p className={styles.loading}>...</p>}
-                    {!isSearching && searchTerm.trim() && searchResults.length === 0 && (
+                    {!isSearching && searchTerm.trim() && searchTerm.trim().length < 3 && (
+                      <p className={styles.minCharHint}>{t("friends.minSearchLength")}</p>
+                    )}
+                    {!isSearching && searchTerm.trim().length >= 3 && searchResults.length === 0 && (
                       <p className={styles.empty}>{t("friends.noResults")}</p>
                     )}
                     {!isSearching &&
@@ -415,6 +445,85 @@ const FriendsScreen: React.FC = () => {
                           </div>
                         </div>
                       ))}
+                  </div>
+
+                  {/* UID lookup — exact match only, no fuzzy search */}
+                  <div className={styles.uidLookupSection}>
+                    <div className={styles.uidLookupRow}>
+                      <input
+                        type="text"
+                        className={styles.searchInput}
+                        placeholder={t("friends.uidLookupPlaceholder")}
+                        value={uidLookupTerm}
+                        onChange={(e) => {
+                          setUidLookupTerm(e.target.value);
+                          setUidLookupStatus("idle");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleUidLookup();
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.lookupBtn}
+                        onClick={handleUidLookup}
+                        disabled={uidLookupStatus === "looking" || !uidLookupTerm.trim()}
+                      >
+                        {uidLookupStatus === "looking" ? "..." : t("friends.lookup")}
+                      </button>
+                    </div>
+
+                    {uidLookupStatus === "not-found" && (
+                      <p className={styles.uidLookupNotFound}>
+                        {t("friends.uidNotFound")}
+                      </p>
+                    )}
+                    {uidLookupStatus === "error" && (
+                      <p className={styles.uidLookupError}>
+                        {t("friends.uidLookupError")}
+                      </p>
+                    )}
+                    {uidLookupStatus === "found" && uidLookupResult && (
+                      <div className={styles.card}>
+                        <div className={styles.cardLeft}>
+                          <span className={styles.statusIcon} title={getStatusLabel(uidLookupResult.onlineStatus)}>
+                            {getStatusIcon(uidLookupResult.onlineStatus)}
+                          </span>
+                          <span className={styles.cardName}>
+                            {getPublicDisplayName(uidLookupResult)}
+                          </span>
+                          <span className={styles.uidLabel}>{uidLookupResult.uid.slice(0, 12)}...</span>
+                        </div>
+                        <div className={styles.cardRight}>
+                          {requestStatus[uidLookupResult.uid] === "sent" ? (
+                            <span className={styles.sentLabel}>
+                              {t("friends.friendRequestSent")}
+                            </span>
+                          ) : uidLookupResult.uid === authUid ? (
+                            <span className={styles.alreadyFriendLabel}>
+                              {t("friends.thisIsYou")}
+                            </span>
+                          ) : friendUids.includes(uidLookupResult.uid) ? (
+                            <span className={styles.alreadyFriendLabel}>
+                              ✓
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className={styles.addBtn}
+                              onClick={() =>
+                                handleSendRequest(uidLookupResult.uid, getPublicDisplayName(uidLookupResult))
+                              }
+                              disabled={requestStatus[uidLookupResult.uid] === "sending"}
+                            >
+                              {requestStatus[uidLookupResult.uid] === "sending"
+                                ? "..."
+                                : t("friends.addFriend")}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
