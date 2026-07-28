@@ -106,6 +106,63 @@
       }
     },
 
+    /* ——— USERS PUBLIC INDEX ——— */
+    "usersPublic": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    /* ——— FRIENDS ——— */
+    "friends": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    /* ——— FRIEND REQUESTS ——— */
+    "friendRequests": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    /* ——— CHATS ——— */
+    "chats": {
+      "$chatId": {
+        "participants": {
+          ".read": "auth != null && data.child(auth.uid).val() === true",
+          ".write": "auth != null && (data.child(auth.uid).val() === true || newData.child(auth.uid).val() === true)"
+        },
+        "messages": {
+          "$msgId": {
+            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
+            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        },
+        "unread": {
+          "$uid": {
+            ".read": "auth != null && $uid == auth.uid",
+            /* Write: any participant of the chat can increment the other's unread counter.
+             * Read: only the owner can read their own count. */
+            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        },
+        "typing": {
+          "$uid": {
+            /* Read: any participant of the chat can read any typing status.
+             * Write: each participant can only set their OWN typing status AND must
+             * be a participant of the chat. */
+            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
+            ".write": "auth != null && $uid == auth.uid && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        }
+      }
+    },
+
     "users": {
       "$key": {
         /*
@@ -115,6 +172,10 @@
          *   2) The key is their own Firebase UID (after guest->Google migration).
          * This allows guest data to be migrated to users/{googleUid} and then
          * accessed directly without a device_map entry.
+         *
+         * NOTE: Friend read access is granted ONLY on the `failures` and
+         * `successes` sub-nodes below — NOT at this level — to prevent
+         * friends from reading wallet, inventory, settings, etc.
          */
         ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
 
@@ -149,6 +210,22 @@
 
         /* ——— STATS (e.g. bestServiceSeconds) ——— */
         "stats": {
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        /* ——— FAILURES (Wall of Shame) ——— */
+        "failures": {
+          /*
+           * Read: own uid OR friends can read (for friend wall feature).
+           * Write: own uid only.
+           */
+          ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        /* ——— SUCCESSES (Wall of Shame) ——— */
+        "successes": {
+          ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         }
       }

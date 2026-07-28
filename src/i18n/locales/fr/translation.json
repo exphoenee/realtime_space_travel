@@ -122,6 +122,7 @@
     "settings": "Paramètres",
     "intro": "Voir l'intro",
     "wallOfShame": "Mur de la Honte",
+    "friends": "Amis",
     "loginComingSoon": "La connexion sera bientôt disponible.",
     "shopComingSoon": "La boutique sera bientôt disponible."
   },
@@ -415,5 +416,38 @@
       "shortestService": "Plus court service",
       "totalDistance": "Distance totale"
     }
+  },
+  "friends": {
+    "title": "Amis",
+    "back": "Retour",
+    "search": "Rechercher",
+    "searchPlaceholder": "Recherche par surnom, nom ou ID...",
+    "addFriend": "Ajouter",
+    "removeFriend": "Retirer",
+    "friendRequestSent": "Demande envoyée!",
+    "pendingRequests": "Demandes",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "inGame": "En jeu",
+    "watching": "Surveille",
+    "notWatching": "Ne surveille pas",
+    "noResults": "Aucun joueur trouvé",
+    "empty": "Votre liste d'amis est vide"
+  },
+  "friendWall": {
+    "title": "Mur de la Honte de {{name}}",
+    "back": "Retour aux amis",
+    "viewWall": "Voir le Mur de la Honte"
+  },
+  "chat": {
+    "title": "Discussion",
+    "back": "Retour",
+    "inputPlaceholder": "Écrivez un message...",
+    "send": "Envoyer",
+    "unread": "Messages non lus",
+    "empty": "Aucun message pour l'instant",
+    "typing": "écrit..."
   }
 }

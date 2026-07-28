@@ -6,7 +6,7 @@ import {
   DEBUG_STARTING_CREDITS,
   BASE_EXOPLANET_IDS,
 } from "../constants/shopCatalog";
-import type { FailureRecord, SuccessRecord } from "../types";
+import type { FailureRecord, SuccessRecord, FriendRequest, UserOnlineStatus, UserPublicProfile, ChatMessage } from "../types";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
@@ -704,6 +704,378 @@ export const subscribeFailures = (
     // Sort by failedAt descending (most recent first)
     records.sort((a, b) => b.failedAt - a.failedAt);
     callback(records);
+  });
+};
+
+// --- Social / Friends ---
+
+/**
+ * Send a friend request from the current user to another user.
+ * Creates a new entry under friendRequests/{toUid}/{fromUid}.
+ */
+export const sendFriendRequest = async (
+  fromUid: string,
+  toUid: string,
+  fromNickname: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const requestRef = ref(db, `friendRequests/${toUid}/${fromUid}`);
+  await set(requestRef, {
+    from: fromUid,
+    fromNickname,
+    at: Date.now(),
+    status: "pending",
+  });
+};
+
+/**
+ * Accept a friend request.
+ * Adds each user to the other's friends list and removes the request.
+ */
+export const acceptFriendRequest = async (
+  uid: string,
+  fromUid: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const rootRef = ref(db);
+
+  // Atomic multi-path update:
+  // 1. Add to both friends lists
+  // 2. Update request status to accepted
+  await update(rootRef, {
+    [`friends/${uid}/${fromUid}`]: true,
+    [`friends/${fromUid}/${uid}`]: true,
+    [`friendRequests/${uid}/${fromUid}/status`]: "accepted",
+  });
+};
+
+/**
+ * Reject a friend request (removes it entirely).
+ */
+export const rejectFriendRequest = async (
+  uid: string,
+  fromUid: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const requestRef = ref(db, `friendRequests/${uid}/${fromUid}`);
+  await set(requestRef, null);
+};
+
+/**
+ * Remove a friend from both friends lists.
+ */
+export const removeFriend = async (
+  uid: string,
+  friendUid: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const rootRef = ref(db);
+
+  await update(rootRef, {
+    [`friends/${uid}/${friendUid}`]: null,
+    [`friends/${friendUid}/${uid}`]: null,
+  });
+};
+
+/**
+ * Subscribe to a user's friends list.
+ * Returns an array of friend UIDs.
+ */
+export const subscribeFriends = (
+  uid: string,
+  callback: (friendUids: string[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const friendsRef = ref(db, `friends/${uid}`);
+
+  return onValue(friendsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const uids = Object.keys(data);
+    callback(uids);
+  });
+};
+
+/**
+ * Subscribe to incoming friend requests for a user.
+ * Returns an array of FriendRequest objects with the sender's uid.
+ */
+export const subscribeFriendRequests = (
+  uid: string,
+  callback: (requests: (FriendRequest & { uid: string })[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const requestsRef = ref(db, `friendRequests/${uid}`);
+
+  return onValue(requestsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const requests: (FriendRequest & { uid: string })[] = Object.entries(data)
+      .map(([fromUid, value]) => {
+        const req = value as FriendRequest;
+        return { ...req, uid: fromUid };
+      })
+      .filter((r) => r.status === "pending");
+    // Sort by most recent first
+    requests.sort((a, b) => b.at - a.at);
+    callback(requests);
+  });
+};
+
+/**
+ * Subscribe to a user's online status.
+ */
+export const subscribeUserOnlineStatus = (
+  targetUid: string,
+  callback: (status: UserOnlineStatus) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const statusRef = ref(db, `usersPublic/${targetUid}/onlineStatus`);
+
+  return onValue(statusRef, (snapshot) => {
+    const data = snapshot.val();
+    callback(data ?? "offline");
+  });
+};
+
+/**
+ * Update the current user's online status.
+ */
+export const updateOnlineStatus = async (
+  uid: string,
+  status: UserOnlineStatus,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await update(ref(db, `usersPublic/${uid}`), { onlineStatus: status });
+};
+
+/**
+ * Update the current user's public profile (nickname + displayName).
+ * Creates the usersPublic entry if it doesn't exist.
+ */
+export const updateUserPublicProfile = async (
+  uid: string,
+  nickname: string,
+  displayName: string | null,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await update(ref(db, `usersPublic/${uid}`), {
+    nickname,
+    displayName,
+  });
+};
+
+/**
+ * Search the usersPublic index for matching users.
+ * Client-side filtering on nickname and displayName.
+ * Returns up to 20 results sorted by nickname.
+ */
+export const searchUsersPublic = async (
+  searchTerm: string,
+  excludeUid?: string,
+): Promise<UserPublicProfile[]> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+  const publicRef = ref(db, "usersPublic");
+  const snapshot = await get(publicRef);
+
+  if (!snapshot.exists()) return [];
+
+  const data = snapshot.val() as Record<
+    string,
+    { nickname?: string; displayName?: string | null; onlineStatus?: UserOnlineStatus }
+  >;
+  const term = searchTerm.toLowerCase().trim();
+
+  const results: UserPublicProfile[] = [];
+  for (const [uid, profile] of Object.entries(data)) {
+    // Exclude self
+    if (excludeUid && uid === excludeUid) continue;
+
+    const nickname = profile.nickname ?? "";
+    const displayName = profile.displayName ?? "";
+
+    // Match against nickname, displayName, or uid prefix
+    if (
+      nickname.toLowerCase().includes(term) ||
+      displayName.toLowerCase().includes(term) ||
+      uid.toLowerCase().includes(term)
+    ) {
+      results.push({
+        uid,
+        displayName: profile.displayName ?? null,
+        nickname,
+        onlineStatus: profile.onlineStatus ?? "offline",
+      });
+    }
+  }
+
+  // Sort by nickname, then displayName
+  results.sort((a, b) => {
+    const aName = a.nickname || a.displayName || "";
+    const bName = b.nickname || b.displayName || "";
+    return aName.localeCompare(bName);
+  });
+
+  return results.slice(0, 20);
+};
+
+// --- Chat ---
+
+/**
+ * Deterministic chat ID for two participants.
+ * Sorted UIDs joined by "_" — guarantees the same ID regardless of argument order.
+ */
+export const getChatId = (uid1: string, uid2: string): string => {
+  return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+};
+
+/**
+ * Update the typing status for a user in a chat.
+ * Sets chats/{chatId}/typing/{uid} to true/false.
+ * The false value is auto-set after a timeout on the client side.
+ */
+export const updateTypingStatus = async (
+  chatId: string,
+  uid: string,
+  isTyping: boolean,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const typingRef = ref(db, `chats/${chatId}/typing/${uid}`);
+  await set(typingRef, isTyping);
+};
+
+/**
+ * Subscribe to a user's typing status in a chat.
+ * Returns an unsubscribe function.
+ */
+export const subscribeTypingStatus = (
+  chatId: string,
+  uid: string,
+  callback: (isTyping: boolean) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const typingRef = ref(db, `chats/${chatId}/typing/${uid}`);
+
+  return onValue(typingRef, (snapshot) => {
+    const val = snapshot.val();
+    callback(val === true);
+  });
+};
+
+/**
+ * Send a chat message to an existing chat.
+ * Creates a new push entry under chats/{chatId}/messages.
+ * Also increments the recipient's unread counter atomically.
+ */
+export const sendMessage = async (
+  chatId: string,
+  fromUid: string,
+  text: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const messagesRef = ref(db, `chats/${chatId}/messages`);
+
+  const now = Date.now();
+  const message: { from: string; text: string; at: number } = {
+    from: fromUid,
+    text,
+    at: now,
+  };
+
+  // Push message
+  await push(messagesRef, message);
+
+  // Derive the recipient UID from the chatId (sorted: uid1_uid2)
+  const parts = chatId.split("_");
+  const toUid = parts[0] === fromUid ? parts[1] : parts[0];
+
+  // Atomically increment unread count for the recipient
+  const unreadRef = ref(db, `chats/${chatId}/unread/${toUid}`);
+  try {
+    await runTransaction(unreadRef, (current) => {
+      return (current ?? 0) + 1;
+    });
+  } catch (err) {
+    console.error("Failed to increment unread count:", err);
+  }
+};
+
+/**
+ * Subscribe to all messages in a chat.
+ * Returns an array of ChatMessage objects with their push IDs.
+ */
+export const subscribeChatMessages = (
+  chatId: string,
+  callback: (messages: (ChatMessage & { id: string })[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const messagesRef = ref(db, `chats/${chatId}/messages`);
+
+  return onValue(messagesRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const messages: (ChatMessage & { id: string })[] = Object.entries(data).map(
+      ([pushId, value]) => {
+        const msg = value as ChatMessage;
+        return { ...msg, id: pushId };
+      },
+    );
+    messages.sort((a, b) => a.at - b.at);
+    callback(messages);
+  });
+};
+
+/**
+ * Initialize a chat between two users (creates the participants node).
+ * Idempotent — safe to call multiple times.
+ */
+export const initChat = async (
+  chatId: string,
+  uid1: string,
+  uid2: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const participantsRef = ref(db, `chats/${chatId}/participants`);
+  await update(participantsRef, { [uid1]: true, [uid2]: true });
+};
+
+/**
+ * Mark a chat as read by resetting the unread counter for this user.
+ */
+export const markChatRead = async (
+  chatId: string,
+  uid: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const unreadRef = ref(db, `chats/${chatId}/unread/${uid}`);
+  await set(unreadRef, 0);
+};
+
+/**
+ * Subscribe to the unread message count for a user in a specific chat.
+ * Returns an unsubscribe function.
+ */
+export const subscribeUnreadCount = (
+  chatId: string,
+  uid: string,
+  callback: (count: number) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const unreadRef = ref(db, `chats/${chatId}/unread/${uid}`);
+
+  return onValue(unreadRef, (snapshot) => {
+    const val = snapshot.val();
+    callback(typeof val === "number" ? val : 0);
   });
 };
 

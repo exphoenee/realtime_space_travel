@@ -1,4 +1,5 @@
-import { getFirebaseAuth } from "./config";
+import { getFirebaseAuth, getFirebaseDB } from "./config";
+import { ref, onDisconnect as rtdbOnDisconnect, set } from "firebase/database";
 import {
   onAuthChange,
   signInAnonymous,
@@ -10,6 +11,7 @@ import {
   ensureUserNode,
   subscribeUser,
   migrateGuestData,
+  updateOnlineStatus,
   type UserNode,
 } from "./userData";
 import { getDeviceId } from "./deviceId";
@@ -156,6 +158,16 @@ export const startAuthBootstrap = (
       unsubUser = null;
     }
     unsubUser = subscribeUser(rtdbKey, handleUserData); // ALWAYS runs
+
+    // --- Online status broadcast ---
+    // Set online status immediately
+    updateOnlineStatus(rtdbKey, "online").catch(console.error);
+
+    // Firebase onDisconnect: when the client disconnects (browser close, tab switch,
+    // network drop), the RTDB server automatically sets the status to "offline".
+    const db = getFirebaseDB();
+    const statusRef = ref(db, `usersPublic/${rtdbKey}/onlineStatus`);
+    rtdbOnDisconnect(statusRef).set("offline").catch(console.error);
   });
 };
 

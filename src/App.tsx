@@ -22,7 +22,7 @@ import { useEventSystem } from "./hooks/useEventSystem";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
-import { updateUserSettings } from "./firebase/userData";
+import { updateUserSettings, updateOnlineStatus } from "./firebase/userData";
 import type { UserNode } from "./firebase/userData";
 import { BASE_EXOPLANET_IDS, getShipImageById } from "./constants/shopCatalog";
 
@@ -372,7 +372,9 @@ const App: React.FC = () => {
     gamePhase === "settings" ||
     gamePhase === "shop" ||
     gamePhase === "loading" ||
-    gamePhase === "wallOfShame";
+    gamePhase === "wallOfShame" ||
+    gamePhase === "friends" ||
+    gamePhase === "friendWall";
 
   const attentionCountdown =
     gamePhase === "countdown"
@@ -545,6 +547,39 @@ const App: React.FC = () => {
     missionComplete,
     updateBestServiceTime,
   ]);
+
+  // Watch gamePhase changes → update online status
+  useEffect(() => {
+    const unsub = useGameStore.subscribe((state, prevState) => {
+      if (state.gamePhase === prevState.gamePhase) return;
+
+      const rtdbKey = getRtdbKey();
+      if (!rtdbKey) return;
+
+      // Set status based on current phase
+      if (state.gamePhase === "playing" || state.gamePhase === "loading") {
+        updateOnlineStatus(rtdbKey, "in-game").catch(console.error);
+      } else if (
+        state.gamePhase === "mainMenu" ||
+        state.gamePhase === "intro" ||
+        state.gamePhase === "settings" ||
+        state.gamePhase === "shop" ||
+        state.gamePhase === "wallOfShame" ||
+        state.gamePhase === "friends" ||
+        state.gamePhase === "friendWall"
+      ) {
+        updateOnlineStatus(rtdbKey, "online").catch(console.error);
+      } else if (
+        state.gamePhase === "crewLost" ||
+        state.gamePhase === "missionComplete"
+      ) {
+        // Brief moment of online before transitioning back to menu
+        updateOnlineStatus(rtdbKey, "online").catch(console.error);
+      }
+    });
+
+    return () => unsub();
+  }, []);
 
   // Check for pending destruction (rescue-transfer ignored)
   useEffect(() => {

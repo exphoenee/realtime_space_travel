@@ -122,6 +122,7 @@
     "settings": "Beállítások",
     "intro": "Intro megtekintése",
     "wallOfShame": "Szégyenfal",
+    "friends": "Barátok",
     "loginComingSoon": "A bejelentkezés hamarosan elérhető lesz.",
     "shopComingSoon": "Az áruház hamarosan elérhető lesz."
   },
@@ -415,5 +416,38 @@
       "shortestService": "Legrövidebb szolgálat",
       "totalDistance": "Teljes távolság"
     }
+  },
+  "friends": {
+    "title": "Barátok",
+    "back": "Vissza",
+    "search": "Keresés",
+    "searchPlaceholder": "Keresés név, becenév vagy azonosító alapján...",
+    "addFriend": "Hozzáadás",
+    "removeFriend": "Eltávolítás",
+    "friendRequestSent": "Kérés elküldve!",
+    "pendingRequests": "Kérések",
+    "accept": "Elfogadás",
+    "reject": "Elutasítás",
+    "online": "Online",
+    "offline": "Offline",
+    "inGame": "Játékban",
+    "watching": "Figyel",
+    "notWatching": "Nem figyel",
+    "noResults": "Nincs találat",
+    "empty": "A barátlistád üres"
+  },
+  "friendWall": {
+    "title": "{{name}} Szégyenfala",
+    "back": "Vissza a barátokhoz",
+    "viewWall": "Szégyenfal megtekintése"
+  },
+  "chat": {
+    "title": "Csevegés",
+    "back": "Vissza",
+    "inputPlaceholder": "Írj egy üzenetet...",
+    "send": "Küldés",
+    "unread": "Olvasatlan üzenetek",
+    "empty": "Még nincs üzenet",
+    "typing": "gépel..."
   }
 }

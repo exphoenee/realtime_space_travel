@@ -122,6 +122,7 @@
     "settings": "Einstellungen",
     "intro": "Intro ansehen",
     "wallOfShame": "Wand der Schande",
+    "friends": "Freunde",
     "loginComingSoon": "Die Anmeldung wird bald verfügbar sein.",
     "shopComingSoon": "Der Shop wird bald verfügbar sein."
   },
@@ -415,5 +416,38 @@
       "shortestService": "Kürzester Dienst",
       "totalDistance": "Gesamtdistanz"
     }
+  },
+  "friends": {
+    "title": "Freunde",
+    "back": "Zurück",
+    "search": "Suchen",
+    "searchPlaceholder": "Suche nach Spitzname, Name oder Benutzer-ID...",
+    "addFriend": "Hinzufügen",
+    "removeFriend": "Entfernen",
+    "friendRequestSent": "Anfrage gesendet!",
+    "pendingRequests": "Anfragen",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "online": "Online",
+    "offline": "Offline",
+    "inGame": "Im Spiel",
+    "watching": "Aufpassend",
+    "notWatching": "Nicht aufpassend",
+    "noResults": "Keine Spieler gefunden",
+    "empty": "Deine Freundesliste ist leer"
+  },
+  "friendWall": {
+    "title": "{{name}}s Wand der Schande",
+    "back": "Zurück zu Freunden",
+    "viewWall": "Wand der Schande ansehen"
+  },
+  "chat": {
+    "title": "Chat",
+    "back": "Zurück",
+    "inputPlaceholder": "Schreibe eine Nachricht...",
+    "send": "Senden",
+    "unread": "Ungelesene Nachrichten",
+    "empty": "Noch keine Nachrichten",
+    "typing": "schreibt..."
   }
 }

@@ -1,42 +1,115 @@
 {
+
+
   "rules": {
-    /*
-     * DEVICE MAP: maps a persistent deviceId (from localStorage) to the current
-     * Firebase auth UID. The /users rules check this map instead of comparing
-     * auth.uid directly with the path segment, so the guest identity survives
-     * sign-out / new anonymous login.
-     *
-     * Write: any authenticated user may write `device_map/{deviceId}` but may
-     * only set its value to their own auth.uid (prevents stealing another
-     * user's device mapping). Deletion is allowed if the current value equals
-     * auth.uid (used after guest data migration).
-     * Read: no one reads this path directly; the /users rules access it via
-     * root.child('device_map').
-     */
+    
     "device_map": {
       "$deviceId": {
+        
         ".write": "auth != null && (newData.val() == auth.uid || data.val() == auth.uid)",
         ".read": false
       }
     },
 
+    
+    "usersPublic": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    
+    "friends": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    
+    "friendRequests": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid"
+      }
+    },
+
+    
+    "chats": {
+      "$chatId": {
+        "participants": {
+          ".read": "auth != null && data.child(auth.uid).val() === true",
+          ".write": "auth != null && (data.child(auth.uid).val() === true || newData.child(auth.uid).val() === true)"
+        },
+        "messages": {
+          "$msgId": {
+            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
+            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        },
+        "unread": {
+          "$uid": {
+            ".read": "auth != null && $uid == auth.uid",
+            
+            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        },
+        "typing": {
+          "$uid": {
+            
+            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
+            ".write": "auth != null && $uid == auth.uid && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+          }
+        }
+      }
+    },
+
     "users": {
       "$key": {
-        /*
-         * READ: the authenticated user may read their own data if either:
-         *   1) The device_map maps this key to their auth.uid (guest session),
-         *      OR
-         *   2) The key is their own Firebase UID (after guest->Google migration).
-         * This allows guest data to be migrated to users/{googleUid} and then
-         * accessed directly without a device_map entry.
-         */
+        
         ".read": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)",
 
-        "profile":   { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
-        "settings":  { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
-        "wallet":    { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
-        "inventory": { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" },
-        "stats":     { ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)" }
+        
+        "profile": {
+          
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "settings": {
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "wallet": {
+          
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "inventory": {
+          
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "stats": {
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "failures": {
+          
+          ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+
+        
+        "successes": {
+          ".read": "auth != null && ($key == auth.uid || root.child('friends').child(auth.uid).child($key).val() === true)",
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        }
       }
     }
   }

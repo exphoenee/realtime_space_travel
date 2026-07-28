@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useAuthStore from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, getAuthErrorMessage } from "../../firebase/auth";
+import { subscribeFriends, subscribeUnreadCount, getChatId } from "../../firebase/userData";
 import styles from "./MainMenu.module.css";
 
 const DEBUG_ENV = import.meta.env.VITE_DEBUG_MODE === "true";
@@ -12,15 +13,54 @@ const MainMenu = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
   const authUser = useAuthStore((s) => s.user);
+  const authUid = useAuthStore((s) => s.uid);
   const authStatus = useAuthStore((s) => s.status);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Local login error takes precedence, falling back to the global auth error.
   const errorKey = loginError ?? authError;
+
+  // Subscribe to unread message counts per friend (map-based, avoids double-counting)
+  useEffect(() => {
+    if (!authUid) {
+      setUnreadCounts({});
+      return;
+    }
+
+    const unsubs: (() => void)[] = [];
+
+    const unsubFriends = subscribeFriends(authUid, (friendUids) => {
+      // Clean up old unread subscriptions
+      for (const unsub of unsubs) unsub();
+      unsubs.length = 0;
+
+      // Reset counts
+      setUnreadCounts({});
+
+      if (friendUids.length === 0) return;
+
+      for (const fuid of friendUids) {
+        const chatId = getChatId(authUid, fuid);
+        const unsub = subscribeUnreadCount(chatId, authUid, (count) => {
+          setUnreadCounts((prev) => ({ ...prev, [fuid]: count }));
+        });
+        unsubs.push(unsub);
+      }
+    });
+
+    return () => {
+      unsubFriends();
+      for (const unsub of unsubs) unsub();
+    };
+  }, [authUid]);
+
+  // Compute total from the map
+  const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
 
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
@@ -59,6 +99,14 @@ const MainMenu = () => {
           </button>
           <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
             {t("mainMenu.wallOfShame")}
+          </button>
+          <button type="button" className={styles.button} onClick={() => transitionTo("friends")}>
+            <span>{t("mainMenu.friends")}</span>
+            {totalUnread > 0 && (
+              <span className={styles.notificationBadge}>
+                {totalUnread > 99 ? "99+" : totalUnread}
+              </span>
+            )}
           </button>
           <button
             type="button"
