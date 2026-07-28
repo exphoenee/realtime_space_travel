@@ -901,11 +901,10 @@ export const searchUsersPublic = async (
     const nickname = profile.nickname ?? "";
     const displayName = profile.displayName ?? "";
 
-    // Match against nickname, displayName, or uid prefix
+    // Match against nickname or displayName only (not uid — uid contains random chars causing false positives)
     if (
       nickname.toLowerCase().includes(term) ||
-      displayName.toLowerCase().includes(term) ||
-      uid.toLowerCase().includes(term)
+      displayName.toLowerCase().includes(term)
     ) {
       results.push({
         uid,
