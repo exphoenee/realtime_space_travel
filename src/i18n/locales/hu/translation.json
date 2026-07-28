@@ -421,7 +421,7 @@
     "title": "Barátok",
     "back": "Vissza",
     "search": "Keresés",
-    "searchPlaceholder": "Keresés név, becenév vagy azonosító alapján...",
+    "searchPlaceholder": "Keresés név vagy becenév alapján...",
     "addFriend": "Hozzáadás",
     "removeFriend": "Eltávolítás",
     "friendRequestSent": "Kérés elküldve!",
@@ -434,7 +434,13 @@
     "watching": "Figyel",
     "notWatching": "Nem figyel",
     "noResults": "Nincs találat",
-    "empty": "A barátlistád üres"
+    "minSearchLength": "Írj legalább 3 karaktert a kereséshez",
+    "empty": "A barátlistád üres",
+    "uidLookupPlaceholder": "Illeszd be a pontos User ID-t...",
+    "lookup": "Keresés",
+    "uidNotFound": "Nincs felhasználó ezzel az ID-val",
+    "uidLookupError": "A keresés nem sikerült. Próbáld újra.",
+    "thisIsYou": "Ez te vagy!"
   },
   "friendWall": {
     "title": "{{name}} Szégyenfala",

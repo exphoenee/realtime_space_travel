@@ -421,7 +421,7 @@
     "title": "Amis",
     "back": "Retour",
     "search": "Rechercher",
-    "searchPlaceholder": "Recherche par surnom, nom ou ID...",
+    "searchPlaceholder": "Recherche par surnom ou nom...",
     "addFriend": "Ajouter",
     "removeFriend": "Retirer",
     "friendRequestSent": "Demande envoyée!",
@@ -434,7 +434,13 @@
     "watching": "Surveille",
     "notWatching": "Ne surveille pas",
     "noResults": "Aucun joueur trouvé",
-    "empty": "Votre liste d'amis est vide"
+    "minSearchLength": "Tapez au moins 3 caractères pour rechercher",
+    "empty": "Votre liste d'amis est vide",
+    "uidLookupPlaceholder": "Collez l'ID utilisateur exact...",
+    "lookup": "Rechercher",
+    "uidNotFound": "Aucun utilisateur trouvé avec cet ID",
+    "uidLookupError": "La recherche a échoué. Réessayez.",
+    "thisIsYou": "C'est vous !"
   },
   "friendWall": {
     "title": "Mur de la Honte de {{name}}",

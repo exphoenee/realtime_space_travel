@@ -126,7 +126,14 @@
     "friendRequests": {
       "$uid": {
         ".read": "auth != null && $uid == auth.uid",
-        ".write": "auth != null && $uid == auth.uid"
+        /*
+         * Write: allowed if:
+         * 1. The owner of the request inbox (accept/reject), OR
+         * 2. The sender creating their own request entry (the child key matches their uid)
+         * This allows user A to write to friendRequests/{userB}/{userA} because
+         * newData.hasChild(auth.uid) checks that the child key matching auth.uid exists.
+         */
+        ".write": "auth != null && ($uid == auth.uid || newData.hasChild(auth.uid))"
       }
     },
 
