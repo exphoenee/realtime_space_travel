@@ -10,6 +10,8 @@ import ShopScreen from "../shop/ShopScreen";
 import ShipSelectScreen from "../screens/ShipSelectScreen";
 import WallOfShame from "../screens/WallOfShame";
 import FriendsScreen from "../screens/FriendsScreen";
+import CameraConsentModal from "../features/CameraConsentModal";
+import MultiplayerStatusBar from "../features/MultiplayerStatusBar";
 
 interface ScreenRouterProps {
   phase: GamePhase;
@@ -44,6 +46,8 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
   children,
 }) => {
   switch (phase) {
+    case "cameraConsent":
+      return <CameraConsentModal />;
     case "intro":
       return <IntroScreen onSkip={onSkipIntro} />;
     case "mainMenu":
@@ -81,7 +85,12 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
     case "loading":
       return <LoadingScreen onComplete={onLoadingComplete} />;
     default:
-      return <>{children}</>;
+      return (
+        <>
+          <MultiplayerStatusBar />
+          {children}
+        </>
+      );
   }
 };
 

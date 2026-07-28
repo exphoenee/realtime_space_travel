@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Destination, GamePhase, CrewLostReason, EventType, EventInstance, FailureRecord, SuccessRecord, EventLogEntry } from "../types";
+import { Destination, GamePhase, CrewLostReason, EventType, EventInstance, FailureRecord, SuccessRecord, EventLogEntry, MultiplayerSession } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
 import { SHIP_SPEED_KM_PER_SECOND } from "../constants/constants";
@@ -46,7 +46,11 @@ interface GameState {
   /** Timestamp (Date.now()) when the ship will be destroyed after ignoring rescue transfer, or null */
   pendingDestructionAt: number | null;
 
-  // --- Social / Friend Wall ---
+  // --- Social / Multiplayer ---
+  /** Current multiplayer session, or null if not in one */
+  multiplayerSession: MultiplayerSession | null;
+  /** Set the full multiplayer session object */
+  setMultiplayerSession: (session: MultiplayerSession | null) => void;
   /** UID of the friend whose wall is being viewed */
   friendWallTargetUid: string | null;
   /** Display name of the friend whose wall is being viewed */
@@ -210,6 +214,16 @@ const phaseToFlags = (phase: GamePhase) => {
         missionComplete: true,
         isInitializing: false,
       };
+    case "cameraConsent":
+      return {
+        showIntro: false,
+        isPaused: true,
+        isAttentionLost: false,
+        crewLost: false,
+        crewLostReason: null as CrewLostReason,
+        missionComplete: false,
+        isInitializing: false,
+      };
     case "wallOfShame":
     case "friends":
     case "friendWall":
@@ -273,9 +287,13 @@ const useGameStore = create<GameState>()(
       nextScheduledEvent: null,
       pendingDestructionAt: null,
 
-      // --- Social ---
+      // --- Social / Multiplayer ---
+      multiplayerSession: null,
       friendWallTargetUid: null,
       friendWallTargetName: null,
+
+      // --- multiplayer session action ---
+      setMultiplayerSession: (session) => set({ multiplayerSession: session }),
 
       // --- Wall of Shame ---
       failureRecords: [],
@@ -745,6 +763,8 @@ const useGameStore = create<GameState>()(
         bestServiceSeconds: state.bestServiceSeconds,
         failureRecords: state.failureRecords,
         successRecords: state.successRecords,
+        friendWallTargetUid: state.friendWallTargetUid,
+        friendWallTargetName: state.friendWallTargetName,
         // inactivitySeconds is stored but recalculated on page leave return
       }),
     },

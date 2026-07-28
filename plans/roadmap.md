@@ -3,12 +3,12 @@
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-28"
-total_plans: 16
+total_plans: 18
 implemented: 11
 in_progress: 3
-not_started: 2
-tasks_done: 527
-tasks_total: 718
+not_started: 4
+tasks_done: 543
+tasks_total: 791
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -105,23 +105,37 @@ plans:
     slug: "013-social-multiplayer"
     status: "in-progress"
     category: "core"
-    tasks_done: 40
-    tasks_total: 82
+    tasks_done: 56
+    tasks_total: 84
     dependencies: [011-difficulty-event-system, 010-firebase-guest-merge-single-gate, 003-firebase-auth-settings]
   - step: 14
-    slug: "014-stripe-fraud-defense"
+    slug: "014-camera-consent"
+    status: "not-started"
+    category: "ui"
+    tasks_done: 0
+    tasks_total: 37
+    dependencies: [001-main-menu-settings]
+  - step: 15
+    slug: "015-toast-notification"
+    status: "not-started"
+    category: "ui"
+    tasks_done: 0
+    tasks_total: 34
+    dependencies: [013-social-multiplayer]
+  - step: 16
+    slug: "016-stripe-fraud-defense"
     status: "not-started"
     category: "security"
     tasks_done: 0
     tasks_total: 51
     dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate]
-  - step: 15
-    slug: "015-stripe-go-live"
+  - step: 17
+    slug: "017-stripe-go-live"
     status: "not-started"
     category: "payments"
     tasks_done: 0
     tasks_total: 85
-    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 014-stripe-fraud-defense]
+    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense]
 ---
 
 # Roadmap
@@ -132,8 +146,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 11 implemented · 3 in progress · 2 not started (of 16)
-- **Tasks:** 527/718 done (73%)
+- **Plans:** 11 implemented · 3 in progress · 4 not started (of 18)
+- **Tasks:** 543/791 done (69%)
 
 ## Overview
 
@@ -152,9 +166,11 @@ plans:
 | 10 | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések | ✅ Implemented | 66/66 | — | auth | 9 |
 | 11 | Nehézségi szintek + eseményrendszer | 🟨 In progress | 51/51 | — | core | 1 |
 | 12 | Szégyenfal | ✅ Implemented | 66/66 | — | ui | 11 |
-| 13 | Social és multiplayer | 🟨 In progress | 40/82 | — | core | 3, 10, 11 |
-| 14 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
-| 15 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 14 |
+| 13 | Social és multiplayer | 🟨 In progress | 56/84 | — | core | 3, 10, 11 |
+| 14 | Kamera hozzájárulás | ⬜ Not started | 0/37 | — | ui | 1 |
+| 15 | Toast notification rendszer | ⬜ Not started | 0/34 | — | ui | 13 |
+| 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
+| 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
 
 ## Next Open Tasks
 
@@ -165,9 +181,11 @@ plans:
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (52/53): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
 - **Step 5 — Valós pénzes kredit vásárlás** (25/28): Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
-- **Step 13 — Social és multiplayer** (40/82): `sessions/{sessionId}: { host, participants, status, createdAt }` — multiplayer session node
-- **Step 14 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
-- **Step 15 — Stripe élesítés** (0/85): `[A]` [[014-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- **Step 13 — Social és multiplayer** (56/84): Chat játék közben (kisebb panel, jobb alsó sarok)
+- **Step 14 — Kamera hozzájárulás** (0/37): `src/state/useUIStore.ts`: új `cameraConsent: "undecided" | "granted" | "denied"` mező (default: `"undecided"`)
+- **Step 15 — Toast notification rendszer** (0/34): `security.rules.json`: új `notifications/{uid}` node (read/write: csak a tulajdonos)
+- **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
+- **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 
 ## Insertion Guide
 
@@ -178,21 +196,23 @@ plans:
 | Step | Slug | Category | Depends on (slugs) | Required by (steps) |
 |------|------|----------|--------------------|---------------------|
 | 0 | `000-i18n-nyelvesites` | i18n | — | 1, 3 |
-| 1 | `001-main-menu-settings` | ui | 000-i18n-nyelvesites | 2, 3, 11 |
+| 1 | `001-main-menu-settings` | ui | 000-i18n-nyelvesites | 2, 3, 11, 14 |
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
 | 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5, 13 |
 | 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6, 7, 9 |
-| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 14, 15 |
+| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 16, 17 |
 | 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
 | 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | 8 |
 | 8 | `008-shop-cart-bugfixes` | core | 007-state-persist-page-refresh | — |
-| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 14, 15 |
-| 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 13, 14, 15 |
+| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 16, 17 |
+| 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 13, 16, 17 |
 | 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13 |
 | 12 | `012-wall-of-shame` | ui | 011-difficulty-event-system | — |
-| 13 | `013-social-multiplayer` | core | 011-difficulty-event-system, 010-firebase-guest-merge-single-gate, 003-firebase-auth-settings | — |
-| 14 | `014-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 15 |
-| 15 | `015-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 014-stripe-fraud-defense | — |
+| 13 | `013-social-multiplayer` | core | 011-difficulty-event-system, 010-firebase-guest-merge-single-gate, 003-firebase-auth-settings | 15 |
+| 14 | `014-camera-consent` | ui | 001-main-menu-settings | — |
+| 15 | `015-toast-notification` | ui | 013-social-multiplayer | — |
+| 16 | `016-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 17 |
+| 17 | `017-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense | — |
 
 ## Phase Details
 
@@ -214,5 +234,7 @@ plans:
 | 11 | `plans/011-difficulty-event-system.md` | Nehézségi szintek + eseményrendszer |
 | 12 | `plans/012-wall-of-shame.md` | Szégyenfal |
 | 13 | `plans/013-social-multiplayer.md` | Social és multiplayer |
-| 14 | `plans/014-stripe-fraud-defense.md` | Stripe csalásvédelem |
-| 15 | `plans/015-stripe-go-live.md` | Stripe élesítés |
+| 14 | `plans/014-camera-consent.md` | Kamera hozzájárulás |
+| 15 | `plans/015-toast-notification.md` | Toast notification rendszer |
+| 16 | `plans/016-stripe-fraud-defense.md` | Stripe csalásvédelem |
+| 17 | `plans/017-stripe-go-live.md` | Stripe élesítés |

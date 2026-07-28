@@ -92,6 +92,18 @@
   border-color: #67e8f9;
 }
 
+.startDisabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+}
+
+.startDisabled:hover {
+  transform: none !important;
+  border-color: rgba(103, 232, 249, 0.4) !important;
+  background: rgba(6, 182, 212, 0.25) !important;
+}
+
 .notice {
   margin-top: 1.5rem;
   color: #facc15;

@@ -6,9 +6,40 @@ import {
   DEBUG_STARTING_CREDITS,
   BASE_EXOPLANET_IDS,
 } from "../constants/shopCatalog";
-import type { FailureRecord, SuccessRecord, FriendRequest, UserOnlineStatus, UserPublicProfile, ChatMessage } from "../types";
+import type { FailureRecord, SuccessRecord, FriendRequest, UserOnlineStatus, UserPublicProfile, ChatMessage, MultiplayerSession, SessionStatus } from "../types";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+
+/** Random space-themed nicknames for new users */
+const ANON_NICKNAMES = [
+  "cosmic_drifter",
+  "star_wanderer",
+  "nebula_rider",
+  "void_walker",
+  "astro_nova",
+  "lunar_pilgrim",
+  "solar_sailor",
+  "eclipse_hunter",
+  "quantum_traveler",
+  "orbital_vagabond",
+  "cassiopeia_roamer",
+  "deep_space_nomad",
+  "asteroid_hopper",
+  "galaxy_gazer",
+  "comet_chaser",
+  "terra_explorer",
+  "stellar_mariner",
+  "dark_matter_rider",
+  "photon_glider",
+  "supernova_surfer",
+];
+
+/** Generate a random anonymous nickname like "cosmic_drifter_4821" */
+const generateRandomNickname = (): string => {
+  const base = ANON_NICKNAMES[Math.floor(Math.random() * ANON_NICKNAMES.length)];
+  const digits = Math.floor(1000 + Math.random() * 9000); // 1000–9999
+  return `${base}_${digits}`;
+};
 
 /**
  * Result of a guest data migration attempt.
@@ -76,7 +107,7 @@ const getDefaultUserNode = (user: User, provider: "anonymous" | "google"): UserN
     isAnonymous: user.isAnonymous,
     createdAt: Date.now(),
     lastLoginAt: Date.now(),
-    nickname: "",
+    nickname: generateRandomNickname(),
   },
   settings: {
     activeShipId: null,
@@ -666,7 +697,7 @@ export const updateUserInventory = async (
 // --- Wall of Shame ---
 
 /**
- * Save a failure record to RTDB under `users/{uid}/failures`.
+ * Save a failure record to RTDB under `walls/{uid}/failures`.
  * Uses push() to create a new entry with an auto-generated key.
  */
 export const saveFailureRecord = async (
@@ -674,7 +705,7 @@ export const saveFailureRecord = async (
   record: FailureRecord,
 ): Promise<void> => {
   const db = getFirebaseDB();
-  const failuresRef = ref(db, `users/${uid}/failures`);
+  const failuresRef = ref(db, `walls/${uid}/failures`);
   await push(failuresRef, record);
 };
 
@@ -688,7 +719,7 @@ export const subscribeFailures = (
   callback: (records: FailureRecord[]) => void,
 ): Unsubscribe => {
   const db = getFirebaseDB();
-  const failuresRef = ref(db, `users/${uid}/failures`);
+  const failuresRef = ref(db, `walls/${uid}/failures`);
 
   return onValue(failuresRef, (snapshot) => {
     const data = snapshot.val();
@@ -711,7 +742,9 @@ export const subscribeFailures = (
 
 /**
  * Send a friend request from the current user to another user.
- * Creates a new entry under friendRequests/{toUid}/{fromUid}.
+ * Creates entries in both:
+ * - friendRequests/{toUid}/{fromUid} (recipient's inbox)
+ * - outgoingRequests/{fromUid}/{toUid} (sender's outbox — for real-time status)
  */
 export const sendFriendRequest = async (
   fromUid: string,
@@ -719,18 +752,26 @@ export const sendFriendRequest = async (
   fromNickname: string,
 ): Promise<void> => {
   const db = getFirebaseDB();
-  const requestRef = ref(db, `friendRequests/${toUid}/${fromUid}`);
-  await set(requestRef, {
-    from: fromUid,
-    fromNickname,
-    at: Date.now(),
-    status: "pending",
+  const rootRef = ref(db);
+  await update(rootRef, {
+    [`friendRequests/${toUid}/${fromUid}`]: {
+      from: fromUid,
+      fromNickname,
+      at: Date.now(),
+      status: "pending",
+    },
+    [`outgoingRequests/${fromUid}/${toUid}`]: {
+      to: toUid,
+      at: Date.now(),
+      status: "pending",
+    },
   });
 };
 
 /**
  * Accept a friend request.
- * Adds each user to the other's friends list and removes the request.
+ * Adds each user to the other's friends list, updates the request status,
+ * and cleans up the sender's outgoing request entry.
  */
 export const acceptFriendRequest = async (
   uid: string,
@@ -742,23 +783,31 @@ export const acceptFriendRequest = async (
   // Atomic multi-path update:
   // 1. Add to both friends lists
   // 2. Update request status to accepted
+  // 3. Delete outgoing request (sender sees real-time update)
   await update(rootRef, {
     [`friends/${uid}/${fromUid}`]: true,
     [`friends/${fromUid}/${uid}`]: true,
     [`friendRequests/${uid}/${fromUid}/status`]: "accepted",
+    [`outgoingRequests/${fromUid}/${uid}`]: null,
   });
 };
 
 /**
  * Reject a friend request (removes it entirely).
+ * Also cleans up the sender's outgoing request entry.
  */
 export const rejectFriendRequest = async (
   uid: string,
   fromUid: string,
 ): Promise<void> => {
   const db = getFirebaseDB();
-  const requestRef = ref(db, `friendRequests/${uid}/${fromUid}`);
-  await set(requestRef, null);
+  const rootRef = ref(db);
+
+  // Delete both the recipient's inbox entry and the sender's outbox entry
+  await update(rootRef, {
+    [`friendRequests/${uid}/${fromUid}`]: null,
+    [`outgoingRequests/${fromUid}/${uid}`]: null,
+  });
 };
 
 /**
@@ -796,6 +845,37 @@ export const subscribeFriends = (
     }
     const uids = Object.keys(data);
     callback(uids);
+  });
+};
+
+/**
+ * Subscribe to outgoing friend requests for a user.
+ * Returns a Set of UIDs that the user has sent pending requests to.
+ * This subscription provides real-time updates — when the recipient
+ * accepts or rejects, the callback fires immediately.
+ */
+export const subscribeOutgoingRequests = (
+  uid: string,
+  callback: (pendingTargetUids: Set<string>) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const outgoingRef = ref(db, `outgoingRequests/${uid}`);
+
+  return onValue(outgoingRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback(new Set());
+      return;
+    }
+    // Filter only entries with status === "pending"
+    const pending = new Set<string>();
+    for (const [targetUid, value] of Object.entries(data)) {
+      const entry = value as { status?: string } | null;
+      if (entry && entry.status === "pending") {
+        pending.add(targetUid);
+      }
+    }
+    callback(pending);
   });
 };
 
@@ -1106,10 +1186,246 @@ export const subscribeUnreadCount = (
   });
 };
 
+// --- Multiplayer Sessions ---
+
+/**
+ * Create a new multiplayer session.
+ * The creator becomes the host.
+ * Returns the session ID.
+ */
+export const createSession = async (
+  hostUid: string,
+  hostNickname: string,
+  sessionId?: string,
+): Promise<string> => {
+  const db = getFirebaseDB();
+  const id = sessionId ?? `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const now = Date.now();
+
+  const session: Omit<MultiplayerSession, "participants"> & {
+    participants: Record<string, { nickname: string; attention: boolean; joinedAt: number }>;
+  } = {
+    host: hostUid,
+    status: "waiting",
+    createdAt: now,
+    participants: {
+      [hostUid]: {
+        nickname: hostNickname,
+        attention: false,
+        joinedAt: now,
+      },
+    },
+  };
+
+  await set(ref(db, `sessions/${id}`), session);
+  return id;
+};
+
+/**
+ * Join an existing multiplayer session.
+ * Max 8 participants.
+ */
+export const joinSession = async (
+  sessionId: string,
+  uid: string,
+  nickname: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  const { get } = await import("firebase/database");
+  const snapshot = await get(sessionRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Session not found");
+  }
+
+  const session = snapshot.val() as MultiplayerSession;
+  if (session.status !== "waiting") {
+    throw new Error("Session is not accepting participants");
+  }
+
+  const participantCount = Object.keys(session.participants || {}).length;
+  if (participantCount >= 8) {
+    throw new Error("Session is full (max 8 participants)");
+  }
+
+  const now = Date.now();
+  await update(ref(db), {
+    [`sessions/${sessionId}/participants/${uid}`]: {
+      nickname,
+      attention: false,
+      joinedAt: now,
+    },
+  });
+};
+
+/**
+ * Leave a multiplayer session.
+ * If the leaving user is the host, transfers host to the next participant.
+ * If no participants remain, deletes the session.
+ */
+export const leaveSession = async (
+  sessionId: string,
+  uid: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+  const snapshot = await get(sessionRef);
+
+  if (!snapshot.exists()) return;
+
+  const session = snapshot.val() as MultiplayerSession;
+  const participantUids = Object.keys(session.participants || {});
+
+  if (uid === session.host) {
+    // Host is leaving — transfer host or delete session
+    const remaining = participantUids.filter((puid) => puid !== uid);
+    if (remaining.length === 0) {
+      // No participants left — delete the session
+      await set(sessionRef, null);
+      return;
+    }
+    // Transfer host to the next participant
+    const newHost = remaining[0];
+    await update(ref(db), {
+      [`sessions/${sessionId}/host`]: newHost,
+      [`sessions/${sessionId}/participants/${uid}`]: null,
+    });
+  } else {
+    // Non-host leaving — just remove
+    await set(ref(db, `sessions/${sessionId}/participants/${uid}`), null);
+  }
+};
+
+/**
+ * Subscribe to a specific session's data in real-time.
+ */
+export const subscribeSession = (
+  sessionId: string,
+  callback: (session: MultiplayerSession | null) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const sessionRef = ref(db, `sessions/${sessionId}`);
+
+  return onValue(sessionRef, (snapshot) => {
+    const data = snapshot.val() as MultiplayerSession | null;
+    callback(data);
+  });
+};
+
+/**
+ * Set the session status (e.g., "waiting" → "playing" → "ended").
+ */
+export const setSessionStatus = async (
+  sessionId: string,
+  status: SessionStatus,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await set(ref(db, `sessions/${sessionId}/status`), status);
+};
+
+/**
+ * Update the attention status of a participant in a session.
+ */
+export const updateSessionAttention = async (
+  sessionId: string,
+  uid: string,
+  attention: boolean,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await set(ref(db, `sessions/${sessionId}/participants/${uid}/attention`), attention);
+};
+
+/**
+ * Subscribe to all sessions a user is participating in.
+ * Returns a subscription that provides session IDs the user belongs to.
+ * Note: This reads the sessions collection (client-side filter).
+ */
+export const subscribeMySessions = (
+  uid: string,
+  callback: (sessionIds: string[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const sessionsRef = ref(db, "sessions");
+
+  return onValue(sessionsRef, (snapshot) => {
+    const data = snapshot.val() as Record<string, MultiplayerSession> | null;
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const sessionIds: string[] = [];
+    for (const [sessionId, session] of Object.entries(data)) {
+      if (session.participants && session.participants[uid]) {
+        sessionIds.push(sessionId);
+      }
+    }
+    callback(sessionIds);
+  });
+};
+
+// --- Wall data migration (users/{uid} → walls/{uid}) ---
+
+/**
+ * One-time migration: copy existing failure/success data from the old
+ * `users/{uid}/failures` and `users/{uid}/successes` paths to the new
+ * `walls/{uid}/failures` and `walls/{uid}/successes` paths.
+ *
+ * This is needed because the `users/$key/.read` security rule blocks
+ * friend access at the parent level, so failures/successes were moved
+ * to a top-level `walls/{uid}` path with its own friend-friendly .read rule.
+ *
+ * The migration only runs if the NEW path is empty and the OLD path has data.
+ * Idempotent — safe to call multiple times.
+ */
+export const migrateWallData = async (uid: string): Promise<void> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+
+  // Check old paths
+  const oldFailuresRef = ref(db, `users/${uid}/failures`);
+  const oldSuccessesRef = ref(db, `users/${uid}/successes`);
+  // Check new paths
+  const newFailuresRef = ref(db, `walls/${uid}/failures`);
+  const newSuccessesRef = ref(db, `walls/${uid}/successes`);
+
+  const [oldFailSnap, oldSuccSnap, newFailSnap, newSuccSnap] = await Promise.all([
+    get(oldFailuresRef),
+    get(oldSuccessesRef),
+    get(newFailuresRef),
+    get(newSuccessesRef),
+  ]);
+
+  const updates: Record<string, unknown> = {};
+
+  // Migrate failures if old has data and new is empty
+  if (oldFailSnap.exists() && !newFailSnap.exists()) {
+    const oldData = oldFailSnap.val();
+    for (const [pushId, value] of Object.entries(oldData)) {
+      updates[`walls/${uid}/failures/${pushId}`] = value;
+    }
+  }
+
+  // Migrate successes if old has data and new is empty
+  if (oldSuccSnap.exists() && !newSuccSnap.exists()) {
+    const oldData = oldSuccSnap.val();
+    for (const [pushId, value] of Object.entries(oldData)) {
+      updates[`walls/${uid}/successes/${pushId}`] = value;
+    }
+  }
+
+  if (Object.keys(updates).length === 0) return;
+
+  const rootRef = ref(db);
+  await update(rootRef, updates);
+  console.log(`Wall data migration: copied ${Object.keys(updates).length} records from users/${uid} to walls/${uid}`);
+};
+
 // --- Success Records (debug / Firebase sync) ---
 
 /**
- * Save a success record to RTDB under `users/{uid}/successes`.
+ * Save a success record to RTDB under `walls/{uid}/successes`.
  * Uses push() to create a new entry with an auto-generated key.
  */
 export const saveSuccessRecord = async (
@@ -1117,7 +1433,7 @@ export const saveSuccessRecord = async (
   record: SuccessRecord,
 ): Promise<void> => {
   const db = getFirebaseDB();
-  const successesRef = ref(db, `users/${uid}/successes`);
+  const successesRef = ref(db, `walls/${uid}/successes`);
   await push(successesRef, record);
 };
 
@@ -1126,12 +1442,35 @@ export const saveSuccessRecord = async (
  * Calls callback with an array of SuccessRecord every time data changes.
  * Returns an unsubscribe function.
  */
+/**
+ * Check if a user is currently in an active multiplayer session.
+ * Uses subscribeMySessions and returns true if any waiting/playing session exists.
+ */
+export const checkHasActiveSession = async (uid: string): Promise<boolean> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+  const snapshot = await get(ref(db, "sessions"));
+  if (!snapshot.exists()) return false;
+
+  const data = snapshot.val() as Record<string, MultiplayerSession>;
+  for (const session of Object.values(data)) {
+    if (
+      session.participants &&
+      session.participants[uid] &&
+      (session.status === "waiting" || session.status === "playing")
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const subscribeSuccesses = (
   uid: string,
   callback: (records: SuccessRecord[]) => void,
 ): Unsubscribe => {
   const db = getFirebaseDB();
-  const successesRef = ref(db, `users/${uid}/successes`);
+  const successesRef = ref(db, `walls/${uid}/successes`);
 
   return onValue(successesRef, (snapshot) => {
     const data = snapshot.val();

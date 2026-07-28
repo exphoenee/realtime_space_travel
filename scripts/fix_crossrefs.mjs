@@ -5,8 +5,9 @@ const files = readdirSync("plans").filter(
 );
 
 const replacements = [
-  [/\[\[013-stripe-fraud-defense\]\]/g, "[[014-stripe-fraud-defense]]"],
-  [/\[\[014-stripe-go-live\]\]/g, "[[015-stripe-go-live]]"],
+  [/\[\[015-stripe-fraud-defense\]\]/g, "[[016-stripe-fraud-defense]]"],
+  [/\[\[016-stripe-go-live\]\]/g, "[[017-stripe-go-live]]"],
+  [/\[\[017-toast-notification\]\]/g, "[[015-toast-notification]]"],
 ];
 
 for (const file of files) {

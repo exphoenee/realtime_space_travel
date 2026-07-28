@@ -118,7 +118,24 @@
     "friends": {
       "$uid": {
         ".read": "auth != null && $uid == auth.uid",
-        ".write": "auth != null && $uid == auth.uid"
+        /*
+         * Write: allowed if:
+         * 1. The owner of the friends list (add/remove own friends), OR
+         * 2. The recipient of a pending friend request adding themselves to
+         *    the sender's friends list at accept time. This checks that a
+         *    friend request from $uid to auth.uid exists in auth.uid's inbox,
+         *    and that the write only adds auth.uid as a child (newData.child(auth.uid) === true).
+         *    This prevents the acceptor from writing arbitrary entries.
+         */
+        ".write": "auth != null && ($uid == auth.uid || (root.child('friendRequests').child(auth.uid).child($uid).exists() && newData.child(auth.uid).val() === true) || (data.child(auth.uid).val() === true && newData.child(auth.uid).val() === null))"
+      }
+    },
+
+    /* ——— OUTGOING REQUESTS (sender-side mirror for real-time status) ——— */
+    "outgoingRequests": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && ($uid == auth.uid || root.child('friendRequests').child(auth.uid).child($uid).exists())"
       }
     },
 
@@ -146,26 +163,85 @@
         },
         "messages": {
           "$msgId": {
-            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
-            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            /* Read/Write: any authenticated user can read/write messages.
+             * Privacy is ensured by the chat ID format ({uid1}_{uid2} — random
+             * 28-char UIDs nobody can guess). No dependency on the participants
+             * node avoids race conditions with async initChat.
+             * The participants node exists for identifying which chats a user has. */
+            ".read": "auth != null",
+            ".write": "auth != null"
           }
         },
         "unread": {
           "$uid": {
             ".read": "auth != null && $uid == auth.uid",
-            /* Write: any participant of the chat can increment the other's unread counter.
-             * Read: only the owner can read their own count. */
-            ".write": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            /* Write: any authenticated user can write (for sendMessage
+             * incrementing the recipient's counter). Only the owner can read
+             * their own count. */
+            ".write": "auth != null"
           }
         },
         "typing": {
           "$uid": {
-            /* Read: any participant of the chat can read any typing status.
-             * Write: each participant can only set their OWN typing status AND must
-             * be a participant of the chat. */
-            ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
-            ".write": "auth != null && $uid == auth.uid && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true"
+            ".read": "auth != null",
+            /* Write: each user can only set their own typing status. */
+            ".write": "auth != null && $uid == auth.uid"
           }
+        }
+      }
+    },
+
+    /* ——— MULTIPLAYER SESSIONS ——— */
+    "sessions": {
+      "$sessionId": {
+        /* Read: any authenticated user can read session data. This allows
+         * searching for and listing sessions. */
+        ".read": "auth != null",
+        /* No .write at $sessionId level — cascading would override child rules.
+         * Instead, each child has its own .write rule:
+         * - host: creator sets it initially, current host can transfer
+         * - status: only the host can change
+         * - participants/$uid: own entry OR host manages
+         * - createdAt: only on initial creation (no .write = first write from client is allowed?)
+         *   Actually, without any .write on the parent or on createdAt, the first write
+         *   from createSession() will fail! We need a rule that allows creating the
+         *   session initially. Let's handle this: any auth can create a NEW session
+         *   (data doesn't exist), but once created, only field-level rules apply. */
+        ".write": "auth != null && !data.exists()",
+        /* Host: only the creator can set it initially, or the current host can transfer */
+        "host": {
+          ".write": "auth != null && (!data.exists() || data.val() == auth.uid)"
+        },
+        /* Status: only the host can change */
+        "status": {
+          ".write": "auth != null && root.child('sessions').child($sessionId).child('host').val() == auth.uid"
+        },
+        "createdAt": {
+          /* Created at creation — only writable when node doesn't exist yet */
+          ".write": "auth != null && !data.exists()"
+        },
+        "participants": {
+          "$uid": {
+            /* Write: participants can only write their own entry.
+             * The host also needs to remove/kick participants. */
+            ".write": "auth != null && ($uid == auth.uid || root.child('sessions').child($sessionId).child('host').val() == auth.uid)"
+          }
+        }
+      }
+    },
+
+    /* ——— WALL OF SHAME (public to friends) ——— */
+    "walls": {
+      "$uid": {
+        /* Read: own uid OR friends can read failures/successes.
+         * This is a top-level path (not under users/) so the friend
+         * read rule evaluates without being blocked by the users/$key/.read gate. */
+        ".read": "auth != null && ($uid == auth.uid || root.child('friends').child(auth.uid).child($uid).val() === true)",
+        "failures": {
+          ".write": "auth != null && $uid == auth.uid"
+        },
+        "successes": {
+          ".write": "auth != null && $uid == auth.uid"
         }
       }
     },

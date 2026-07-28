@@ -5,6 +5,7 @@ import useAuthStore from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, getAuthErrorMessage } from "../../firebase/auth";
 import { subscribeFriends, subscribeUnreadCount, getChatId } from "../../firebase/userData";
+import type { CameraConsent } from "../../state/useUIStore";
 import styles from "./MainMenu.module.css";
 
 const DEBUG_ENV = import.meta.env.VITE_DEBUG_MODE === "true";
@@ -19,7 +20,11 @@ const MainMenu = () => {
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
+  const cameraConsent = useUIStore((s) => s.cameraConsent);
+  const setCameraConsent = useUIStore((s) => s.setCameraConsent);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  const isStartDisabled = cameraConsent !== "granted";
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Local login error takes precedence, falling back to the global auth error.
@@ -89,8 +94,10 @@ const MainMenu = () => {
         <div className={styles.actions}>
           <button
             type="button"
-            className={`${styles.button} ${styles.primary}`}
-            onClick={handleStart}
+            className={`${styles.button} ${styles.primary}${isStartDisabled ? ` ${styles.startDisabled}` : ""}`}
+            onClick={isStartDisabled ? undefined : handleStart}
+            disabled={isStartDisabled}
+            title={isStartDisabled ? t("mainMenu.cameraRequired") : ""}
           >
             {t("mainMenu.start")}
           </button>
