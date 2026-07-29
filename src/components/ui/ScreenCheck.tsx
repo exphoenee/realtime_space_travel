@@ -1,64 +1,51 @@
 import { useState, useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import useUIStore from "../../state/useUIStore";
+
+interface ScreenSize {
+  width: number;
+  height: number;
+}
 
 interface ScreenCheckProps {
   children: React.ReactNode;
+  /**
+   * If true, checks that the viewport is in landscape orientation (width > height).
+   * When omitted, the orientation check is skipped entirely.
+   */
+  landscape?: boolean;
+  /**
+   * If provided with { width, height }, checks that the viewport meets
+   * the minimum dimensions. When omitted, the size check is skipped entirely.
+   */
+  size?: ScreenSize;
 }
 
-const MIN_WIDTH = 900;
-const MIN_HEIGHT = 530;
-
-const ScreenCheck = ({ children }: ScreenCheckProps) => {
+const ScreenCheck = ({ children, landscape, size }: ScreenCheckProps) => {
   const { t } = useTranslation();
-  const [isBlocked, setIsBlocked] = useState(false);
   const [reason, setReason] = useState<"portrait" | "small" | null>(null);
-
-  // ── KIKAPCSOLVA ──────────────────────────────────────────────
-  // A reszponzív munkák után (Settings, Loading, PauseMenu, App modálok,
-  // Dashboard kompakt mód, Shop, WallOfShame) a képernyő-figyelmeztetés
-  // már nem szükséges — minden screen jól skálázódik.
-  //
-  // DEBUG módban is ki van kapcsolva (lásd lentebb), de mivel a normál
-  // mód is reszponzív, a teljes ellenőrzést kikapcsoljuk.
-  //
-  // Visszakapcsoláshoz: állítsd a DISABLED változót false-ra.
-  // ──────────────────────────────────────────────────────────────
-  const DISABLED = true;
 
   useEffect(() => {
     const checkScreen = () => {
-      if (DISABLED) {
-        setIsBlocked(false);
-        setReason(null);
-        return;
-      }
-
-      // Debug módban nincs képernyő-figyelmeztetés
-      const debugMode = useUIStore.getState().debugMode;
-      if (debugMode) {
-        setIsBlocked(false);
-        setReason(null);
-        return;
-      }
-
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const isLandscape = width > height;
 
-      if (!isLandscape) {
-        setIsBlocked(true);
-        setReason("portrait");
-        return;
+      // Orientation check (only if landscape prop is true)
+      if (landscape) {
+        const isLandscape = width > height;
+        if (!isLandscape) {
+          setReason("portrait");
+          return;
+        }
       }
 
-      if (width < MIN_WIDTH || height < MIN_HEIGHT) {
-        setIsBlocked(true);
-        setReason("small");
-        return;
+      // Size check (only if size prop is provided)
+      if (size) {
+        if (width < size.width || height < size.height) {
+          setReason("small");
+          return;
+        }
       }
 
-      setIsBlocked(false);
       setReason(null);
     };
 
@@ -70,9 +57,9 @@ const ScreenCheck = ({ children }: ScreenCheckProps) => {
       window.removeEventListener("resize", checkScreen);
       window.removeEventListener("orientationchange", checkScreen);
     };
-  }, []);
+  }, [landscape, size]);
 
-  if (isBlocked) {
+  if (reason) {
     return (
       <div
         style={{
@@ -120,7 +107,10 @@ const ScreenCheck = ({ children }: ScreenCheckProps) => {
               </h2>
               <p style={{ color: "#94a3b8", lineHeight: 1.6 }}>
                 <Trans i18nKey="screenCheck.tooSmallText">
-                  Legalább <strong style={{ color: "#67e8f9" }}>900×530</strong>{" "}
+                  Legalább{" "}
+                  <strong style={{ color: "#67e8f9" }}>
+                    {size?.width ?? 900}×{size?.height ?? 530}
+                  </strong>{" "}
                   felbontás szükséges.
                 </Trans>
               </p>

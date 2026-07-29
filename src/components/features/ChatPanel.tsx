@@ -150,12 +150,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <BackButton onClick={onBack}>
-          ← {t("chat.back", "Back")}
-        </BackButton>
         <div className={styles.friendInfo}>
           <span className={styles.friendName}>{friendName}</span>
         </div>
+        <BackButton onClick={onBack}>
+          ← {t("chat.back", "Back")}
+        </BackButton>
       </div>
 
       {/* Messages */}

@@ -22,7 +22,8 @@
 
 .friendInfo {
   flex: 1;
-  text-align: right;
+  text-align: left;
+  min-width: 0;
 }
 
 .friendName {
