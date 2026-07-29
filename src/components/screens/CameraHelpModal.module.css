@@ -1,0 +1,75 @@
+.intro {
+  margin: 0;
+  color: #cbd5f5;
+  line-height: 1.6;
+}
+
+.browserName {
+  margin: 0.25rem 0 0;
+  color: #67e8f9;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+}
+
+.steps li::marker {
+  color: #67e8f9;
+  font-weight: 700;
+}
+
+.note {
+  margin: 0.25rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.6rem;
+  background: rgba(103, 232, 249, 0.08);
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  color: #a5f3fc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primaryBtn {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  color: #f0fdff;
+}
+.primaryBtn:hover {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.secondaryBtn {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5f5;
+}
+.secondaryBtn:hover {
+  border-color: rgba(148, 163, 184, 0.6);
+  color: #f1f5f9;
+}
+
+@media (max-width: 520px) {
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1;
+  }
+}

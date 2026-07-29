@@ -7,8 +7,8 @@ total_plans: 19
 implemented: 15
 in_progress: 1
 not_started: 3
-tasks_done: 797
-tasks_total: 1116
+tasks_done: 845
+tasks_total: 1159
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -105,15 +105,15 @@ plans:
     slug: "013-social-multiplayer"
     status: "in-progress"
     category: "core"
-    tasks_done: 93
-    tasks_total: 207
+    tasks_done: 105
+    tasks_total: 209
     dependencies: [003-firebase-auth-settings, 010-firebase-guest-merge-single-gate, 011-difficulty-event-system, 012-wall-of-shame]
   - step: 14
     slug: "014-camera-consent"
     status: "implemented"
     category: "ui"
-    tasks_done: 35
-    tasks_total: 43
+    tasks_done: 71
+    tasks_total: 84
     dependencies: [001-main-menu-settings, 003-firebase-auth-settings]
   - step: 15
     slug: "015-toast-notification"
@@ -154,7 +154,7 @@ plans:
 ## Project Status
 
 - **Plans:** 15 implemented · 1 in progress · 3 not started (of 19)
-- **Tasks:** 797/1116 done (71%)
+- **Tasks:** 845/1159 done (73%)
 
 ## Overview
 
@@ -173,8 +173,8 @@ plans:
 | 10 | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések | ✅ Implemented | 66/66 | — | auth | 9 |
 | 11 | Nehézségi szintek + eseményrendszer | ✅ Implemented | 62/62 | — | core | 1 |
 | 12 | Szégyenfal | ✅ Implemented | 109/109 | — | ui | 11 |
-| 13 | Social és multiplayer | 🟨 In progress | 93/207 | — | core | 3, 10, 11, 12 |
-| 14 | Kamera hozzájárulás | ✅ Implemented | 35/43 | — | ui | 1, 3 |
+| 13 | Social és multiplayer | 🟨 In progress | 105/209 | — | core | 3, 10, 11, 12 |
+| 14 | Kamera hozzájárulás | ✅ Implemented | 71/84 | — | ui | 1, 3 |
 | 15 | Toast notification rendszer | ✅ Implemented | 69/72 | — | ui | 13 |
 | 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
@@ -188,8 +188,8 @@ plans:
 - **Step 1 — Főmenü + Beállítások képernyő terve** (21/25): **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (83/84): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
-- **Step 13 — Social és multiplayer** (93/207): Chat játék közben (kisebb panel, jobb alsó sarok)
-- **Step 14 — Kamera hozzájárulás** (35/43): `npm run test` zöld
+- **Step 13 — Social és multiplayer** (105/209): Chat játék közben (kisebb panel, jobb alsó sarok)
+- **Step 14 — Kamera hozzájárulás** (71/84): CameraConsentScreen megjelenik intro után (manuális teszt)
 - **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
 - **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés

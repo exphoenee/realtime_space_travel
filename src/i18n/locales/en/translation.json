@@ -154,6 +154,39 @@
     "nicknameSave": "Save",
     "enableCamera": "Enable Camera",
     "cameraGranted": "Camera available",
+    "cameraBlocked": "Camera blocked in browser",
+    "cameraHelp": {
+      "button": "How do I allow it?",
+      "title": "Allowing the camera in your browser",
+      "intro": "Your browser has blocked the camera for this site. For security reasons only you can undo this in the browser settings — the game cannot ask for permission again.",
+      "chrome": {
+        "name": "Chrome / Edge / Brave / Opera",
+        "step1": "Click the icon at the left end of the address bar (a lock or sliders icon).",
+        "step2": "Turn the “Camera” switch on, or choose “Reset permissions”.",
+        "step3": "Reload the page, then start the game again — the browser prompt will appear."
+      },
+      "firefox": {
+        "name": "Firefox",
+        "step1": "Click the lock icon at the left end of the address bar.",
+        "step2": "Next to “Use the Camera: Blocked”, click the × to clear the block.",
+        "step3": "Reload the page, then start the game again — the browser prompt will appear."
+      },
+      "safari": {
+        "name": "Safari",
+        "step1": "Open Safari → Settings → Websites → Camera.",
+        "step2": "Find this site in the list and set it to “Ask” or “Allow”.",
+        "step3": "Reload the page, then start the game again — the browser prompt will appear."
+      },
+      "generic": {
+        "name": "Other browser",
+        "step1": "Open your browser's site settings for this page (usually via the icon next to the address bar).",
+        "step2": "Find the camera permission and allow it, or reset it to the default.",
+        "step3": "Reload the page, then start the game again — the browser prompt will appear."
+      },
+      "reloadNote": "The change only takes effect after the page is reloaded.",
+      "close": "Close",
+      "reload": "Reload page"
+    },
     "signIn": "Sign in",
     "guestId": "Guest ID"
   },

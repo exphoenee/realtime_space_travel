@@ -10,6 +10,11 @@ import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/au
 import { updateUserSettings, updateUserNickname, updateUserPublicProfile, updateOnlineStatus } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import CustomSelect from "../ui/CustomSelect";
+import CameraHelpModal from "./CameraHelpModal";
+import {
+  getCameraPermissionState,
+  type CameraPermissionState,
+} from "../../services/cameraPermission";
 import styles from "./SettingsScreen.module.css";
 
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -43,6 +48,9 @@ const SettingsScreen = () => {
   const nicknameLoaded = useAuthStore((s) => s.nicknameLoaded);
   const setNickname = useAuthStore((s) => s.setNickname);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermissionState>("unknown");
+  const [cameraHelpOpen, setCameraHelpOpen] = useState(false);
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
   const [uidCopied, setUidCopied] = useState(false);
@@ -125,6 +133,18 @@ const SettingsScreen = () => {
     };
   }, []);
 
+  // Ask the browser itself, not just the stored consent: a blocked permission
+  // is a dead end our consent screen cannot open, and needs different advice.
+  useEffect(() => {
+    let cancelled = false;
+    getCameraPermissionState().then((state) => {
+      if (!cancelled) setCameraPermission(state);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Local login error takes precedence, falling back to the global auth error.
   const errorKey = loginError ?? authError;
 
@@ -134,8 +154,14 @@ const SettingsScreen = () => {
 
   const hasOwnedMusic = ownedMusicTracks.length > 0;
 
+  /** Blocked at the browser level — no prompt can bring it back from here. */
+  const isCameraBlocked = cameraPermission === "denied";
+
   const handleEnableCamera = useCallback(() => {
-    // Navigate to the camera consent screen for the full flow
+    // Navigate to the camera consent screen for the full flow. Marking the
+    // origin keeps this a settings change: granting here returns to the menu
+    // instead of launching a mission.
+    useUIStore.getState().setCameraConsentOrigin("settings");
     transitionTo("cameraConsent");
   }, [transitionTo]);
 
@@ -397,12 +423,25 @@ const SettingsScreen = () => {
 
         <div className={styles.row}>
           <span className={styles.label}>
-            {cameraConsent === "granted"
-              ? t("settings.cameraGranted")
-              : t("settings.enableCamera")}
+            {isCameraBlocked
+              ? t("settings.cameraBlocked")
+              : cameraConsent === "granted"
+                ? t("settings.cameraGranted")
+                : t("settings.enableCamera")}
           </span>
           <div className={styles.control}>
-            {cameraConsent === "granted" ? (
+            {isCameraBlocked ? (
+              // The browser blocks the camera for this site. Sending the player
+              // to the consent screen would only bounce them back — a blocked
+              // permission cannot be re-prompted — so offer instructions.
+              <button
+                type="button"
+                className={styles.authBtn}
+                onClick={() => setCameraHelpOpen(true)}
+              >
+                {t("settings.cameraHelp.button")}
+              </button>
+            ) : cameraConsent === "granted" ? (
               <span>✅</span>
             ) : (
               <button
@@ -429,6 +468,11 @@ const SettingsScreen = () => {
           ← {t("settings.back")}
         </button>
       </div>
+
+      <CameraHelpModal
+        isOpen={cameraHelpOpen}
+        onClose={() => setCameraHelpOpen(false)}
+      />
     </div>
   );
 };

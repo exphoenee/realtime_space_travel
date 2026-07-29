@@ -16,6 +16,15 @@ export const SHIP_SPEED_LIGHTYEARS_PER_YEAR =
 export const INACTIVITY_LIMIT_SECONDS = 60;
 export const TRAVEL_YEARS_PER_SECOND = 1 / SECONDS_PER_YEAR;
 
+/**
+ * Backoff before re-opening the webcam after a NotReadableError/AbortError.
+ * Windows keeps the device busy for a moment after the previous handle is
+ * released — the consent screen closes its stream seconds before the mission
+ * starts, and without a retry the launch dies on that gap. One entry per
+ * retry; the list length is the retry count.
+ */
+export const CAMERA_OPEN_RETRY_DELAYS_MS = [300, 700];
+
 export const INTRO_AUTO_SKIP_TIMEOUT_MS = 600_000;
 export const FACE_DETECTION_INTERVAL_MS = 1000;
 export const SERVICE_UPDATE_INTERVAL_MS = 50;

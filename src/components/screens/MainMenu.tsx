@@ -7,7 +7,7 @@ import useNotificationStore from "../../state/useNotificationStore";
 import useToastStore from "../../state/useToastStore";
 import { startGoogleAuth, getAuthErrorMessage } from "../../firebase/auth";
 import { subscribeFriends, subscribeUnreadCount, getChatId } from "../../firebase/userData";
-import type { CameraConsent } from "../../state/useUIStore";
+import { needsCameraConsent } from "../../services/cameraPermission";
 import styles from "./MainMenu.module.css";
 
 const DEBUG_ENV = import.meta.env.VITE_DEBUG_MODE === "true";
@@ -25,7 +25,6 @@ const MainMenu = () => {
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
-  const cameraConsent = useUIStore((s) => s.cameraConsent);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // The Start button is always clickable — if consent is not granted,
@@ -98,50 +97,28 @@ const MainMenu = () => {
 
   const handleStart = async () => {
     const ui = useUIStore.getState();
-    const cc = ui.cameraConsent;
 
-    if (cc !== "granted") {
-      // Redirect to camera consent screen — user can re-try the flow
+    // The stored consent lives in RTDB and follows the account across
+    // devices, so it can say "granted" in a browser that never granted
+    // anything — `needsCameraConsent` also asks the browser itself.
+    if (await needsCameraConsent(ui.cameraConsent)) {
+      // The consent screen requests the browser permission and, because the
+      // player pressed Start, continues straight into mission selection.
+      ui.setCameraConsentOrigin("start");
       transitionTo("cameraConsent");
       return;
     }
 
-    // User already gave UI consent — now request browser permission.
-    // Only the browser prompt appears here, on the main menu, not during
-    // the consent screen.
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-      // Browser granted — proceed to mission selection
-      transitionTo("missionSelect");
-    } catch (err) {
-      // Determine the specific error so the consent screen can explain
-      // why the attempt failed.
-      let errorKey = "app.camera.needAccess";
-      if (err instanceof DOMException) {
-        switch (err.name) {
-          case "NotAllowedError":
-            errorKey = "app.camera.denied";
-            break;
-          case "NotFoundError":
-            errorKey = "app.camera.notFound";
-            break;
-          case "NotReadableError":
-            errorKey = "app.camera.notReadable";
-            break;
-        }
-      }
-      // Show the error as a toast so the user knows why they are being
-      // redirected back to the consent screen.
-      addToast("error", t(errorKey), 7000);
-
-      // Reset consent so the camera consent screen shows again.
-      await ui.persistCameraConsent("denied");
-      transitionTo("cameraConsent");
-    }
+    // Consent and browser permission are both in place — no prompt needed.
+    transitionTo("missionSelect");
   };
   const handleSettings = () => transitionTo("settings");
-  const handleIntro = () => transitionTo("intro");
+  const handleIntro = () => {
+    // A replay from the menu is just the intro: it ends in the menu and
+    // never asks about the camera, even when permission is missing.
+    useUIStore.getState().setIntroReplay(true);
+    transitionTo("intro");
+  };
 
   const handleLogin = async () => {
     setLoginError(null);

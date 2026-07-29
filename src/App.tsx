@@ -13,7 +13,12 @@ import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
 import useAuthStore, { getRtdbKey } from "./state/useAuthStore";
 import useShopStore from "./state/useShopStore";
+import useToastStore from "./state/useToastStore";
 import { clearUserScopedData } from "./state/clearUserScopedData";
+import {
+  getCameraPermissionState,
+  needsCameraConsent,
+} from "./services/cameraPermission";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
@@ -349,39 +354,34 @@ const App: React.FC = () => {
   }, []);
 
   const checkCamera = useCallback(async (): Promise<boolean> => {
-    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-      setCameraError(t("app.camera.noSupport"));
+    // The cameraError overlay only renders during gameplay, but this check
+    // runs in the pre-game ship select — without a toast a failure would
+    // leave the Launch button doing nothing at all.
+    const failWith = (message: string) => {
+      setCameraError(message);
+      useToastStore.getState().addToast("error", message, 7000);
       return false;
+    };
+
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+      return failWith(t("app.camera.noSupport"));
     }
 
     if (!window.FaceDetection) {
-      setCameraError(t("app.camera.noModel"));
-      return false;
+      return failWith(t("app.camera.noModel"));
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-      setCameraError(null);
-      return true;
-    } catch (err) {
-      let errorMessage = t("app.camera.needAccess");
-      if (err instanceof DOMException) {
-        switch (err.name) {
-          case "NotAllowedError":
-            errorMessage = t("app.camera.denied");
-            break;
-          case "NotFoundError":
-            errorMessage = t("app.camera.notFound");
-            break;
-          case "NotReadableError":
-            errorMessage = t("app.camera.notReadable");
-            break;
-        }
-      }
-      setCameraError(errorMessage);
-      return false;
+    // Deliberately NO getUserMedia here. `useCamera` opens the live stream a
+    // moment later, and opening + closing the device right before that is how
+    // the mission launch used to die on a NotReadableError — Windows does not
+    // release a webcam instantly. Asking the Permissions API costs nothing and
+    // catches the only case worth blocking on: an outright denied permission.
+    if ((await getCameraPermissionState()) === "denied") {
+      return failWith(t("app.camera.denied"));
     }
+
+    setCameraError(null);
+    return true;
   }, [setCameraError, t]);
 
   const handleSelectDestination = async (selectedDestination: Destination) => {
@@ -465,13 +465,27 @@ const App: React.FC = () => {
   );
 
   const handleSkipIntro = useCallback(() => {
-    const cc = useUIStore.getState().cameraConsent;
-    // If consent is not granted (undecided or denied), show the consent screen
-    if (cc !== "granted") {
-      useGameStore.getState().transitionTo("cameraConsent");
-    } else {
+    const ui = useUIStore.getState();
+
+    // Replaying the intro from the menu is not a game start — back to the
+    // menu, no camera question, even when permission is missing.
+    if (ui.introReplay) {
+      ui.setIntroReplay(false);
       useGameStore.getState().transitionTo("mainMenu");
+      return;
     }
+
+    // The intro on first load: ask for the camera here, so the permission is
+    // already settled by the time the player hits Start. Consent granted from
+    // here still lands in the menu — only the Start button starts a mission.
+    needsCameraConsent(ui.cameraConsent).then((needed) => {
+      if (needed) {
+        ui.setCameraConsentOrigin("boot");
+        useGameStore.getState().transitionTo("cameraConsent");
+      } else {
+        useGameStore.getState().transitionTo("mainMenu");
+      }
+    });
   }, []);
 
   const handleLoadingComplete = useCallback(() => {
@@ -728,6 +742,31 @@ const App: React.FC = () => {
             onLoadingComplete={handleLoadingComplete}
             onCheckCamera={checkCamera}
           />
+
+          {/* A camera failure during `loading` used to be invisible — the error
+              overlay below only exists in the gameplay branch — leaving the
+              player staring at a spinner that never finishes. The other
+              pre-game screens report their camera problems as a toast and stay
+              usable, so only the loading screen gets this blocking card. */}
+          {gamePhase === "loading" && cameraError && (
+            <div className={`${styles.overlay} ${styles.cameraError}`}>
+              <div className={`${styles.overlayCard} ${styles.cameraErrorCard}`}>
+                <h2 className={styles.cameraErrorTitle}>{t("app.errorTitle")}</h2>
+                <p className={styles.cameraErrorText}>{cameraError}</p>
+                <div className={styles.overlayActions}>
+                  <button
+                    onClick={() => {
+                      setCameraError(null);
+                      resetToMenu();
+                    }}
+                    className={`${styles.button} ${styles.neutralButton}`}
+                  >
+                    {t("app.backToMenu")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       ) : !destination ? null : (
         <main className={styles.app}>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
+import useToastStore from "../../state/useToastStore";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./CameraConsentScreen.module.css";
 
@@ -9,22 +10,60 @@ const CameraConsentScreen: React.FC = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
   const persistCameraConsent = useUIStore((s) => s.persistCameraConsent);
+  const consentOrigin = useUIStore((s) => s.cameraConsentOrigin);
+  const addToast = useToastStore((s) => s.addToast);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleAllow = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
 
-    // Step 1: Save UI consent to Firebase.
-    // Step 2 (browser permission prompt) happens later, when the user clicks
-    // Start in the main menu — never during this screen.
-    await persistCameraConsent("granted");
-    transitionTo("mainMenu");
+    // The browser prompt goes first. It has to run inside the click's user
+    // gesture (Safari requires it), and awaiting an RTDB write beforehand
+    // could delay — or, on a stalled connection, entirely swallow — it.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+    } catch (err) {
+      // Browser denied the request or another error occurred — determine
+      // the specific reason so we can show a helpful toast.
+      let errorKey = "app.camera.needAccess";
+      if (err instanceof DOMException) {
+        switch (err.name) {
+          case "NotAllowedError":
+            errorKey = "app.camera.denied";
+            break;
+          case "NotFoundError":
+            errorKey = "app.camera.notFound";
+            break;
+          case "NotReadableError":
+            errorKey = "app.camera.notReadable";
+            break;
+        }
+      }
+      addToast("error", t(errorKey), 7000);
+
+      // Reset consent so the whole flow repeats on the next Start click.
+      void persistCameraConsent("denied");
+      setIsProcessing(false);
+      transitionTo("mainMenu");
+      return;
+    }
+
+    // UI consent + browser permission are both in place. The RTDB write is
+    // fire-and-forget: it updates the local state synchronously, and the
+    // navigation must not wait for the round trip.
+    void persistCameraConsent("granted");
+
+    // Only a Start-button consent may continue into the game. Coming from
+    // the first-load intro or from Settings, the player gets the menu back
+    // and decides for themselves when to launch.
+    transitionTo(consentOrigin === "start" ? "missionSelect" : "mainMenu");
   };
 
-  const handleDeny = async () => {
+  const handleDeny = () => {
     if (isProcessing) return;
-    await persistCameraConsent("denied");
+    void persistCameraConsent("denied");
     transitionTo("mainMenu");
   };
 

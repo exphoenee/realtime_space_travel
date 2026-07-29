@@ -166,9 +166,14 @@ export const startAuthBootstrap = (
 
     // Firebase onDisconnect: when the client disconnects (browser close, tab switch,
     // network drop), the RTDB server automatically sets the status to "offline".
-    const db = getFirebaseDB();
-    const statusRef = ref(db, `usersPublic/${rtdbKey}/onlineStatus`);
-    rtdbOnDisconnect(statusRef).set("offline").catch(console.error);
+    // Guests are skipped: `usersPublic` only accepts writes keyed by auth.uid,
+    // while a guest's rtdbKey is the deviceId — the registration would just be
+    // rejected. Guests have no friend graph, so nobody reads their status.
+    if (!user.isAnonymous) {
+      const db = getFirebaseDB();
+      const statusRef = ref(db, `usersPublic/${rtdbKey}/onlineStatus`);
+      rtdbOnDisconnect(statusRef).set("offline").catch(console.error);
+    }
 
     // --- Public profile (for search) ---
     // Create/update usersPublic entry so other players can find this user.
