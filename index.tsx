@@ -29,7 +29,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ScreenCheck>
+      <ScreenCheck orientation="landscape">
         <App />
       </ScreenCheck>
     </ErrorBoundary>
