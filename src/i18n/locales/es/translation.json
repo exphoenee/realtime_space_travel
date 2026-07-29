@@ -154,6 +154,39 @@
     "nicknameSave": "Guardar",
     "enableCamera": "Activar cámara",
     "cameraGranted": "Cámara disponible",
+    "cameraBlocked": "Cámara bloqueada en el navegador",
+    "cameraHelp": {
+      "button": "¿Cómo la permito?",
+      "title": "Permitir la cámara en el navegador",
+      "intro": "Tu navegador ha bloqueado la cámara para este sitio. Por seguridad, solo tú puedes deshacerlo en la configuración del navegador — el juego no puede volver a pedir el permiso.",
+      "chrome": {
+        "name": "Chrome / Edge / Brave / Opera",
+        "step1": "Haz clic en el icono del extremo izquierdo de la barra de direcciones (candado o controles).",
+        "step2": "Activa el interruptor «Cámara» o elige «Restablecer permisos».",
+        "step3": "Recarga la página y vuelve a iniciar el juego — aparecerá la solicitud del navegador."
+      },
+      "firefox": {
+        "name": "Firefox",
+        "step1": "Haz clic en el icono de candado del extremo izquierdo de la barra de direcciones.",
+        "step2": "Junto a «Usar la cámara: Bloqueado», haz clic en la × para eliminar el bloqueo.",
+        "step3": "Recarga la página y vuelve a iniciar el juego — aparecerá la solicitud del navegador."
+      },
+      "safari": {
+        "name": "Safari",
+        "step1": "Abre Safari → Ajustes → Sitios web → Cámara.",
+        "step2": "Busca este sitio en la lista y ponlo en «Preguntar» o «Permitir».",
+        "step3": "Recarga la página y vuelve a iniciar el juego — aparecerá la solicitud del navegador."
+      },
+      "generic": {
+        "name": "Otro navegador",
+        "step1": "Abre la configuración del sitio de tu navegador para esta página (normalmente desde el icono junto a la barra de direcciones).",
+        "step2": "Busca el permiso de la cámara y actívalo, o restablécelo al valor predeterminado.",
+        "step3": "Recarga la página y vuelve a iniciar el juego — aparecerá la solicitud del navegador."
+      },
+      "reloadNote": "El cambio solo surte efecto después de recargar la página.",
+      "close": "Cerrar",
+      "reload": "Recargar la página"
+    },
     "signIn": "Iniciar sesión",
     "guestId": "ID de invitado"
   },

@@ -8,11 +8,25 @@ import { updateUserSettings } from "../firebase/userData";
 
 export type CameraConsent = "undecided" | "granted" | "denied";
 
+/**
+ * What led to the camera consent screen. Only `"start"` — the main menu Start
+ * button — may continue into the game; every other entry point returns to the
+ * menu, so the mission can never begin behind the player's back.
+ */
+export type CameraConsentOrigin = "boot" | "start" | "settings";
+
 interface UIState {
   /** Camera error message (null = no error) */
   cameraError: string | null;
   /** Camera consent state — undecided (default), granted, or denied */
   cameraConsent: CameraConsent;
+  /** Which action opened the consent screen — decides where it returns to */
+  cameraConsentOrigin: CameraConsentOrigin;
+  /**
+   * True while the intro is replayed from the main menu. Such a replay ends
+   * in the menu without any consent detour, unlike the intro on first load.
+   */
+  introReplay: boolean;
   /** Exit confirmation dialog visible */
   showExitConfirm: boolean;
   /** Music muted state (persisted) */
@@ -30,6 +44,8 @@ interface UIState {
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setCameraConsent: (status: CameraConsent) => void;
+  setCameraConsentOrigin: (origin: CameraConsentOrigin) => void;
+  setIntroReplay: (replay: boolean) => void;
   /** Set camera consent locally AND persist to Firebase RTDB. */
   persistCameraConsent: (status: CameraConsent) => Promise<void>;
   setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
@@ -44,6 +60,10 @@ interface UIState {
 const useUIStore = create<UIState>()((set) => ({
   cameraError: null,
   cameraConsent: "undecided" as CameraConsent,
+  // "boot" is the safe default: after an F5 on the consent screen the origin
+  // is gone, and the game must not start on its own.
+  cameraConsentOrigin: "boot" as CameraConsentOrigin,
+  introReplay: false,
   showExitConfirm: false,
   isMusicMuted: false,
   musicVolume: MUSIC_ACTIVE_VOLUME,
@@ -61,6 +81,8 @@ const useUIStore = create<UIState>()((set) => ({
       cameraError: resolveState(updater, state.cameraError),
     })),
   setCameraConsent: (status) => set({ cameraConsent: status }),
+  setCameraConsentOrigin: (origin) => set({ cameraConsentOrigin: origin }),
+  setIntroReplay: (replay) => set({ introReplay: replay }),
   persistCameraConsent: async (status) => {
     // 1. Update local state immediately
     set({ cameraConsent: status });

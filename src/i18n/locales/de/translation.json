@@ -154,6 +154,39 @@
     "nicknameSave": "Speichern",
     "enableCamera": "Kamera aktivieren",
     "cameraGranted": "Kamera verfügbar",
+    "cameraBlocked": "Kamera im Browser blockiert",
+    "cameraHelp": {
+      "button": "Wie erlaube ich sie?",
+      "title": "Kamera im Browser erlauben",
+      "intro": "Dein Browser hat die Kamera für diese Seite blockiert. Aus Sicherheitsgründen kannst nur du das in den Browsereinstellungen rückgängig machen — das Spiel kann die Berechtigung nicht erneut anfragen.",
+      "chrome": {
+        "name": "Chrome / Edge / Brave / Opera",
+        "step1": "Klicke auf das Symbol links in der Adressleiste (Schloss oder Regler).",
+        "step2": "Schalte „Kamera“ ein oder wähle „Berechtigungen zurücksetzen“.",
+        "step3": "Lade die Seite neu und starte das Spiel erneut — dann erscheint die Browserabfrage."
+      },
+      "firefox": {
+        "name": "Firefox",
+        "step1": "Klicke auf das Schloss-Symbol links in der Adressleiste.",
+        "step2": "Klicke neben „Kamera verwenden: Blockiert“ auf das ×, um die Blockierung aufzuheben.",
+        "step3": "Lade die Seite neu und starte das Spiel erneut — dann erscheint die Browserabfrage."
+      },
+      "safari": {
+        "name": "Safari",
+        "step1": "Öffne Safari → Einstellungen → Websites → Kamera.",
+        "step2": "Suche diese Seite in der Liste und setze sie auf „Fragen“ oder „Erlauben“.",
+        "step3": "Lade die Seite neu und starte das Spiel erneut — dann erscheint die Browserabfrage."
+      },
+      "generic": {
+        "name": "Anderer Browser",
+        "step1": "Öffne die Website-Einstellungen deines Browsers für diese Seite (meist über das Symbol neben der Adressleiste).",
+        "step2": "Suche die Kamera-Berechtigung und erlaube sie oder setze sie auf den Standard zurück.",
+        "step3": "Lade die Seite neu und starte das Spiel erneut — dann erscheint die Browserabfrage."
+      },
+      "reloadNote": "Die Änderung wird erst nach dem Neuladen der Seite wirksam.",
+      "close": "Schließen",
+      "reload": "Seite neu laden"
+    },
     "signIn": "Anmelden",
     "guestId": "Gast-ID"
   },

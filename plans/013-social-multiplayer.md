@@ -7,7 +7,7 @@ status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-29"  # frissítve: a vendég-tájékoztató toastból jön ([[015-toast-notification]] H. blokk); +related_plans: [[018-notification-retention]]
+updated_at: "2026-07-29"  # frissítve: a vendég-tájékoztató toastból jön ([[015-toast-notification]] H. blokk); +related_plans: [[018-notification-retention]]. **R. blokk IMPLEMENTÁLVA:** vendég usersPublic PERMISSION_DENIED javítás központi kapuval (userData.ts canWritePublicProfile + authBootstrap onDisconnect isAnonymous-őr); a database.rules.json szándékosan érintetlen — részletek: 1.9.a
 author: exphoenee
 step: 13
 phases: []
@@ -63,6 +63,8 @@ Az `UVJYm6vwZrZOT0PWiOskN55Lxbr1` uid szerepel a `friends/` és a `friendRequest
 | Elveszett adat? | **Nem.** | A user node megvan, csak a **kulcshasadás** miatt máshol: `device_map/473bff95-82c2-4384-abe6-789f408f1219 → UVJYm…`, és a `users/473bff95-82c2-4384-abe6-789f408f1219` létezik (`profile.nickname = "star_wanderer_1462"`). |
 | Miért nincs `usersPublic/UVJYm…`? | Mert az írás **némán megtagadva** | `updateUserPublicProfile(rtdbKey, …)` anonim usernél `usersPublic/{deviceId}`-re ír, amit a `"usersPublic": { "$uid": { ".write": "auth != null && $uid == auth.uid" } }` (`database.rules.json:9-14`) **MEGTAGAD**; a hibát a `.catch(console.error)` elnyeli. Írási call site-ok: `src/firebase/authBootstrap.ts:178`, `src/App.tsx:221`, `src/components/screens/SettingsScreen.tsx:78`. |
 
+> ✅ **Utóirat (2026-07-29):** a táblázat utolsó sorában leírt néma megtagadás **már nem néma és nem is történik meg** — a vendég `usersPublic` írásai el sem indulnak (R. blokk, implementálva; a megvalósult kapu: **1.9.a**). A `PERMISSION_DENIED` hibaosztály ezzel lezárva; a `usersPublic/{vendég}` sor hiánya **változatlanul** a kívánt viselkedés.
+
 > ⚠️ **Ezt expliciten rögzítjük, hogy egy későbbi olvasó ne induljon rossz irányba:** a szennyezett adat **nem** biztonsági rés kihasználásából származik. A T. blokkban leírt rules-lyukak **valósak és függetlenek** — de nem ezek okozták ezt a konkrét esetet.
 
 ### A hibaosztály — a [[009-firebase-identity-split-bugfix]] másik fele
@@ -115,13 +117,16 @@ authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingReques
 | **`users/{deviceId}` vendég-node sorsa** (2026-07-29) | **MARAD.** Device-hoz kötött játékadat (settings, inventory, wallet, stats) — ez nem social adat, és a [[010-firebase-guest-merge-single-gate]] merge-kapuja épül rá |
 | **`walls/{rtdbKey}` vendégnél** (2026-07-29, R. blokk) | **Marad `deviceId` alatt.** Indok: a vendég senkinek nem látható → a falának nincs olvasóközönsége; a `collectGuestWallUpdates` (`userData.ts:529-549`) linkeléskor `walls/{deviceId}` → `walls/{targetUid}` alá viszi. Ha `authUid`-re állnánk át, az anonim uid alá írt rekordokat a migráció **nem találná meg** → adatvesztés |
 | **Elhelyezés** (2026-07-29) | **A 013-ba beolvasztva**, P.–W. blokként. Nem külön terv: ugyanaz a hatókör (social hozzáférés-vezérlés), és a meglévő O. blokk közvetlen folytatása |
+| **A vendég `usersPublic` írásának kapuja** (2026-07-29, R. blokk — implementálva) | **Egy központi őr a `userData.ts`-ben** (`canWritePublicProfile`), nem hat külön `if` a hívóknál. Feltétel: van user **és** nem anonim **és** `user.uid === key` — a rules feltételének pontos kliensoldali tükre. Egyetlen kivétel az `onDisconnect` regisztráció (`authBootstrap`), ami nem megy át a wrappereken |
+| **A `database.rules.json` sorsa ehhez a javításhoz** (2026-07-29) | **Változatlan — és nem is kell változnia.** A `usersPublic/$uid` `.write` `$uid == auth.uid` szabálya *szándékosan* zárja ki a vendéget. A javítás a **kliens** oldalán történt: a lehetetlen írás el sem indul |
 | **Rules-tesztek** (2026-07-29, U. blokk) | **Kötelező.** `@firebase/rules-unit-testing` + RTDB emulátor. Indok: a social hívások fele `.catch(console.error)`-ral el van nyelve → egy elrontott feltétel **némán** megölné a teljes friend flow-t |
 
 ---
 
-## ✅ Haladás (TODO — 93/207 kész)
+## ✅ Haladás (TODO — 105/209 kész)
 
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
+> **Kész (2026-07-29, második kör): az R. blokk** — vendég `usersPublic` `PERMISSION_DENIED` javítás központi kapuval (`canWritePublicProfile`). Két tétel maradt nyitva: a `collectGuestWallUpdates` regressziós teszt (U. blokk kell hozzá) és a néma hibaelnyelés teljes felszámolása (S. blokk). Részletek: **1.9.a**.
 > **Új blokkok (2026-07-29):** **P.–W.** — kötelező regisztráció a social funkciókhoz, **rules szinten is** kikényszerítve (86 új tétel). Kiváltó eset és diagnózis: a „Tünet és lezárt diagnózis" szekció; részletek: 8. szekció; kézi takarítás: 9. szekció.
 > **Új kész tételek (2026-07-28):** `sessions` node security rules + `createSession/joinSession/leaveSession/subscribeSession` RTDB függvények, `useMultiplayerSession` hook (ref→state fix), `MultiplayerStatusBar` overlay, `EventToast` értesítő komponens, multiplayer.* i18n kulcsok mind 5 nyelven, `database.rules.json` regenerálva.
 > **Új kész tételek (2026-07-28, második kör):** barát-fal **legacy fallback olvasás** (L.), **chat mint önálló `"chat"` GamePhase** (M.), **chat üzenet-betöltés security-rule bugfix** (N.).
@@ -318,22 +323,28 @@ authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingReques
 - [ ] `ScreenRouter` `isGuest` / `MainMenu` `isGuest` — döntés: bevonjuk-e a `tokenRegistered`-et a vendég-definícióba (**javaslat: igen**, de csak `false` esetén — `null` (még nem mért) ne blokkoljon, ugyanaz a hibaosztály, mint a `status === "loading"` az O. blokkban)
 - [ ] Regressziós ellenőrzés: a **közvetlen** `signInWithPopup` (nem linkelt) útvonal `sign_in_provider`-e `"google.com"` — nem törik el
 
-**R. Kulcshasadás felszámolása a publikus/social rétegben (2026-07-29)**
+**R. Kulcshasadás felszámolása a publikus/social rétegben (2026-07-29) — IMPLEMENTÁLVA**
 
 > Cél: egyetlen írás se célozza a `usersPublic`-ot `deviceId`-vel. **Nem** a kulcs átírásával — hanem azzal, hogy vendégnél az írás **el sem indul**.
+>
+> **Kiváltó tünet (2026-07-29):** vendég (nem bejelentkezett) usernél a konzol tele volt ezzel:
+> `FIREBASE WARNING: update at /usersPublic/6e1646ef-… failed: permission_denied`
+> A `6e1646ef-…` egy **deviceId** — pontosan a fenti diagnózisban leírt kulcshasadás, most már nem némán elnyelve, hanem böngésző-szintű warningként (az RTDB SDK a saját csatornáján logol, a `.catch(console.error)` ezt nem tudja elnyomni). Hat call site termelte. Implementációs részletek: **1.9.a**.
 
-- [ ] `src/firebase/authBootstrap.ts:176-178` — `updateUserPublicProfile(rtdbKey, …)` → **kihagyva**, ha `user.isAnonymous`
-- [ ] `src/App.tsx:218-227` — ugyanez a `handleUserData` nickname-szinkron ágban
-- [ ] `src/components/screens/SettingsScreen.tsx:78` — ugyanez a nickname mentés ágban
-- [ ] `src/firebase/authBootstrap.ts:165` — `updateOnlineStatus(rtdbKey, "online")` → vendégnél kihagyva
-- [ ] `src/firebase/authBootstrap.ts:169-171` — az `onDisconnect(usersPublic/{rtdbKey}/onlineStatus)` regisztráció → vendégnél kihagyva
-- [ ] `src/App.tsx:649`, `:660`, `:666` — a gamePhase-watcher `updateOnlineStatus` hívásai → vendégnél kihagyva
-- [ ] `src/components/screens/SettingsScreen.tsx:184` — a kijelentkezés előtti `updateOnlineStatus(authUid, "offline")` **marad** (regisztrált user írja a saját sorát)
-- [ ] **Egy kapu, egy helyen:** a fenti hét call site ne külön-külön `if`-eljen. `userData.ts` — a `updateUserPublicProfile` / `updateOnlineStatus` **maga** dobja el a hívást, ha az aktuális auth user anonim (`getRtdbKey()` mintájára egy `isRegisteredUser()` helperrel), vagy egy közös `withRegisteredUser(fn)` wrapperrel
-- [ ] **Paraméter-átnevezés** a szándék rögzítéséhez: `updateUserPublicProfile(uid, …)` / `updateOnlineStatus(uid, …)` paramétere **`authUid`**, nem `rtdbKey` — a hívók ezt adják át (regisztrált usernél a 009 invariánsa szerint a kettő azonos)
-- [ ] `walls/` — **NEM változik:** marad `rtdbKey` (indoklás a döntési táblázatban és a 1.9-ben). A `saveFailureRecord` / `saveSuccessRecord` call site-ok (`App.tsx:122`, `:429`, `:708`, `WallOfShame.tsx:381`, `:411`) érintetlenek
+- [x] `src/firebase/authBootstrap.ts:176-178` — `updateUserPublicProfile(rtdbKey, …)` → **kihagyva**, ha `user.isAnonymous` *(a központi kapun keresztül: a hívás megmarad, de csendes no-op)*
+- [x] `src/App.tsx:218-227` — ugyanez a `handleUserData` nickname-szinkron ágban *(központi kapu)*
+- [x] `src/components/screens/SettingsScreen.tsx:78` — ugyanez a nickname mentés ágban *(központi kapu)*
+- [x] `src/firebase/authBootstrap.ts:165` — `updateOnlineStatus(rtdbKey, "online")` → vendégnél kihagyva *(központi kapu)*
+- [x] `src/firebase/authBootstrap.ts:169-171` — az `onDisconnect(usersPublic/{rtdbKey}/onlineStatus)` regisztráció → vendégnél kihagyva. **Ez az egyetlen hely, ahol expliciten `if (!user.isAnonymous)` áll:** az `onDisconnect` nem a `userData.ts` wrapperein megy át, hanem közvetlen `ref()` + `rtdbOnDisconnect()`
+- [x] `src/App.tsx:649`, `:660`, `:666` — a gamePhase-watcher `updateOnlineStatus` hívásai → vendégnél kihagyva *(központi kapu, mindhárom ág)*
+- [x] `src/components/screens/SettingsScreen.tsx:184` — a kijelentkezés előtti `updateOnlineStatus(authUid, "offline")` **marad** (regisztrált user írja a saját sorát; a kapu `user.uid === key` ága átengedi)
+- [x] **Egy kapu, egy helyen:** a hat call site **nem** külön-külön `if`-el. `userData.ts` — új belső `canWritePublicProfile(key)` helper, és az `updateOnlineStatus` / `updateUserPublicProfile` **ezzel kezdődik**; vendégnél csendes no-op (lásd 1.9.a)
+- [x] **Paraméter-átnevezés** a szándék rögzítéséhez: `updateUserPublicProfile(uid, …)` / `updateOnlineStatus(uid, …)` — a paraméter neve **`uid`** (nem `rtdbKey`), és a kapu `user.uid === key` feltétele ezt a szándékot **ki is kényszeríti**, nem csak dokumentálja
+- [x] `walls/` — **NEM változik:** marad `rtdbKey` (indoklás a döntési táblázatban és a 1.9-ben). A `saveFailureRecord` / `saveSuccessRecord` call site-ok (`App.tsx:122`, `:429`, `:708`, `WallOfShame.tsx:381`, `:411`) érintetlenek — ellenőrizve
+- [x] **`database.rules.json` NEM változott, és nem is kell:** a `usersPublic/$uid` `.write` `$uid == auth.uid` szabálya **szándékosan** zárja ki a vendéget (a `usersPublic` a barát-kereső index, a vendégnek pedig nincs barátgráfja). A viselkedés a javítás előtt és után **azonos** — csak most már hibaüzenet nélkül
 - [ ] `collectGuestWallUpdates` (`userData.ts:529-549`) — regressziós ellenőrzés: a `walls/{deviceId}` → `walls/{targetUid}` migráció linkelés után **továbbra is** működik (U. blokk teszt)
-- [ ] **Néma hibaelnyelés felszámolása:** ahol egy `.catch(console.error)` egy **rules-megtagadást** rejt el, ott a hívás vagy el sem indul (a fenti kapu), vagy a hiba **felszínre kerül**. A `.catch(console.error)` csak ott maradhat, ahol a hiba tényleg nem-fatális (pl. `sendNotification`)
+- [ ] **Néma hibaelnyelés felszámolása:** ahol egy `.catch(console.error)` egy **rules-megtagadást** rejt el, ott a hívás vagy el sem indul (a fenti kapu ✅), vagy a hiba **felszínre kerül**. A `.catch(console.error)` a hat call site-on **megmaradt** — a kapu miatt már nincs mit elnyelniük, de a többi social hívás (`sendFriendRequest`, `sendMessage`) átvizsgálása még hátravan (S. blokk)
+- [x] Ellenőrzés: `tsc --noEmit` tiszta · `npm run test` **84/84** zöld · `npm run build` sikeres
 
 **S. UI-gate megerősítése — minden belépési pont (2026-07-29)**
 
@@ -707,6 +718,68 @@ usersPublic          │  regisztrált: authUid  (== rtdbKey, 009)     │
 2. A `collectGuestWallUpdates` (`userData.ts:529-549`) a **`walls/{deviceId}`** ágat olvassa és viszi át `walls/{targetUid}` alá linkeléskor ([[010-firebase-guest-merge-single-gate]]). Ha vendégnél `walls/{anonUid}`-re írnánk, a migráció **nem találná meg** → **adatvesztés** minden linkeléskor.
 3. A `walls/$uid/{failures,successes}/.write` szabály `$uid == auth.uid`-ot **is** enged (`database.rules.json:92,95`) → a `walls/{anonUid}` írás **sikerülne**, tehát a hiba **néma** lenne. Ez a legveszélyesebb változat: működőnek látszó adatvesztés.
 
+### 1.9.a A megvalósult kapu — `canWritePublicProfile` (R. blokk, IMPLEMENTÁLVA 2026-07-29)
+
+**Tünet:** vendég usernél a konzol folyamatosan ezt írta:
+
+```
+FIREBASE WARNING: update at /usersPublic/6e1646ef-… failed: permission_denied
+```
+
+**Ok — a már diagnosztizált kulcshasadás, konkrétan:**
+
+```
+database.rules.json:  "usersPublic": { "$uid": { ".write": "auth != null && $uid == auth.uid" } }
+useAuthStore.ts:48-49: selectRtdbKey = user && !user.isAnonymous ? user.uid : deviceId
+                                                                              ▲
+                       vendégnél tehát rtdbKey === deviceId ≠ auth.uid  ───────┘
+
+⇒ minden vendég `usersPublic/{deviceId}` írás STRUKTURÁLISAN lehetetlen
+```
+
+Nem versenyhelyzet, nem hiányzó jog: a szabály és a kulcsválasztás **soha** nem tud találkozni vendégnél. Hat hívási hely termelte a warningot — `updateOnlineStatus` (App fázisváltás-figyelő ×3, `authBootstrap`, `SettingsScreen` kijelentkezés) és `updateUserPublicProfile` (`authBootstrap` + App `handleUserData`).
+
+**Javítás — egy őr, nem hat feltétel:**
+
+```ts
+// src/firebase/userData.ts
+/**
+ * Whether a `usersPublic/{key}` write can legally succeed.
+ * … Callers pass the rtdbKey blindly, so the check belongs here
+ * rather than at six call sites.
+ */
+const canWritePublicProfile = (key: string): boolean => {
+  const user = getFirebaseAuth().currentUser;
+  return !!user && !user.isAnonymous && user.uid === key;
+};
+
+export const updateOnlineStatus = async (uid, status) => {
+  if (!canWritePublicProfile(uid)) return;      // vendégnél csendes no-op
+  …
+};
+
+export const updateUserPublicProfile = async (uid, nickname, displayName) => {
+  if (!canWritePublicProfile(uid)) return;      // ugyanaz a kapu
+  …
+};
+```
+
+A helper **három** dolgot ellenőriz, és mindhárom kell:
+
+| Feltétel | Mit zár ki |
+|---|---|
+| `!!user` | Auth előtti / kijelentkezett állapotban induló hívás |
+| `!user.isAnonymous` | A vendég — ő a tünet forrása |
+| `user.uid === key` | A **kulcshasadás maga**: bármilyen jövőbeli hívó, aki nem `auth.uid`-ot ad át. A rules feltételének pontos kliensoldali tükre |
+
+A harmadik feltétel teszi feleslegessé a külön paraméter-átnevezést: a `uid` név a szándék, a `user.uid === key` a **kikényszerítés**.
+
+**Az egyetlen kivétel — `onDisconnect`:** az `authBootstrap.ts` a `usersPublic/{rtdbKey}/onlineStatus`-ra közvetlen `ref()` + `rtdbOnDisconnect()` hívást tesz, ami nem megy át a `userData.ts` wrapperein. Ott expliciten `if (!user.isAnonymous)` áll, kommenttel.
+
+**A `database.rules.json` szándékosan érintetlen.** A vendég azért nem írhat `usersPublic`-ba, mert **nem is szabad** neki: az a barát-kereső index, a vendégnek pedig nincs barátgráfja (a `MainMenu` `guardedNav`-ja és a `ScreenRouter` `blockPhase`-e a friends/chat/shop képernyőket is tiltja neki — 1.7). A vendég tehát továbbra sem jelenik meg a keresésben és nincs online státusza. **Ez eddig is így volt** — a különbség annyi, hogy most már hibaüzenet nélkül, szándékos kapuval, nem némán megbukó írással. Pontosan az 1.9-ben leírt irány: *„a javítás nem az, hogy a `usersPublic` írását átállítjuk `authUid`-re — az pont láthatóvá tenné a vendégeket"*.
+
+> 💡 **Tanulság.** Egy némán megbukó írás **nem mindig néma**: a `.catch(console.error)` az alkalmazás promise-át kezeli le, az RTDB SDK viszont a saját `FIREBASE WARNING` csatornáján is logol. A hiba tehát hónapokig „el volt nyelve" a kódban, közben végig ott volt a konzolon.
+
 ### 1.10 Belépési pontok a social fázisokba — teljes lista (S. blokk)
 
 | Fázis | Belépési pont | Védve? |
@@ -864,18 +937,20 @@ package.json                                # +@firebase/rules-unit-testing, +fi
 src/firebase/auth.ts                        # +getSignInProvider(), +isRegisteredToken();
                                             #  startGoogleAuth: linkWithPopup után signInWithCredential
                                             #  (friss sign-in event, a uid megmarad) — Q. blokk
-src/firebase/authBootstrap.ts               # :165 updateOnlineStatus, :169-171 onDisconnect,
-                                            #  :176-178 updateUserPublicProfile → vendégnél KIHAGYVA;
-                                            #  +isRegisteredToken mérés a store-ba
-src/firebase/userData.ts                    # updateUserPublicProfile / updateOnlineStatus: közös
-                                            #  "csak regisztrált user" kapu (withRegisteredUser);
-                                            #  paraméter authUid-re átnevezve (nem rtdbKey);
-                                            #  sendFriendRequest / sendMessage: felszínre hozott hibaág
+src/firebase/authBootstrap.ts               # ✅ KÉSZ (R.): :169-176 onDisconnect(usersPublic/…) → if (!user.isAnonymous)
+                                            #   (a :165 updateOnlineStatus és a :183 updateUserPublicProfile
+                                            #    a userData.ts központi kapuján keresztül lett no-op vendégnél);
+                                            #  hátra: +isRegisteredToken mérés a store-ba (Q. blokk)
+src/firebase/userData.ts                    # ✅ KÉSZ (R.): +canWritePublicProfile(key) belső helper —
+                                            #   currentUser && !isAnonymous && user.uid === key;
+                                            #   updateOnlineStatus + updateUserPublicProfile ezzel kezdődik
+                                            #   (csendes no-op vendégnél); paraméter neve uid (nem rtdbKey)
+                                            #  hátra: sendFriendRequest / sendMessage felszínre hozott hibaág (S. blokk)
 src/state/useAuthStore.ts                   # +tokenRegistered: boolean | null (Q. blokk)
-src/App.tsx                                 # :218-227 usersPublic írás, :649/:660/:666 updateOnlineStatus
-                                            #  → vendégnél kihagyva
-src/components/screens/SettingsScreen.tsx   # :78 usersPublic írás → vendégnél kihagyva
-                                            #  (:184 offline-írás MARAD — regisztrált user saját sora)
+src/App.tsx                                 # ✅ KÉSZ (R.): :229 usersPublic írás, :657/:668/:674 updateOnlineStatus
+                                            #  → vendégnél no-op (a hívások változatlanok, a kapu a userData.ts-ben van)
+src/components/screens/SettingsScreen.tsx   # ✅ KÉSZ (R.): :83 usersPublic írás → vendégnél no-op
+                                            #  (:194 offline-írás MARAD — regisztrált user saját sora)
 src/components/screens/FriendsScreen.tsx    # kliens oldali őr sendFriendRequest/accept előtt + error toast
 src/components/screens/ChatScreen.tsx       # kliens oldali őr sendMessage előtt + error toast
 src/components/routing/ScreenRouter.tsx     # isGuest kiegészítése: tokenRegistered === false (Q. blokk)

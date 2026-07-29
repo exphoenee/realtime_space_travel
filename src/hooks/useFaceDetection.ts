@@ -39,6 +39,9 @@ export const useFaceDetection = (
 
   const { setIsInitializing, setIsPaused } = useGameStore();
   const { setCameraError } = useUIStore();
+  // Subscribed (not read via getState) so the effect below re-runs when the
+  // camera fails after this effect has already settled into its idle branch.
+  const cameraError = useUIStore((s) => s.cameraError);
 
   useEffect(() => {
     if (!destination || !isStreamReady) {
@@ -58,8 +61,11 @@ export const useFaceDetection = (
         detectorRef.current = null;
       }
 
-      // Only mark initialization done if we're fully cleaning up (no destination)
-      if (!destination) {
+      // Initialization is over either when we are fully cleaning up (no
+      // destination), or when the camera failed outright. Without the second
+      // case a broken stream left `isInitializing` true forever and the
+      // LoadingScreen spun for good, since it waits for this flag to clear.
+      if (!destination || cameraError) {
         setIsInitializing(false);
       }
       return;
@@ -169,6 +175,7 @@ export const useFaceDetection = (
     destination,
     isStreamReady,
     debugMode,
+    cameraError,
     setIsInitializing,
     setIsPaused,
     setCameraError,

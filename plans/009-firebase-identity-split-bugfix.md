@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-26"
 created_at: "2026-07-26"
-updated_at: "2026-07-28"
+updated_at: "2026-07-29"  # frissítve: a 11. szekció rögzíti a hibaosztály másik felének lezárását — a publikus/social réteg (usersPublic) kulcshasadását a [[013-social-multiplayer]] R. blokkja számolta fel (canWritePublicProfile kapu); +related_plans: [[013-social-multiplayer]] (szimmetria helyreállítva)
 author: exphoenee
 step: 9
 phases: []
@@ -17,6 +17,7 @@ related_plans:
   - 003-firebase-auth-settings
   - 005-ingame-shop-strapi-stripe
   - 012-wall-of-shame
+  - 013-social-multiplayer
   - 016-stripe-fraud-defense
   - 017-stripe-go-live
 tags:
@@ -593,6 +594,7 @@ vi.mock("firebase/database", () => ({
 
 > 🔧 **Utólagos javítás:** [[010-firebase-guest-merge-single-gate]] — az itt bevezetett per-`deviceId` `migratedFrom` idempotencia-jelölés a `deviceId`-rotáció megszüntetése után **adatvesztővé** vált (a visszatérő `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor a `cleanupGuestNode`-on át törlődött, merge és audit nélkül; ráadásul a `device_map/{deviceId}` nem törlődött → árva mappingek). A 010 ezt **fiók-szintű** `guestMergeClaimed` kapura cseréli, az első merge-nél **összeadja** a kreditet, és minden ágon takarítja a `device_map`-et.
 
+- [[013-social-multiplayer]] — **a hibaosztály másik fele, lezárva (2026-07-29).** Ez a terv a `users/` node-ra számolta fel a kulcshasadást (`selectRtdbKey`: `user && !user.isAnonymous ? user.uid : deviceId`). A **publikus/social rétegben** viszont a `usersPublic/{deviceId}` írások vendégnél `PERMISSION_DENIED`-del bukó `FIREBASE WARNING`-okat termeltek, mert a rules `$uid == auth.uid`-ot vár. A javítás iránya **nem** a kulcs átírása volt (az láthatóvá tenné a vendégeket), hanem egy központi kapu: `userData.ts` → `canWritePublicProfile()`. Részletek: 013 **R. blokk** és **1.9 / 1.9.a**.
 - [[004-firebase-auth-bugfix]] — **közvetlen előfeltétel.** Ez a terv az ottani **O.** blokk (`migrateGuestData`, `rtdbKey`, `setRtdbKey`) és **P.** blokk (`deviceId`-rotáció) hibáit javítja: a `catch`-ági fallback törlődik, a rotáció kikerül a migrációs útból, a `rtdbKey` derivált értékké válik.
 - [[016-stripe-fraud-defense]] — **erre a tervre épül.** A `credit_claims/{sessionId}` ledger és a `wallet` növekmény-limit csak stabil identitás fölött értelmes. A 7.2 forward-compat pont (`!data.exists()` ág a wallet-szabályban) ott rögzítendő.
 - [[017-stripe-go-live]] — **erre a tervre épül.** Valós pénzes fizetés **nem indulhat** azelőtt, hogy ez a terv kész: egy identitás-szétválás kifizetett kreditet tüntetne el → chargeback / dispute.

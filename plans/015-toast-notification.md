@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-29"
 created_at: "2026-07-28"
-updated_at: "2026-07-29"
+updated_at: "2026-07-29"  # frissítve: +related_plans: [[014-camera-consent]] (a kamera-hibák toastként jelennek meg, mert a cameraError overlay pre-game nem renderelődik)
 author: exphoenee
 step: 15
 phases: []
@@ -15,6 +15,7 @@ dependencies:
   - 013-social-multiplayer
 related_plans:
   - 012-wall-of-shame
+  - 014-camera-consent
 tags:
   - ui
   - notifications

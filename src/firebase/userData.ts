@@ -1,5 +1,5 @@
 import { ref, onValue, update, set, runTransaction, push, type Unsubscribe, type DatabaseReference } from "firebase/database";
-import { getFirebaseDB } from "./config";
+import { getFirebaseDB, getFirebaseAuth } from "./config";
 import type { User } from "firebase/auth";
 import {
   STARTING_CREDITS,
@@ -1204,12 +1204,29 @@ export const subscribeUserOnlineStatus = (
 };
 
 /**
- * Update the current user's online status.
+ * Whether a `usersPublic/{key}` write can legally succeed.
+ *
+ * The RTDB rule accepts the write only when the path key equals `auth.uid`
+ * (`database.rules.json` → usersPublic/$uid). A guest's rtdbKey is the
+ * deviceId, not the anonymous auth uid (see `selectRtdbKey`), so every guest
+ * write is rejected — and pointlessly so: `usersPublic` is the friend-search
+ * index, and guests have no friend graph. Callers pass the rtdbKey blindly,
+ * so the check belongs here rather than at six call sites.
+ */
+const canWritePublicProfile = (key: string): boolean => {
+  const user = getFirebaseAuth().currentUser;
+  return !!user && !user.isAnonymous && user.uid === key;
+};
+
+/**
+ * Update the current user's online status. No-op for guests — see
+ * `canWritePublicProfile`.
  */
 export const updateOnlineStatus = async (
   uid: string,
   status: UserOnlineStatus,
 ): Promise<void> => {
+  if (!canWritePublicProfile(uid)) return;
   const db = getFirebaseDB();
   await update(ref(db, `usersPublic/${uid}`), { onlineStatus: status });
 };
@@ -1217,12 +1234,14 @@ export const updateOnlineStatus = async (
 /**
  * Update the current user's public profile (nickname + displayName).
  * Creates the usersPublic entry if it doesn't exist.
+ * No-op for guests — see `canWritePublicProfile`.
  */
 export const updateUserPublicProfile = async (
   uid: string,
   nickname: string,
   displayName: string | null,
 ): Promise<void> => {
+  if (!canWritePublicProfile(uid)) return;
   const db = getFirebaseDB();
   await update(ref(db, `usersPublic/${uid}`), {
     nickname,

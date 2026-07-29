@@ -154,6 +154,39 @@
     "nicknameSave": "Sauvegarder",
     "enableCamera": "Activer la caméra",
     "cameraGranted": "Caméra disponible",
+    "cameraBlocked": "Caméra bloquée dans le navigateur",
+    "cameraHelp": {
+      "button": "Comment l'autoriser ?",
+      "title": "Autoriser la caméra dans le navigateur",
+      "intro": "Votre navigateur a bloqué la caméra pour ce site. Pour des raisons de sécurité, vous seul pouvez annuler ce blocage dans les paramètres du navigateur — le jeu ne peut pas redemander l'autorisation.",
+      "chrome": {
+        "name": "Chrome / Edge / Brave / Opera",
+        "step1": "Cliquez sur l'icône à gauche de la barre d'adresse (cadenas ou curseurs).",
+        "step2": "Activez le commutateur « Caméra », ou choisissez « Réinitialiser les autorisations ».",
+        "step3": "Rechargez la page, puis relancez le jeu — l'invite du navigateur apparaîtra."
+      },
+      "firefox": {
+        "name": "Firefox",
+        "step1": "Cliquez sur l'icône de cadenas à gauche de la barre d'adresse.",
+        "step2": "À côté de « Utiliser la caméra : Bloqué », cliquez sur le × pour supprimer le blocage.",
+        "step3": "Rechargez la page, puis relancez le jeu — l'invite du navigateur apparaîtra."
+      },
+      "safari": {
+        "name": "Safari",
+        "step1": "Ouvrez Safari → Réglages → Sites web → Caméra.",
+        "step2": "Trouvez ce site dans la liste et réglez-le sur « Demander » ou « Autoriser ».",
+        "step3": "Rechargez la page, puis relancez le jeu — l'invite du navigateur apparaîtra."
+      },
+      "generic": {
+        "name": "Autre navigateur",
+        "step1": "Ouvrez les paramètres de site de votre navigateur pour cette page (généralement via l'icône près de la barre d'adresse).",
+        "step2": "Trouvez l'autorisation de la caméra et autorisez-la, ou rétablissez la valeur par défaut.",
+        "step3": "Rechargez la page, puis relancez le jeu — l'invite du navigateur apparaîtra."
+      },
+      "reloadNote": "La modification ne prend effet qu'après le rechargement de la page.",
+      "close": "Fermer",
+      "reload": "Recharger la page"
+    },
     "signIn": "Se connecter",
     "guestId": "Identifiant invité"
   },

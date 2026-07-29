@@ -154,6 +154,39 @@
     "nicknameSave": "Mentés",
     "enableCamera": "Kamera engedélyezése",
     "cameraGranted": "Kamera elérhető",
+    "cameraBlocked": "Kamera letiltva a böngészőben",
+    "cameraHelp": {
+      "button": "Hogyan engedélyezzem?",
+      "title": "Kamera engedélyezése a böngészőben",
+      "intro": "A böngésződ letiltotta a kamerát ezen az oldalon. Ezt biztonsági okból csak te tudod feloldani a böngésző beállításaiban — a játék nem kérheti újra az engedélyt.",
+      "chrome": {
+        "name": "Chrome / Edge / Brave / Opera",
+        "step1": "Kattints a címsor bal szélén lévő ikonra (lakat vagy csúszkák).",
+        "step2": "A „Kamera” kapcsolót állítsd engedélyezettre, vagy válaszd az „Engedélyek visszaállítása” lehetőséget.",
+        "step3": "Töltsd újra az oldalt, majd indítsd újra a játékot — ekkor jön a böngésző engedélykérése."
+      },
+      "firefox": {
+        "name": "Firefox",
+        "step1": "Kattints a címsor bal szélén lévő lakat ikonra.",
+        "step2": "A „Kamera használata: Letiltva” sornál kattints az × jelre a tiltás törléséhez.",
+        "step3": "Töltsd újra az oldalt, majd indítsd újra a játékot — ekkor jön a böngésző engedélykérése."
+      },
+      "safari": {
+        "name": "Safari",
+        "step1": "Nyisd meg a Safari → Beállítások → Weboldalak → Kamera menüpontot.",
+        "step2": "Keresd meg ezt az oldalt a listában, és állítsd „Kérdezzen” vagy „Engedélyezés” értékre.",
+        "step3": "Töltsd újra az oldalt, majd indítsd újra a játékot — ekkor jön a böngésző engedélykérése."
+      },
+      "generic": {
+        "name": "Egyéb böngésző",
+        "step1": "Nyisd meg a böngésző webhely-beállításait ehhez az oldalhoz (általában a címsor melletti ikonnal).",
+        "step2": "Keresd meg a kamera engedélyt, és engedélyezd, vagy állítsd vissza alapértelmezettre.",
+        "step3": "Töltsd újra az oldalt, majd indítsd újra a játékot — ekkor jön a böngésző engedélykérése."
+      },
+      "reloadNote": "A módosítás csak az oldal újratöltése után lép érvénybe.",
+      "close": "Bezárás",
+      "reload": "Oldal újratöltése"
+    },
     "signIn": "Bejelentkezés",
     "guestId": "Vendég azonosító"
   },
