@@ -6,7 +6,7 @@ import {
   DEBUG_STARTING_CREDITS,
   BASE_EXOPLANET_IDS,
 } from "../constants/shopCatalog";
-import type { FailureRecord, SuccessRecord, FriendRequest, UserOnlineStatus, UserPublicProfile, ChatMessage, MultiplayerSession, SessionStatus } from "../types";
+import type { FailureRecord, SuccessRecord, FriendRequest, UserOnlineStatus, UserPublicProfile, ChatMessage, MultiplayerSession, SessionStatus, PurchaseRecord, EventLogEntry, NotificationRecord, NotificationType } from "../types";
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
 
@@ -97,6 +97,12 @@ export interface UserNode {
   stats: {
     bestServiceSeconds: number;
   };
+  /**
+   * Purchase history, keyed by push ID. Private to the owner — unlike the
+   * Wall of Shame there is no friend-visible view, so it stays under
+   * `users/{uid}` rather than getting its own top-level node.
+   */
+  purchases?: Record<string, PurchaseRecord>;
 }
 
 const getDefaultUserNode = (user: User, provider: "anonymous" | "google"): UserNode => ({
@@ -288,8 +294,14 @@ export const migrateGuestData = async (
   const guestRef = ref(db, `users/${deviceId}`);
   const guestSnapshot = await get(guestRef);
 
-  // No guest data to migrate
-  if (!guestSnapshot.exists()) return { kind: "noop" };
+  // No guest user data to migrate — but the wall may still need moving.
+  if (!guestSnapshot.exists()) {
+    const wallOnly = await collectGuestWallUpdates(db, deviceId, targetUid);
+    if (Object.keys(wallOnly).length > 0) {
+      await update(ref(db), wallOnly);
+    }
+    return { kind: "noop" };
+  }
 
   const guestData = guestSnapshot.val() as DeepPartial<UserNode>;
 
@@ -302,10 +314,18 @@ export const migrateGuestData = async (
     targetData = targetSnapshot.val() as DeepPartial<UserNode>;
   }
 
+  // The Wall of Shame lives OUTSIDE the user node and must migrate
+  // independently: a guest writes to `walls/{deviceId}` (authorized through
+  // device_map), but friends look a wall up by auth uid, so on upgrade the
+  // records have to move to `walls/{targetUid}` to become visible.
+  const wallUpdates = await collectGuestWallUpdates(db, deviceId, targetUid);
+
   // --- Build the atomic updates object ---
   // Root multi-path update: all writes in a single call.
   // Uses ONLY leaf-level paths to avoid RTDB path overlap errors.
-  const updates: Record<string, unknown> = {};
+  // Wall records ride along in the same atomic write; they are not currency,
+  // so they migrate even when the credit/inventory merge is blocked.
+  const updates: Record<string, unknown> = { ...wallUpdates };
 
   const guestCredits = guestData.wallet?.credits ?? 0;
 
@@ -448,6 +468,21 @@ async function executeAtomicUpdate(
   } catch (err) {
     console.error("migrateGuestData: atomic multi-path update failed:", err);
 
+    // Wall records live under their own top-level path and are governed by
+    // separate rules, so retry them on their own — a denial in the `users`
+    // branch must not silently drop the player's mission history.
+    const wallUpdates: Record<string, unknown> = {};
+    for (const [path, val] of Object.entries(updates)) {
+      if (path.startsWith("walls/")) wallUpdates[path] = val;
+    }
+    if (Object.keys(wallUpdates).length > 0) {
+      try {
+        await update(ref(db), wallUpdates);
+      } catch (wallErr) {
+        console.error("migrateGuestData: wall migration failed:", wallErr);
+      }
+    }
+
     // Fallback: lépésenkénti sequence (rollback-barát)
     // Extract target updates (any path starting with `users/${targetUid}/`)
     const targetUpdates: Record<string, unknown> = {};
@@ -483,6 +518,35 @@ async function executeAtomicUpdate(
     await set(mapRef, null);
   }
 }
+
+/**
+ * Collect the multi-path updates that move a guest's Wall of Shame from
+ * `walls/{deviceId}` to `walls/{targetUid}`.
+ *
+ * Records keep their original push ID, so re-running the migration overwrites
+ * rather than duplicates. The guest branch is deleted in the same write.
+ */
+const collectGuestWallUpdates = async (
+  db: ReturnType<typeof getFirebaseDB>,
+  deviceId: string,
+  targetUid: string,
+): Promise<Record<string, unknown>> => {
+  const { get } = await import("firebase/database");
+  const updates: Record<string, unknown> = {};
+
+  for (const branch of ["failures", "successes"] as const) {
+    const snap = await get(ref(db, `walls/${deviceId}/${branch}`));
+    if (!snap.exists()) continue;
+
+    const records = snap.val() as Record<string, unknown>;
+    for (const [pushId, value] of Object.entries(records)) {
+      updates[`walls/${targetUid}/${branch}/${pushId}`] = value;
+    }
+    updates[`walls/${deviceId}/${branch}`] = null;
+  }
+
+  return updates;
+};
 
 /**
  * Type helper: all fields optional (for null-safe guest data access).
@@ -694,6 +758,40 @@ export const updateUserInventory = async (
   await set(invRef, items);
 };
 
+// --- Purchase history ---
+
+/**
+ * Append a purchase to `users/{uid}/purchases`.
+ *
+ * The record keeps its locally generated `id`, so the RTDB echo replacing the
+ * optimistic local entry is a no-op rather than a duplicate.
+ */
+export const savePurchaseRecord = async (
+  uid: string,
+  record: PurchaseRecord,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await push(ref(db, `users/${uid}/purchases`), record);
+};
+
+/**
+ * Convert the RTDB `purchases` branch into a sorted array (newest first).
+ * Exported so `handleUserData` can map the node without duplicating the shape
+ * knowledge — the branch arrives with the rest of the user node via
+ * `subscribeUser`, so no separate subscription is needed.
+ */
+export const mapPurchases = (
+  data: Record<string, PurchaseRecord> | undefined,
+): PurchaseRecord[] => {
+  if (!data) return [];
+  const records = Object.entries(data).map(([pushId, value]) => ({
+    ...value,
+    id: value.id || pushId,
+  }));
+  records.sort((a, b) => b.purchasedAt - a.purchasedAt);
+  return records;
+};
+
 // --- Wall of Shame ---
 
 /**
@@ -710,32 +808,193 @@ export const saveFailureRecord = async (
 };
 
 /**
- * Subscribe to failure records in RTDB.
+ * Shared subscription helper for wall records (failures / successes).
+ * Converts the push-ID keyed object into a sorted array and normalizes `id`.
+ *
+ * On error it reports an EMPTY list rather than staying silent — a legacy-path
+ * subscription may legitimately be denied, and the caller must not be left
+ * waiting on a callback that never fires.
+ */
+const subscribeWallRecords = <T extends { id: string; events: EventLogEntry[] }>(
+  path: string,
+  timestampOf: (record: T) => number,
+  callback: (records: T[]) => void,
+): Unsubscribe => {
+  const db = getFirebaseDB();
+  const recordsRef = ref(db, path);
+
+  return onValue(
+    recordsRef,
+    (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        callback([]);
+        return;
+      }
+      // Convert the object of push-IDs → array of records.
+      //
+      // `events` is normalized here because RTDB does not store empty arrays:
+      // a record saved with `events: []` comes back with the key MISSING, and
+      // every consumer does `record.events.length`.
+      const records: T[] = Object.entries(data).map(([pushId, value]) => {
+        const record = value as T;
+        return {
+          ...record,
+          id: record.id || pushId,
+          events: record.events ?? [],
+        };
+      });
+      // Most recent first
+      records.sort((a, b) => timestampOf(b) - timestampOf(a));
+      callback(records);
+    },
+    (error) => {
+      console.error(`subscribeWallRecords error for ${path}:`, error);
+      callback([]);
+    },
+  );
+};
+
+/**
+ * Subscribe to failure records in RTDB (`walls/{uid}/failures`).
  * Calls callback with an array of FailureRecord every time data changes.
  * Returns an unsubscribe function.
  */
 export const subscribeFailures = (
   uid: string,
   callback: (records: FailureRecord[]) => void,
+): Unsubscribe =>
+  subscribeWallRecords<FailureRecord>(
+    `walls/${uid}/failures`,
+    (r) => r.failedAt,
+    callback,
+  );
+
+/**
+ * Subscribe to the LEGACY failure records at `users/{uid}/failures`.
+ *
+ * Needed because `migrateWallData` only runs when the OWNER opens their own
+ * wall — a friend whose data has not been migrated yet still has everything
+ * under the old path. The security rules allow friends to read
+ * `users/$key/failures` directly (read rules cascade DOWN, so the parent's
+ * `.read` being false does not revoke this child grant), but they cannot
+ * write `walls/{friendUid}`, so the migration itself is not possible from here.
+ */
+export const subscribeLegacyFailures = (
+  uid: string,
+  callback: (records: FailureRecord[]) => void,
+): Unsubscribe =>
+  subscribeWallRecords<FailureRecord>(
+    `users/${uid}/failures`,
+    (r) => r.failedAt,
+    callback,
+  );
+
+// --- Notifications ---
+
+/**
+ * Append a notification to the RECIPIENT's inbox (`notifications/{toUid}`).
+ *
+ * The write targets somebody else's node, which is why the security rules grant
+ * a child-level `.write` on `notifications/$uid/$notificationId` guarded by
+ * `newData.child('fromUid').val() === auth.uid`. A parent-level owner-only rule
+ * would make this function permanently PERMISSION_DENIED.
+ *
+ * Failures are swallowed (logged only): a missing toast must never break the
+ * friend-request flow that triggered it.
+ */
+export const sendNotification = async (
+  toUid: string,
+  type: NotificationType,
+  fromUid: string,
+  fromName: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  try {
+    await push(ref(db, `notifications/${toUid}`), {
+      type,
+      fromUid,
+      fromName,
+      at: Date.now(),
+      read: false,
+    });
+  } catch (err) {
+    console.error("sendNotification failed:", err);
+  }
+};
+
+/**
+ * Subscribe to the current user's notifications (`notifications/{uid}`).
+ * Converts the push-ID keyed object into an array sorted newest-first.
+ *
+ * The error callback is mandatory: a silent `permission_denied` is otherwise
+ * indistinguishable from an empty inbox, and the caller would wait forever.
+ */
+export const subscribeNotifications = (
+  uid: string,
+  callback: (notifications: NotificationRecord[]) => void,
 ): Unsubscribe => {
   const db = getFirebaseDB();
-  const failuresRef = ref(db, `walls/${uid}/failures`);
+  const notificationsRef = ref(db, `notifications/${uid}`);
 
-  return onValue(failuresRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
+  return onValue(
+    notificationsRef,
+    (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        callback([]);
+        return;
+      }
+      const records: NotificationRecord[] = Object.entries(data).map(
+        ([pushId, value]) => {
+          const record = value as NotificationRecord;
+          return {
+            ...record,
+            id: record.id || pushId,
+            read: record.read === true,
+          };
+        },
+      );
+      records.sort((a, b) => b.at - a.at);
+      callback(records);
+    },
+    (error) => {
+      console.error(`subscribeNotifications error for uid ${uid}:`, error);
       callback([]);
-      return;
+    },
+  );
+};
+
+/** Mark a single notification as read. */
+export const markNotificationRead = async (
+  uid: string,
+  notificationId: string,
+): Promise<void> => {
+  const db = getFirebaseDB();
+  await set(ref(db, `notifications/${uid}/${notificationId}/read`), true);
+};
+
+/**
+ * Mark every unread notification as read in a single multi-path update.
+ * Called when the user opens the Friends screen — that is what clears the
+ * main-menu badge.
+ */
+export const markAllNotificationsRead = async (uid: string): Promise<void> => {
+  const db = getFirebaseDB();
+  const { get } = await import("firebase/database");
+  const snapshot = await get(ref(db, `notifications/${uid}`));
+  if (!snapshot.exists()) return;
+
+  const data = snapshot.val() as Record<string, { read?: boolean }>;
+  const updates: Record<string, unknown> = {};
+  for (const [pushId, record] of Object.entries(data)) {
+    if (record?.read !== true) {
+      updates[`${pushId}/read`] = true;
     }
-    // Convert the object of push-IDs → array of FailureRecords
-    const records: FailureRecord[] = Object.entries(data).map(([pushId, value]) => {
-      const record = value as FailureRecord;
-      return { ...record, id: record.id || pushId };
-    });
-    // Sort by failedAt descending (most recent first)
-    records.sort((a, b) => b.failedAt - a.failedAt);
-    callback(records);
-  });
+  }
+  if (Object.keys(updates).length === 0) return;
+
+  await update(ref(db, `notifications/${uid}`), updates);
 };
 
 // --- Social / Friends ---
@@ -766,16 +1025,23 @@ export const sendFriendRequest = async (
       status: "pending",
     },
   });
+
+  // Notify the recipient so a toast pops up on their side.
+  await sendNotification(toUid, "friendRequest", fromUid, fromNickname);
 };
 
 /**
  * Accept a friend request.
  * Adds each user to the other's friends list, updates the request status,
  * and cleans up the sender's outgoing request entry.
+ *
+ * @param ownNickname The accepting user's own nickname — it travels to the
+ *        original sender in the notification ("X accepted your request").
  */
 export const acceptFriendRequest = async (
   uid: string,
   fromUid: string,
+  ownNickname: string,
 ): Promise<void> => {
   const db = getFirebaseDB();
   const rootRef = ref(db);
@@ -790,15 +1056,21 @@ export const acceptFriendRequest = async (
     [`friendRequests/${uid}/${fromUid}/status`]: "accepted",
     [`outgoingRequests/${fromUid}/${uid}`]: null,
   });
+
+  // The notification goes to the OTHER party (the original sender).
+  await sendNotification(fromUid, "friendRequestAccepted", uid, ownNickname);
 };
 
 /**
  * Reject a friend request (removes it entirely).
  * Also cleans up the sender's outgoing request entry.
+ *
+ * @param ownNickname The rejecting user's own nickname — see acceptFriendRequest.
  */
 export const rejectFriendRequest = async (
   uid: string,
   fromUid: string,
+  ownNickname: string,
 ): Promise<void> => {
   const db = getFirebaseDB();
   const rootRef = ref(db);
@@ -808,6 +1080,9 @@ export const rejectFriendRequest = async (
     [`friendRequests/${uid}/${fromUid}`]: null,
     [`outgoingRequests/${fromUid}/${uid}`]: null,
   });
+
+  // The notification goes to the OTHER party (the original sender).
+  await sendNotification(fromUid, "friendRequestRejected", uid, ownNickname);
 };
 
 /**
@@ -1085,6 +1360,7 @@ export const sendMessage = async (
   chatId: string,
   fromUid: string,
   text: string,
+  fromName?: string,
 ): Promise<void> => {
   const db = getFirebaseDB();
   const messagesRef = ref(db, `chats/${chatId}/messages`);
@@ -1112,6 +1388,10 @@ export const sendMessage = async (
   } catch (err) {
     console.error("Failed to increment unread count:", err);
   }
+
+  // Toast the recipient. Errors are swallowed by sendNotification — a failed
+  // notification must never make a delivered message look like it failed.
+  await sendNotification(toUid, "chatMessage", fromUid, fromName ?? "");
 };
 
 /**
@@ -1125,21 +1405,30 @@ export const subscribeChatMessages = (
   const db = getFirebaseDB();
   const messagesRef = ref(db, `chats/${chatId}/messages`);
 
-  return onValue(messagesRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
+  return onValue(
+    messagesRef,
+    (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        callback([]);
+        return;
+      }
+      const messages: (ChatMessage & { id: string })[] = Object.entries(data).map(
+        ([pushId, value]) => {
+          const msg = value as ChatMessage;
+          return { ...msg, id: pushId };
+        },
+      );
+      messages.sort((a, b) => a.at - b.at);
+      callback(messages);
+    },
+    (error) => {
+      // Without this handler a denied read is indistinguishable from an empty
+      // chat — the panel just renders "no messages yet" forever.
+      console.error(`subscribeChatMessages error for chat ${chatId}:`, error);
       callback([]);
-      return;
-    }
-    const messages: (ChatMessage & { id: string })[] = Object.entries(data).map(
-      ([pushId, value]) => {
-        const msg = value as ChatMessage;
-        return { ...msg, id: pushId };
-      },
-    );
-    messages.sort((a, b) => a.at - b.at);
-    callback(messages);
-  });
+    },
+  );
 };
 
 /**
@@ -1468,21 +1757,23 @@ export const checkHasActiveSession = async (uid: string): Promise<boolean> => {
 export const subscribeSuccesses = (
   uid: string,
   callback: (records: SuccessRecord[]) => void,
-): Unsubscribe => {
-  const db = getFirebaseDB();
-  const successesRef = ref(db, `walls/${uid}/successes`);
+): Unsubscribe =>
+  subscribeWallRecords<SuccessRecord>(
+    `walls/${uid}/successes`,
+    (r) => r.completedAt,
+    callback,
+  );
 
-  return onValue(successesRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
-      callback([]);
-      return;
-    }
-    const records: SuccessRecord[] = Object.entries(data).map(([pushId, value]) => {
-      const record = value as SuccessRecord;
-      return { ...record, id: record.id || pushId };
-    });
-    records.sort((a, b) => b.completedAt - a.completedAt);
-    callback(records);
-  });
-};
+/**
+ * Subscribe to the LEGACY success records at `users/{uid}/successes`.
+ * See `subscribeLegacyFailures` for why this fallback exists.
+ */
+export const subscribeLegacySuccesses = (
+  uid: string,
+  callback: (records: SuccessRecord[]) => void,
+): Unsubscribe =>
+  subscribeWallRecords<SuccessRecord>(
+    `users/${uid}/successes`,
+    (r) => r.completedAt,
+    callback,
+  );

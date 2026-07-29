@@ -131,6 +131,7 @@
     "intro": "Voir l'intro",
     "wallOfShame": "Mur de la Honte",
     "friends": "Amis",
+    "meetCreator": "Rencontrer le créateur",
     "cameraRequired": "Accès à la caméra requis pour démarrer le jeu",
     "loginComingSoon": "La connexion sera bientôt disponible.",
     "shopComingSoon": "La boutique sera bientôt disponible."
@@ -196,6 +197,15 @@
     },
     "search": "Rechercher par nom…",
     "searchNoResult": "Aucun résultat",
+    "sort": {
+      "priceAsc": "Prix : croissant",
+      "priceDesc": "Prix : décroissant",
+      "speedAsc": "Vitesse : croissante",
+      "speedDesc": "Vitesse : décroissante",
+      "distanceAsc": "Distance : croissante",
+      "distanceDesc": "Distance : décroissante"
+    },
+    "guestNotice": "La boutique nécessite un compte. Connectez-vous avec Google pour effectuer des achats et conserver vos crédits !",
     "addToCart": "Ajouter au panier",
     "inCart": "Dans le panier ✓",
     "owned": "Possédé",
@@ -286,6 +296,9 @@
       },
       "asdasd123": {
         "desc": "⚠️ VAISSEAU DEBUG ⚠️ Tu ne devrais pas voir ça. 1234 km/s. 1234 crédits. Ne pose pas de questions. 'Ce n'est pas un bug — c'est une fonctionnalité.' — Debug Dynamics Ltd."
+      },
+      "longDrop": {
+        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
       }
     },
     "exoplanet": {
@@ -322,6 +335,10 @@
       "back": "Retour à la boutique",
       "notEnoughCreditsHint": "Achetez des crédits dans l'onglet 'Acheter des crédits' !",
       "guestWarning": "Attention : les crédits et objets achetés en tant qu'invité sont perdus si vous ne vous connectez pas. La progression d'invité ne peut être transférée qu'une seule fois, depuis un seul compte invité."
+    },
+    "history": {
+      "title": "Purchase History",
+      "empty": "No purchases yet."
     }
   },
   "sort": {
@@ -454,7 +471,8 @@
     "lookup": "Rechercher",
     "uidNotFound": "Aucun utilisateur trouvé avec cet ID",
     "uidLookupError": "La recherche a échoué. Réessayez.",
-    "thisIsYou": "C'est vous !"
+    "thisIsYou": "C'est vous !",
+    "guestNotice": "La fonction Amis nécessite un compte. Connectez-vous avec Google pour ajouter des amis et discuter avec eux !"
   },
   "friendWall": {
     "title": "Mur de la Honte de {{name}}",
@@ -470,6 +488,17 @@
     "empty": "Aucun message pour l'instant",
     "typing": "écrit...",
     "forbiddenWord": "Le message contient un langage inapproprié"
+  },
+  "toast": {
+    "friendRequest": {
+      "sent": "{{name}} vous a envoyé une demande d'ami",
+      "accepted": "{{name}} a accepté votre demande d'ami",
+      "rejected": "{{name}} a refusé votre demande d'ami"
+    },
+    "chatMessage": "{{name}} vous a envoyé un message",
+    "friendOnline": "{{name}} est maintenant en ligne",
+    "friendOffline": "{{name}} est maintenant hors ligne",
+    "dismiss": "Fermer"
   },
   "multiplayer": {
     "invite": "Inviter à la mission",

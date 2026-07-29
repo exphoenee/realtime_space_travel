@@ -7,11 +7,13 @@ import Dashboard from "./components/features/Dashboard";
 import PauseMenu from "./components/features/PauseMenu";
 import DebugOverlay from "./components/features/DebugOverlay";
 import DebugEventBar from "./components/features/DebugEventBar";
+import ToastContainer from "./components/features/ToastContainer";
 
 import useGameStore from "./state/useGameStore";
 import useUIStore from "./state/useUIStore";
 import useAuthStore, { getRtdbKey } from "./state/useAuthStore";
 import useShopStore from "./state/useShopStore";
+import { clearUserScopedData } from "./state/clearUserScopedData";
 import { useAudio } from "./hooks/useAudio";
 import { useWeather } from "./hooks/useWeather";
 import { useCamera } from "./hooks/useCamera";
@@ -19,6 +21,8 @@ import { useFaceDetection } from "./hooks/useFaceDetection";
 import { useAttentionMonitor } from "./hooks/useAttentionMonitor";
 import { usePageLeave } from "./hooks/usePageLeave";
 import { useEventSystem } from "./hooks/useEventSystem";
+import { useNotificationListener } from "./hooks/useNotificationListener";
+import { useFriendPresenceToasts } from "./hooks/useFriendPresenceToasts";
 import i18n from "./i18n/index";
 import { initFirebase } from "./firebase/config";
 import { startAuthBootstrap } from "./firebase/authBootstrap";
@@ -27,7 +31,7 @@ import type { UserNode } from "./firebase/userData";
 import { BASE_EXOPLANET_IDS, getShipImageById } from "./constants/shopCatalog";
 
 import { Destination } from "./types";
-import { saveFailureRecord, saveSuccessRecord } from "./firebase/userData";
+import { saveFailureRecord, saveSuccessRecord, mapPurchases } from "./firebase/userData";
 import {
   ATTENTION_INTERVAL_MS,
   INACTIVITY_LIMIT_SECONDS,
@@ -96,6 +100,9 @@ const App: React.FC = () => {
   useAttentionMonitor(faceStatus, destination);
   usePageLeave();
   const { triggerManualEvent } = useEventSystem();
+  // Single global subscription to `notifications/{authUid}` → toasts + badge.
+  useNotificationListener();
+  useFriendPresenceToasts();
 
   // Auto-record failure when crewLost is triggered (all paths)
   useEffect(() => {
@@ -237,6 +244,11 @@ const App: React.FC = () => {
       const newShips = mergeInventory(inv?.ships, []);
       const newMusic = mergeInventory(inv?.music, []);
       const newExos = mergeInventory(inv?.exoplanets, [...BASE_EXOPLANET_IDS]);
+      // Purchase history → useShopStore. Arrives with the rest of the user
+      // node (subscribeUser reads `users/{uid}` wholesale), so no separate
+      // subscription is needed. RTDB replaces the optimistic local array.
+      shop.setPurchaseHistory(mapPurchases(data.purchases));
+
       if (
         JSON.stringify(newShips) !== JSON.stringify(shop.owned.ships) ||
         JSON.stringify(newMusic) !== JSON.stringify(shop.owned.music) ||
@@ -285,6 +297,28 @@ const App: React.FC = () => {
       if (state.uid && state.uid !== prev.uid) {
         migrateWallData(state.uid).catch(console.error);
       }
+    });
+    return () => unsub();
+  }, []);
+
+  // Identity change → drop the previous account's locally cached data.
+  //
+  // Only a REGISTERED (non-anonymous) identity is tracked. Going guest→Google
+  // is the same human upgrading their session — `migrateGuestData` moves that
+  // data to the new uid, so it must NOT be wiped. Going Google→signed-out or
+  // Google→another Google account is a different person on this browser.
+  useEffect(() => {
+    const currentUser = useAuthStore.getState().user;
+    let lastAuthedUid =
+      currentUser && !currentUser.isAnonymous ? currentUser.uid : null;
+
+    const unsub = useAuthStore.subscribe((state) => {
+      const authedUid =
+        state.user && !state.user.isAnonymous ? state.user.uid : null;
+      if (lastAuthedUid && lastAuthedUid !== authedUid) {
+        clearUserScopedData();
+      }
+      lastAuthedUid = authedUid;
     });
     return () => unsub();
   }, []);
@@ -422,7 +456,8 @@ const App: React.FC = () => {
     gamePhase === "loading" ||
     gamePhase === "wallOfShame" ||
     gamePhase === "friends" ||
-    gamePhase === "friendWall";
+    gamePhase === "friendWall" ||
+    gamePhase === "chat";
 
   const attentionCountdown =
     gamePhase === "countdown"
@@ -619,7 +654,8 @@ const App: React.FC = () => {
         state.gamePhase === "shop" ||
         state.gamePhase === "wallOfShame" ||
         state.gamePhase === "friends" ||
-        state.gamePhase === "friendWall"
+        state.gamePhase === "friendWall" ||
+        state.gamePhase === "chat"
       ) {
         updateOnlineStatus(rtdbKey, "online").catch(console.error);
       } else if (
@@ -685,6 +721,9 @@ const App: React.FC = () => {
 
   return (
     <>
+      {/* Outside both branches so system toasts show in menus AND in-game. */}
+      <ToastContainer />
+
       {isPreGame ? (
         <main className={styles.app}>
           <Starfield key="pregame" onCanvasBoundsChange={handleCanvasBoundsChange} />

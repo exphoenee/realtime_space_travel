@@ -131,6 +131,7 @@
     "intro": "Intro megtekintése",
     "wallOfShame": "Szégyenfal",
     "friends": "Barátok",
+    "meetCreator": "A készítőről",
     "cameraRequired": "Kamera hozzáférés szükséges a játék indításához",
     "loginComingSoon": "A bejelentkezés hamarosan elérhető lesz.",
     "shopComingSoon": "Az áruház hamarosan elérhető lesz."
@@ -204,6 +205,15 @@
     },
     "search": "Keresés név szerint…",
     "searchNoResult": "Nincs találat",
+    "sort": {
+      "priceAsc": "Ár: növekvő",
+      "priceDesc": "Ár: csökkenő",
+      "speedAsc": "Sebesség: növekvő",
+      "speedDesc": "Sebesség: csökkenő",
+      "distanceAsc": "Távolság: növekvő",
+      "distanceDesc": "Távolság: csökkenő"
+    },
+    "guestNotice": "Az áruházhoz be kell jelentkezned. Jelentkezz be Google-fiókkal, hogy vásárolhass és a krediteid megmaradjanak!",
     "addToCart": "Kosárba",
     "inCart": "Kosárban ✓",
     "owned": "Birtokolt",
@@ -294,6 +304,9 @@
       },
       "asdasd123": {
         "desc": "⚠️ DEBUG HAJÓ ⚠️ Ezt nem kéne látnod. 1234 km/s. 1234 kredit. Ne kérdezz semmit. 'Nem bug — ez egy feature.' — Debug Dynamics Ltd."
+      },
+      "longDrop": {
+        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
       }
     },
     "exoplanet": {
@@ -330,6 +343,10 @@
       "back": "Vissza a boltba",
       "notEnoughCreditsHint": "Vegyél kreditet a 'Kredit vásárlás' fülön!",
       "guestWarning": "Figyelem: a vendégként vásárolt kreditek és tárgyak elvesznek, ha nem jelentkezel be. A vendég haladás csak egyszer, egyetlen vendég fiókból vihető át regisztrált fiókba."
+    },
+    "history": {
+      "title": "Purchase History",
+      "empty": "No purchases yet."
     }
   },
   "sort": {
@@ -454,7 +471,8 @@
     "lookup": "Keresés",
     "uidNotFound": "Nincs felhasználó ezzel az ID-val",
     "uidLookupError": "A keresés nem sikerült. Próbáld újra.",
-    "thisIsYou": "Ez te vagy!"
+    "thisIsYou": "Ez te vagy!",
+    "guestNotice": "A barátok funkcióhoz be kell jelentkezned. Jelentkezz be Google-fiókkal, hogy barátokat adhass hozzá és chatelhess velük!"
   },
   "friendWall": {
     "title": "{{name}} Szégyenfala",
@@ -470,6 +488,17 @@
     "empty": "Még nincs üzenet",
     "typing": "gépel...",
     "forbiddenWord": "Az üzenet nem megfelelő szavakat tartalmaz"
+  },
+  "toast": {
+    "friendRequest": {
+      "sent": "{{name}} barátkérést küldött neked",
+      "accepted": "{{name}} elfogadta a barátkérésed",
+      "rejected": "{{name}} elutasította a barátkérésed"
+    },
+    "chatMessage": "{{name}} üzenetet küldött neked",
+    "friendOnline": "{{name}} online",
+    "friendOffline": "{{name}} offline",
+    "dismiss": "Bezárás"
   },
   "multiplayer": {
     "invite": "Meghívás küldetésbe",

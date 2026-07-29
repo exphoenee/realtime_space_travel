@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Destination, GamePhase } from "../../types";
 import useGameStore from "../../state/useGameStore";
+import useAuthStore from "../../state/useAuthStore";
 import IntroScreen from "../screens/IntroScreen";
 import MainMenu from "../screens/MainMenu";
 import MissionSelector from "../screens/MissionSelector";
@@ -10,6 +11,7 @@ import ShopScreen from "../shop/ShopScreen";
 import ShipSelectScreen from "../screens/ShipSelectScreen";
 import WallOfShame from "../screens/WallOfShame";
 import FriendsScreen from "../screens/FriendsScreen";
+import ChatScreen from "../screens/ChatScreen";
 import CameraConsentModal from "../features/CameraConsentModal";
 import MultiplayerStatusBar from "../features/MultiplayerStatusBar";
 
@@ -35,6 +37,8 @@ interface ScreenRouterProps {
  * - 'shop'         → ShopScreen (in-game shop)
  * - 'loading'      → LoadingScreen (camera/model initialization)
  * - 'wallOfShame'  → WallOfShame (failure log)
+ * - 'friends'      → FriendsScreen (friend list / search / requests)
+ * - 'chat'         → ChatScreen (1:1 conversation with chatTargetUid)
  * - All others     → children (the game view with overlays)
  */
 const ScreenRouter: React.FC<ScreenRouterProps> = ({
@@ -45,6 +49,31 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
   onCheckCamera,
   children,
 }) => {
+  const authUser = useAuthStore((s) => s.user);
+  const authStatus = useAuthStore((s) => s.status);
+
+  // Screens that require a registered account: the friend graph is keyed by
+  // the Google auth uid, and shop purchases must outlive a throwaway session.
+  // `status === "loading"` is NOT treated as guest: auth resolves
+  // asynchronously and would otherwise bounce a signed-in player on refresh.
+  const isGuest = authStatus !== "loading" && (!authUser || authUser.isAnonymous);
+  const needsAccount =
+    phase === "friends" ||
+    phase === "chat" ||
+    phase === "friendWall" ||
+    phase === "shop";
+  const blockPhase = isGuest && needsAccount;
+
+  // Covers the persisted-phase case: signing out while on one of these
+  // screens, or refreshing into one that localStorage restored.
+  useEffect(() => {
+    if (blockPhase) {
+      useGameStore.getState().transitionTo("mainMenu");
+    }
+  }, [blockPhase]);
+
+  if (blockPhase) return <MainMenu />;
+
   switch (phase) {
     case "cameraConsent":
       return <CameraConsentModal />;
@@ -66,6 +95,8 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
       );
     case "friends":
       return <FriendsScreen />;
+    case "chat":
+      return <ChatScreen />;
     case "friendWall": {
       const { friendWallTargetUid, friendWallTargetName, transitionTo } = useGameStore.getState();
       return (

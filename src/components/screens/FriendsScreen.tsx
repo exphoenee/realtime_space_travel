@@ -1,4 +1,3 @@
-import ChatPanel from "../features/ChatPanel";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
@@ -16,6 +15,7 @@ import {
   getChatId,
   searchUsersPublic,
   lookupUserByUid,
+  markAllNotificationsRead,
 } from "../../firebase/userData";
 import type { FriendRequest, UserOnlineStatus, UserPublicProfile } from "../../types";
 import { containsForbiddenWords } from "../../constants/constants";
@@ -47,11 +47,19 @@ const FriendsScreen: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [requestStatus, setRequestStatus] = useState<Record<string, "idle" | "sending" | "sent" | "error">>({});
   const [outgoingPending, setOutgoingPending] = useState<Set<string>>(new Set());
-  const [activeChatFriend, setActiveChatFriend] = useState<FriendWithStatus | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [uidLookupTerm, setUidLookupTerm] = useState("");
   const [uidLookupResult, setUidLookupResult] = useState<UserPublicProfile | null | undefined>(undefined);
   const [uidLookupStatus, setUidLookupStatus] = useState<"idle" | "looking" | "not-found" | "found" | "error">("idle");
+
+  /** Name the other party sees in their toast when we act on their request. */
+  const ownName = nickname || displayName || authUser?.displayName || "Anonymous";
+
+  // Opening this screen counts as seeing the notifications → clear the badge.
+  useEffect(() => {
+    if (!authUid) return;
+    markAllNotificationsRead(authUid).catch(console.error);
+  }, [authUid]);
 
   // Subscribe to friends list
   useEffect(() => {
@@ -198,8 +206,7 @@ const FriendsScreen: React.FC = () => {
         return next;
       });
       try {
-        const fromNickname = nickname || displayName || authUser?.displayName || "Anonymous";
-        await sendFriendRequest(authUid, toUid, fromNickname);
+        await sendFriendRequest(authUid, toUid, ownName);
       } catch (err) {
         console.error("Failed to send friend request:", err);
         // Rollback optimistic update on failure
@@ -211,31 +218,32 @@ const FriendsScreen: React.FC = () => {
         setRequestStatus((prev) => ({ ...prev, [toUid]: "error" }));
       }
     },
-    [authUid, nickname, displayName, authUser],
+    [authUid, ownName],
   );
 
   const handleAccept = useCallback(
     async (fromUid: string) => {
       if (!authUid) return;
       try {
-        await acceptFriendRequest(authUid, fromUid);
+        // ownName travels along so the sender's toast reads "X accepted…".
+        await acceptFriendRequest(authUid, fromUid, ownName);
       } catch (err) {
         console.error("Failed to accept friend request:", err);
       }
     },
-    [authUid],
+    [authUid, ownName],
   );
 
   const handleReject = useCallback(
     async (fromUid: string) => {
       if (!authUid) return;
       try {
-        await rejectFriendRequest(authUid, fromUid);
+        await rejectFriendRequest(authUid, fromUid, ownName);
       } catch (err) {
         console.error("Failed to reject friend request:", err);
       }
     },
-    [authUid],
+    [authUid, ownName],
   );
 
   const handleRemove = useCallback(
@@ -312,6 +320,15 @@ const FriendsScreen: React.FC = () => {
     }
   }, [uidLookupTerm, authUid]);
 
+  /** Open the standalone `chat` screen for this friend. */
+  const openChat = useCallback((friend: FriendWithStatus) => {
+    useGameStore.setState({
+      chatTargetUid: friend.uid,
+      chatTargetName: getFriendDisplayName(friend),
+    });
+    transitionTo("chat");
+  }, [transitionTo]);
+
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
@@ -359,256 +376,245 @@ const FriendsScreen: React.FC = () => {
 
         {/* Tab content */}
         <div className={styles.content}>
-          {activeChatFriend && authUid ? (
-            <ChatPanel
-              authUid={authUid}
-              friendUid={activeChatFriend.uid}
-              friendName={getFriendDisplayName(activeChatFriend)}
-              onBack={() => setActiveChatFriend(null)}
-            />
-          ) : (
-            <>
-              {/* Friends List */}
-              {activeTab === "friends" && (
-                <div className={styles.list}>
-                  {friendUids.length === 0 ? (
-                    <p className={styles.empty}>{t("friends.empty")}</p>
-                  ) : (
-                    friendsWithStatus.map((friend) => (
-                      <div key={friend.uid} className={styles.card}>
-                        <div className={styles.cardLeft}>
-                          <span className={styles.statusIcon} title={getStatusLabel(friend.onlineStatus)}>
-                            {getStatusIcon(friend.onlineStatus)}
-                          </span>
-                          <span className={styles.cardName}>{getFriendDisplayName(friend)}</span>
-                          {unreadCounts[friend.uid] > 0 && (
-                            <span className={styles.unreadBadge}>
-                              {unreadCounts[friend.uid] > 99 ? "99+" : unreadCounts[friend.uid]}
-                            </span>
-                          )}
-                        </div>
-                        <div className={styles.cardRight}>
-                          <span className={styles.statusLabel}>
-                            {getStatusLabel(friend.onlineStatus)}
-                          </span>
-                          <button
-                            type="button"
-                            className={styles.chatBtn}
-                            onClick={() => setActiveChatFriend(friend)}
-                            title={t("chat.send")}
-                          >
-                            💬
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.wallBtn}
-                            onClick={() => {
-                              useGameStore.setState({
-                                friendWallTargetUid: friend.uid,
-                                friendWallTargetName: getFriendDisplayName(friend),
-                              });
-                              useGameStore.getState().transitionTo("friendWall");
-                            }}
-                            title={t("friendWall.viewWall")}
-                          >
-                            🏛️
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.removeBtn}
-                            onClick={() => handleRemove(friend.uid)}
-                            title={t("friends.removeFriend")}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+          {/* Friends List */}
+          {activeTab === "friends" && (
+            <div className={styles.list}>
+              {friendUids.length === 0 ? (
+                <p className={styles.empty}>{t("friends.empty")}</p>
+              ) : (
+                friendsWithStatus.map((friend) => (
+                  <div key={friend.uid} className={styles.card}>
+                    <div className={styles.cardLeft}>
+                      <span className={styles.statusIcon} title={getStatusLabel(friend.onlineStatus)}>
+                        {getStatusIcon(friend.onlineStatus)}
+                      </span>
+                      <span className={styles.cardName}>{getFriendDisplayName(friend)}</span>
+                      {unreadCounts[friend.uid] > 0 && (
+                        <span className={styles.unreadBadge}>
+                          {unreadCounts[friend.uid] > 99 ? "99+" : unreadCounts[friend.uid]}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.cardRight}>
+                      <span className={styles.statusLabel}>
+                        {getStatusLabel(friend.onlineStatus)}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.chatBtn}
+                        onClick={() => openChat(friend)}
+                        title={t("chat.send")}
+                      >
+                        💬
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.wallBtn}
+                        onClick={() => {
+                          useGameStore.setState({
+                            friendWallTargetUid: friend.uid,
+                            friendWallTargetName: getFriendDisplayName(friend),
+                          });
+                          useGameStore.getState().transitionTo("friendWall");
+                        }}
+                        title={t("friendWall.viewWall")}
+                      >
+                        🏛️
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.removeBtn}
+                        onClick={() => handleRemove(friend.uid)}
+                        title={t("friends.removeFriend")}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))
               )}
+            </div>
+          )}
 
-              {/* Search */}
-              {activeTab === "search" && (
-                <div className={styles.searchContainer}>
-                  {/* Name search */}
+          {/* Search */}
+          {activeTab === "search" && (
+            <div className={styles.searchContainer}>
+              {/* Name search */}
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder={t("friends.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setRequestStatus({});
+                }}
+                autoFocus
+              />
+              <div className={styles.list}>
+                {isSearching && <p className={styles.loading}>...</p>}
+                {!isSearching && searchTerm.trim() && searchTerm.trim().length < 3 && (
+                  <p className={styles.minCharHint}>{t("friends.minSearchLength")}</p>
+                )}
+                {!isSearching && searchTerm.trim().length >= 3 && searchResults.length === 0 && (
+                  <p className={styles.empty}>{t("friends.noResults")}</p>
+                )}
+                {!isSearching &&
+                  searchResults.map((profile) => (
+                    <div key={profile.uid} className={styles.card}>
+                      <div className={styles.cardLeft}>
+                        <span className={styles.statusIcon} title={getStatusLabel(profile.onlineStatus)}>
+                          {getStatusIcon(profile.onlineStatus)}
+                        </span>
+                        <span className={styles.cardName}>
+                          {getPublicDisplayName(profile)}
+                        </span>
+                      </div>
+                      <div className={styles.cardRight}>
+                        {outgoingPending.has(profile.uid) ? (
+                          <span className={styles.sentLabel}>
+                            {t("friends.friendRequestSent")}
+                          </span>
+                        ) : friendUids.includes(profile.uid) ? (
+                          <span className={styles.alreadyFriendLabel}>
+                            ✓
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.addBtn}
+                            onClick={() =>
+                              handleSendRequest(profile.uid, getPublicDisplayName(profile))
+                            }
+                            disabled={requestStatus[profile.uid] === "sending"}
+                          >
+                            {requestStatus[profile.uid] === "sending"
+                              ? "..."
+                              : t("friends.addFriend")}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* UID lookup — exact match only, no fuzzy search */}
+              <div className={styles.uidLookupSection}>
+                <div className={styles.uidLookupRow}>
                   <input
                     type="text"
                     className={styles.searchInput}
-                    placeholder={t("friends.searchPlaceholder")}
-                    value={searchTerm}
+                    placeholder={t("friends.uidLookupPlaceholder")}
+                    value={uidLookupTerm}
                     onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setRequestStatus({});
+                      setUidLookupTerm(e.target.value);
+                      setUidLookupStatus("idle");
                     }}
-                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleUidLookup();
+                    }}
                   />
-                  <div className={styles.list}>
-                    {isSearching && <p className={styles.loading}>...</p>}
-                    {!isSearching && searchTerm.trim() && searchTerm.trim().length < 3 && (
-                      <p className={styles.minCharHint}>{t("friends.minSearchLength")}</p>
-                    )}
-                    {!isSearching && searchTerm.trim().length >= 3 && searchResults.length === 0 && (
-                      <p className={styles.empty}>{t("friends.noResults")}</p>
-                    )}
-                    {!isSearching &&
-                      searchResults.map((profile) => (
-                        <div key={profile.uid} className={styles.card}>
-                          <div className={styles.cardLeft}>
-                            <span className={styles.statusIcon} title={getStatusLabel(profile.onlineStatus)}>
-                              {getStatusIcon(profile.onlineStatus)}
-                            </span>
-                            <span className={styles.cardName}>
-                              {getPublicDisplayName(profile)}
-                            </span>
-                          </div>
-                          <div className={styles.cardRight}>
-                            {outgoingPending.has(profile.uid) ? (
-                              <span className={styles.sentLabel}>
-                                {t("friends.friendRequestSent")}
-                              </span>
-                            ) : friendUids.includes(profile.uid) ? (
-                              <span className={styles.alreadyFriendLabel}>
-                                ✓
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                className={styles.addBtn}
-                                onClick={() =>
-                                  handleSendRequest(profile.uid, getPublicDisplayName(profile))
-                                }
-                                disabled={requestStatus[profile.uid] === "sending"}
-                              >
-                                {requestStatus[profile.uid] === "sending"
-                                  ? "..."
-                                  : t("friends.addFriend")}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
+                  <button
+                    type="button"
+                    className={styles.lookupBtn}
+                    onClick={handleUidLookup}
+                    disabled={uidLookupStatus === "looking" || !uidLookupTerm.trim()}
+                  >
+                    {uidLookupStatus === "looking" ? "..." : t("friends.lookup")}
+                  </button>
+                </div>
 
-                  {/* UID lookup — exact match only, no fuzzy search */}
-                  <div className={styles.uidLookupSection}>
-                    <div className={styles.uidLookupRow}>
-                      <input
-                        type="text"
-                        className={styles.searchInput}
-                        placeholder={t("friends.uidLookupPlaceholder")}
-                        value={uidLookupTerm}
-                        onChange={(e) => {
-                          setUidLookupTerm(e.target.value);
-                          setUidLookupStatus("idle");
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleUidLookup();
-                        }}
-                      />
+                {uidLookupStatus === "not-found" && (
+                  <p className={styles.uidLookupNotFound}>
+                    {t("friends.uidNotFound")}
+                  </p>
+                )}
+                {uidLookupStatus === "error" && (
+                  <p className={styles.uidLookupError}>
+                    {t("friends.uidLookupError")}
+                  </p>
+                )}
+                {uidLookupStatus === "found" && uidLookupResult && (
+                  <div className={styles.card}>
+                    <div className={styles.cardLeft}>
+                      <span className={styles.statusIcon} title={getStatusLabel(uidLookupResult.onlineStatus)}>
+                        {getStatusIcon(uidLookupResult.onlineStatus)}
+                      </span>
+                      <span className={styles.cardName}>
+                        {getPublicDisplayName(uidLookupResult)}
+                      </span>
+                      <span className={styles.uidLabel}>{uidLookupResult.uid.slice(0, 12)}...</span>
+                    </div>
+                    <div className={styles.cardRight}>
+                      {outgoingPending.has(uidLookupResult.uid) ? (
+                        <span className={styles.sentLabel}>
+                          {t("friends.friendRequestSent")}
+                        </span>
+                      ) : uidLookupResult.uid === authUid ? (
+                        <span className={styles.alreadyFriendLabel}>
+                          {t("friends.thisIsYou")}
+                        </span>
+                      ) : friendUids.includes(uidLookupResult.uid) ? (
+                        <span className={styles.alreadyFriendLabel}>
+                          ✓
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.addBtn}
+                          onClick={() =>
+                            handleSendRequest(uidLookupResult.uid, getPublicDisplayName(uidLookupResult))
+                          }
+                          disabled={requestStatus[uidLookupResult.uid] === "sending"}
+                        >
+                          {requestStatus[uidLookupResult.uid] === "sending"
+                            ? "..."
+                            : t("friends.addFriend")}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Friend Requests */}
+          {activeTab === "requests" && (
+            <div className={styles.list}>
+              {requests.length === 0 ? (
+                <p className={styles.empty}>
+                  {t("friends.empty")}
+                </p>
+              ) : (
+                requests.map((req) => (
+                  <div key={req.uid} className={styles.card}>
+                    <div className={styles.cardLeft}>
+                      <span className={styles.requestIcon}>📩</span>
+                      <span className={styles.cardName}>
+                        {req.fromNickname || req.uid.slice(0, 8)}
+                      </span>
+                    </div>
+                    <div className={styles.cardRight}>
                       <button
                         type="button"
-                        className={styles.lookupBtn}
-                        onClick={handleUidLookup}
-                        disabled={uidLookupStatus === "looking" || !uidLookupTerm.trim()}
+                        className={styles.acceptBtn}
+                        onClick={() => handleAccept(req.uid)}
                       >
-                        {uidLookupStatus === "looking" ? "..." : t("friends.lookup")}
+                        {t("friends.accept")}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.rejectBtn}
+                        onClick={() => handleReject(req.uid)}
+                      >
+                        {t("friends.reject")}
                       </button>
                     </div>
-
-                    {uidLookupStatus === "not-found" && (
-                      <p className={styles.uidLookupNotFound}>
-                        {t("friends.uidNotFound")}
-                      </p>
-                    )}
-                    {uidLookupStatus === "error" && (
-                      <p className={styles.uidLookupError}>
-                        {t("friends.uidLookupError")}
-                      </p>
-                    )}
-                    {uidLookupStatus === "found" && uidLookupResult && (
-                      <div className={styles.card}>
-                        <div className={styles.cardLeft}>
-                          <span className={styles.statusIcon} title={getStatusLabel(uidLookupResult.onlineStatus)}>
-                            {getStatusIcon(uidLookupResult.onlineStatus)}
-                          </span>
-                          <span className={styles.cardName}>
-                            {getPublicDisplayName(uidLookupResult)}
-                          </span>
-                          <span className={styles.uidLabel}>{uidLookupResult.uid.slice(0, 12)}...</span>
-                        </div>
-                        <div className={styles.cardRight}>
-                          {outgoingPending.has(uidLookupResult.uid) ? (
-                            <span className={styles.sentLabel}>
-                              {t("friends.friendRequestSent")}
-                            </span>
-                          ) : uidLookupResult.uid === authUid ? (
-                            <span className={styles.alreadyFriendLabel}>
-                              {t("friends.thisIsYou")}
-                            </span>
-                          ) : friendUids.includes(uidLookupResult.uid) ? (
-                            <span className={styles.alreadyFriendLabel}>
-                              ✓
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              className={styles.addBtn}
-                              onClick={() =>
-                                handleSendRequest(uidLookupResult.uid, getPublicDisplayName(uidLookupResult))
-                              }
-                              disabled={requestStatus[uidLookupResult.uid] === "sending"}
-                            >
-                              {requestStatus[uidLookupResult.uid] === "sending"
-                                ? "..."
-                                : t("friends.addFriend")}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </div>
+                ))
               )}
-
-              {/* Friend Requests */}
-              {activeTab === "requests" && (
-                <div className={styles.list}>
-                  {requests.length === 0 ? (
-                    <p className={styles.empty}>
-                      {t("friends.empty")}
-                    </p>
-                  ) : (
-                    requests.map((req) => (
-                      <div key={req.uid} className={styles.card}>
-                        <div className={styles.cardLeft}>
-                          <span className={styles.requestIcon}>📩</span>
-                          <span className={styles.cardName}>
-                            {req.fromNickname || req.uid.slice(0, 8)}
-                          </span>
-                        </div>
-                        <div className={styles.cardRight}>
-                          <button
-                            type="button"
-                            className={styles.acceptBtn}
-                            onClick={() => handleAccept(req.uid)}
-                          >
-                            {t("friends.accept")}
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.rejectBtn}
-                            onClick={() => handleReject(req.uid)}
-                          >
-                            {t("friends.reject")}
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </>
+            </div>
           )}
         </div>
       </div>

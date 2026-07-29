@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getChatId, initChat, sendMessage, subscribeChatMessages, markChatRead, updateTypingStatus, subscribeTypingStatus } from "../../firebase/userData";
 import { containsForbiddenWords } from "../../constants/constants";
+import useAuthStore from "../../state/useAuthStore";
 import type { ChatMessage } from "../../types";
 import styles from "./ChatPanel.module.css";
 
@@ -19,6 +20,11 @@ interface ChatPanelProps {
 const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, onBack }) => {
   const { t } = useTranslation();
   const chatId = getChatId(authUid, friendUid);
+  // Shown in the recipient's toast — resolved here because userData has no
+  // access to the auth store's profile fields.
+  const ownName = useAuthStore(
+    (s) => s.nickname || s.displayName || s.uid?.slice(0, 8) || "",
+  );
   const [messages, setMessages] = useState<(ChatMessage & { id: string })[]>([]);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -99,7 +105,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
     setIsSending(true);
     clearTyping();
     try {
-      await sendMessage(chatId, authUid, text);
+      await sendMessage(chatId, authUid, text, ownName);
       setInputText("");
     } catch (err) {
       console.error("Failed to send message:", err);

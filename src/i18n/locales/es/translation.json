@@ -131,6 +131,7 @@
     "intro": "Ver la introducción",
     "wallOfShame": "Muro de la Vergüenza",
     "friends": "Amigos",
+    "meetCreator": "Conoce al creador",
     "cameraRequired": "Se requiere acceso a la cámara para iniciar el juego",
     "loginComingSoon": "El inicio de sesión estará disponible pronto.",
     "shopComingSoon": "La tienda estará disponible pronto."
@@ -196,6 +197,15 @@
     },
     "search": "Buscar por nombre…",
     "searchNoResult": "Sin resultados",
+    "sort": {
+      "priceAsc": "Precio: ascendente",
+      "priceDesc": "Precio: descendente",
+      "speedAsc": "Velocidad: ascendente",
+      "speedDesc": "Velocidad: descendente",
+      "distanceAsc": "Distancia: ascendente",
+      "distanceDesc": "Distancia: descendente"
+    },
+    "guestNotice": "La tienda requiere una cuenta. ¡Inicia sesión con Google para comprar y conservar tus créditos!",
     "addToCart": "Añadir al carrito",
     "inCart": "En el carrito ✓",
     "owned": "Propio",
@@ -286,6 +296,9 @@
       },
       "asdasd123": {
         "desc": "⚠️ NAVE DEBUG ⚠️ No deberías estar viendo esto. 1234 km/s. 1234 créditos. No hagas preguntas. 'No es un bug — es una característica.' — Debug Dynamics Ltd."
+      },
+      "longDrop": {
+        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
       }
     },
     "exoplanet": {
@@ -322,6 +335,10 @@
       "back": "Volver a la tienda",
       "notEnoughCreditsHint": "¡Compra créditos en la pestaña 'Comprar créditos'!",
       "guestWarning": "Atención: los créditos y objetos comprados como invitado se pierden si no inicias sesión. El progreso de invitado solo se puede transferir una vez, desde una única cuenta de invitado."
+    },
+    "history": {
+      "title": "Purchase History",
+      "empty": "No purchases yet."
     }
   },
   "sort": {
@@ -454,7 +471,8 @@
     "lookup": "Buscar",
     "uidNotFound": "No se encontró ningún usuario con este ID",
     "uidLookupError": "Búsqueda fallida. Inténtalo de nuevo.",
-    "thisIsYou": "¡Eres tú!"
+    "thisIsYou": "¡Eres tú!",
+    "guestNotice": "La función de amigos requiere una cuenta. ¡Inicia sesión con Google para añadir amigos y chatear con ellos!"
   },
   "friendWall": {
     "title": "Muro de la Vergüenza de {{name}}",
@@ -470,6 +488,17 @@
     "empty": "No hay mensajes aún",
     "typing": "escribe...",
     "forbiddenWord": "El mensaje contiene lenguaje inapropiado"
+  },
+  "toast": {
+    "friendRequest": {
+      "sent": "{{name}} te envió una solicitud de amistad",
+      "accepted": "{{name}} aceptó tu solicitud de amistad",
+      "rejected": "{{name}} rechazó tu solicitud de amistad"
+    },
+    "chatMessage": "{{name}} te envió un mensaje",
+    "friendOnline": "{{name}} ya está en línea",
+    "friendOffline": "{{name}} ya está desconectado",
+    "dismiss": "Cerrar"
   },
   "multiplayer": {
     "invite": "Invitar a la misión",

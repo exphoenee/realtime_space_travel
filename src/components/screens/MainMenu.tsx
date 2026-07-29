@@ -3,12 +3,17 @@ import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useAuthStore from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
+import useNotificationStore from "../../state/useNotificationStore";
+import useToastStore from "../../state/useToastStore";
 import { startGoogleAuth, getAuthErrorMessage } from "../../firebase/auth";
 import { subscribeFriends, subscribeUnreadCount, getChatId } from "../../firebase/userData";
 import type { CameraConsent } from "../../state/useUIStore";
 import styles from "./MainMenu.module.css";
 
 const DEBUG_ENV = import.meta.env.VITE_DEBUG_MODE === "true";
+
+/** Guest notices are two sentences long — give them longer than the default. */
+const GUEST_NOTICE_DURATION_MS = 7000;
 
 const MainMenu = () => {
   const { t } = useTranslation();
@@ -27,12 +32,19 @@ const MainMenu = () => {
   const isStartDisabled = cameraConsent !== "granted";
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
+  // Guests (signed out or anonymous) have no registered account: the friend
+  // graph is keyed by the Google auth uid, and purchases must survive past a
+  // throwaway session — so friends/chat and the shop are unavailable to them.
+  const isGuest = !authUser || authUser.isAnonymous;
+  const addToast = useToastStore((s) => s.addToast);
+
   // Local login error takes precedence, falling back to the global auth error.
   const errorKey = loginError ?? authError;
 
   // Subscribe to unread message counts per friend (map-based, avoids double-counting)
   useEffect(() => {
-    if (!authUid) {
+    // Guests cannot have friends — no point holding RTDB listeners for them.
+    if (!authUid || isGuest) {
       setUnreadCounts({});
       return;
     }
@@ -62,15 +74,31 @@ const MainMenu = () => {
       unsubFriends();
       for (const unsub of unsubs) unsub();
     };
-  }, [authUid]);
+  }, [authUid, isGuest]);
 
-  // Compute total from the map
-  const totalUnread = Object.values(unreadCounts).reduce((sum, c) => sum + c, 0);
+  /**
+   * Navigate, or explain why not when the player has no registered account.
+   * The explanation goes to the toast stack so it is noticed even though the
+   * button sits mid-list; `addToast` ignores a duplicate that is still visible.
+   */
+  const guardedNav = (phase: "shop" | "friends", noticeKey: string) =>
+    isGuest
+      ? () => addToast("warning", t(noticeKey), GUEST_NOTICE_DURATION_MS)
+      : () => transitionTo(phase);
+
+  // Unread system notifications (friend requests etc.) — fed by the single
+  // `useNotificationListener` subscription in App, cleared when the Friends
+  // screen mounts.
+  const unreadNotifications = useNotificationStore((s) => s.unreadCount);
+
+  // One badge on the Friends button: unread chat messages + notifications.
+  const totalUnread =
+    Object.values(unreadCounts).reduce((sum, c) => sum + c, 0) +
+    (isGuest ? 0 : unreadNotifications);
 
   const handleStart = () => transitionTo("missionSelect");
   const handleSettings = () => transitionTo("settings");
   const handleIntro = () => transitionTo("intro");
-  const handleShop = () => transitionTo("shop");
 
   const handleLogin = async () => {
     setLoginError(null);
@@ -88,8 +116,20 @@ const MainMenu = () => {
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
-        <h1 className={styles.title}>{t("intro.headline")}</h1>
-        <p className={styles.motto}>{t("intro.motto")}</p>
+        {/* Artwork is decorative (figures on either side); the headline and
+            motto are real text so they follow the selected language. */}
+        <div className={styles.titleBanner}>
+          <img
+            className={styles.titleImage}
+            src={`${import.meta.env.BASE_URL}title.webp`}
+            alt=""
+            aria-hidden="true"
+          />
+          <div className={styles.titleOverlay}>
+            <h1 className={styles.title}>{t("intro.headline")}</h1>
+            <p className={styles.motto}>{t("intro.motto")}</p>
+          </div>
+        </div>
 
         <div className={styles.actions}>
           <button
@@ -101,14 +141,28 @@ const MainMenu = () => {
           >
             {t("mainMenu.start")}
           </button>
-          <button type="button" className={styles.button} onClick={handleShop}>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={guardedNav("shop", "shop.guestNotice")}
+            title={isGuest ? t("shop.guestNotice") : ""}
+          >
+            {isGuest ? "🔒 " : ""}
             {t("mainMenu.shop")}
           </button>
           <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
             {t("mainMenu.wallOfShame")}
           </button>
-          <button type="button" className={styles.button} onClick={() => transitionTo("friends")}>
-            <span>{t("mainMenu.friends")}</span>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={guardedNav("friends", "friends.guestNotice")}
+            title={isGuest ? t("friends.guestNotice") : ""}
+          >
+            <span>
+              {isGuest ? "🔒 " : ""}
+              {t("mainMenu.friends")}
+            </span>
             {totalUnread > 0 && (
               <span className={styles.notificationBadge}>
                 {totalUnread > 99 ? "99+" : totalUnread}
@@ -156,6 +210,15 @@ const MainMenu = () => {
           </div>
         )}
       </div>
+
+      <a
+        className={styles.creatorLink}
+        href="https://viktor.bozzay.online"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {t("mainMenu.meetCreator")}
+      </a>
     </div>
   );
 };
