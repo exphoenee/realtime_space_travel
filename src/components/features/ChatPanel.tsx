@@ -4,6 +4,7 @@ import { getChatId, initChat, sendMessage, subscribeChatMessages, markChatRead, 
 import { containsForbiddenWords } from "../../constants/constants";
 import useAuthStore from "../../state/useAuthStore";
 import type { ChatMessage } from "../../types";
+import BackButton from "../ui/BackButton";
 import styles from "./ChatPanel.module.css";
 
 interface ChatPanelProps {
@@ -149,13 +150,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.header}>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
+        <BackButton onClick={onBack}>
           ← {t("chat.back", "Back")}
-        </button>
+        </BackButton>
         <div className={styles.friendInfo}>
           <span className={styles.friendName}>{friendName}</span>
         </div>
-        <div className={styles.headerSpacer} />
       </div>
 
       {/* Messages */}

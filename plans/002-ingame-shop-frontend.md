@@ -21,6 +21,7 @@ related_plans:
   - 007-state-persist-page-refresh
   - 012-wall-of-shame
   - 013-social-multiplayer
+  - 019-starfield-realism
 tags:
   - shop
   - frontend
@@ -744,4 +745,5 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json
 - [[015-toast-notification]] – **a vendég-tájékoztató megjelenítésének kanonikus forrása (2026-07-29).** A `guardedNav` a `shop.guestNotice` üzenetet `addToast("warning", …, GUEST_NOTICE_DURATION_MS)`-szal jeleníti meg; a `guestNoticeKey` state és a `.guestNotice` CSS osztály megszűnt (H. blokk / 0.9).
 - [[010-firebase-guest-merge-single-gate]] – a vendég **örökölheti** a kreditjét bejelentkezéskor, de vendégként **nem költheti el** (F rész, 8.2 kockázat).
 - [[012-wall-of-shame]] – **ugyanaz a hibaosztály** (fiókhoz kötött adat a böngésző-szintű localStorage-ban). A fal R. blokkja írja le a kiváltó tünetet; a shopnál a javítás **plusz** egy új szerveroldali ág (`users/{uid}/purchases`) bevezetésével járt, mert korábban semmilyen RTDB-pár nem létezett.
+- [[019-starfield-realism]] – **a katalógus két mezője a `Starfield` renderelését vezérli.** A `ShipProduct.image` a cockpit képet adja (`cockpitImageUrl`), a `speedKmPerSecond` pedig a warp-csík hosszát (`getStretchFactor`). A 019 HiDPI-átvezetése a cockpit `drawImage` méretezését is átírja logikai koordinátákra — a képnek utána is élesen és pontosan ugyanúgy kell fednie; a hajósebesség-küszöbök (250 / 500 / 1000 km/s) **nem változnak**.
 - [[016-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.

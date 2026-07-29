@@ -19,6 +19,7 @@ import {
 } from "../../firebase/userData";
 import type { FriendRequest, UserOnlineStatus, UserPublicProfile } from "../../types";
 import { containsForbiddenWords } from "../../constants/constants";
+import BackButton from "../ui/BackButton";
 import styles from "./FriendsScreen.module.css";
 
 type Tab = "friends" | "search" | "requests";
@@ -333,14 +334,10 @@ const FriendsScreen: React.FC = () => {
     <div className={styles.overlay}>
       <div className={styles.panel}>
         <div className={styles.header}>
-          <button
-            type="button"
-            className={styles.backBtn}
-            onClick={() => transitionTo("mainMenu")}
-          >
-            ← {t("friends.back")}
-          </button>
           <h2 className={styles.title}>{t("friends.title")}</h2>
+          <BackButton onClick={() => transitionTo("mainMenu")}>
+            ← {t("friends.back")}
+          </BackButton>
         </div>
 
         {/* Tabs */}

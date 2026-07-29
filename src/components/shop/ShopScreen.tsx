@@ -7,6 +7,7 @@ import { CREDIT_PACKS } from "../../constants/shopCatalog";
 import { incrementUserWallet } from "../../firebase/userData";
 import CreditBalance from "./CreditBalance";
 import CartButton from "./CartButton";
+import BackButton from "../ui/BackButton";
 import ShopTabs from "./ShopTabs";
 import ProductGrid from "./ProductGrid";
 import CartView from "./CartView";
@@ -150,9 +151,6 @@ const ShopScreen = () => {
       <div className={styles.container}>
         {/* Header */}
         <div className={styles.header}>
-          <button className={styles.backButton} onClick={handleBack}>
-            ← {t("shop.back")}
-          </button>
           <h1 className={styles.title}>{t("shop.title")}</h1>
           <div className={styles.headerRight}>
             {isDebug && view === "browse" && (
@@ -181,6 +179,9 @@ const ShopScreen = () => {
                 </div>
               </>
             )}
+            <BackButton onClick={handleBack}>
+              ← {t("shop.back")}
+            </BackButton>
           </div>
         </div>
 

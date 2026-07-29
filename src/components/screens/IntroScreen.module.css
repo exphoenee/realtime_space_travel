@@ -23,9 +23,12 @@
 }
 
 .scroll {
-  transform: translateY(calc(87.5vh));
+  /* A kezdő- és végpozíciót JavaScript számolja viewport + tartalom alapján
+     és --intro-start / --intro-end CSS változókba teszi (px-ben).
+     Fallback: 87.5vh kezdés, -250%-os vég (eredeti viselkedés). */
+  transform: translateY(var(--intro-start, 87.5vh));
   animation-name: introScroll;
-  animation-duration: var(--intro-scroll-duration, 600s);
+  animation-duration: var(--intro-duration, 600s);
   animation-timing-function: linear;
   animation-delay: 4s;
   animation-fill-mode: forwards;
@@ -122,9 +125,9 @@
   }
 }  @keyframes introScroll {
   0% {
-    transform: translateY(calc(87.5vh));
+    transform: translateY(var(--intro-start, 87.5vh));
   }
   100% {
-    transform: translateY(-250%);
+    transform: translateY(var(--intro-end, -250%));
   }
 }

@@ -297,6 +297,7 @@ src/hooks/useEventSystem.test.ts            # Ütemezés logika tesztek
 - **Érinti:** [[007-state-persist-page-refresh]] — az esemény állapot (`activeEvent`) nem perzisztálódik (a timer újraindul oldalfrissítéskor); a `pendingDestructionAt` sem — a `doom` visszaszámlálás oldalfrissítéskor **elvész**
 - **Kiszolgálja:** [[012-wall-of-shame]] — a `missionEventLog` az itteni `resolveEvent`-ből töltődik; a fal `EVENT_EMOJI` térképe a `doom` típust is lefedi
 - **Érinti:** [[013-social-multiplayer]] — a multiplayer event-kiosztás (F blokk) **csak interaktív** eseményeket oszthat ki; a `doom` pszeudo-esemény **nem** kerülhet a kiosztásba
+- **Kiszolgálja:** [[019-starfield-realism]] — a `Starfield` az itteni `evasiveManeuverAt`-ot olvassa a `useGameStore`-ból (aszteroida-esemény alatti gombnyomás → drift). Az evasive manőver **megjelenítése** a 019-ben **három ponton** változik: (1) a HiDPI-átvezetés (a drift logikai pixelben mozog, a `ctx.translate` logikai koordinátát kap), (2) a lecsengés **szándékos** delta-normalizálása (fps-független lesz), (3) **új forgatás (roll)** — a csillagmező a drift mellett véletlen szöggel el is fordul, ugyanerre a triggerre és ugyanabban az 1-3 mp-es ablakban. ⚠️ **Ez a terv (011) nem módosul:** a `useGameStore`, a `triggerEvasiveManeuver` és az esemény-időzítés érintetlen — a 019 kizárólag a `Starfield` renderelését bővíti
 
 ---
 

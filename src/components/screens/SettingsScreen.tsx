@@ -10,6 +10,7 @@ import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/au
 import { updateUserSettings, updateUserNickname, updateUserPublicProfile, updateOnlineStatus } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import CustomSelect from "../ui/CustomSelect";
+import BackButton from "../ui/BackButton";
 import CameraHelpModal from "./CameraHelpModal";
 import {
   getCameraPermissionState,
@@ -207,7 +208,13 @@ const SettingsScreen = () => {
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
-        <h1 className={styles.title}>{t("settings.title")}</h1>
+        <div className={styles.settingsHeader}>
+          <h1 className={styles.title}>{t("settings.title")}</h1>
+          <BackButton onClick={handleBack}>
+            ← {t("settings.back")}
+          </BackButton>
+        </div>
+        <div className={styles.scrollContainer}>
 
         {/* Account Section — full-width vertical stack */}
         {(authUser && !isAnonymous) ? (
@@ -338,135 +345,123 @@ const SettingsScreen = () => {
           </div>
         )}
 
-        <div className={styles.row}>
-          <label className={styles.label} htmlFor="music-volume">
-            {t("settings.musicVolume")}
-          </label>
-          <div className={styles.control}>
-            <span className={styles.icon} aria-hidden="true">
-              {musicVolume === 0 ? "🔇" : musicVolume < 0.5 ? "🔉" : "🔊"}
-            </span>
-            <input
-              id="music-volume"
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={musicVolume}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setMusicVolume(val);
-                // Persist to RTDB if signed in
-                if (rtdbKey) {
-                  updateUserSettings(rtdbKey, { musicVolume: val }).catch(console.error);
-                }
-              }}
-              className={styles.slider}
-              style={
-                { ["--fill" as string]: `${Math.round(musicVolume * 100)}%` } as CSSProperties
-              }
-              aria-valuetext={`${Math.round(musicVolume * 100)}%`}
-            />
-            <span className={styles.value}>{Math.round(musicVolume * 100)}%</span>
-          </div>
-        </div>
 
-        {/* Music track selector — custom select dropdown */}
-        <div className={styles.row}>
-          <label className={`${styles.label}${!hasOwnedMusic ? ` ${styles.labelDisabled}` : ""}`} htmlFor="music-track">
-            {t("settings.musicTrack")}
-          </label>
-          <CustomSelect
-            id="music-track"
-            value={activeMusicId ?? "__default__"}
-            onChange={(val) => {
-              const newId = val === "__default__" ? null : val;
-              setActiveMusicId(newId);
-              if (rtdbKey) {
-                updateUserSettings(rtdbKey, { activeMusicId: newId }).catch(console.error);
-              }
-            }}
-            options={[
-              { value: "__default__", label: t("settings.musicDefault") },
-              ...ownedMusicTracks.map((track) => ({
-                value: track.id,
-                label: track.title,
-              })),
-            ]}
-            disabled={!hasOwnedMusic}
-            ariaLabel={t("settings.musicTrack")}
-          />
-        </div>
-
-        <div className={styles.row}>
-          <span className={styles.label}>{t("settings.difficulty")}</span>
-          <div className={styles.segmented} role="group" aria-label={t("settings.difficulty")}>
-            {DIFFICULTIES.map((level) => (
-              <button
-                key={level}
-                type="button"
-                className={`${styles.segment}${difficulty === level ? ` ${styles.segmentActive}` : ""}`}
-                aria-pressed={difficulty === level}
-                onClick={() => {
-                  setDifficulty(level);
-                  // Persist to RTDB if signed in
+          <div className={styles.row}>
+            <label className={styles.label} htmlFor="music-volume">
+              {t("settings.musicVolume")}
+            </label>
+            <div className={styles.control}>
+              <span className={styles.icon} aria-hidden="true">
+                {musicVolume === 0 ? "🔇" : musicVolume < 0.5 ? "🔉" : "🔊"}
+              </span>
+              <input
+                id="music-volume"
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={musicVolume}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setMusicVolume(val);
                   if (rtdbKey) {
-                    updateUserSettings(rtdbKey, { difficulty: level }).catch(console.error);
+                    updateUserSettings(rtdbKey, { musicVolume: val }).catch(console.error);
                   }
                 }}
-              >
-                {t(`difficulty.${level}`)}
-              </button>
-            ))}
+                className={styles.slider}
+                style={
+                  { ["--fill" as string]: `${Math.round(musicVolume * 100)}%` } as CSSProperties
+                }
+                aria-valuetext={`${Math.round(musicVolume * 100)}%`}
+              />
+              <span className={styles.value}>{Math.round(musicVolume * 100)}%</span>
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <label className={`${styles.label}${!hasOwnedMusic ? ` ${styles.labelDisabled}` : ""}`} htmlFor="music-track">
+              {t("settings.musicTrack")}
+            </label>
+            <CustomSelect
+              id="music-track"
+              value={activeMusicId ?? "__default__"}
+              onChange={(val) => {
+                const newId = val === "__default__" ? null : val;
+                setActiveMusicId(newId);
+                if (rtdbKey) {
+                  updateUserSettings(rtdbKey, { activeMusicId: newId }).catch(console.error);
+                }
+              }}
+              options={[
+                { value: "__default__", label: t("settings.musicDefault") },
+                ...ownedMusicTracks.map((track) => ({
+                  value: track.id,
+                  label: track.title,
+                })),
+              ]}
+              disabled={!hasOwnedMusic}
+              ariaLabel={t("settings.musicTrack")}
+            />
+          </div>
+
+          <div className={styles.row}>
+            <span className={styles.label}>{t("settings.difficulty")}</span>
+            <div className={styles.segmented} role="group" aria-label={t("settings.difficulty")}>
+              {DIFFICULTIES.map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  className={`${styles.segment}${difficulty === level ? ` ${styles.segmentActive}` : ""}`}
+                  aria-pressed={difficulty === level}
+                  onClick={() => {
+                    setDifficulty(level);
+                    if (rtdbKey) {
+                      updateUserSettings(rtdbKey, { difficulty: level }).catch(console.error);
+                    }
+                  }}
+                >
+                  {t(`difficulty.${level}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <span className={styles.label}>
+              {isCameraBlocked
+                ? t("settings.cameraBlocked")
+                : cameraConsent === "granted"
+                  ? t("settings.cameraGranted")
+                  : t("settings.enableCamera")}
+            </span>
+            <div className={styles.control}>
+              {isCameraBlocked ? (
+                <button
+                  type="button"
+                  className={styles.authBtn}
+                  onClick={() => setCameraHelpOpen(true)}
+                >
+                  {t("settings.cameraHelp.button")}
+                </button>
+              ) : cameraConsent === "granted" ? (
+                <span>✅</span>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.authBtn}
+                  onClick={handleEnableCamera}
+                >
+                  {t("settings.enableCamera")}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <span className={styles.label}>{t("language.label")}</span>
+            <LanguageSwitcher />
           </div>
         </div>
-
-        <div className={styles.row}>
-          <span className={styles.label}>
-            {isCameraBlocked
-              ? t("settings.cameraBlocked")
-              : cameraConsent === "granted"
-                ? t("settings.cameraGranted")
-                : t("settings.enableCamera")}
-          </span>
-          <div className={styles.control}>
-            {isCameraBlocked ? (
-              // The browser blocks the camera for this site. Sending the player
-              // to the consent screen would only bounce them back — a blocked
-              // permission cannot be re-prompted — so offer instructions.
-              <button
-                type="button"
-                className={styles.authBtn}
-                onClick={() => setCameraHelpOpen(true)}
-              >
-                {t("settings.cameraHelp.button")}
-              </button>
-            ) : cameraConsent === "granted" ? (
-              <span>✅</span>
-            ) : (
-              <button
-                type="button"
-                className={styles.authBtn}
-                onClick={handleEnableCamera}
-              >
-                {t("settings.enableCamera")}
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.row}>
-          <span className={styles.label}>{t("language.label")}</span>
-          <LanguageSwitcher />
-        </div>
-
-        <button
-          type="button"
-          className={styles.backButton}
-          onClick={handleBack}
-        >
-          ← {t("settings.back")}
-        </button>
       </div>
 
       <CameraHelpModal

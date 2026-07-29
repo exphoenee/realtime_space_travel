@@ -49,7 +49,7 @@ A **Beállítások képernyőn** (`SettingsScreen`) a játékos **zene hangerőt
 | Kérdés | Választás |
 |--------|-----------|
 | Új menü helye | Az intro **után**, a küldetésválasztó **előtt** |
-| Főmenü gombjai | Játék indítása · Áruház · Beállítások · Intro megtekintése · Bejelentkezés |
+| Főmenü gombjai | Intro megtekintése · Bejelentkezés · Játék indítása · Barátok · Áruház · Szégyenfal · Beállítások |
 | Beállítások tartalma | Zene hangerő (csúszka) · Nehézség (könnyű/közepes/nehéz) · Nyelvválasztó |
 | Login / áruház / mentés / nehézség-hatás | **Most nem** — későbbi fázisokban |
 | Sarok-nyelvváltó + harang | **Megszűnt** — a Beállítások képernyőre került |
@@ -87,7 +87,7 @@ intro ──(skip / auto)──▶ mainMenu ──(Játék indítása)──▶ 
 
 ### `MainMenu.tsx` (+ `.module.css`) — a Főmenü
 - Cím (`intro.headline`) + mottó (`intro.motto`).
-- Gombok: `mainMenu.start` (elsődleges), `mainMenu.shop`, `mainMenu.settings`, `mainMenu.intro`, `mainMenu.login`.
+- Gombok: `mainMenu.intro`, `mainMenu.login`, `mainMenu.start` (elsődleges), `mainMenu.friends`, `mainMenu.shop`, `mainMenu.wallOfShame`, `mainMenu.settings`.
 - Navigáció közvetlenül a store-ból (`transitionTo`).
 - **Login/Áruház:** kattintásra `mainMenu.loginComingSoon` / `mainMenu.shopComingSoon` értesítés (nincs valódi funkció).
 
@@ -185,7 +185,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 - [x] `GamePhase: mainMenu` + `settings`; `menu → missionSelect` átnevezés; `phaseToFlags`; `App.isPreGame`
-- [x] `MainMenu` (Játék indítása / Áruház / Beállítások / Intro megtekintése / Bejelentkezés)
+- [x] `MainMenu` (Intro megtekintése / Bejelentkezés / Játék indítása / Barátok / Áruház / Szégyenfal / Beállítások)
 - [x] `MissionSelector` (átnevezés + „← Vissza")
 - [x] `SettingsScreen` (hangerő + nehézség + nyelv + Vissza)
 - [x] `useUIStore.musicVolume` + `difficulty`; `useAudio` hangerő-paraméter; `App` bekötés

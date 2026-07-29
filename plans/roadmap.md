@@ -3,12 +3,12 @@
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-29"
-total_plans: 19
+total_plans: 20
 implemented: 15
 in_progress: 1
-not_started: 3
+not_started: 4
 tasks_done: 845
-tasks_total: 1159
+tasks_total: 1292
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -143,6 +143,13 @@ plans:
     tasks_done: 0
     tasks_total: 48
     dependencies: [015-toast-notification]
+  - step: 19
+    slug: "019-starfield-realism"
+    status: "not-started"
+    category: "ui"
+    tasks_done: 0
+    tasks_total: 133
+    dependencies: [011-difficulty-event-system]
 ---
 
 # Roadmap
@@ -153,8 +160,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 15 implemented · 1 in progress · 3 not started (of 19)
-- **Tasks:** 845/1159 done (73%)
+- **Plans:** 15 implemented · 1 in progress · 4 not started (of 20)
+- **Tasks:** 845/1292 done (65%)
 
 ## Overview
 
@@ -179,6 +186,7 @@ plans:
 | 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
 | 18 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
+| 19 | Élethűbb csillagmező (Starfield realizmus) | ⬜ Not started | 0/133 | — | ui | 11 |
 
 ## Next Open Tasks
 
@@ -194,6 +202,7 @@ plans:
 - **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - **Step 18 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
+- **Step 19 — Élethűbb csillagmező (Starfield realizmus)** (0/133): Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s) — a későbbi vizuális összehasonlításhoz
 
 ## Insertion Guide
 
@@ -214,7 +223,7 @@ plans:
 | 8 | `008-shop-cart-bugfixes` | core | 007-state-persist-page-refresh | — |
 | 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 16, 17 |
 | 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 13, 16, 17 |
-| 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13 |
+| 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13, 19 |
 | 12 | `012-wall-of-shame` | ui | 011-difficulty-event-system | 13 |
 | 13 | `013-social-multiplayer` | core | 003-firebase-auth-settings, 010-firebase-guest-merge-single-gate, 011-difficulty-event-system, 012-wall-of-shame | 15 |
 | 14 | `014-camera-consent` | ui | 001-main-menu-settings, 003-firebase-auth-settings | — |
@@ -222,6 +231,7 @@ plans:
 | 16 | `016-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 17 |
 | 17 | `017-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense | — |
 | 18 | `018-notification-retention` | core | 015-toast-notification | — |
+| 19 | `019-starfield-realism` | ui | 011-difficulty-event-system | — |
 
 ## Phase Details
 
@@ -248,3 +258,4 @@ plans:
 | 16 | `plans/016-stripe-fraud-defense.md` | Stripe csalásvédelem |
 | 17 | `plans/017-stripe-go-live.md` | Stripe élesítés |
 | 18 | `plans/018-notification-retention.md` | Notification retention |
+| 19 | `plans/019-starfield-realism.md` | Élethűbb csillagmező (Starfield realizmus) |

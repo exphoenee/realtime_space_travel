@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import BackButton from "../ui/BackButton";
 import { SHIP_SPEED_KM_PER_SECOND } from "../../constants/constants";
 import { DEFAULT_SHIP, SHOP_SHIPS } from "../../constants/shopCatalog";
 import type { ShipProduct } from "../../types";
@@ -89,13 +90,9 @@ const ShipSelectScreen = ({ onCheckCamera }: ShipSelectScreenProps) => {
 
   return (
     <div className={styles.overlay}>
-      <button
-        type="button"
-        className={styles.backButton}
-        onClick={() => transitionTo("missionSelect")}
-      >
+      <BackButton className={styles.backButton} onClick={() => transitionTo("missionSelect")}>
         ← {t("settings.back")}
-      </button>
+      </BackButton>
       <div className={styles.panel}>
         <h1 className={styles.title}>{t("shipSelect.title")}</h1>
         <p className={styles.subtitle}>

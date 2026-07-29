@@ -13,7 +13,8 @@
     "destination": "Destino",
     "localWeather": "Clima local",
     "arrival": "Llegada al sistema de destino",
-    "earthYears": "años terrestres"
+    "earthYears": "años terrestres",
+    "details": "Detalles"
   },
   "intro": {
     "headline": "Realtime Space Travel",

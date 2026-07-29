@@ -1,0 +1,28 @@
+.backButton {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(103, 232, 249, 0.5);
+  border-radius: 0.5rem;
+  color: #e0f2fe;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: border 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.backButton:hover {
+  border-color: rgba(103, 232, 249, 0.9);
+  background: rgba(6, 182, 212, 0.3);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 3px;
+}
