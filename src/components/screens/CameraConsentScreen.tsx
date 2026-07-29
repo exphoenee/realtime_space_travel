@@ -95,9 +95,14 @@ const CameraConsentScreen: React.FC = () => {
       </div>
 
       <div className={styles.panel}>
-        <div className={styles.icon}>📷</div>
-        <h1 className={styles.title}>{t("app.cameraConsent.title")}</h1>
-        <p className={styles.description}>{t("app.cameraConsent.description")}</p>
+        <div className={styles.header}>
+          <div className={styles.icon}>📷</div>
+          <h1 className={styles.title}>{t("app.cameraConsent.title")}</h1>
+        </div>
+
+        <div className={styles.scrollBox}>
+          <p className={styles.description}>{t("app.cameraConsent.description")}</p>
+        </div>
 
         <div className={styles.actions}>
           <button
