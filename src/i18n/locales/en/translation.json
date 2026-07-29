@@ -131,6 +131,7 @@
     "intro": "Watch intro",
     "wallOfShame": "Wall of Shame",
     "friends": "Friends",
+    "meetCreator": "Meet the creator",
     "cameraRequired": "Camera access required to start the game",
     "loginComingSoon": "Sign-in will be available soon.",
     "shopComingSoon": "The shop will be available soon."
@@ -204,6 +205,15 @@
     },
     "search": "Search by name…",
     "searchNoResult": "No results",
+    "sort": {
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low",
+      "speedAsc": "Speed: slow to fast",
+      "speedDesc": "Speed: fast to slow",
+      "distanceAsc": "Distance: near to far",
+      "distanceDesc": "Distance: far to near"
+    },
+    "guestNotice": "The shop requires an account. Sign in with Google to make purchases and keep your credits!",
     "addToCart": "Add to cart",
     "inCart": "In cart ✓",
     "owned": "Owned",
@@ -294,6 +304,9 @@
       },
       "asdasd123": {
         "desc": "⚠️ DEBUG SHIP ⚠️ You shouldn't be seeing this. 1234 km/s. 1234 credits. No questions asked. 'It's not a bug — it's a feature.' — Debug Dynamics Ltd."
+      },
+      "longDrop": {
+        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
       }
     },
     "exoplanet": {
@@ -330,6 +343,10 @@
       "back": "Back to shop",
       "notEnoughCreditsHint": "Buy credits on the 'Buy Credits' tab!",
       "guestWarning": "Heads up: credits and items bought as a guest are lost unless you sign in. Guest progress can be transferred to a registered account only once, from a single guest account."
+    },
+    "history": {
+      "title": "Purchase History",
+      "empty": "No purchases yet."
     }
   },
   "sort": {
@@ -454,7 +471,8 @@
     "lookup": "Look up",
     "uidNotFound": "No user found with this ID",
     "uidLookupError": "Lookup failed. Try again.",
-    "thisIsYou": "This is you!"
+    "thisIsYou": "This is you!",
+    "guestNotice": "The friends feature requires an account. Sign in with Google to add friends and chat with them!"
   },
   "friendWall": {
     "title": "{{name}}'s Wall of Shame",
@@ -490,5 +508,16 @@
     "empty": "No messages yet",
     "typing": "typing...",
     "forbiddenWord": "Message contains inappropriate language"
+  },
+  "toast": {
+    "friendRequest": {
+      "sent": "{{name}} sent you a friend request",
+      "accepted": "{{name}} accepted your friend request",
+      "rejected": "{{name}} declined your friend request"
+    },
+    "chatMessage": "{{name}} sent you a message",
+    "friendOnline": "{{name}} is now online",
+    "friendOffline": "{{name}} is now offline",
+    "dismiss": "Dismiss"
   }
 }

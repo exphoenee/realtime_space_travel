@@ -5,9 +5,9 @@ type: plan
 category: auth
 status: implemented
 implemented: true
-implemented_at: null
+implemented_at: "2026-07-28"
 created_at: "2026-07-27"
-updated_at: "2026-07-27T10:00:00Z"
+updated_at: "2026-07-28"
 author: exphoenee
 step: 10
 phases: []
@@ -16,8 +16,9 @@ dependencies:
 related_plans:
   - 004-firebase-auth-bugfix
   - 005-ingame-shop-strapi-stripe
-  - 011-stripe-fraud-defense
-  - 012-stripe-go-live
+  - 012-wall-of-shame
+  - 016-stripe-fraud-defense
+  - 017-stripe-go-live
 tags:
   - firebase
   - auth
@@ -227,6 +228,13 @@ type MergeResult =
 6. **Takarítás (mindkét nem-noop ágban):** guest node tényleges gyerekei → `null`; `device_map/{deviceId} = null`
 7. **Egyetlen** `update(ref(db), updates)` root multi-path írás
 
+> 🔁 **Bővítés (2026-07-28, [[012-wall-of-shame]] Q. blokk):** a `migrateGuestData` a **Szégyenfalat** is átviszi: `collectGuestWallUpdates(db, deviceId, targetUid)` a `walls/{deviceId}/failures|successes` rekordokat **eredeti push ID-kkal** másolja `walls/{targetUid}` alá (idempotens overwrite), majd a forrás ágat törli. Három eltérés a kredit/tárgy-politikától:
+> 1. **A falrekordok nem „valuta"** → a `"blocked"` (már claimelt) ágban **is** átmigrálnak; a `guestMergeClaimed` kapu **nem** vonatkozik rájuk, és nem keletkezik `orphanDiscardedCredits`-szerű audit.
+> 2. **A guest `users/{deviceId}` node hiánya nem akadály** — a fal akkor is migrál, ha a user node már nem létezik (különben egy korábbi takarítás után a fal örökre elveszne).
+> 3. **Külön retry:** ha a fő atomi root multi-path update elhasal, az `executeAtomicUpdate` fallback ága a fal-írást **külön** újrapróbálja (2.3 „B" forgatókönyv szellemében).
+>
+> **Miért kell egyáltalán?** A barát-rendszer ([[013-social-multiplayer]]) `auth.uid`-del kulcsol, a vendég fala viszont a `deviceId` alatt keletkezik → migrálás nélkül a váltás után láthatatlan maradna.
+
 **Két kötelező hibaosztály-védelem (009-ből átvéve):**
 
 - **`undefined` tilos** — az RTDB `update` `undefined`-ra dob; minden mező **feltételesen** kerül be.
@@ -270,7 +278,7 @@ security.rules.json                        # séma-komment: guestMergeClaimed (�
 database.rules.json                        # regenerálva (tartalmi változás NINCS)
 .claude/lessons-learned.md                 # bejegyzés
 plans/009-firebase-identity-split-bugfix.md  # kereszthivatkozás (additív)
-plans/011-stripe-fraud-defense.md          # forward-compat pont frissítés (a manage-roadmap rendezi a YAML-t)
+plans/016-stripe-fraud-defense.md          # forward-compat pont frissítés (a manage-roadmap rendezi a YAML-t)
 ```
 
 ### Bővülő tesztfájlok
@@ -442,6 +450,8 @@ vi.mock("firebase/database", () => ({
 - [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`).
 - [[004-firebase-auth-bugfix]] — az eredeti guest→Google migráció, `deviceId`-modell és `device_map` forrása.
 - [[000-i18n-nyelvesites]] — a 3 új kulcs teljes paritása mind az 5 nyelven.
+- [[012-wall-of-shame]] — **additív bővítés ezen a terven belül (2026-07-28).** A `migrateGuestData` a `walls/{deviceId}` → `walls/{targetUid}` áthelyezést is elvégzi (`collectGuestWallUpdates`, lásd 1.2 alatti megjegyzés). Ugyanitt derült ki, hogy a `walls/$uid` írási szabálynak a **`device_map` tulajdonlást** is engednie kell (`root.child('device_map').child($uid).val() == auth.uid`), különben a vendégnek egyáltalán nem íródik fal — ez ugyanaz a tulajdonlási minta, amit a `users` ág használ. Tesztek: 2 új eset a `userData.test.ts`-ben, plusz a `mockGet` `beforeEach`-beli explicit alapértelmezettje (teszt-izoláció).
+- [[013-social-multiplayer]] — a barát-rendszer `auth.uid`-del kulcsol, ezért függ a vendég-fal migrációjától.
 
 ---
 

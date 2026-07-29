@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-25"
 created_at: "2026-07-25"
-updated_at: "2026-07-26"
+updated_at: "2026-07-28"  # frissítve: vásárlási előzmény RTDB-be, identitásváltás-takarítás, vendég-zár, shop.sort i18n (E–G rész)
 author: exphoenee
 step: 2
 phases: []
@@ -18,6 +18,9 @@ related_plans:
   - 003-firebase-auth-settings
   - 004-firebase-auth-bugfix
   - 005-ingame-shop-strapi-stripe
+  - 007-state-persist-page-refresh
+  - 012-wall-of-shame
+  - 013-social-multiplayer
 tags:
   - shop
   - frontend
@@ -27,6 +30,14 @@ tags:
   - exoplanets
   - ships
   - music
+  - rtdb
+  - purchase-history
+  - identity
+  - privacy
+  - guest
+  - access-control
+  - i18n
+  - bugfix
 ---
 
 # Helyi működésű áruház (frontend-only) terve – mock katalógus + localStorage
@@ -77,6 +88,14 @@ tags:
 | Ship Select (küldetés után) | Küldetésválasztás után **ShipSelectScreen** (új `shipSelect` GamePhase): alap hajó (191 km/s) + birtokolt hajók a shopból listázva. Minden hajókártyán `ℹ Info` gomb → `ShipInfoModal` (műszaki adatok: sebesség, gyártó, kapacitás, hatótáv). Hajó kiválasztásakor az utazási idő újraszámolva: `travelYears = baseTravelYears / (shipSpeed / 191)`. Kamera ellenőrzés a destination kiválasztás után, de a `startMission` előtt történik (a shipSelect fázis előtt). |
 | Debug reset gomb | `↺ Reset` gomb az áruház fejlécében (csak `VITE_DEBUG_MODE=true`); kitörli a birtoklást és visszaállítja a 9000 kreditet, a localStorage-ból is törli a persist adatot |
 | Zeneválasztó (Settings) | A Beállítások menüben **zeneválasztó** (custom `<select>` dropdown): alap `main_theme` + birtokolt zeneszámok. **Letiltva** (`opacity`, `cursor: not-allowed`) ha nincs megvett zene. A kiválasztott track URL-je a `useAudio`-ba kerül, a `useAudio` dinamikusan váltja a lejátszott audio fájlt |
+| **Vásárlási előzmény tárolása** (2026-07-28, E rész) | **RTDB `users/{uid}/purchases/{pushId}`** — korábban SEMMILYEN szerveroldali párja nem volt, csak localStorage-ban élt (más gépen/böngészőben nem is látszott) |
+| Miért nincs külön top-level node? | A vásárlási előzmény **privát**, nincs barát-nézete → nem kell barát-olvasási szabály, ellentétben a `walls`-szal ([[012-wall-of-shame]] O. blokk) |
+| Külön RTDB subscription? | **Nem kell** — a `subscribeUser` a **teljes** `users/{uid}` node-ot olvassa, így az új ág magától érkezik az élő frissítésekkel |
+| `purchaseHistory` perzisztálás | **Megszűnt** a `partialize`-ból — fiókhoz kötött adat nem élhet a böngésző-szintű localStorage-ban ([[007-state-persist-page-refresh]] G. blokk) |
+| Kijelentkezéskori shop-takarítás | **Lokális-only** `setState` (`credits`, `creditsLoaded`, `owned`, `cart`, `purchaseHistory`) — **nem** `resetShop()`, mert az RTDB-be is kiírná a resetet és az elhagyott fiók walletjét rongálná |
+| **Vendég hozzáférése az áruházhoz** (2026-07-28, F rész) | **Nincs.** A vásárlásoknak **túl kell élniük egy eldobható vendég-sessiont**, ezért az áruház regisztrált (Google) fiókot igényel — ugyanaz a kétrétegű minta, mint a barátoknál ([[013-social-multiplayer]] O. blokk) |
+| Vendég visszajelzése | A Áruház gomb **🔒 prefixet** kap; kattintásra **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja (`role="status"`), ugyanez a szöveg a gomb `title` tooltipjében |
+| Perzisztált `shop` fázis vendégnél | A `ScreenRouter` a `shop`-ot is a „regisztrált fiókot igénylő" listára teszi (`friends`, `chat`, `friendWall`, `shop`) → vendégnél vissza a főmenübe |
 
 ---
 
@@ -145,6 +164,52 @@ tags:
 - [x] Ellenőrzés: `tsc`, `build` — tiszta
 - [ ] Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 
+**E rész — Vásárlási előzmény RTDB-be + identitásváltás-takarítás (2026-07-28)**
+
+> **Kiváltó tünet:** kijelentkezés után az áruház vásárlási előzménye az **előző user** vásárlásait mutatta. Ugyanaz a hibaosztály, mint a szégyenfalnál ([[012-wall-of-shame]] R. blokk); az elvet a [[007-state-persist-page-refresh]] G. blokkja rögzíti.
+>
+> **Ok:** a `purchaseHistory`-nak **semmilyen szerveroldali párja nem volt** — kizárólag a `space-travel-shop` localStorage kulcson élt, amin a böngésző **minden** fiókja osztozik. Mellékhatásként más gépen/böngészőben egyáltalán nem is látszott.
+
+- [x] **Új RTDB ág:** `users/{uid}/purchases/{pushId}` (privát — nincs barát-nézet, ezért nem kapott külön top-level node-ot)
+- [x] `userData.ts` — `savePurchaseRecord(uid, record)`: `push()`; a rekord **megtartja a lokálisan generált `id`-jét**, így az RTDB-visszhang az optimista lokális bejegyzést **lecseréli**, nem duplikálja
+- [x] `userData.ts` — `mapPurchases(data)`: push-ID → tömb konverzió (`record.id || pushId` normalizálás), `purchasedAt` szerint **csökkenő** rendezés
+- [x] `userData.ts` — `UserNode` bővítve: `purchases?: Record<string, PurchaseRecord>`
+- [x] `useShopStore` — új **modul-szintű** `persistPurchases()` helper: `getRtdbKey()` + `savePurchaseRecord` minden új rekordra
+- [x] `persistPurchases()` mindhárom keletkezési ágból hívva: `checkout()`, `buyCredits()`, `recordPurchase()`
+- [x] `useShopStore` — új `setPurchaseHistory(history)` action a szinkronhoz („az RTDB a mérvadó, a lokális tömb optimista nézet")
+- [x] `App.tsx` `handleUserData` — `shop.setPurchaseHistory(mapPurchases(data.purchases))`
+- [x] **Külön subscription NEM kellett:** a `subscribeUser` az egész `users/{uid}` node-ot olvassa, így az új ág magától jön az élő frissítésekkel
+- [x] `database.rules.json` — új `users/$key/purchases` **írási** szabály, ugyanazzal a `device_map`/uid feltétellel, mint a többi ág (`auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)`) — ⚠️ **deployt igényel**
+- [x] `useShopStore.partialize` — a `purchaseHistory` **kikerült**; maradt `activeShopTab` (eszközszintű) + `boughtCreditPacks` (unlock-szintű)
+- [x] `src/state/clearUserScopedData.ts` (új, [[007-state-persist-page-refresh]] G. blokk) — fiókváltáskor a shop lokális állapota is ürül: `credits`, `creditsLoaded`, `owned` → `BASE_EXOPLANET_IDS`, `cart`, `purchaseHistory`
+- [x] **Szándékosan lokális-only:** nem `resetShop()` — az RTDB-be is kiírná a resetet, és az **épp elhagyott** fiók walletjét/inventoryját nullázná
+- [x] Ellenőrzés: `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres
+
+**F rész — Áruház letiltása nem regisztrált usereknél (2026-07-28)**
+
+> A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[017-stripe-go-live]]).
+
+- [x] **Vendég definíció (közös):** `!authUser || authUser.isAnonymous`
+- [x] `MainMenu.tsx` — az Áruház gomb **🔒 prefixet** kap vendégnél
+- [x] `MainMenu.tsx` — kattintás vendégként **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja (`<p role="status">`)
+- [x] `MainMenu.tsx` — ugyanaz a szöveg a gomb `title` tooltipjében
+- [x] **Refaktor:** a `showGuestNotice: boolean` state → **`guestNoticeKey: string | null`**, mert már **két** különböző üzenet van (`shop.guestNotice`, `friends.guestNotice`); a `<p>` a `t(guestNoticeKey)`-t rendereli
+- [x] **Refaktor:** új `guardedNav(phase: "shop" | "friends", noticeKey: string)` helper adja a gomb `onClick`-jét — `isGuest ? () => setGuestNoticeKey(noticeKey) : () => transitionTo(phase)`
+- [x] A korábbi `handleShop` helper **megszűnt** (a `guardedNav("shop", "shop.guestNotice")` váltotta ki)
+- [x] Sikeres bejelentkezés után a notice automatikusan eltűnik (`useEffect(!isGuest) → setGuestNoticeKey(null)`)
+- [x] `ScreenRouter.tsx` — a `shop` felkerült a **regisztrált fiókot igénylő** fázisok listájára: `needsAccount = friends | chat | friendWall | shop`; vendégnél `transitionTo("mainMenu")` + `<MainMenu />` (a `blockSocial` átnevezve `blockPhase`-re)
+- [x] `ScreenRouter.tsx` — a `status === "loading"` továbbra **sem** vendég (az auth aszinkron feloldódása nem dobhatja ki a bejelentkezett játékost oldalfrissítéskor)
+- [x] i18n: új `shop.guestNotice` kulcs **mind az 5 nyelven**
+- [x] Ellenőrzés: `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres · i18n paritás **366/366** mind az 5 nyelven
+
+**G rész — Hiányzó `shop.sort.*` i18n névtér — BUGFIX (2026-07-28)**
+
+- [x] **Tünet:** a `ProductGrid` rendezés-dropdownjában a felhasználó a **nyers kulcsokat** látta (`shop.sort.priceAsc`, …) a fordítások helyett
+- [x] **Ok:** a `ProductGrid.tsx` 6 kulcsot használ (`shop.sort.priceAsc` / `.priceDesc` / `.speedAsc` / `.speedDesc` / `.distanceAsc` / `.distanceDesc`), de a `shop.sort` objektum **EGYIK nyelvi fájlban sem létezett**
+- [x] **Javítás:** a `shop.sort` névtér mind a 6 kulccsal pótolva **mind az 5 nyelven**
+- [x] **Tanulság (kockázatként rögzítve, 8.2):** a kulcsparitás-ellenőrzés csak a **meglévő** kulcsokat veti össze a nyelvek között — egy **mindenhonnan** hiányzó kulcsot **nem talál meg**. A komponensekben hivatkozott kulcsok létezését külön kellene ellenőrizni.
+- [x] Ellenőrzés: i18n paritás **366/366** mind az 5 nyelven · `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres
+
 ---
 
 ## 1. Képernyő-folyamat (GamePhase)
@@ -173,6 +238,21 @@ MissionSelector ──(cél kiválasztás)──▶ kamera ellenőrzés ──�
    └────────────────────────────────────┘
                                        └──▶ loading → playing
 ```
+
+> ### 🔒 Vendég-zár (2026-07-28, F rész)
+>
+> ```
+> mainMenu ──(Áruház)──▶  isGuest ?  ──igen──▶  guestNoticeKey = "shop.guestNotice"
+>                            │                   (🔒 gomb + title tooltip + role="status" üzenet)
+>                            └──nem───▶  transitionTo("shop")
+>
+> ScreenRouter:  needsAccount = friends | chat | friendWall | shop
+>                blockPhase   = isGuest && needsAccount        # a perzisztált fázis miatt
+>                    └──▶ transitionTo("mainMenu") + <MainMenu />
+>                isGuest = authStatus !== "loading" && (!authUser || authUser.isAnonymous)
+> ```
+>
+> A `MainMenu` egyetlen `guardedNav(phase, noticeKey)` helperrel kezeli az Áruház és a Barátok gombot is; a notice-t `guestNoticeKey: string | null` tartja (nem `boolean`), mert két különböző üzenet van.
 
 - `phaseToFlags("shop")` = **ugyanaz a szüneteltetett pre-game állapot**, mint `mainMenu`/`missionSelect`/`settings` (`showIntro:false, isPaused:true, …`).
 - `App.isPreGame` bővül a `shop` fázissal. A háttérzene **NEM szól** a shopban (`shouldPlayMusic` kizárja).
@@ -308,8 +388,47 @@ interface ShopState {
 - **Kosárból eltávolítás:** a `removeFromCart` eltávolítja a tételt a kosárból. A UI gombja piros „Eltávolítás".
 - `checkout()`: ha `credits >= cartTotalCredits()`, kredit levonás, tételek a `owned`-ba, kosár ürítés.
 - `buyCredits(packId)`: `credits += pack.credits` (mock fizetés).
-- `persist.partialize`: `credits`, `owned` (`cart`, `isPreviewing`, `activePreviewId` **nem** perzisztált).
+- `persist.partialize`: `credits`, `owned` (`cart`, `isPreviewing`, `activePreviewId` **nem** perzisztált). ⚠️ **Elavult** — lásd a 3.1-et: a `credits`/`owned` a [[004-firebase-auth-bugfix]] óta, a `purchaseHistory` a 2026-07-28-i E rész óta nem perzisztálódik.
 - `activePreviewId` és `setActivePreviewId`: **nem perzisztált** — munkamenet-állapot. A `MusicPreviewButton` ezt használja a globális előnézet-követéshez.
+
+### 3.1 Vásárlási előzmény (`purchaseHistory`) — RTDB-alapú (2026-07-28, E rész)
+
+```ts
+export interface PurchaseRecord {
+  id: string;           // lokálisan generált — az RTDB push ID NEM ez
+  itemName: string;
+  category: string;     // "ship" | "music" | "exoplanet" | "credits"
+  credits: number;      // elköltött (vagy kredit-pakknál a kapott) kredit
+  purchasedAt: number;  // timestamp
+  packId?: string;      // kreditcsomagnál a pack ID
+}
+
+// useShopStore — modul-szintű helper, NEM store-action:
+const persistPurchases = (records: PurchaseRecord[]): void => { /* getRtdbKey() + savePurchaseRecord */ };
+```
+
+**Adatfolyam:**
+
+```
+checkout() / buyCredits() / recordPurchase()
+        │  (optimista lokális bejegyzés)
+        ▼
+persistPurchases(records)  ──►  savePurchaseRecord(rtdbKey, record)
+                                       │  push → users/{uid}/purchases/{pushId}
+                                       ▼
+                                subscribeUser(users/{uid})     # a TELJES node — nincs külön subscription
+                                       │
+                                       ▼
+                         handleUserData → shop.setPurchaseHistory(mapPurchases(data.purchases))
+                                       │  (RTDB az igazságforrás; id || pushId normalizálás,
+                                       │   purchasedAt szerint csökkenő)
+                                       ▼
+                                 PurchaseHistory.tsx
+```
+
+- **Nincs duplikáció:** a rekord az RTDB-ben is a **lokálisan generált `id`**-t viszi, ezért az RTDB-visszhang az optimista bejegyzést lecseréli, nem mellé teszi.
+- **Perzisztálás:** `purchaseHistory` **nincs** a `partialize`-ban — fiókhoz kötött adat ([[007-state-persist-page-refresh]] G. blokk).
+- **Miért nincs top-level `purchases` node?** Mert privát; nincs barát-nézete, tehát nem kell barát-olvasási szabály — ellentétben a `walls`-szal ([[012-wall-of-shame]] O. blokk).
 
 ---
 
@@ -421,6 +540,20 @@ shop.tab.music                # „Zenék"
 shop.tab.credits              # „Kredit vásárlás"
 shop.search                   # „Keresés név szerint…"
 shop.searchNoResult           # „Nincs találat"
+
+# --- G rész (2026-07-28): a ProductGrid rendezés-dropdownja használta, de EGYIK nyelvben sem létezett ---
+shop.sort.priceAsc            # „Ár: növekvő"        (en: Price: low to high)
+shop.sort.priceDesc           # „Ár: csökkenő"       (en: Price: high to low)
+shop.sort.speedAsc            # „Sebesség: növekvő"  (en: Speed: slow to fast)
+shop.sort.speedDesc           # „Sebesség: csökkenő" (en: Speed: fast to slow)
+shop.sort.distanceAsc         # „Távolság: növekvő"  (en: Distance: near to far)
+shop.sort.distanceDesc        # „Távolság: csökkenő" (en: Distance: far to near)
+
+# --- F rész (2026-07-28): vendég-zár ---
+shop.guestNotice              # „Az áruházhoz be kell jelentkezned. Jelentkezz be Google-fiókkal, hogy
+                              #   vásárolhass és a krediteid megmaradjanak!"
+                              #  (en: „The shop requires an account. Sign in with Google to make
+                              #   purchases and keep your credits!")
 shop.addToCart                # „Kosárba"
 shop.inCart                   # „Kosárban ✓"
 shop.owned                    # „Birtokolt"
@@ -497,6 +630,35 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - `src/i18n/locales/{en,hu,fr,de,es}/translation.json` — `shop.*` kulcsok
 - `.claude/references/project-conventions.md` — új mappastruktúra (`ui/`, `screens/`, `shop/`)
 
+### E rész — új / módosuló fájlok (2026-07-28)
+
+```
+src/state/clearUserScopedData.ts   # ÚJ — fiókváltáskori LOKÁLIS takarítás (RTDB-írás nélkül)
+src/firebase/userData.ts           # +savePurchaseRecord(uid, record)  (push, id megőrzésével)
+                                   # +mapPurchases(data)               (push-ID → tömb, purchasedAt desc)
+                                   # UserNode +purchases?: Record<string, PurchaseRecord>
+src/state/useShopStore.ts          # +persistPurchases() modul-szintű helper (checkout / buyCredits /
+                                   #  recordPurchase mindhárom ágából), +setPurchaseHistory() action,
+                                   #  partialize-ból KIKERÜLT a purchaseHistory
+src/App.tsx                        # handleUserData: shop.setPurchaseHistory(mapPurchases(data.purchases));
+                                   # +identitás-figyelő → clearUserScopedData()
+database.rules.json                # +users/$key/purchases .write (device_map | uid) — DEPLOYT IGÉNYEL
+```
+
+### F / G rész — módosuló fájlok (2026-07-28)
+
+```
+src/components/screens/MainMenu.tsx        # Áruház gomb: 🔒 prefix + title tooltip vendégnél;
+                                           # showGuestNotice: boolean → guestNoticeKey: string | null;
+                                           # +guardedNav(phase, noticeKey) helper; handleShop MEGSZŰNT
+src/components/routing/ScreenRouter.tsx    # needsAccount: +"shop" (friends | chat | friendWall | shop);
+                                           # blockSocial → blockPhase átnevezés
+src/i18n/locales/{en,hu,fr,de,es}/translation.json
+                                           # +shop.guestNotice (F rész)
+                                           # +shop.sort.{priceAsc,priceDesc,speedAsc,speedDesc,
+                                           #             distanceAsc,distanceDesc} (G rész — hiányzó névtér)
+```
+
 ---
 
 ## 8. Kockázatok / figyelmeztetések
@@ -510,6 +672,21 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - **Anti-cheat:** a kredit/birtoklás kliensoldali (localStorage) — ez tudatos, ideiglenes kompromisszum. A Firebase-fázis hozza a szerver-írt forrást.
 - **`shop.credits` kulcsütközés:** a `shop.credits` egyszerre volt string és object namespace — megoldva: a string kulcs `shop.creditsLabel`-re lett nevezve.
 - **Grid scroll:** a `.productGrid` flex scroll chain segítségével csak a grid scrollázik, a fülek és kereső fixek maradnak.
+
+### 8.1 Kockázatok — E rész (2026-07-28)
+
+- **⚠️ Rules-deploy kötelezettség:** a `database.rules.json` `users/$key/purchases` ága **csak deploy után** hat. Deploy nélkül minden `savePurchaseRecord` `PERMISSION_DENIED`-be fut, és — mivel a lokális állapot optimista — a UI **helyesnek** látszik, amíg a felhasználó nem frissít. Ugyanaz a néma-megtagadás hibaosztály, mint a [[013-social-multiplayer]] N. blokkjában.
+- **A push ID nem azonos a rekord `id`-jével.** A rekord szándékosan viszi magával a lokálisan generált `id`-t; a `mapPurchases` `record.id || pushId` normalizálást végez. Ha ez elmaradna, minden RTDB-visszhang **duplikátumot** hozna létre a listában.
+- **Nincs külön subscription.** A `purchases` ág a `subscribeUser` teljes `users/{uid}` olvasásával érkezik. Ez azt is jelenti, hogy **minden** vásárlás az egész user node-ot újraküldi a klienseknek — a jelenlegi rekordszámnál elhanyagolható, de a lista **korlátlanul nőhet** (mint a szégyenfal rekordjai), ezért később limit / lapozás megfontolandó.
+- **A lokális takarítás nem írhat RTDB-be.** A `clearUserScopedData` **nem** a `resetShop()`-ot hívja: az a resetet a szerverre is kiírná, és az **épp elhagyott** fiók walletjét/inventoryját nullázná. Minden jövőbeli „kijelentkezéskor ürítsd" logikának ezt a szétválasztást kell követnie.
+- **A `partialize` bővítése tiltott fiókhoz kötött mezővel.** A `space-travel-shop` kulcson a böngésző minden fiókja osztozik — új mező felvétele előtt kötelező a kérdés: *eszközhöz vagy fiókhoz tartozik?* ([[007-state-persist-page-refresh]] G. blokk).
+
+### 8.2 Kockázatok — F / G rész (2026-07-28)
+
+- **⚠️ A vendég kreditje elérhetetlenné vált a shop felől.** A vendégnek **van** pénztárcája (`users/{deviceId}/wallet`, kezdő kredittel), és a `migrateGuestData` a bejelentkezéskor **átviszi** a kreditjeit ([[010-firebase-guest-merge-single-gate]]) — de **vásárolni nem tud**, amíg be nem jelentkezik. Ez **tudatosan vállalt következmény** (a vásárlásnak túl kell élnie egy eldobható sessiont), viszont azt jelenti, hogy a guest-merge kredit-logikája a shop felől **jelenleg nem elérhető**: vendég nem tud kreditet elkölteni, csak örökölni. Ha a vendég-vásárlás valaha visszatérne, a merge-politikát ([[009-firebase-identity-split-bugfix]] wallet-politika) újra kell értékelni.
+- **Két helyen kell karbantartani a fázislistát.** A `MainMenu` gombja és a `ScreenRouter` `needsAccount` listája **külön** kód — egy új, fiókot igénylő fázis felvételekor **mindkettőt** módosítani kell, különben vagy a gomb enged be, vagy a perzisztált fázis kerüli meg a zárat.
+- **A `guestNoticeKey` string, nem boolean.** Új vendég-zárt kapó képernyőnél csak egy új i18n kulcs kell, a state-et nem kell bővíteni — de a kulcsnak **léteznie kell** (lásd a következő pontot).
+- **⚠️ A kulcsparitás-ellenőrzés nem fogja meg a mindenhonnan hiányzó kulcsot.** A `shop.sort` névtér **egyik** nyelvben sem létezett, mégis „paritásban" volt — a felhasználó a nyers kulcsokat látta a `<select>`-ben. A paritás-ellenőrzés a nyelveket **egymáshoz** méri, nem a kódhoz. **Külön ellenőrzés kellene** arra, hogy a komponensekben hivatkozott `t("…")` kulcsok léteznek-e a locale-okban. Ugyanez a hibaosztály bármelyik új névtérnél megismételhető (lásd [[011-difficulty-event-system]]: `event.doom` a `EventModal` kulcstérképében szerepel, de egyetlen locale-ban sincs).
 
 ---
 
@@ -539,6 +716,13 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 | Űrhajók játékmenet-bekötése (ShipSelectScreen) | ✅ Kész |
 | i18n kulcsok (5 nyelv) + validáció | ✅ Kész (kivéve Vitest tesztek) |
 
+| Vásárlási előzmény RTDB-be + identitásváltás-takarítás (E rész) | ✅ Kész (2026-07-28) |
+| Áruház vendég-zár (F rész) + `shop.sort.*` i18n pótlás (G rész) | ✅ Kész (2026-07-28) |
+
+**Kész definíció — bővítés (2026-07-28, E rész):** a vásárlási előzmény a **`users/{uid}/purchases/{pushId}`** ágban él, minden keletkezési ágból (`checkout`, `buyCredits`, `recordPurchase`) mentődik, és a `subscribeUser` élő frissítésével — **külön subscription nélkül** — érkezik vissza a kliensre. A rekord megtartja a lokális `id`-jét, így az RTDB-visszhang nem duplikál. A `purchaseHistory` **nem** perzisztálódik localStorage-ba, és fiókváltáskor a `clearUserScopedData` **lokálisan** üríti a shop állapotát (RTDB-írás nélkül). A `database.rules.json` `users/$key/purchases` írási szabálya **deployt igényel**. `tsc --noEmit` tiszta · `npm run test` 77/77 zöld · `npm run build` sikeres.
+
+**Kész definíció — bővítés (2026-07-28, F / G rész):** az áruház **regisztrált (Google) fiókot igényel**. Vendégnél a főmenü Áruház gombja 🔒 prefixet kap, kattintásra a `shop.guestNotice` üzenetet mutatja (`role="status"` + `title` tooltip) navigáció helyett, a `ScreenRouter` pedig a **perzisztált** `shop` fázisból is visszairányít a főmenübe (`needsAccount = friends | chat | friendWall | shop`; a `status === "loading"` nem vendég). A `MainMenu` a `guardedNav(phase, noticeKey)` helperrel és `guestNoticeKey: string | null` state-tel kezeli mindkét zárt gombot. A `shop.sort.*` névtér (6 kulcs) pótolva mind az 5 nyelven — korábban a rendezés-dropdown nyers kulcsokat mutatott. i18n paritás **366/366** · `tsc --noEmit` tiszta · `npm run test` 77/77 zöld · `npm run build` sikeres.
+
 **Kész definíció elérve:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók + kereső, (2) Űrhajók + kereső, (3) Zenék + kereső, (4) **Kredit vásárlás** (azonos layout). 100 exobolygó (JSON) + 3 alap exobolygó (Birtokolt), 3 űrhajó preview-vel, 5 zene singleton-preview-val. Kosár „Eltávolítás" gombbal. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐, reset gombbal. Háttérzene nem szól a shopban. Csak a grid scrollázik. Birtokolt exobolygók a küldetésválasztóban, info gombbal (a kártya alján). Generikus Modal/Tabs komponensek `src/components/ui/`-ben. A Beállítások menüben **zeneválasztó** (alap + birtokolt zenék), letiltva ha nincs megvett zene. `useAudio` dinamikus track-váltással. ActiveMusicId perszisztálva `useUIStore`-ban. **Ship Select** (`shipSelect` GamePhase): küldetésválasztás után hajókiválasztás (alap hajó + birtokolt shop hajók), info modal műszaki adatokkal, sebesség alapján újraszámolt utazási idő. Kamera ellenőrzés a destination kiválasztás után történik.
 
 ---
@@ -549,4 +733,8 @@ shop.credits.notEnoughCreditsHint  # „Nincs elég kredit. Vegyél kreditet a '
 - [[003-firebase-auth-settings]] – a kredit/birtoklás/beállítás per-felhasználós Firebase-mentése.
 - [[005-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
 - [[000-i18n-nyelvesites]] – a `shop.*` nyelvi réteg; a tulajdonnevek nem fordítandók.
+- [[007-state-persist-page-refresh]] – a `partialize` elve: **localStorage-ban csak eszközszintű adat**. Az E rész ennek megfelelően vezette ki a `purchaseHistory`-t, és itt él a `clearUserScopedData` teljes leírása (G. blokk).
+- [[013-social-multiplayer]] – **a vendég-őr forrása.** Az O. blokk vezette be a kétrétegű mintát (MainMenu gomb + `ScreenRouter` fázis-őr) a `friends` / `chat` / `friendWall` fázisokra; az itteni F rész terjesztette ki a `shop`-ra, közös `guardedNav` helperrel és `guestNoticeKey` state-tel.
+- [[010-firebase-guest-merge-single-gate]] – a vendég **örökölheti** a kreditjét bejelentkezéskor, de vendégként **nem költheti el** (F rész, 8.2 kockázat).
+- [[012-wall-of-shame]] – **ugyanaz a hibaosztály** (fiókhoz kötött adat a böngésző-szintű localStorage-ban). A fal R. blokkja írja le a kiváltó tünetet; a shopnál a javítás **plusz** egy új szerveroldali ág (`users/{uid}/purchases`) bevezetésével járt, mert korábban semmilyen RTDB-pár nem létezett.
 - [[016-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.

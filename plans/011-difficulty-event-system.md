@@ -3,11 +3,11 @@ title: "Nehézségi szintek + eseményrendszer – random interakciók a játék
 slug: 011-difficulty-event-system
 type: plan
 category: core
-status: in-progress
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-29"
 created_at: "2026-07-27"
-updated_at: "2026-07-27"
+updated_at: "2026-07-29"  # lezárva: az event.doom holt kulcstérkép-bejegyzés törölve (K. blokk)
 author: exphoenee
 step: 11
 phases: []
@@ -22,6 +22,8 @@ tags:
   - debug
   - ui
   - i18n
+  - doom
+  - documentation
 ---
 
 # Nehézségi szintek + eseményrendszer – random interakciók a játékban
@@ -36,7 +38,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **11. lépés** — a 010 után, a 012-social-multiplayer előtt. Független a Stripe/auth backendtől, párhuzamosan is dolgozható. |
+| Elhelyezés a roadmapen | **11. lépés** — a 010 után, a 013-social-multiplayer előtt. Független a Stripe/auth backendtől, párhuzamosan is dolgozható. |
 | Események UI-ja | **Külön modal** — minden esemény egy központi `EventModal` komponensben jelenik meg, ami áttetsző háttérrel ráborul a dashboardra. |
 | Büntetés rossz válasz esetén | **Vegyes:** kis eseményeknél (pl. kürt, aszteroida) időbüntetés (+útidő), ritka eseményeknél (napkitörés) a meglévő `crewLost` mechanika aktiválódik. |
 | Debug mód event sebesség | Az események időközei 3× gyorsabbak (pl. 3-5 perc → 1-1.6 perc). |
@@ -68,6 +70,7 @@ tags:
 - [x] **Napkitörés (`solar-flare`):** ritka (10-20 percenként), kemény döntés; sikertelen → `crewLost`
 - [x] **Űrajáró (`rover`):** felugró lehetőség a rover használatára; az adott küldetésben használható, nem szerezhető meg örökre
 - [x] Minden esemény típushoz: siker-ág, kudarc-ág (időbüntetés vagy crewLost)
+- [x] **Végzet (`doom`) — pszeudo-esemény (2026-07-28-i dokumentálás, lásd K. blokk):** nem interaktív esemény és **nem** a poolból jön; a `rescue-transfer` figyelmen kívül hagyása után a `scheduleDestruction(delayMs)` állítja be. Csak visszaszámlálásként létezik: `pendingDestructionAt` + `nextScheduledEvent = { eventType: "doom", triggerAt }`. Az `App.tsx` másodperces intervalluma a lejáratkor `crewLost` + `crewLostReason: "event"` állapotba visz.
 
 **D. Esemény ütemezés logika**
 - [x] Esemény pool medium módhoz: `horn`, `asteroid`, `rescue-transfer`, `rover` (3-5 percenként)
@@ -119,6 +122,21 @@ tags:
 - [x] `security.rules.json` — nincs változás (nem érint Firebase-t)
 - [x] `.claude/lessons-learned.md` — bejegyzés az eseményrendszer architektúráról (isAttentionLost guard bug, setTimeout lánc, determinisztikus tesztelés, Dashboard integráció)
 
+**K. `doom` — a hetedik `EventType` (utólagos dokumentálás, 2026-07-28)**
+
+> A megvalósítás során egy hetedik eseménytípus is bekerült a kódba, amit a terv eddig **nem említett**. Ez a blokk **nem új munka** — a meglévő implementációt vezeti át a tervbe, hogy az fedje a valóságot.
+
+- [x] `src/types/index.ts` — `EventType` bővítve: `"horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction" | "doom"`
+- [x] `useGameStore` — +`pendingDestructionAt: number | null`, +`scheduleDestruction(delayMs)`, +`cancelDestruction()`
+- [x] `scheduleDestruction` beállítja a `pendingDestructionAt`-ot **és** a `nextScheduledEvent`-et `{ eventType: "doom", triggerAt: pendingAt }` értékre (a debug sáv innen olvassa a visszaszámlálást)
+- [x] `EventModal` — a `rescue-transfer` **figyelmen kívül hagyása** (ignore) `resolveEvent(false)` + esemény-napló bejegyzés után `scheduleDestruction(delayMs)`-t hív
+- [x] `useEventSystem` — ha `pendingDestructionAt` be van állítva, **nem ütemez** új eseményt (a visszaszámlálás alatt nincs más esemény)
+- [x] `App.tsx` — másodperces `setInterval`: ha `Date.now() >= pendingDestructionAt` és `gamePhase === "playing"` → `transitionTo("crewLost")` + `setCrewLostReason("event")` + `cancelDestruction()`
+- [x] `DebugEventBar` — `eventLabel("doom") → "☠️ Doom"` (a következő ütemezett esemény kijelzésében)
+- [x] `resetToMenu` / `startMission` — a `pendingDestructionAt` nullázódik (nem szivárog át küldetések között)
+- [x] `WallOfShame` — `EVENT_EMOJI` térkép `doom: "💀"` (védekező teljesség; a naplóba a `rescue-transfer` fail kerül, lásd 5.5)
+- [x] **`event.doom` holt kulcstérkép-bejegyzés törölve (2026-07-29, (a) opció).** Az `EventModal.tsx` `I18N_MAP`-jából kikerült a `doom: "event.doom"` bejegyzés, a térkép típusa `Record<EventType, string>` → `Partial<Record<EventType, string>>`. A hívási hely (`I18N_MAP[event.id] ?? "event.horn"`) már eleve tartalmazott fallbacket, így nem kellett módosítani. Az `event.doom` i18n kulcsokat **szándékosan nem pótoltuk**: a `doom` sosem éri el ezt a modalt — csak `nextScheduledEvent.eventType` jelölő, amit a `scheduleDestruction()` ír (debug sáv visszaszámláló + szégyenfal 💀 ikon), a `triggerEvent` pedig kizárólag `EVENT_DEFINITIONS`-beli definícióval hívódik, és a `doom` nincs benne. Az indoklás kommentben is rögzítve a fájlban. Ellenőrzés: `tsc --noEmit` tiszta, `npm run test` 77/77 zöld.
+
 ---
 
 ## 1. Architektúra
@@ -154,7 +172,8 @@ useEventSystem (hook)
 ```ts
 interface EventDefinition {
   id: string;
-  type: EventType;          // "horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction"
+  // A "doom" NEM szerepel EventDefinition-ként — pszeudo-esemény, lásd 1.6
+  type: EventType;          // "horn" | "asteroid" | "rescue-transfer" | "solar-flare" | "rover" | "fake-instruction" | "doom"
   minDifficulty: Difficulty; // "medium" | "hard"
   minIntervalMs: number;    // minimum 180000 (3 perc)
   baseIntervalMs: number;   // 180000-300000 medium, 300000-600000 fake hard
@@ -210,6 +229,33 @@ A mentőhajó esemény működése:
 2. Igen esetén: a Dashboard egy másik cockpit képre vált (másik `shipImageUrl`), és új/módosult műszerfal elemek jelennek meg
 3. Az út továbbra is az **új hajó sebességéből** számolódik (a mentőhajó sebessége megegyezik az aktuális hajóéval, vagy egy előre definiált érték)
 4. Az átszállás után `event.rescueTransfer.success` szöveg jelenik meg, majd a játékos visszakapja az eredeti műszerfalát
+5. **Ha a játékos figyelmen kívül hagyja / elutasítja** → a hajó sorsa megpecsételődik: `scheduleDestruction(delayMs)` → **`doom` visszaszámlálás** (1.6)
+
+### 1.6 `doom` — a végzet-visszaszámlálás (pszeudo-esemény, 2026-07-28-i dokumentálás)
+
+A `doom` a hetedik `EventType`, de **nem interaktív esemény**: nincs `EventDefinition`-je, nincs a poolban, és **soha nem lesz `activeEvent`**. Kizárólag a mentőhajó elutasítása utáni **halasztott pusztulás** megjelenítésére és követésére szolgál.
+
+```
+EventModal — rescue-transfer „Ignore"
+        │  resolveEvent(false) + missionEventLog += { type: "rescue-transfer", result: "fail" }
+        ▼
+useGameStore.scheduleDestruction(delayMs)
+        ├── pendingDestructionAt = Date.now() + delayMs
+        └── nextScheduledEvent  = { eventType: "doom", triggerAt: pendingDestructionAt }
+                    │                                   │
+                    │                                   └──▶ DebugEventBar: „☠️ Doom" + visszaszámlálás
+                    ▼
+useEventSystem: ha pendingDestructionAt !== null → ÚJ ESEMÉNYT NEM ÜTEMEZ
+                    │
+                    ▼
+App.tsx (1 mp-es interval): Date.now() >= pendingDestructionAt && gamePhase === "playing"
+        └──▶ transitionTo("crewLost") + setCrewLostReason("event") + cancelDestruction()
+```
+
+- **Miért külön `EventType`?** Hogy a `nextScheduledEvent` (debug kijelző) egységesen tudja ábrázolni: „mi jön legközelebb" — akkor is, ha az nem esemény, hanem a vég.
+- **Nem szivárog át küldetések közt:** a `startMission` és a `resetToMenu` is nullázza a `pendingDestructionAt`-ot.
+- **Szégyenfal:** a naplóba a **`rescue-transfer` / fail** bejegyzés kerül (nem `doom`); a kudarc oka `crewLostReason: "event"`. A `WallOfShame` `EVENT_EMOJI` térképe védekezésből tartalmaz `doom: "💀"` bejegyzést ([[012-wall-of-shame]]).
+- **i18n (lezárva, 2026-07-29):** az `EventModal` `I18N_MAP`-jában korábban szerepelt egy `doom: "event.doom"` bejegyzés, de az `event.doom` névtér egyetlen locale-ban sem létezett. Mivel a `doom` sosem renderelődik modalként, a bejegyzés **törölve** lett (a térkép típusa `Partial<Record<EventType, string>>`), az `event.doom` kulcsokat pedig szándékosan nem pótoltuk. A hívási hely `?? "event.horn"` fallbackje változatlan.
 
 ---
 
@@ -226,9 +272,13 @@ src/components/features/DebugEventBar.module.css
 
 ### Módosuló fájlok
 ```
+src/types/index.ts                          # EventType: +"doom" (pszeudo-esemény, K. blokk)
 src/state/useGameStore.ts                   # +activeEvent, +eventPenaltyYears, +triggerEvent, +resolveEvent, +dismissEvent
+                                            # +pendingDestructionAt, +scheduleDestruction(), +cancelDestruction(),
+                                            #  +nextScheduledEvent (a debug sáv „következő esemény" kijelzőjéhez)
 src/components/features/Dashboard.tsx        # EventModal integráció, mentőhajó UI váltás, aszteroida figyelmeztetés
-src/App.tsx                                  # DebugEventBar integráció
+src/App.tsx                                  # DebugEventBar integráció; +1 mp-es interval a pendingDestructionAt
+                                             #  lejáratára → crewLost + crewLostReason "event" (K. blokk)
 src/hooks/useAttentionMonitor.ts            # Ha szükséges: esemény alatti figyelem kivétel
 src/i18n/locales/{en,hu,fr,de,es}/translation.json  # ~15 új kulcs
 ```
@@ -244,7 +294,9 @@ src/hooks/useEventSystem.test.ts            # Ütemezés logika tesztek
 
 - **Előfeltétel:** [[001-main-menu-settings]] — a `difficulty` mező a `useUIStore`-ban, a SettingsScreen nehézség választó
 - **Független:** auth, Stripe, Firebase — az eseményrendszer teljesen kliensoldali
-- **Érinti:** [[007-state-persist-page-refresh]] — az esemény állapot (`activeEvent`) nem perzisztálódik (a timer újraindul oldalfrissítéskor)
+- **Érinti:** [[007-state-persist-page-refresh]] — az esemény állapot (`activeEvent`) nem perzisztálódik (a timer újraindul oldalfrissítéskor); a `pendingDestructionAt` sem — a `doom` visszaszámlálás oldalfrissítéskor **elvész**
+- **Kiszolgálja:** [[012-wall-of-shame]] — a `missionEventLog` az itteni `resolveEvent`-ből töltődik; a fal `EVENT_EMOJI` térképe a `doom` típust is lefedi
+- **Érinti:** [[013-social-multiplayer]] — a multiplayer event-kiosztás (F blokk) **csak interaktív** eseményeket oszthat ki; a `doom` pszeudo-esemény **nem** kerülhet a kiosztásba
 
 ---
 
@@ -285,6 +337,8 @@ src/hooks/useEventSystem.test.ts            # Ütemezés logika tesztek
 | `event.deploy` | Deploy | Bevetés |
 | `event.ignore` | Ignore | Figyelmen kívül hagyás |
 
+> ℹ️ **`event.doom` — nem készül (lezárva 2026-07-29, K. blokk).** Az `EventModal` kulcstérképéből a `doom: "event.doom"` bejegyzés **törölve**; az `event.doom.title` / `.desc` kulcsokat **szándékosan nem pótoltuk**, mert a `doom` sosem lesz `activeEvent`. Emlékeztető a jövőre: a kulcsparitás-ellenőrzés a **mindenhonnan** hiányzó kulcsot nem találja meg ([[002-ingame-shop-frontend]] G rész) — ezért kell az ilyen holt hivatkozást a kódból kivezetni, nem csak a fordításokat ellenőrizni.
+
 ---
 
 ## 5. Kockázatok / figyelmeztetések
@@ -308,6 +362,13 @@ src/hooks/useEventSystem.test.ts            # Ütemezés logika tesztek
 - **Esemény gyakoriság:** a 3-5 perces minimum gap biztosítja, hogy a játékos ne legyen túlterhelve. Medium módban ez átlagosan ~4 percenként egy eseményt jelent.
 - **Ritka események:** a napkitörés (crewLost kockázattal) csak 10-20 percenként jön, így nem unfair.
 
+### 5.4a `doom` — kockázatok és tanulságok (2026-07-28, K. blokk)
+
+- **A terv és a kód eltérése önmagában kockázat.** A `doom` eseménytípus a megvalósítás során került be, de a terv C blokkja hét hónapig csak öt eseményt + fake-instructiont említett. Egy nem dokumentált típus a jövőbeli bővítéseknél (multiplayer event-kiosztás, [[013-social-multiplayer]] F blokk) **kihagyható vagy hibásan kezelhető** — a `doom` sosem osztható ki játékosnak, mert nem interaktív.
+- **Kimerítő `switch`-ek:** a `DebugEventBar.eventLabel` és a `WallOfShame.EVENT_EMOJI` `EventType`-onként teljes leképezést vár. Új típus felvétele **minden** ilyen helyet érint — a `doom` ezt már be is szedte, de a következő típusnál újra ellenőrizni kell.
+- **✅ `event.doom` i18n hiány — lezárva (2026-07-29):** az `EventModal` kulcstérképe hivatkozott egy sehol nem létező névtérre. Ártalmatlan volt (holt ág), de ha a `doom` valaha modalként jelenne meg, a felhasználó **nyers kulcsot** látott volna — pontosan úgy, ahogy a `shop.sort.*` esetében történt ([[002-ingame-shop-frontend]] G rész). **Döntés: törlés** — a holt bejegyzés kikerült, a térkép `Partial<Record<EventType, string>>` lett, a hívási hely `?? "event.horn"` fallbackje pedig továbbra is védi az esetleges jövőbeli hiányt.
+- **Az `App.tsx` 1 mp-es intervalja a lejárat egyetlen őre.** Ha a `gamePhase` nem `playing` a lejáratkor (pl. szünet), a pusztulás **nem** következik be azonnal — a visszaszámlálás gyakorlatilag felfüggesztődik, amíg a játékos vissza nem tér. Ez a jelenlegi (szándékolt) viselkedés, de érdemes tudatosan kezelni, ha a szünet-szabályok változnak.
+
 ### 5.4 Mentőhajó Dashboard váltás
 
 A mentőhajó átszállásnál a Dashboard másik cockpit képre vált. Ehhez:
@@ -325,7 +386,8 @@ A mentőhajó átszállásnál a Dashboard másik cockpit képre vált. Ehhez:
 - **Medium mód:** random események 3-5 percenként (kürt, aszteroida, mentőhajó)
 - **Hard mód:** medium események + hamis instrukciók 5-10 percenként + napkitörés 10-20 percenként
 - Minimum 3-5 perc gap bármely két esemény között
-- Események: kürt, aszteroida, mentőhajó átszállás, napkitörés, űrajáró
+- Események: kürt, aszteroida, mentőhajó átszállás, napkitörés, űrajáró (+ hard módban hamis instrukció)
+- **`doom` visszaszámlálás:** a mentőhajó elutasítása után halasztott pusztulás (`pendingDestructionAt`), a debug sávban „☠️ Doom" kijelzéssel; lejáratkor `crewLost` / `crewLostReason: "event"` (1.6, K. blokk)
 - Debug mód (`VITE_DEBUG_MODE=true`): események 3× gyorsabbak + gombsor a jobb felső sarokban minden esemény azonnali triggereléséhez
 - Büntetés: kis események → időbüntetés (+útidő), napkitörés → crewLost
 - `EventModal` overlay: minden esemény egy központi modalban jelenik meg
@@ -334,3 +396,4 @@ A mentőhajó átszállásnál a Dashboard másik cockpit képre vált. Ehhez:
 - Space rover: csak az adott küldetésben használható, nem szerezhető meg örökre
 - `npm run test` + `npm run build` + `tsc --noEmit` — zöld
 - i18n: mind az 5 nyelven teljes paritás (20+ új kulcs)
+- **`event.doom` lezárva (2026-07-29):** az `EventModal` `I18N_MAP`-jából a holt `doom: "event.doom"` bejegyzés törölve (`Partial<Record<EventType, string>>` típus, meglévő `?? "event.horn"` fallback); az `event.doom` kulcsok szándékosan nem készültek el, mert a `doom` sosem renderelődik modalként

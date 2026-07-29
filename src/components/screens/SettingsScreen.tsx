@@ -7,7 +7,7 @@ import useShopStore from "../../state/useShopStore";
 import useAuthStore, { selectRtdbKey, getRtdbKey } from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
 import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/auth";
-import { updateUserSettings, updateUserNickname, updateUserPublicProfile } from "../../firebase/userData";
+import { updateUserSettings, updateUserNickname, updateUserPublicProfile, updateOnlineStatus } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import CustomSelect from "../ui/CustomSelect";
 import styles from "./SettingsScreen.module.css";
@@ -27,6 +27,7 @@ const SettingsScreen = () => {
   const creditsLoaded = useShopStore((s) => s.creditsLoaded);
   const ownedMusicIds = useShopStore((s) => s.owned.music);
   const authUser = useAuthStore((s) => s.user);
+  const authUid = useAuthStore((s) => s.uid);
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const deviceId = useAuthStore((s) => s.deviceId);
@@ -173,6 +174,16 @@ const SettingsScreen = () => {
     setLoginError(null);
     setAuthError(null);
     try {
+      // Go offline BEFORE signing out. The RTDB `onDisconnect` handler only
+      // fires when the socket actually drops — signing out keeps the
+      // connection alive (an anonymous session takes over immediately), so
+      // without this the account would stay "online" forever and friends would
+      // never see the transition. Must happen while the token is still valid:
+      // the `usersPublic/$uid` write rule requires `$uid == auth.uid`.
+      if (authUid) {
+        await updateOnlineStatus(authUid, "offline").catch(console.error);
+      }
+
       await signOut();
       // Optimistic local clear; the auth listener re-populates with a fresh
       // anonymous session.
@@ -181,7 +192,7 @@ const SettingsScreen = () => {
       console.error("Logout failed:", err);
       setLoginError(getAuthErrorMessage(err));
     }
-  }, [setAuthError, clearUser]);
+  }, [setAuthError, clearUser, authUid]);
 
   return (
     <div className={styles.overlay}>
@@ -400,24 +411,32 @@ const SettingsScreen = () => {
           </div>
         </div>
 
-        {cameraConsent !== "granted" && (
-          <div className={styles.row}>
-            <span className={styles.label}>{t(cameraConsent === "undecided" ? "settings.cameraGranted" : "settings.enableCamera")}</span>
-            <div className={styles.control}>
-              <button
-                type="button"
-                className={styles.authBtn}
-                onClick={handleEnableCamera}
-                disabled={isCameraEnabling}
-              >
-                {isCameraEnabling ? "..." : t("settings.enableCamera")}
-              </button>
-              {cameraBtnError && (
-                <span className={styles.loginError}>{cameraBtnError}</span>
-              )}
-            </div>
+        <div className={styles.row}>
+          <span className={styles.label}>
+            {cameraConsent === "granted"
+              ? t("settings.cameraGranted")
+              : t("settings.enableCamera")}
+          </span>
+          <div className={styles.control}>
+            {cameraConsent === "granted" ? (
+              <span>✅</span>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={styles.authBtn}
+                  onClick={handleEnableCamera}
+                  disabled={isCameraEnabling}
+                >
+                  {isCameraEnabling ? "..." : t("settings.enableCamera")}
+                </button>
+                {cameraBtnError && (
+                  <span className={styles.loginError}>{cameraBtnError}</span>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         <div className={styles.row}>
           <span className={styles.label}>{t("language.label")}</span>
@@ -429,7 +448,7 @@ const SettingsScreen = () => {
           className={styles.backButton}
           onClick={handleBack}
         >
-          {t("settings.back")}
+          ← {t("settings.back")}
         </button>
       </div>
     </div>

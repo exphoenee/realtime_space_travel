@@ -39,6 +39,11 @@ const createMockUser = (overrides: Partial<User> = {}): User =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Explicit default for every `get` beyond the ones a test queues up with
+  // mockResolvedValueOnce — migrateGuestData also probes `walls/{deviceId}`.
+  // Without this the fallback would depend on implementations leaking from
+  // earlier tests.
+  mockGet.mockResolvedValue({ exists: () => false, val: () => null });
 });
 
 /** Extract all update arguments as [ref, updates] tuples. */
@@ -309,6 +314,62 @@ describe("migrateGuestData", () => {
     const updates = getRootUpdates();
     expect(updates).not.toBeNull();
     expect(updates!["users/target-123/profile/orphanDiscardedCredits/guest-abc"]).toBe(2000);
+  });
+
+  it("moves the guest Wall of Shame to the target uid", async () => {
+    const failure = { id: "fail-1", failedAt: 1000 };
+    const success = { id: "win-1", completedAt: 2000 };
+
+    mockGet
+      // users/guest-abc
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ wallet: { credits: 0 }, inventory: {} }),
+      })
+      // users/target-123
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ profile: {}, wallet: { credits: 0 }, inventory: {} }),
+      })
+      // walls/guest-abc/failures
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ "-push-a": failure }),
+      })
+      // walls/guest-abc/successes
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ "-push-b": success }),
+      });
+
+    await migrateGuestData("guest-abc", "target-123");
+
+    const updates = getRootUpdates();
+    expect(updates).not.toBeNull();
+    // Copied under the target uid, keeping the original push ID (idempotent)
+    expect(updates!["walls/target-123/failures/-push-a"]).toEqual(failure);
+    expect(updates!["walls/target-123/successes/-push-b"]).toEqual(success);
+    // Guest copy removed so a later merge cannot duplicate the records
+    expect(updates!["walls/guest-abc/failures"]).toBeNull();
+    expect(updates!["walls/guest-abc/successes"]).toBeNull();
+  });
+
+  it("migrates the wall even when the guest user node is gone", async () => {
+    mockGet
+      // users/guest-abc — already cleaned up by an earlier merge
+      .mockResolvedValueOnce({ exists: () => false, val: () => null })
+      // walls/guest-abc/failures
+      .mockResolvedValueOnce({
+        exists: () => true,
+        val: () => ({ "-push-a": { id: "fail-1", failedAt: 1000 } }),
+      });
+
+    const result: MergeResult = await migrateGuestData("guest-abc", "target-123");
+
+    expect(result).toEqual({ kind: "noop" });
+    const updates = getRootUpdates();
+    expect(updates).not.toBeNull();
+    expect(updates!["walls/target-123/failures/-push-a"]).toBeDefined();
   });
 });
 

@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-26"
 created_at: "2026-07-25"
-updated_at: "2026-07-26"
+updated_at: "2026-07-28"  # frissítve: users/{uid}/purchases séma-ág + kijelentkezéskori lokális takarítás
 author: exphoenee
 step: 3
 phases:
@@ -20,6 +20,8 @@ related_plans:
   - 002-ingame-shop-frontend
   - 004-firebase-auth-bugfix
   - 005-ingame-shop-strapi-stripe
+  - 007-state-persist-page-refresh
+  - 012-wall-of-shame
 tags:
   - firebase
   - auth
@@ -165,6 +167,8 @@ users/
     stats:     { bestServiceSeconds }                                 # szerver-validált írás
 ```
 
+> **Séma-bővítés (2026-07-28):** `users/{uid}/purchases/{pushId}` — vásárlási előzmény. **Privát ág** (nincs barát-nézete, ezért nem kapott top-level node-ot, szemben a `walls`-szal). Írási szabálya ugyanaz a `device_map`/uid feltétel, mint a többi ágé. Részletek: [[002-ingame-shop-frontend]] E rész.
+
 ### Firebase Security Rules (kulcsfontosságú)
 ```json
 {
@@ -198,6 +202,7 @@ users/
   - Ha jelenleg **anonymous** → `linkWithCredential` (Google) → a névtelen fiók **fiókká léptetése**, a meglévő uid és minden RTDB adat megmarad.
   - Ha nincs aktív session → sima `signInWithPopup(googleProvider)`.
 - **Kijelentkezés** → `signOut`, majd újra anonymous session.
+  - ⚠️ **Bővítés (2026-07-28):** a `signOut()` + `clearUser()` **csak az auth store-t** üríti. A fiókhoz kötött **lokális** gyorsítótárat (szégyenfal-rekordok, `bestServiceSeconds`, vásárlási előzmény, kredit/birtoklás) az `App.tsx` identitás-figyelője takarítja a `clearUserScopedData()` helperrel — enélkül a következő felhasználó az előzőét látta. Az elv és a teljes leírás: [[007-state-persist-page-refresh]] G. blokk; a kiváltó hiba: [[012-wall-of-shame]] R. blokk.
 - **`useAuthStore`** tartja: `uid`, `displayName`, `photoURL`, `isAnonymous`, `status` (`loading`\|`anonymous`\|`authenticated`).
 
 ### Betöltés bejelentkezéskor (a kérés lényege)
@@ -300,6 +305,7 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 - **Offline / autoplay:** RTDB listener offline gyorsítótárral; a Stripe/redirect utáni visszatéréskor az auth session helyreáll (Firebase perzisztens auth).
 - **`base href`** (`/realtime_space_travel/`) és a Google OAuth **engedélyezett domainek** (Firebase Auth authorized domains) egyeztetése éles/preview környezetre.
 - **Adatvédelem:** Google profil (név, avatar) tárolása → GDPR-tájékoztatás; törlési lehetőség (fiók + RTDB csomópont).
+- **Adatvédelem — megosztott böngésző (2026-07-28):** a `localStorage` **origin-szintű**, a böngészőt használó minden fiók osztozik rajta. Fiókhoz kötött adat perzisztálása ezért **adatszivárgás** a következő felhasználó felé — a kijelentkezés önmagában nem takarít. Elv és megvalósítás: [[007-state-persist-page-refresh]] G. blokk; a konkrét hibaeset: [[012-wall-of-shame]] R. blokk, [[002-ingame-shop-frontend]] E rész.
 
 ---
 
@@ -322,4 +328,6 @@ Mivel a `wallet` és az `inventory` **nem** kliens-írható, a kredit-műveletek
 - [[002-ingame-shop-frontend]] – a **helyi (frontend-only) bolt** ELŐBB valósul meg: a `useShopStore` (localStorage) kredit/birtoklás/aktív-hajó/aktív-zene állapotát ez a terv **per-felhasználós Firebase-mentésre** cseréli (RTDB `wallet`/`inventory`/`settings`), a localStorage offline tükör lesz; a `checkout` kredit-levonása → `purchaseWithCredits` Cloud Function. Az „aktív hajó sebessége" és a „Settings zeneválasztó" integráció közös — ott úgy épül, hogy itt csak a forrás cserélődjön.
 - [[005-ingame-shop-strapi-stripe]] – a birtoklás/kredit írási útja (Stripe→Strapi→Firebase Admin SDK); az „aktív hajó sebessége" integráció közös.
 - [[000-i18n-nyelvesites]] – a `settings.language` a nyelvi réteget vezérli.
+- [[007-state-persist-page-refresh]] – a kijelentkezés/fiókváltás utáni **lokális** takarítás (`clearUserScopedData`) és a perzisztálási elv („localStorage-ban csak eszközszintű adat") itt van rögzítve; a `signOut` ág ennek megfelelően bővült.
+- [[012-wall-of-shame]] – a `walls/{uid}` ág és a fiókváltáskori adatszivárgás javítása (R. blokk).
 - [[016-stripe-fraud-defense]] – a 6. pont **Cloud Function** útjának (`awardWage`, `purchaseWithCredits`) Blaze-mentes alternatívája: külső serverless futtató (Cloudflare Worker) + RTDB REST API, amivel a **Phase-2 rules** (`wallet.write = false`) Spark terven is bevezethető. A terv addig is szigorítja a Phase-1 `wallet` szabályt (írásonkénti növekmény-limit + ütemkorlát) — ezt az `awardWage` későbbi bevezetésekor együtt kell hangolni.

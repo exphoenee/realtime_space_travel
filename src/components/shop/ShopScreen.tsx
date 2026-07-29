@@ -13,9 +13,10 @@ import CartView from "./CartView";
 import CheckoutSuccess from "./CheckoutSuccess";
 import CreditShopView, { PENDING_PURCHASE_KEY } from "./CreditShopView";
 import CreditSuccess from "./CreditSuccess";
+import PurchaseHistory from "./PurchaseHistory";
 import styles from "./ShopScreen.module.css";
 
-type ShopView = "browse" | "cart" | "success" | "creditSuccess";
+type ShopView = "browse" | "cart" | "success" | "creditSuccess" | "history";
 
 /** Max age for a pending purchase (10 minutes). */
 const PENDING_PURCHASE_TTL = 10 * 60 * 1000;
@@ -88,6 +89,9 @@ const ShopScreen = () => {
             .then((newBalance) => {
               // Update local store with the server-returned balance
               useShopStore.getState().setCredits(newBalance);
+              // Track the credit pack purchase for whale ship unlock + history
+              useShopStore.getState().markCreditPackBought(pack.id);
+              useShopStore.getState().recordPurchase(pack.nameKey, "credits", pack.credits, pack.id);
               processingPending = false;
               clear();
               // Show success screen
@@ -147,7 +151,7 @@ const ShopScreen = () => {
         {/* Header */}
         <div className={styles.header}>
           <button className={styles.backButton} onClick={handleBack}>
-            {t("shop.back")}
+            ← {t("shop.back")}
           </button>
           <h1 className={styles.title}>{t("shop.title")}</h1>
           <div className={styles.headerRight}>
@@ -163,9 +167,19 @@ const ShopScreen = () => {
             )}
             <CreditBalance />
             {view === "browse" && (
-              <div className={activeTab === "credits" ? styles.cartButtonGhost : undefined}>
-                <CartButton onClick={() => setView("cart")} />
-              </div>
+              <>
+                <button
+                  type="button"
+                  className={styles.historyBtn}
+                  onClick={() => setView("history")}
+                  title={t("shop.history.title")}
+                >
+                  📜
+                </button>
+                <div className={activeTab === "credits" ? styles.cartButtonGhost : undefined}>
+                  <CartButton onClick={() => setView("cart")} />
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -210,6 +224,9 @@ const ShopScreen = () => {
               newBalance={lastCreditsAmount}
               onContinue={() => { cleanSuccessUrl(); setView("browse"); }}
             />
+          )}
+          {view === "history" && (
+            <PurchaseHistory onBack={() => setView("browse")} />
           )}
         </div>
       </div>

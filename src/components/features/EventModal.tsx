@@ -8,15 +8,22 @@ interface EventModalProps {
   event: EventInstance;
 }
 
-/** Maps EventType to its i18n prefix */
-const I18N_MAP: Record<EventType, string> = {
+/**
+ * Maps EventType to its i18n prefix.
+ *
+ * Partial on purpose: `doom` has no entry because it never reaches this modal.
+ * It is only a marker written to `nextScheduledEvent.eventType` by
+ * `scheduleDestruction()` (driving the debug bar countdown and the Wall of
+ * Shame icon) — `triggerEvent` is only ever called with an EVENT_DEFINITIONS
+ * entry, and `doom` is not one. The lookup below falls back accordingly.
+ */
+const I18N_MAP: Partial<Record<EventType, string>> = {
   horn: "event.horn",
   asteroid: "event.asteroid",
   "rescue-transfer": "event.rescueTransfer",
   "solar-flare": "event.solarFlare",
   rover: "event.rover",
   "fake-instruction": "event.fake",
-  doom: "event.doom",
 };
 
 const RESULT_DISPLAY_MS = 2000;

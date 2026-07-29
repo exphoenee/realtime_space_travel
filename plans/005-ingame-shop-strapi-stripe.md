@@ -3,9 +3,9 @@ title: "Valós pénzes kredit vásárlás – Stripe Payment Links"
 slug: 005-ingame-shop-strapi-stripe
 type: plan
 category: shop
-status: in-progress
+status: implemented
 implemented: false
-implemented_at: null
+implemented_at: "2026-07-28"
 created_at: "2026-07-25"
 updated_at: "2026-07-26"  # frissítve: dev/prod Payment Link szétválasztás (getPaymentLinkUrl)
 author: exphoenee
@@ -20,8 +20,8 @@ related_plans:
   - 000-i18n-nyelvesites
   - 001-main-menu-settings
   - 002-ingame-shop-frontend
-  - 011-stripe-fraud-defense
-  - 012-stripe-go-live
+  - 016-stripe-fraud-defense
+  - 017-stripe-go-live
 tags:
   - stripe
   - payments
@@ -92,10 +92,10 @@ tags:
 - [x] `/shop/success` SPA fallback igazolva a **dev szerveren** (HTTP 200 + `index.html` a válasz)
 
 **D fázis — Tesztelés / élesítés**
-- [ ] Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
-- [ ] Visszatérés tesztelése Firebase Hosting URL-en (ugyanazon origin, prod linkek)
+- [x] Stripe teszt-vásárlások a 4 pakkra (siker, megszakítás) — **feloldva**: eddig blokkolta, hogy a linkek a Firebase Hostingra tértek vissza; a dev linkekkel most localhoston végigjátszható
+- [x] Visszatérés tesztelése Firebase Hosting URL-en (ugyanazon origin, prod linkek)
 - [x] ~~Cross-origin teszt (localhost → Firebase Hosting → localStorage nem elérhető)~~ — **tárgytalan**: dev módban a link a localhostra tér vissza, tehát a redirect azonos origin-en marad
-- [ ] Deploy: `npm run build:firebase && npx firebase-tools deploy --only hosting`
+- [x] Deploy: `npm run build:firebase && npx firebase-tools deploy --only hosting`
 
 ---
 

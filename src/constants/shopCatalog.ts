@@ -288,6 +288,19 @@ export const SHOP_SHIPS: ShipProduct[] = [
     descriptionKey: "shop.ship.asdasd123.desc",
     image: "russian1.webp",
   },
+  {
+    id: "ship-17",
+    category: "ship",
+    name: "LD-42 Long Drop",
+    priceCredits: 10000,
+    priceEur: 100.00,
+    speedKmPerSecond: 0,
+    manufacturer: "Latrina Aerospace",
+    capacity: 2,
+    rangeLy: 0,
+    descriptionKey: "shop.ship.longDrop.desc",
+    image: "potty.webp",
+  },
 ];
 
 export const DEFAULT_SHIP: ShipProduct = {

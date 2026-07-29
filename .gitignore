@@ -29,3 +29,6 @@ dist-ssr
 # Firebase
 .firebase/
 .firebase/hosting.*
+
+# Python cache
+*.pyc

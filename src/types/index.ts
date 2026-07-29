@@ -49,7 +49,8 @@ export type GamePhase =
   | "shop"
   | "wallOfShame"
   | "friends"
-  | "friendWall";
+  | "friendWall"
+  | "chat";
 
 // --- Multiplayer session types ---
 
@@ -99,6 +100,37 @@ export interface FriendRequest {
   at: number;
   /** Current status of the request */
   status: FriendStatus;
+}
+
+// --- Notification types ---
+
+/** Kind of system event a notification represents. */
+export type NotificationType =
+  | "friendRequest"
+  | "friendRequestAccepted"
+  | "friendRequestRejected"
+  | "chatMessage";
+
+/**
+ * A single entry under `notifications/{uid}`.
+ *
+ * Written by the OTHER party (the sender of the friend request, or the peer who
+ * accepted/rejected it), read only by the owner — see the `notifications` rules
+ * in `security.rules.json`.
+ */
+export interface NotificationRecord {
+  /** Push ID (normalized from the RTDB key when the record has no own `id`). */
+  id: string;
+  /** What happened. */
+  type: NotificationType;
+  /** UID of the user who triggered the event. */
+  fromUid: string;
+  /** Nickname / display name of the triggering user, for the toast message. */
+  fromName: string;
+  /** Timestamp when the notification was created. */
+  at: number;
+  /** Whether the owner has already seen it. */
+  read: boolean;
 }
 
 export interface UserPublicProfile {
@@ -186,6 +218,22 @@ export interface OwnedItems {
   ships: string[];
   music: string[];
   exoplanets: string[];
+}
+
+/** A single entry in the player's purchase history */
+export interface PurchaseRecord {
+  /** Unique ID for this purchase */
+  id: string;
+  /** Name of the purchased item */
+  itemName: string;
+  /** Category (ship/music/exoplanet/credits) */
+  category: string;
+  /** How many credits were spent */
+  credits: number;
+  /** Timestamp of the purchase */
+  purchasedAt: number;
+  /** For credit packs: the pack ID (e.g. "credits-starter") */
+  packId?: string;
 }
 
 // --- Wall of Shame types ---

@@ -30,6 +30,15 @@
         ".write": "auth != null && ($uid == auth.uid || newData.hasChild(auth.uid))"
       }
     },
+    "notifications": {
+      "$uid": {
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid",
+        "$notificationId": {
+          ".write": "auth != null && ($uid == auth.uid || newData.child('fromUid').val() === auth.uid)"
+        }
+      }
+    },
     "chats": {
       "$chatId": {
         "participants": {
@@ -37,14 +46,14 @@
           ".write": "auth != null && (data.child(auth.uid).val() === true || newData.child(auth.uid).val() === true)"
         },
         "messages": {
+          ".read": "auth != null && root.child('chats').child($chatId).child('participants').child(auth.uid).val() === true",
           "$msgId": {
-            ".read": "auth != null",
-            ".write": "auth != null"
+            ".write": "auth != null && newData.child('from').val() === auth.uid"
           }
         },
         "unread": {
           "$uid": {
-            ".read": "auth != null && $uid == auth.uid",
+            ".read": "auth != null",
             ".write": "auth != null"
           }
         },
@@ -78,12 +87,12 @@
     },
     "walls": {
       "$uid": {
-        ".read": "auth != null && ($uid == auth.uid || root.child('friends').child(auth.uid).child($uid).val() === true)",
+        ".read": "auth != null && ($uid == auth.uid || root.child('device_map').child($uid).val() == auth.uid || root.child('friends').child(auth.uid).child($uid).val() === true)",
         "failures": {
-          ".write": "auth != null && $uid == auth.uid"
+          ".write": "auth != null && (root.child('device_map').child($uid).val() == auth.uid || $uid == auth.uid)"
         },
         "successes": {
-          ".write": "auth != null && $uid == auth.uid"
+          ".write": "auth != null && (root.child('device_map').child($uid).val() == auth.uid || $uid == auth.uid)"
         }
       }
     },
@@ -103,6 +112,9 @@
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
         "stats": {
+          ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
+        },
+        "purchases": {
           ".write": "auth != null && (root.child('device_map').child($key).val() == auth.uid || $key == auth.uid)"
         },
         "failures": {

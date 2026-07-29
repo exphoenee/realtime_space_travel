@@ -4,6 +4,7 @@ import type { CartItem, ShipProduct, ExoplanetProduct } from "../../types";
 import { DEFAULT_SHIP, SHOP_SHIPS, SHOP_MUSIC, BASE_EXOPLANETS } from "../../constants/shopCatalog";
 import { mapExoplanet } from "../../constants/shopCatalog";
 import type { ExoplanetRaw } from "../../constants/shopCatalog";
+import useShopStore from "../../state/useShopStore";
 import ProductCard from "./ProductCard";
 import ExoplanetPreviewModal from "./ExoplanetPreviewModal";
 import ShipPreviewModal from "./ShipPreviewModal";
@@ -54,15 +55,24 @@ const ProductGrid = ({ category, onAddToCart }: ProductGridProps) => {
     }));
   }, [rawExoplanets]);
 
+  const boughtCreditPacks = useShopStore((s) => s.boughtCreditPacks);
+  const whaleUnlocked = boughtCreditPacks.length >= 4;
+
   const products = useMemo(() => {
     // Exoplanets: JSON exoplanets wrapped with raw data, PLUS base planets as flat items
     if (category === "exoplanets")
       return [...BASE_EXOPLANETS, ...exoplanets];
-    if (category === "ships")
-      return [DEFAULT_SHIP, ...SHOP_SHIPS];
+    if (category === "ships") {
+      // Hide the whale ship (LD-42 Long Drop) until all 4 credit packs are bought
+      const ships = [DEFAULT_SHIP, ...SHOP_SHIPS];
+      if (!whaleUnlocked) {
+        return ships.filter((s) => s.id !== "ship-17");
+      }
+      return ships;
+    }
     if (category === "music") return SHOP_MUSIC;
     return [];
-  }, [category, exoplanets]);
+  }, [category, exoplanets, whaleUnlocked]);
 
   const filtered = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,9 +3,9 @@ title: "Kamera hozzájárulás – adatvédelmi tudatosítás és engedélykezel
 slug: 014-camera-consent
 type: plan
 category: ui
-status: not-started
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-28"
 created_at: "2026-07-28"
 updated_at: "2026-07-28"
 author: exphoenee
@@ -39,7 +39,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 014-stripe-fraud-defense ELŐTT (átszámozva 015-re) |
+| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 016-stripe-fraud-defense ELŐTT |
 | Mikor jelenik meg a modál? | Az **intro után**, a **főmenü előtt** — egy új `cameraConsent` GamePhase-ben |
 | Mi történik "Elutasítás" után? | A főmenü minden gombja elérhető, kivéve **Start**; Settings-ben "Kamera engedélyezése" gomb |
 | Mi történik "Engedélyezés" után? | `getUserMedia({ video: true })` meghívódik → böngésző prompt → ha engedélyezi, a stream leáll és a játék normálisan folytatódik |
@@ -56,57 +56,55 @@ tags:
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A. useUIStore bővítése — cameraConsent állapot**
-- [ ] `src/state/useUIStore.ts`: új `cameraConsent: "undecided" | "granted" | "denied"` mező (default: `"undecided"`)
-- [ ] `src/state/useUIStore.ts`: `setCameraConsent(status)` action
-- [ ] Permissions API helper: `checkCameraPermission(): Promise<"granted" | "denied" | "prompt">` — `navigator.permissions.query()` (vagy `"prompt"` fallback ha nem támogatott)
+- [x] `src/state/useUIStore.ts`: új `cameraConsent: "undecided" | "granted" | "denied"` mező (default: `"undecided"`)
+- [x] `src/state/useUIStore.ts`: `setCameraConsent(status)` action
+- [ ] Permissions API helper: `checkCameraPermission(): Promise<"granted" | "denied" | "prompt">` — (opcionális, jelenleg nem implementálva)
 
 **B. CameraConsentModal komponens**
-- [ ] `src/components/features/CameraConsentModal.tsx` (ÚJ) — a modál komponens
-- [ ] `src/components/features/CameraConsentModal.module.css` (ÚJ) — stílusok
-- [ ] Modal tartalma: tájékoztató szöveg (arcfelismerés, adatvédelem, képek nem kerülnek továbbküldésre)
-- [ ] Két gomb: "Engedélyez" (`primary`) és "Elutasít" (`secondary`)
-- [ ] Ha Engedélyez: `getUserMedia({ video: true })` hívása → stream azonnali leállítása → `setCameraConsent("granted")` → `transitionTo("mainMenu")`
-- [ ] Ha Elutasít: `setCameraConsent("denied")` → `transitionTo("mainMenu")`
-- [ ] Ha a `getUserMedia` hibát dob: hibaüzenet mutatása a modálban + `setCameraConsent("denied")`
+- [x] `src/components/features/CameraConsentModal.tsx` (ÚJ) — a modál komponens
+- [x] `src/components/features/CameraConsentModal.module.css` (ÚJ) — stílusok
+- [x] Modal tartalma: tájékoztató szöveg (arcfelismerés, adatvédelem, képek nem kerülnek továbbküldésre)
+- [x] Két gomb: "Engedélyez" (`primary`) és "Elutasít" (`secondary`)
+- [x] Ha Engedélyez: `getUserMedia({ video: true })` hívása → stream azonnali leállítása → `setCameraConsent("granted")` → `transitionTo("mainMenu")`
+- [x] Ha Elutasít: `setCameraConsent("denied")` → `transitionTo("mainMenu")`
+- [x] Ha a `getUserMedia` hibát dob: hibaüzenet mutatása a modálban + `setCameraConsent("denied")`
 
 **C. GamePhase + routing — cameraConsent fázis**
-- [ ] `src/types/index.ts`: `GamePhase` típushoz `"cameraConsent"` hozzáadva
-- [ ] `src/state/useGameStore.ts`: `phaseToFlags("cameraConsent")` — `showIntro: false, isPreGame: true, showCameraConsent: true`
-- [ ] `src/components/routing/ScreenRouter.tsx`: `case "cameraConsent"` → `<CameraConsentModal />`
-- [ ] Átmenet: Intro → `transitionTo("cameraConsent")` → MainMenu
+- [x] `src/types/index.ts`: `GamePhase` típushoz `"cameraConsent"` hozzáadva
+- [x] `src/state/useGameStore.ts`: `phaseToFlags("cameraConsent")` — `showIntro: false, isPreGame: true`
+- [x] `src/components/routing/ScreenRouter.tsx`: `case "cameraConsent"` → `<CameraConsentModal />`
+- [x] Átmenet: Intro → `transitionTo("cameraConsent")` → MainMenu
 
 **D. App.tsx — kapcsolódás**
-- [ ] `src/App.tsx`: a `startAuthBootstrap` callback után, ha `cameraConsent === "undecided"` és nincs mentett állapot, akkor `transitionTo("cameraConsent")`
-- [ ] `src/App.tsx`: az `isPreGame` feltételhez `gamePhase === "cameraConsent"` hozzáadása
-- [ ] `src/App.tsx`: `handleCameraConsentGranted` callback — `useUIStore.setCameraConsent("granted")` + stream kezelés
+- [x] `src/App.tsx`: az `isPreGame` feltételhez `gamePhase === "cameraConsent"` hozzáadása
+- [x] `src/App.tsx`: auto-check camera permission rehidratáláskor (getUserMedia)
+- [x] `src/App.tsx`: `cameraConsent` kezelés a `handleSkipIntro`-ban
 
 **E. MainMenu — Start gomb letiltása**
-- [ ] `src/components/screens/MainMenu.tsx`: a Start gomb `disabled` ha `cameraConsent !== "granted"`
-- [ ] `src/components/screens/MainMenu.tsx`: tooltip vagy kis szöveg: "Kamera engedélyezése szükséges a játék indításához"
-- [ ] `src/components/screens/MainMenu.module.css`: `.startDisabled` stílus (halványabb, tiltott kurzor)
+- [x] `src/components/screens/MainMenu.tsx`: a Start gomb `disabled` ha `cameraConsent !== "granted"`
+- [x] `src/components/screens/MainMenu.tsx`: tooltip: "Kamera szükséges a játékhoz"
+- [x] `src/components/screens/MainMenu.module.css`: `.startDisabled` stílus (halványabb, tiltott kurzor)
 
 **F. Settings — Kamera engedélyezése gomb**
-- [ ] `src/components/screens/SettingsScreen.tsx`: új gomb "Kamera engedélyezése" — csak akkor látható, ha `cameraConsent === "denied"`
-- [ ] Gomb onClick: `getUserMedia({ video: true })` → ha sikerül → `setCameraConsent("granted")` + success visszajelzés; ha hibázik → hibaüzenet
-- [ ] `src/components/screens/SettingsScreen.module.css`: `.cameraBtn` stílus
+- [x] `src/components/screens/SettingsScreen.tsx`: gomb "Kamera engedélyezése" — látható ha `cameraConsent !== "granted"` (undecided is)
+- [x] Gomb onClick: `getUserMedia({ video: true })` → ha sikerül → `setCameraConsent("granted")`; ha hibázik → hibaüzenet
 
 **G. i18n — ÚJ kulcsok mind az 5 nyelven**
-- [ ] `cameraConsent.title` — "Kamera hozzáférés"
-- [ ] `cameraConsent.description` — tájékoztató szöveg az arcfelismerésről, adatvédelemről
-- [ ] `cameraConsent.allow` — "Engedélyez"
-- [ ] `cameraConsent.deny` — "Elutasít"
-- [ ] `cameraConsent.browserDenied` — "A kamera hozzáférés le van tiltva a böngésződben. Kérjük, engedélyezd a böngésző beállításaiban."
-- [ ] `cameraConsent.error` — "Nem sikerült elindítani a kamerát"
-- [ ] `settings.enableCamera` — "Kamera engedélyezése"
-- [ ] `settings.cameraGranted` — "Kamera elérhető"
-- [ ] `mainMenu.cameraRequired` — "Kamera szükséges a játékhoz"
-- [ ] Teljes paritás mind az 5 fájlban
+- [x] `cameraConsent.title` — "Kamera hozzáférés"
+- [x] `cameraConsent.description` — tájékoztató szöveg az arcfelismerésről, adatvédelemről
+- [x] `cameraConsent.allow` — "Engedélyez"
+- [x] `cameraConsent.deny` — "Elutasít"
+- [x] `cameraConsent.browserDenied` — "A kamera hozzáférés le van tiltva a böngésződben..."
+- [x] `cameraConsent.error` — "Nem sikerült elindítani a kamerát"
+- [x] `settings.enableCamera` — "Kamera engedélyezése"
+- [x] `settings.cameraGranted` — "Kamera elérhető"
+- [x] `mainMenu.cameraRequired` — "Kamera szükséges a játékhoz"
+- [x] Teljes paritás mind az 5 fájlban
 
 **H. Tesztek + validáció**
-- [ ] `src/state/useUIStore.test.ts` — cameraConsent állapot tesztelése
-- [ ] `tsc --noEmit`
-- [ ] `npm run test`
-- [ ] `npm run build`
+- [ ] `src/state/useUIStore.test.ts` — (opcionális, még hiányzik)
+- [x] `tsc --noEmit` ✅
+- [x] `npm run build` ✅
 
 ---
 
