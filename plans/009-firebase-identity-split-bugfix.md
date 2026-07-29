@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-26"
 created_at: "2026-07-26"
-updated_at: "2026-07-26"
+updated_at: "2026-07-28"
 author: exphoenee
 step: 9
 phases: []
@@ -16,8 +16,9 @@ dependencies:
 related_plans:
   - 003-firebase-auth-settings
   - 005-ingame-shop-strapi-stripe
-  - 011-stripe-fraud-defense
-  - 012-stripe-go-live
+  - 012-wall-of-shame
+  - 016-stripe-fraud-defense
+  - 017-stripe-go-live
 tags:
   - firebase
   - auth
@@ -394,8 +395,8 @@ security.rules.json                        # séma-komment: profile.migratedFrom
 database.rules.json                        # regenerálva (tartalmi változás NINCS)
 .claude/lessons-learned.md                 # bejegyzés a fallback-anti-patternről
 plans/004-firebase-auth-bugfix.md          # kereszthivatkozás (additív)
-plans/011-stripe-fraud-defense.md          # kereszthivatkozás (a manage-roadmap agent rendezi a YAML-t)
-plans/012-stripe-go-live.md                # kereszthivatkozás (a manage-roadmap agent rendezi a YAML-t)
+plans/016-stripe-fraud-defense.md          # kereszthivatkozás (a manage-roadmap agent rendezi a YAML-t)
+plans/017-stripe-go-live.md                # kereszthivatkozás (a manage-roadmap agent rendezi a YAML-t)
 ```
 
 ### RTDB séma-kiegészítés (nincs rules-változás)
