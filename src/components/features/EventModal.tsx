@@ -32,6 +32,7 @@ const EventModal = ({ event }: EventModalProps) => {
   const { t } = useTranslation();
   const resolveEvent = useGameStore((s) => s.resolveEvent);
   const dismissEvent = useGameStore((s) => s.dismissEvent);
+  const triggerEvasiveManeuver = useGameStore((s) => s.triggerEvasiveManeuver);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionDoneRef = useRef(false);
@@ -201,7 +202,10 @@ const EventModal = ({ event }: EventModalProps) => {
                 <button
                   type="button"
                   className={`${styles.actionBtn} ${styles.primaryBtn}`}
-                  onClick={handleSuccess}
+                  onClick={() => {
+                    triggerEvasiveManeuver();
+                    handleSuccess();
+                  }}
                   disabled={actionDoneRef.current}
                 >
                   {t("event.evasiveManeuver")}

@@ -45,6 +45,8 @@ interface GameState {
   nextScheduledEvent: { eventType: EventType; triggerAt: number } | null;
   /** Timestamp (Date.now()) when the ship will be destroyed after ignoring rescue transfer, or null */
   pendingDestructionAt: number | null;
+  /** Timestamp of the last evasive maneuver trigger — Starfield reads this for drift animation */
+  evasiveManeuverAt: number;
 
   // --- Social / Multiplayer ---
   /** Current multiplayer session, or null if not in one */
@@ -107,6 +109,8 @@ interface GameState {
   cancelDestruction: () => void;
   /** Set the next scheduled event preview (for debug bar) */
   setNextScheduledEvent: (info: { eventType: EventType; triggerAt: number } | null) => void;
+  /** Trigger a 1-3 second evasive drift animation in the starfield */
+  triggerEvasiveManeuver: () => void;
 
   // --- phase-based transitions ---
   transitionTo: (phase: GamePhase) => void;
@@ -298,6 +302,7 @@ const useGameStore = create<GameState>()(
       asteroidWarning: false,
       nextScheduledEvent: null,
       pendingDestructionAt: null,
+      evasiveManeuverAt: 0,
 
       // --- Social / Multiplayer ---
       multiplayerSession: null,
@@ -517,6 +522,7 @@ const useGameStore = create<GameState>()(
       cancelDestruction: () =>
         set({ pendingDestructionAt: null, nextScheduledEvent: null }),
       setNextScheduledEvent: (info) => set({ nextScheduledEvent: info }),
+      triggerEvasiveManeuver: () => set({ evasiveManeuverAt: Date.now() }),
 
       // --- reset cockpit variant when starting a mission ---
       startMission: (destination, shipSpeedKmPerSecond) =>
