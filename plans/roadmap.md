@@ -7,8 +7,8 @@ total_plans: 18
 implemented: 15
 in_progress: 1
 not_started: 2
-tasks_done: 761
-tasks_total: 938
+tasks_done: 795
+tasks_total: 974
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -119,8 +119,8 @@ plans:
     slug: "015-toast-notification"
     status: "implemented"
     category: "ui"
-    tasks_done: 35
-    tasks_total: 36
+    tasks_done: 69
+    tasks_total: 72
     dependencies: [013-social-multiplayer]
   - step: 16
     slug: "016-stripe-fraud-defense"
@@ -147,7 +147,7 @@ plans:
 ## Project Status
 
 - **Plans:** 15 implemented · 1 in progress · 2 not started (of 18)
-- **Tasks:** 761/938 done (81%)
+- **Tasks:** 795/974 done (82%)
 
 ## Overview
 
@@ -168,7 +168,7 @@ plans:
 | 12 | Szégyenfal | ✅ Implemented | 109/109 | — | ui | 11 |
 | 13 | Social és multiplayer | 🟨 In progress | 93/121 | — | core | 3, 10, 11, 12 |
 | 14 | Kamera hozzájárulás | ✅ Implemented | 33/35 | — | ui | 1 |
-| 15 | Toast notification rendszer | ✅ Implemented | 35/36 | — | ui | 13 |
+| 15 | Toast notification rendszer | ✅ Implemented | 69/72 | — | ui | 13 |
 | 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
 
@@ -182,7 +182,7 @@ plans:
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
 - **Step 13 — Social és multiplayer** (93/121): Chat játék közben (kisebb panel, jobb alsó sarok)
 - **Step 14 — Kamera hozzájárulás** (33/35): Permissions API helper: `checkCameraPermission(): Promise<"granted" | "denied" | "prompt">` — (opcionális, jelenleg nem implementálva)
-- **Step 15 — Toast notification rendszer** (35/36): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél
+- **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
 - **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 
