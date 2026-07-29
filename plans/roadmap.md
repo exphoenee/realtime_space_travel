@@ -5,9 +5,9 @@
 generated_at: "2026-07-29"
 total_plans: 20
 implemented: 15
-in_progress: 1
-not_started: 4
-tasks_done: 845
+in_progress: 2
+not_started: 3
+tasks_done: 958
 tasks_total: 1292
 plans:
   - step: 0
@@ -145,9 +145,9 @@ plans:
     dependencies: [015-toast-notification]
   - step: 19
     slug: "019-starfield-realism"
-    status: "not-started"
+    status: "in-progress"
     category: "ui"
-    tasks_done: 0
+    tasks_done: 113
     tasks_total: 133
     dependencies: [011-difficulty-event-system]
 ---
@@ -160,8 +160,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 15 implemented · 1 in progress · 4 not started (of 20)
-- **Tasks:** 845/1292 done (65%)
+- **Plans:** 15 implemented · 2 in progress · 3 not started (of 20)
+- **Tasks:** 958/1292 done (74%)
 
 ## Overview
 
@@ -186,7 +186,7 @@ plans:
 | 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
 | 18 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
-| 19 | Élethűbb csillagmező (Starfield realizmus) | ⬜ Not started | 0/133 | — | ui | 11 |
+| 19 | Élethűbb csillagmező (Starfield realizmus) | 🟨 In progress | 113/133 | — | ui | 11 |
 
 ## Next Open Tasks
 
@@ -202,7 +202,7 @@ plans:
 - **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - **Step 18 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
-- **Step 19 — Élethűbb csillagmező (Starfield realizmus)** (0/133): Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s) — a későbbi vizuális összehasonlításhoz
+- **Step 19 — Élethűbb csillagmező (Starfield realizmus)** (113/133): Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s) — a későbbi vizuális összehasonlításhoz
 
 ## Insertion Guide
 

@@ -150,6 +150,31 @@ export interface Star {
   z: number;
 }
 
+/**
+ * A star as the canvas render loop needs it: position plus the appearance data
+ * drawn once at creation and re-drawn on reset.
+ *
+ * Kept separate from {@link Star} rather than widening it with optional fields,
+ * so the public `Star` stays backward-compatible while the draw loop works with
+ * required fields and no `??` fallbacks in the hot path.
+ */
+export interface RenderStar extends Star {
+  /** Red channel, 0…255. */
+  r: number;
+  /** Green channel, 0…255. */
+  g: number;
+  /** Blue channel, 0…255. */
+  b: number;
+  /**
+   * Pre-built opaque `rgb(...)` string, **shared per spectral class** — one of
+   * only six instances in the app. Never rebuilt; alpha comes from
+   * `ctx.globalAlpha`, so the draw loop allocates nothing.
+   */
+  color: string;
+  /** Relative brightness, 0…1. Scales both radius and opacity. */
+  mag: number;
+}
+
 export interface Destination {
   name: string;
   travelYears: number;
