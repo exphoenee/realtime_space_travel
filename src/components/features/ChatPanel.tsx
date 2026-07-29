@@ -31,6 +31,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
   const [friendTyping, setFriendTyping] = useState(false);
   const [inputWarn, setInputWarn] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chatIdRef = useRef(chatId);
   chatIdRef.current = chatId;
@@ -111,6 +112,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
       console.error("Failed to send message:", err);
     } finally {
       setIsSending(false);
+      // Keep the caret in the field so a reply can be typed straight away.
+      // Belt-and-braces: the input is no longer disabled while sending (that
+      // was what dropped focus), but an async re-render could still steal it.
+      inputRef.current?.focus();
     }
   };
 
@@ -198,6 +203,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
       <div className={styles.inputArea}>
         <div className={styles.inputWrapper}>
           <input
+            ref={inputRef}
             type="text"
             className={`${styles.input} ${inputWarn ? styles.inputWarn : ""}`}
             placeholder={t("chat.inputPlaceholder")}
@@ -216,7 +222,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ authUid, friendUid, friendName, o
               }, 3000);
             }}
             onKeyDown={handleKeyDown}
-            disabled={isSending}
+            // NOT disabled while sending: a disabled input is blurred by the
+            // browser and does not regain focus, which forced the player to
+            // click back in after every Enter. Double-sends are already
+            // prevented by the `isSending` guard in handleSend.
             autoFocus
           />
           {inputWarn && (
