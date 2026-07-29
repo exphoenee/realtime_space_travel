@@ -181,6 +181,9 @@ const App: React.FC = () => {
         if (s.difficulty !== undefined && s.difficulty !== ui.difficulty) {
           ui.setDifficulty(s.difficulty as any);
         }
+        if (s.cameraConsent !== undefined && s.cameraConsent !== ui.cameraConsent) {
+          ui.setCameraConsent(s.cameraConsent);
+        }
         if (s.language && s.language !== i18n.language) {
           i18n.changeLanguage(s.language);
         }
@@ -325,31 +328,21 @@ const App: React.FC = () => {
 
   // After Zustand persist rehydrates the saved game state on page refresh,
   // re-apply the boolean flags (showIntro, isPaused, isAttentionLost, etc.)
-  // so they are consistent with the restored gamePhase. Also check if the
-  // browser already has camera permission and auto-grant if so.
+  // so they are consistent with the restored gamePhase.
+  //
+  // NOTE: Camera permission is NOT requested here — the browser prompt must
+  // only appear AFTER the user has seen and accepted our camera consent UI
+  // (CameraConsentScreen). The getUserMedia call lives exclusively in the
+  // CameraConsentScreen "Allow" handler.
   useEffect(() => {
     // Use a macrotask so it runs after persist has finished rehydrating
     // (which happens in a microtask after create()).
-    const timer = setTimeout(async () => {
+    const timer = setTimeout(() => {
       const gs = useGameStore.getState();
-      const ui = useUIStore.getState();
 
-      // Re-apply phase flags
+      // Re-apply phase flags only — never call getUserMedia here
       if (gs.gamePhase !== "intro") {
         gs.transitionTo(gs.gamePhase);
-      }
-
-      // Auto-check camera permission if undecided and browser already has
-      // permission from a previous session (browser-level grant persists).
-      if (ui.cameraConsent === "undecided") {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          stream.getTracks().forEach((track) => track.stop());
-          ui.setCameraConsent("granted");
-        } catch {
-          // Browser denied — stay undecided; the camera consent modal or
-          // Settings button will handle it.
-        }
       }
     }, 0);
     return () => clearTimeout(timer);
@@ -473,7 +466,8 @@ const App: React.FC = () => {
 
   const handleSkipIntro = useCallback(() => {
     const cc = useUIStore.getState().cameraConsent;
-    if (cc === "undecided") {
+    // If consent is not granted (undecided or denied), show the consent screen
+    if (cc !== "granted") {
       useGameStore.getState().transitionTo("cameraConsent");
     } else {
       useGameStore.getState().transitionTo("mainMenu");

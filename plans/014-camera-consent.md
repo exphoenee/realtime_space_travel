@@ -1,21 +1,24 @@
 ---
-title: "Kamera hozzájárulás – adatvédelmi tudatosítás és engedélykezelés"
+title: "Kamera hozzájárulás – UI screen + Firebase perzisztencia + böngésző engedély kezelés"
 slug: 014-camera-consent
 type: plan
 category: ui
 status: implemented
 implemented: true
-implemented_at: "2026-07-28"
+implemented_at: "2026-07-29"
 created_at: "2026-07-28"
-updated_at: "2026-07-28"
+updated_at: "2026-07-29"
 author: exphoenee
 step: 14
 phases: []
 dependencies:
   - 001-main-menu-settings
+  - 003-firebase-auth-settings
 related_plans:
-  - 005-ingame-shop-strapi-stripe
+  - 002-ingame-shop-frontend
+  - 007-state-persist-page-refresh
   - 011-difficulty-event-system
+  - 013-social-multiplayer
 tags:
   - ui
   - camera
@@ -23,15 +26,25 @@ tags:
   - consent
   - i18n
   - settings
+  - firebase
 ---
 
-# Kamera hozzájárulás – adatvédelmi tudatosítás és engedélykezelés
+# Kamera hozzájárulás – UI screen + Firebase perzisztencia + böngésző engedély kezelés
 
-**Cél:** Az intro után, de a főmenü megjelenése előtt egy felvilágosító modál tájékoztatja a felhasználót, hogy a játék arcfelismerést használ, a képek nem kerülnek továbbküldésre vagy feldolgozásra, kizárólag a játék céljából használódnak fel. Két gomb: **Engedélyez** vagy **Elutasít**. Ha a user elutasítja, a főmenüben minden gomb elérhető, kivéve a **Start** (játék indítása). A Settings-ben ilyenkor megjelenik egy "Kamera engedélyezése" gomb. Ha a user az engedélyezést választja, az app meghívja a `getUserMedia`-t, ami a böngésző natív promptját triggereli — a user már felkészülten, az app-beli tájékoztató után látja azt.
+**Cél:** Az intro után egy teljes képernyős **Camera Consent Screen** (GamePhase-alapú oldal, nem modál) tájékoztatja a felhasználót, hogy a játék arcfelismerést használ. A consent állapot **Firebase RTDB-be** kerül mentésre (`users/{rtdbKey}/settings/cameraConsent`), hogy oldalfrissítés után is megmaradjon, és vendég (`isAnonymous`) usereknél is ugyanúgy működjön.
 
-> ⚠️ **Technikai korlát:** A böngésző natív kamera promptja (`getUserMedia`) nem kerülhető meg teljesen — ez biztonsági funkció. Az app-beli modál felkészíti a usert, mielőtt a böngésző promptja megjelenne. Ha a user az app-ban "Elutasít"-ra kattint, a `getUserMedia` SOHA nem hívódik meg → a böngésző promptja sem jelenik meg soha.
->
-> ⚠️ **Ez a terv a [[001-main-menu-settings]] tervre épül** — a főmenüt és a Settings képernyőt módosítja. Új GamePhase-t is bevezet (`cameraConsent`).
+**Folyamat:**
+1. Intro → ha a DB-ben `cameraConsent` **nincs** vagy `"undecided"` → **CameraConsentScreen** (teljes oldal)
+2. Két választás: **Engedélyez** vagy **Elutasít** (UI szintű hozzájárulás)
+3. **Engedélyez** → `getUserMedia({ video: true })` → böngésző natív prompt
+   - **Böngészőben Engedélyezve** → `cameraConsent = "granted"` DB-be → `transitionTo("mainMenu")` (Start gomb aktív)
+   - **Böngészőben Elutasítva** → `cameraConsent = "denied"` DB-be → `transitionTo("mainMenu")` (Start gomb inaktív)
+4. **Elutasít** (UI szinten) → `cameraConsent = "denied"` DB-be → `transitionTo("mainMenu")` (Start gomb inaktív)
+5. **Főmenü Start gomb**: ha `cameraConsent !== "granted"` → **átnavigál** a CameraConsentScreen-re (nem csak letiltja a gombot!)
+6. **Settings**: "Kamera engedélyezése" gomb ha `cameraConsent === "denied"` → újra megnyitja a CameraConsentScreen-t
+7. **F5 oldalfrissítés**: mivel GamePhase (`"cameraConsent"`), a Zustand persist megőrzi a fázist → ugyanazt az oldalt látja újra
+
+> ⚠️ **Különbség a korábbi implementációhoz képest:** A korábbi verzió a consent állapotot csak `useUIStore`-ben (Zustand lokális state) tárolta, NEM Firebase-ben. Ezentúl a `users/{rtdbKey}/settings/cameraConsent` RTDB mező a source of truth. A `useUIStore` lokális gyorsítótárként szolgál, és a Firebase-ből való betöltéskor szinkronizálódik.
 
 ---
 
@@ -39,15 +52,20 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 016-stripe-fraud-defense ELŐTT |
-| Mikor jelenik meg a modál? | Az **intro után**, a **főmenü előtt** — egy új `cameraConsent` GamePhase-ben |
-| Mi történik "Elutasítás" után? | A főmenü minden gombja elérhető, kivéve **Start**; Settings-ben "Kamera engedélyezése" gomb |
-| Mi történik "Engedélyezés" után? | `getUserMedia({ video: true })` meghívódik → böngésző prompt → ha engedélyezi, a stream leáll és a játék normálisan folytatódik |
-| Settings gomb viselkedése | Ha `cameraConsent` === `denied`, megjelenik egy "Kamera engedélyezése" gomb → `getUserMedia` újrapróbálkozás |
-| Elutasítás után újra lehet próbálni? | Igen — a Settings-ben bármikor, és a Start gomb is újra próbálkozhat (a Settings-en keresztül) |
-| Állapot tárolása | `useUIStore.cameraConsent: "undecided" | "granted" | "denied"` — alapértelmezett `"undecided"` |
-| Böngésző szintű tiltás detektálása | `navigator.permissions.query({ name: 'camera' })` — ha `denied`, a user értesítést kap, hogy a böngésző beállításaiban engedélyezze |
-| i18n | `cameraConsent.*` kulcsok mind az 5 nyelven |
+| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 015-toast-notification / 016 előtt |
+| Hol él a consent állapot? | **Firebase RTDB** `users/{rtdbKey}/settings/cameraConsent` — a `useUIStore.cameraConsent` lokális cache |
+| Milyen típusú a screen? | **Teljes képernyős GamePhase oldal** (`"cameraConsent"` fázis), nem modál. F5 után is ugyanaz az oldal jön vissza |
+| Mikor jelenik meg? | Intro után, ha `cameraConsent !== "granted"` a DB-ben (azaz `"undecided"` vagy `"denied"`) |
+| Mi történik UI "Elutasítás" után? | `cameraConsent = "denied"` DB-be → főmenü, Start gomb átnavigál a CameraConsentScreen-re |
+| Mi történik UI "Engedélyezés" után? | `getUserMedia` hívás → böngésző prompt |
+| Mi történik ha a böngésző promptot ELUTASÍTJA? | `cameraConsent = "denied"` DB-be → főmenü (a böngészőszintű tiltás felülírja az UI szándékot) |
+| Mi történik ha a böngésző promptot ENGEDÉLYEZI? | `cameraConsent = "granted"` DB-be → főmenü, Start gomb működik |
+| Start gomb viselkedése `"denied"` esetén? | **Nem** csak letiltja a gombot, hanem átnavigál a `"cameraConsent"` fázisra → a user újra látja a teljes képernyős tájékoztatót és újra dönthet |
+| Start gomb viselkedése `"granted"` esetén? | Normál: `transitionTo("missionSelect")` |
+| Settings gomb "Kamera engedélyezése" | Ha `cameraConsent === "denied"` → `transitionTo("cameraConsent")` — ugyanaz a screen |
+| Vendég (anonim) user | **Ugyanúgy működik.** A `rtdbKey` vendégnél a `deviceId`, a `users/{deviceId}/settings/cameraConsent` alá ír. Nincs különbség a flow-ban |
+| Perzisztencia oldalfrissítéskor | A `useGameStore` partialize menti a `gamePhase`-t, így F5 után a `"cameraConsent"` fázis visszaáll. A `useAuthStore` betöltése után a `cameraConsent` a Firebase-ből szinkronizálódik a `useUIStore`-ba |
+| i18n | `cameraConsent.*` + `settings.enableCamera` + `mainMenu.cameraRequired` kulcsok mind az 5 nyelven |
 
 ---
 
@@ -55,132 +73,157 @@ tags:
 
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
-**A. useUIStore bővítése — cameraConsent állapot**
-- [x] `src/state/useUIStore.ts`: új `cameraConsent: "undecided" | "granted" | "denied"` mező (default: `"undecided"`)
-- [x] `src/state/useUIStore.ts`: `setCameraConsent(status)` action
-- [ ] Permissions API helper: `checkCameraPermission(): Promise<"granted" | "denied" | "prompt">` — (opcionális, jelenleg nem implementálva)
+**A. Firebase UserNode bővítése — cameraConsent mező**
+- [x] `src/firebase/userData.ts`: `UserNode.settings` kibővítése `cameraConsent` mezővel
+- [x] `src/firebase/userData.ts`: `getDefaultUserNode()`-ban `settings.cameraConsent = "undecided"` alapértelmezett
+- [x] `src/firebase/userData.ts`: `updateUserSettings`-ben `cameraConsent` mező támogatása
 
-**B. CameraConsentModal komponens**
-- [x] `src/components/features/CameraConsentModal.tsx` (ÚJ) — a modál komponens
-- [x] `src/components/features/CameraConsentModal.module.css` (ÚJ) — stílusok
-- [x] Modal tartalma: tájékoztató szöveg (arcfelismerés, adatvédelem, képek nem kerülnek továbbküldésre)
-- [x] Két gomb: "Engedélyez" (`primary`) és "Elutasít" (`secondary`)
-- [x] Ha Engedélyez: `getUserMedia({ video: true })` hívása → stream azonnali leállítása → `setCameraConsent("granted")` → `transitionTo("mainMenu")`
-- [x] Ha Elutasít: `setCameraConsent("denied")` → `transitionTo("mainMenu")`
-- [x] Ha a `getUserMedia` hibát dob: hibaüzenet mutatása a modálban + `setCameraConsent("denied")`
+**B. useUIStore — cameraConsent local cache + Firebase sync helper**
+- [x] `cameraConsent` mező megtartva (lokális cache)
+- [x] Új `persistCameraConsent(status)` action — ír a Firebase-be + frissíti a lokális state-et
+- [x] `CameraConsent` típus exportálva
 
-**C. GamePhase + routing — cameraConsent fázis**
-- [x] `src/types/index.ts`: `GamePhase` típushoz `"cameraConsent"` hozzáadva
-- [x] `src/state/useGameStore.ts`: `phaseToFlags("cameraConsent")` — `showIntro: false, isPreGame: true`
-- [x] `src/components/routing/ScreenRouter.tsx`: `case "cameraConsent"` → `<CameraConsentModal />`
-- [x] Átmenet: Intro → `transitionTo("cameraConsent")` → MainMenu
+**C. CameraConsentScreen komponens (új, teljes oldal)**
+- [x] `CameraConsentScreen.tsx` + `CameraConsentScreen.module.css` létrehozva
+- [x] Elrendezés: full-screen dark gradient háttér + starfield animáció, középen glass-morphism panel
+- [x] Tartalom: 📷 ikon, cím, leírás (adatvédelem, arcfelismerés, képek nem kerülnek szerverre)
+- [x] Két gomb: "Engedélyez" (primary, kék gradient) és "Elutasít" (secondary, szürke)
+- [x] Engedélyez flow: `getUserMedia` → siker esetén `persistCameraConsent("granted")` → `mainMenu`
+- [x] Hiba flow: `persistCameraConsent("denied")` + hibaüzenet → `mainMenu`
+- [x] Elutasít flow: `persistCameraConsent("denied")` → `mainMenu`
+- [x] Hiba banner (shake animációval), spinner processing állapot
+- [x] Animációk: fadeIn + slideUp, star twinkle
+- [x] Reszponzív: mobile-on flex-direction: column a gomboknak
 
-**D. App.tsx — kapcsolódás**
-- [x] `src/App.tsx`: az `isPreGame` feltételhez `gamePhase === "cameraConsent"` hozzáadása
-- [x] `src/App.tsx`: auto-check camera permission rehidratáláskor (getUserMedia)
-- [x] `src/App.tsx`: `cameraConsent` kezelés a `handleSkipIntro`-ban
+**D. GamePhase + routing — cameraConsent fázis**
+- [x] `GamePhase` típusban `"cameraConsent"` már szerepelt ✅
+- [x] `phaseToFlags("cameraConsent")` már megvolt ✅
+- [x] `ScreenRouter.tsx`: `"cameraConsent"` → `<CameraConsentScreen />` (modál helyett)
+- [x] Átmenet: Intro → `transitionTo("cameraConsent")` ha `cameraConsent !== "granted"` → MainMenu
 
-**E. MainMenu — Start gomb letiltása**
-- [x] `src/components/screens/MainMenu.tsx`: a Start gomb `disabled` ha `cameraConsent !== "granted"`
-- [x] `src/components/screens/MainMenu.tsx`: tooltip: "Kamera szükséges a játékhoz"
-- [x] `src/components/screens/MainMenu.module.css`: `.startDisabled` stílus (halványabb, tiltott kurzor)
+**E. App.tsx — kapcsolódás + Firebase sync**
+- [x] `handleSkipIntro`: ha `cameraConsent !== "granted"` → `"cameraConsent"` fázis, egyébként `mainMenu`
+- [x] `handleUserData` callback: ha `data.settings.cameraConsent` létezik, szinkronizálja `useUIStore`-ba
+- [x] Rehidratálás: auto-check `persistCameraConsent("granted")`-t használ (Firebase-be is ír)
+- [x] `isPreGame` listában `"cameraConsent"` már szerepelt ✅
 
-**F. Settings — Kamera engedélyezése gomb**
-- [x] `src/components/screens/SettingsScreen.tsx`: gomb "Kamera engedélyezése" — látható ha `cameraConsent !== "granted"` (undecided is)
-- [x] Gomb onClick: `getUserMedia({ video: true })` → ha sikerül → `setCameraConsent("granted")`; ha hibázik → hibaüzenet
+**F. MainMenu — Start gomb új viselkedése**
+- [x] Start gomb `handleStart`: ha `cameraConsent !== "granted"` → `transitionTo("cameraConsent")`, egyébként `transitionTo("missionSelect")`
+- [x] Start gomb SOHA nincs disabled — mindig kattintható
+- [x] Tooltip és disabled prop eltávolítva (gomb mindig működik)
 
-**G. i18n — ÚJ kulcsok mind az 5 nyelven**
-- [x] `cameraConsent.title` — "Kamera hozzáférés"
-- [x] `cameraConsent.description` — tájékoztató szöveg az arcfelismerésről, adatvédelemről
-- [x] `cameraConsent.allow` — "Engedélyez"
-- [x] `cameraConsent.deny` — "Elutasít"
-- [x] `cameraConsent.browserDenied` — "A kamera hozzáférés le van tiltva a böngésződben..."
-- [x] `cameraConsent.error` — "Nem sikerült elindítani a kamerát"
-- [x] `settings.enableCamera` — "Kamera engedélyezése"
-- [x] `settings.cameraGranted` — "Kamera elérhető"
-- [x] `mainMenu.cameraRequired` — "Kamera szükséges a játékhoz"
-- [x] Teljes paritás mind az 5 fájlban
+**G. Settings — Kamera engedélyezése gomb**
+- [x] Kamera gomb `onClick`: `transitionTo("cameraConsent")` — teljes flow újra
+- [x] Ha `cameraConsent === "granted"`: ✅ ikon + "Kamera elérhető" szöveg
+- [x] Ha `cameraConsent !== "granted"`: "Kamera engedélyezése" gomb
 
-**H. Tesztek + validáció**
-- [ ] `src/state/useUIStore.test.ts` — (opcionális, még hiányzik)
-- [x] `tsc --noEmit` ✅
-- [x] `npm run build` ✅
+**H. i18n — kulcsok (már léteznek, ellenőrizve)**
+- [x] `cameraConsent.*` névtér megléte ellenőrizve mind az 5 locale-ban (en, hu, fr, de, es) — mindegyikben létezik ✅
+- [x] `settings.enableCamera`, `settings.cameraGranted` — léteznek
+- [x] `mainMenu.cameraRequired` — létezik
+
+**I. Tesztek + validáció**
+- [x] `npx tsc --noEmit` tiszta ✅
+- [x] `npm run build` sikeres ✅ (2,791 kB chunk warning — pre-existing)
+- [ ] `npm run test` zöld
+- [ ] CameraConsentScreen megjelenik intro után (manuális teszt)
+- [ ] F5 a consent screen-en → ugyanazt a screen-t látod (manuális teszt)
+- [ ] Engedélyezés → böngésző prompt → grant → mainMenu, Start működik
+- [ ] Engedélyezés → böngésző prompt → deny → mainMenu, Start → vissza a consent screen-re
+- [ ] Elutasítás → mainMenu, Start → vissza a consent screen-re
+- [ ] Vendég (anonymous) user → ugyanaz a flow
+- [ ] Settings "Kamera engedélyezése" → consent screen
 
 ---
 
 ## 1. Flow diagram
 
 ```
-┌─────────┐     ┌──────────────────┐     ┌──────────┐
-│  Intro   │ ──→ │ CameraConsentModal│ ──→ │ MainMenu  │
-└─────────┘     └──────────────────┘     └──────────┘
-                        │                        │
-                   ┌────┴────┐              ┌────┴────┐
-                   │         │              │         │
-               Allow      Deny          Start      Settings
-                   │         │          disabled    (ha denied)
-                   ▼         ▼              │       ▼
-           getUserMedia   cameraConsent     │    getUserMedia
-               │         = "denied"         │       │
-          ┌────┴────┐     └→ MainMenu       │   ┌────┴────┐
-     Granted   Denied      (Start ⛔)        │  Granted  Denied
-          │       │                         │      │       │
-     cameraConsent browserDenied            │  cameraConsent browserDenied
-     = "granted"  hibaüzenet                │  = "granted" hibaüzenet
-          │       │                         │      │
-          ▼       ▼                         ▼      ▼
-      MainMenu   MainMenu              transitionTo("missionSelect")
-      (Start ✅)  (Start ⛔ + Settings gomb)
+┌─────────┐     ┌──────────────────────┐     ┌──────────┐
+│  Intro   │ ──→ │ CameraConsentScreen  │ ──→ │ MainMenu  │
+└─────────┘     │ (teljes képernyő)     │     └──────────┘
+                 └──────────────────────┘          │
+                           │                  ┌────┴────┐
+                      ┌────┴────┐             │         │
+                      │         │          Start      Settings
+                   Allow      Deny        (ha denied)   │
+                      │         │             │    ┌────┴────┐
+                      ▼         │             ▼    │         │
+              getUserMedia      │      transitionTo  cameraConsent
+                      │         │      ("cameraConsent")
+                 ┌────┴────┐    │             │
+             Granted   Denied  │             │
+                 │         │   │             │
+                 ▼         ▼   │             │
+          persistCamera   persistCamera       │
+          Consent("granted") Consent("denied") │
+                 │         │   │             │
+                 ▼         ▼   ▼             ▼
+             MainMenu    MainMenu         CameraConsentScreen
+          (Start ✅)   (Start → camera   (újra a teljes folyamat)
+                        consent screen)
 ```
 
-## 2. useUIStore bővítés
+## 2. Firebase UserNode bővítés
 
 ```typescript
-interface UIState {
-  // ... existing fields
-  
-  /** Camera consent state */
-  cameraConsent: "undecided" | "granted" | "denied";
-  
-  setCameraConsent: (status: "undecided" | "granted" | "denied") => void;
+// src/firebase/userData.ts
+interface Settings {
+  activeShipId: string | null;
+  activeMusicId: string | null;
+  musicMuted: boolean;
+  musicVolume: number;
+  difficulty: string;
+  language: string;
+  cameraConsent: "undecided" | "granted" | "denied";  // ← NEW
 }
 ```
 
-## 3. GamePhase bővítés
+## 3. useUIStore bővítés
 
 ```typescript
-export type GamePhase =
-  | "intro"
-  | "cameraConsent"       // ← NEW
-  | "mainMenu"
-  // ... rest unchanged
+export type CameraConsent = "undecided" | "granted" | "denied";
+
+interface UIState {
+  cameraConsent: CameraConsent;                    // local cache
+  persistCameraConsent: (status: CameraConsent) => void;  // Firebase + local
+  setCameraConsent: (status: CameraConsent) => void;      // local only
+  // ...
+}
 ```
 
-`phaseToFlags("cameraConsent")`:
+`persistCameraConsent` implementáció:
 ```typescript
-case "cameraConsent":
-  return {
-    showIntro: false,
-    isPreGame: true,
-    showCameraConsent: true,  // ← új flag, ha valahol kell
-  };
+persistCameraConsent: async (status) => {
+  // 1. Frissítsd a lokális state-et
+  set({ cameraConsent: status });
+  // 2. Írj Firebase-be
+  const rtdbKey = getRtdbKey();
+  if (rtdbKey) {
+    await updateUserSettings(rtdbKey, { cameraConsent: status });
+  }
+}
 ```
 
-## 4. CameraConsentModal komponens
+## 4. CameraConsentScreen komponens (teljes oldal)
 
 ```tsx
-const CameraConsentModal: React.FC = () => {
+const CameraConsentScreen: React.FC = () => {
   const { t } = useTranslation();
   const transitionTo = useGameStore((s) => s.transitionTo);
-  const setCameraConsent = useUIStore((s) => s.setCameraConsent);
+  const persistCameraConsent = useUIStore((s) => s.persistCameraConsent);
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleAllow = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setError(null);
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      // Immediately stop the stream — we just need the permission
       stream.getTracks().forEach((track) => track.stop());
-      setCameraConsent("granted");
+      await persistCameraConsent("granted");
       transitionTo("mainMenu");
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
@@ -188,27 +231,31 @@ const CameraConsentModal: React.FC = () => {
       } else {
         setError(t("cameraConsent.error"));
       }
-      setCameraConsent("denied");
+      await persistCameraConsent("denied");
+      setIsProcessing(false);
       transitionTo("mainMenu");
     }
   };
 
-  const handleDeny = () => {
-    setCameraConsent("denied");
+  const handleDeny = async () => {
+    await persistCameraConsent("denied");
     transitionTo("mainMenu");
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2>{t("cameraConsent.title")}</h2>
-        <p>{t("cameraConsent.description")}</p>
+    <div className={styles.screen}>
+      {/* Starfield background */}
+      <div className={styles.starfield} />
+      <div className={styles.panel}>
+        <div className={styles.icon}>📷</div>
+        <h1 className={styles.title}>{t("cameraConsent.title")}</h1>
+        <p className={styles.description}>{t("cameraConsent.description")}</p>
         {error && <p className={styles.error}>{error}</p>}
         <div className={styles.actions}>
-          <button onClick={handleAllow} className={styles.allowBtn}>
-            {t("cameraConsent.allow")}
+          <button onClick={handleAllow} className={styles.allowBtn} disabled={isProcessing}>
+            {isProcessing ? "..." : t("cameraConsent.allow")}
           </button>
-          <button onClick={handleDeny} className={styles.denyBtn}>
+          <button onClick={handleDeny} className={styles.denyBtn} disabled={isProcessing}>
             {t("cameraConsent.deny")}
           </button>
         </div>
@@ -218,21 +265,58 @@ const CameraConsentModal: React.FC = () => {
 };
 ```
 
-## 5. Biztonság
+## 5. MainMenu Start gomb új logikája
 
-- A `cameraConsent` állapot **nem perzisztálódik Firebase-ben** — minden session-ben újra kell döntenie a usernek (vagy localStorage-ban cache-elhető)
+```tsx
+// Start gomb SOHA nincs disabled — mindig kattintható
+const handleStart = () => {
+  const cc = useUIStore.getState().cameraConsent;
+  if (cc === "granted") {
+    transitionTo("missionSelect");
+  } else {
+    transitionTo("cameraConsent");
+  }
+};
+
+<button onClick={handleStart}>
+  {t("mainMenu.start")}
+</button>
+```
+
+## 6. Biztonság
+
 - A `getUserMedia` hívás **soha** nem küld adatot szerverre — csak a böngésző biztonsági sandbox-jában fut
-- A Permissions API csak az állapot lekérdezésére szolgál, nem módosítja azt
+- A `cameraConsent` Firebase-ben tárolása csak az állapotot rögzíti, nem a kameraképet
+- A settings írásához `auth.uid` szükséges — vendégnél `device_map/{deviceId}` → `auth.uid` mapping alapján
+- Ha a user később visszavonja a böngésző szintű engedélyt, a `getUserMedia` hiba esetén a `cameraConsent` `"denied"`-re áll → a flow újraindul
 
-## 6. Függőségek
+## 7. Függőségek
 
-- **Előfeltétel:** [[001-main-menu-settings]] — a MainMenu és SettingsScreen meglévő komponenseit módosítja
-- **Nem függ:** Firebase-től (nincs backend írás)
-- **Blokkolja:** semmit — a kamera használata opcionális (bár a játékélményhez erősen ajánlott)
+- **Előfeltétel:** [[001-main-menu-settings]] — MainMenu és SettingsScreen komponensek
+- **Előfeltétel:** [[003-firebase-auth-settings]] — Firebase auth + RTDB user node
+- **Nem függ:** shop-tól, social funkcióktól
+- **Blokkolja:** a játék indítását (nincs kamera consent → nincs játék)
 
-## 7. Kockázatok
+## 8. Kockázatok
 
-- **Permissions API nem támogatott minden böngészőben** (Safari) — fallback: mindig `"prompt"` státusz
-- **getUserMedia hívás elsődleges stream:** a modálban rögtön leállítjuk a streamet, hogy ne foglalja a kamerát feleslegesen. A tényleges játékbeli stream később indul (`useCamera` hook).
-- **iOS Safari:** a `getUserMedia` csak user gesture-ből hívható — a gombra kattintás pont ilyen gesture, szóval OK
-- **Elutasítás után újra próbálkozás:** ha a user a böngésző promptjában is elutasította, a `getUserMedia` újra `NotAllowedError`-t dob → de a Settings gombbal újra lehet próbálkozni (a Permissions API nem tudja feloldani, de a user legalább értesítést kap, hogy a böngésző beállításaiban kell engedélyeznie)
+- **iOS Safari:** a `getUserMedia` csak user gesture-ből hívható → a gombra kattintás pont ilyen gesture, OK
+- **Permissions API hiánya (Safari):** fallback: mindig megpróbáljuk a `getUserMedia`-t, és a hiba alapján döntünk
+- **Vendég user:** a `rtdbKey` = `deviceId`, a `users/{deviceId}/settings` írásához a `device_map/{deviceId}` szükséges. Az auth bootstrap (`ensureDeviceMap`) ezt garantálja
+- **Konkurens írás:** a `persistCameraConsent` íráskor nem használ tranzakciót — két tab egyidejű consent váltása ritka, elfogadott kockázat
+- **F5 utáni állapot:** a `useGameStore` partialize menti a `gamePhase`-t. Ha `"cameraConsent"` fázisban történik az F5, a gamePhase visszaáll, de a `cameraConsent` a Firebase-ből töltődik be a `handleUserData` callback-ben → a screen helyesen jelenik meg
+
+## 9. Érintett fájlok
+
+```
+src/components/screens/CameraConsentScreen.tsx    (ÚJ — teljes oldal, modál helyett)
+src/components/screens/CameraConsentScreen.module.css  (ÚJ)
+src/components/features/CameraConsentModal.tsx    (TÖRLÉS — helyette CameraConsentScreen)
+src/components/features/CameraConsentModal.module.css  (TÖRLÉS)
+src/components/routing/ScreenRouter.tsx           (cameraConsent case → CameraConsentScreen)
+src/components/screens/MainMenu.tsx               (Start gomb: denied esetén → cameraConsent fázis)
+src/components/screens/SettingsScreen.tsx         (Kamera engedélyezése gomb → cameraConsent fázis)
+src/firebase/userData.ts                          (UserNode.settings + updateUserSettings bővítés)
+src/state/useUIStore.ts                          (+persistCameraConsent action)
+src/App.tsx                                       (intro utáni navigáció + Firebase sync)
+src/types/index.ts                                (GamePhase már tartalmazza)
+```

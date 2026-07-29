@@ -7,7 +7,7 @@ status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-28"
+updated_at: "2026-07-29"  # frissítve: a vendég-tájékoztató toastból jön ([[015-toast-notification]] H. blokk); +related_plans: [[018-notification-retention]]
 author: exphoenee
 step: 13
 phases: []
@@ -21,6 +21,7 @@ related_plans:
   - 002-ingame-shop-frontend
   - 007-state-persist-page-refresh
   - 009-firebase-identity-split-bugfix
+  - 018-notification-retention
 tags:
   - social
   - multiplayer
@@ -42,6 +43,41 @@ tags:
 **Cél:** A játékosok kapcsolatba léphessenek egymással — barátokat kezeljenek, privát üzeneteket küldjenek, **megtekinthessék egymás Szégyenfalát (kudarcok + sikerek, read-only)**, és közös multiplayer küldetésekben vegyenek részt, ahol a figyelem és az események csapatszinten kezelődnek.
 
 > ⚠️ **Ez a terv a [[011-difficulty-event-system]] tervre épül** — a multiplayer eseménykezelés (ki kapja az eventet, hogyan értesülnek a többiek) a 011-es terv eseményrendszerét használja. **A 011-es terv előfeltétel.** Firebase RTDB szükséges a barátlistához és a chathez — ez a [[003-firebase-auth-settings]] és [[010-firebase-guest-merge-single-gate]] tervek Firebase infrastruktúrájára épül.
+
+---
+
+## Tünet és lezárt diagnózis — a P.–W. blokk kiváltó esete (2026-07-29)
+
+> Ez a szekció a **P.–W. blokk** (kötelező regisztráció a social funkciókhoz) kiváltó okát rögzíti. Élő RTDB adaton megerősítve, Admin olvasással.
+
+### A tünet
+
+Az `UVJYm6vwZrZOT0PWiOskN55Lxbr1` uid szerepel a `friends/` és a `friendRequests/` node-okban, de **nincs `users/UVJYm…` bejegyzés**. Első ránézésre „szellem-user".
+
+### A diagnózis — LEZÁRVA
+
+| Kérdés | Válasz | Bizonyíték |
+|---|---|---|
+| Ki ez a user? | **Anonim (vendég)** | `friendRequests/SvVrrs9TRhRL52g1MieUlVCZDZR2/UVJYm…` → `fromNickname: "star_wanderer_1462"`. A `star_wanderer` az `ANON_NICKNAMES` tömb eleme (`src/firebase/userData.ts:16`), és a `generateRandomNickname()` kimenetét **kizárólag anonim userek** kapják. |
+| Rules-exploit történt? | **NEM.** | A friend request `at: 1785258258122` = **2026-07-28 19:04** helyi idő. A guest-gate (`guardedNav` / `isGuest`, `src/components/screens/MainMenu.tsx:84-87`) a **b96993f** commitban, **2026-07-29 08:26**-kor jött létre — `git log -S'guardedNav'` szerint ez az **egyetlen** commit, ami bevezette. A vendég tehát **13 órával a kapu megépítése ELŐTT**, teljesen legitim módon küldött barátkérést: akkor a FriendsScreen még nyitva állt neki. |
+| Elveszett adat? | **Nem.** | A user node megvan, csak a **kulcshasadás** miatt máshol: `device_map/473bff95-82c2-4384-abe6-789f408f1219 → UVJYm…`, és a `users/473bff95-82c2-4384-abe6-789f408f1219` létezik (`profile.nickname = "star_wanderer_1462"`). |
+| Miért nincs `usersPublic/UVJYm…`? | Mert az írás **némán megtagadva** | `updateUserPublicProfile(rtdbKey, …)` anonim usernél `usersPublic/{deviceId}`-re ír, amit a `"usersPublic": { "$uid": { ".write": "auth != null && $uid == auth.uid" } }` (`database.rules.json:9-14`) **MEGTAGAD**; a hibát a `.catch(console.error)` elnyeli. Írási call site-ok: `src/firebase/authBootstrap.ts:178`, `src/App.tsx:221`, `src/components/screens/SettingsScreen.tsx:78`. |
+
+> ⚠️ **Ezt expliciten rögzítjük, hogy egy későbbi olvasó ne induljon rossz irányba:** a szennyezett adat **nem** biztonsági rés kihasználásából származik. A T. blokkban leírt rules-lyukak **valósak és függetlenek** — de nem ezek okozták ezt a konkrét esetet.
+
+### A hibaosztály — a [[009-firebase-identity-split-bugfix]] másik fele
+
+A 009 a **`users/`** node-ra számolta fel a kulcshasadást: bevezette a `selectRtdbKey` / `getRtdbKey` derivált selectort (`src/state/useAuthStore.ts:48-52` — `user && !user.isAnonymous ? user.uid : deviceId`). A **social/publikus rétegben a hasadás ma is él**, mert két kulcs fut párhuzamosan:
+
+```
+rtdbKey   (anonimnál deviceId)  →  users/ , usersPublic/ , walls/
+authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingRequests/ ,
+                                   notifications/ , chats/
+```
+
+**Élő következmény:** a vendégnek **egyáltalán nincs `usersPublic` sora** → sem a névkereső (`searchUsersPublic`), sem a UID-lookup (`lookupUserByUid`) nem találja meg, a `subscribeUserOnlineStatus` pedig örökre `offline`-t lát. Ugyanez a hasadás áll az `updateOnlineStatus(rtdbKey, …)`-ra és — más előjellel — a `walls/{rtdbKey}`-re (`saveFailureRecord` / `saveSuccessRecord`).
+
+> 💡 **Fontos, hogy ne „javítsuk el":** ma a vendég **azért** láthatatlan, mert egy írás némán megbukik. A követelmény (a vendég **legyen** láthatatlan) véletlenül teljesül. A javítás iránya ezért **nem** az, hogy a `usersPublic` írását átállítjuk `authUid`-re — az pont **láthatóvá tenné** a vendégeket —, hanem az, hogy vendégnél **meg se kíséreljük** az írást (R. blokk).
 
 ---
 
@@ -69,15 +105,24 @@ tags:
 | Chat elhelyezése | **Önálló `"chat"` GamePhase** (nem a `FriendsScreen` lokális al-nézete) — hogy F5 után is a beszélgetésben maradjon a játékos (M. blokk) |
 | Barát falának forrása | Elsődleges: `walls/{friendUid}` ([[012-wall-of-shame]] O. blokk); **fallback olvasás** a legacy `users/{friendUid}/failures\|successes` útra, `id` szerinti dedupppal (L. blokk) |
 | **Vendég hozzáférése a social funkciókhoz** (2026-07-28, O. blokk) | **Nincs.** Vendég = **kijelentkezett VAGY anonim** — a barát-gráf a **Google auth uid**-ra kulcsol, anonim uid-re nem építhető tartós kapcsolat |
-| Vendég visszajelzése | A Barátok gomb **🔒 prefixet** kap; kattintásra **nem navigál**, hanem tájékoztató üzenetet mutat (`role="status"`), ugyanez a szöveg a gomb `title` tooltipjében |
+| Vendég visszajelzése | A Barátok gomb **🔒 prefixet** kap; kattintásra **nem navigál**, hanem tájékoztató üzenetet mutat, ugyanez a szöveg a gomb `title` tooltipjében. **2026-07-29 óta** az üzenet **warning toast** a bal felső sarokban, nem beágyazott bekezdés ([[015-toast-notification]] H. blokk) |
 | Perzisztált social fázis vendégnél | A `ScreenRouter` **visszairányít** a főmenübe (`friends` / `chat` / `friendWall`) |
 | `status === "loading"` kezelése | **NEM** számít vendégnek — különben az auth aszinkron feloldódása előtt a `ScreenRouter` kidobná a bejelentkezett játékost is oldalfrissítéskor |
+| **Vendég láthatósága** (2026-07-29, P. blokk) | **Egyáltalán nem látható.** A vendég nem jelenik meg a keresőben, nem található UID-lookuppal, nincs jelenlét-státusza — nincs `usersPublic` sora |
+| **Ki barátkozhat / chatelhet** (2026-07-29) | **Kizárólag regisztrált (nem-anonim) user.** Barátkérés küldése/elfogadása és chat üzenet küldése egyaránt fiókhoz kötött |
+| **A kikényszerítés szintje** (2026-07-29) | **Rules szinten IS**, nem csak UI-gate-tel. A mai védelem kizárólag a `MainMenu` `guardedNav`-ja — egy közvetlen RTDB írás (DevTools konzol, saját kliens) megkerüli |
+| **Szerveroldali vendég-detektálás** (2026-07-29) | `auth.token.firebase.sign_in_provider` — az egyetlen szerveroldali mód. A feltétel **negatív** (`!= 'anonymous'`), nem `== 'google.com'`, hogy egy jövőbeli email/jelszó vagy Apple provider ne essen ki. ⚠️ Nyitott kérdés: `linkWithPopup` utáni token-viselkedés — 8.3 |
+| **`users/{deviceId}` vendég-node sorsa** (2026-07-29) | **MARAD.** Device-hoz kötött játékadat (settings, inventory, wallet, stats) — ez nem social adat, és a [[010-firebase-guest-merge-single-gate]] merge-kapuja épül rá |
+| **`walls/{rtdbKey}` vendégnél** (2026-07-29, R. blokk) | **Marad `deviceId` alatt.** Indok: a vendég senkinek nem látható → a falának nincs olvasóközönsége; a `collectGuestWallUpdates` (`userData.ts:529-549`) linkeléskor `walls/{deviceId}` → `walls/{targetUid}` alá viszi. Ha `authUid`-re állnánk át, az anonim uid alá írt rekordokat a migráció **nem találná meg** → adatvesztés |
+| **Elhelyezés** (2026-07-29) | **A 013-ba beolvasztva**, P.–W. blokként. Nem külön terv: ugyanaz a hatókör (social hozzáférés-vezérlés), és a meglévő O. blokk közvetlen folytatása |
+| **Rules-tesztek** (2026-07-29, U. blokk) | **Kötelező.** `@firebase/rules-unit-testing` + RTDB emulátor. Indok: a social hívások fele `.catch(console.error)`-ral el van nyelve → egy elrontott feltétel **némán** megölné a teljes friend flow-t |
 
 ---
 
-## ✅ Haladás (TODO — 93/121 kész)
+## ✅ Haladás (TODO — 93/207 kész)
 
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
+> **Új blokkok (2026-07-29):** **P.–W.** — kötelező regisztráció a social funkciókhoz, **rules szinten is** kikényszerítve (86 új tétel). Kiváltó eset és diagnózis: a „Tünet és lezárt diagnózis" szekció; részletek: 8. szekció; kézi takarítás: 9. szekció.
 > **Új kész tételek (2026-07-28):** `sessions` node security rules + `createSession/joinSession/leaveSession/subscribeSession` RTDB függvények, `useMultiplayerSession` hook (ref→state fix), `MultiplayerStatusBar` overlay, `EventToast` értesítő komponens, multiplayer.* i18n kulcsok mind 5 nyelven, `database.rules.json` regenerálva.
 > **Új kész tételek (2026-07-28, második kör):** barát-fal **legacy fallback olvasás** (L.), **chat mint önálló `"chat"` GamePhase** (M.), **chat üzenet-betöltés security-rule bugfix** (N.).
 > **Új kész tételek (2026-07-28, harmadik kör):** **Barátok menü letiltása nem regisztrált usereknél** (O.) — 🔒 gomb + `friends.guestNotice` (5 nyelv) + `ScreenRouter` vendég-őr a perzisztált social fázisokra.
@@ -161,7 +206,7 @@ tags:
 - [x] `friends.pendingRequests` / `friends.accept` / `friends.reject`
 - [x] `friends.online` / `friends.offline` / `friends.inGame` / `friends.watching` / `friends.notWatching`
 - [x] `friends.noResults` / `friends.empty`
-- [x] `friends.guestNotice` (2026-07-28, O. blokk) — vendég tájékoztató a főmenüben (gomb tooltip + `role="status"` üzenet)
+- [x] `friends.guestNotice` (2026-07-28, O. blokk) — vendég tájékoztató a főmenüben (gomb `title` tooltip + tájékoztató üzenet; **2026-07-29 óta** warning toast — [[015-toast-notification]] H. blokk). A kulcs maga változatlan.
 - [x] `chat.title` / `chat.inputPlaceholder` / `chat.send` / `chat.unread` / `chat.typing` / `chat.empty`
 - [ ] `multiplayer.invite` / `multiplayer.join` / `multiplayer.leave` / `multiplayer.host`
 - [ ] `multiplayer.participants` / `multiplayer.maxReached`
@@ -222,19 +267,144 @@ tags:
 - [x] `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres
 
 **O. Barátok menü letiltása nem regisztrált usereknél (2026-07-28)**
+
+> ℹ️ **Frissítve (2026-07-29):** a vendég-tájékoztató **megjelenítése** megváltozott — a gombok alatti beágyazott bekezdés helyett **warning toast** a bal felső sarokban. Kanonikus leírás: [[015-toast-notification]] H. blokk / 0.9. A 🔒 prefix, a `title` tooltip, a `friends.guestNotice` kulcs és a `ScreenRouter` vendég-őre **változatlan**.
+
 - [x] **Indok:** a barát-gráf (`friends/{uid}`), a chat (`chats/{chatId}/participants`) és a barát-fal grant mind a **Google auth uid**-ra kulcsol. Anonim uid-re ezek nem építhetők — a vendég számára a képernyők üresek vagy `PERMISSION_DENIED`-esek lennének.
 - [x] **Vendég definíció:** `!authUser || authUser.isAnonymous` (kijelentkezett **vagy** anonim)
 - [x] `MainMenu.tsx` — a Barátok gomb **🔒 prefixet** kap vendégnél
-- [x] `MainMenu.tsx` — kattintás vendégként **nem navigál**, hanem tájékoztató üzenetet állít be (`<p role="status">`) — a state a 002 F rész óta `guestNoticeKey: string | null`
+- [x] `MainMenu.tsx` — kattintás vendégként **nem navigál**, hanem tájékoztató üzenetet mutat — **2026-07-29 óta** `addToast("warning", t("friends.guestNotice"), GUEST_NOTICE_DURATION_MS)` (korábban `<p role="status">` a gombok alatt, `guestNoticeKey: string | null` state-tel — a state azóta megszűnt)
 - [x] `MainMenu.tsx` — ugyanaz a szöveg a gomb `title` tooltipjében
-- [x] `MainMenu.module.css` — új `.guestNotice` stílus
-- [x] Sikeres bejelentkezés után a notice **automatikusan eltűnik** (`useEffect` az `isGuest`-re)
+- [x] `MainMenu.module.css` — `.guestNotice` stílus. ⚠️ **Elavult:** az osztály 2026-07-29-én **törölve**, mert a tájékoztató toastként jelenik meg ([[015-toast-notification]] H. blokk)
+- [x] A tájékoztató magától eltűnik (toast auto-dismiss, 7000 ms — a kétmondatos szöveg miatt hosszabb az 5 mp-es alapértelmezésnél). A korábbi „bejelentkezéskor tüntesd el" `useEffect(isGuest)` **megszűnt**
 - [x] Vendégnél a hozzászólás-számláló **RTDB listenerek el sem indulnak** (`subscribeFriends` / `subscribeUnreadCount` — nincs értelme, és felesleges kapcsolat)
 - [x] `ScreenRouter.tsx` — védelem a **perzisztált fázisra**: ha a `friends` / `chat` / `friendWall` fázisban vendég a user → `transitionTo("mainMenu")` + `<MainMenu />` render
 - [x] `ScreenRouter.tsx` — a `status === "loading"` **NEM** számít vendégnek: `authStatus !== "loading" && (!authUser || authUser.isAnonymous)` — enélkül az auth aszinkron feloldódása előtt a bejelentkezett játékost is kidobná oldalfrissítéskor
 - [x] i18n: új `friends.guestNotice` kulcs **mind az 5 nyelven**
 - [x] Ellenőrzés: `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres
-- [x] **Kiterjesztés a `shop` fázisra** ([[002-ingame-shop-frontend]] F rész, 2026-07-28): ugyanez a kétrétegű minta védi az áruházat is (a vásárlásnak túl kell élnie egy eldobható vendég-sessiont). Ekkor lett a `MainMenu` `showGuestNotice: boolean` state-je **`guestNoticeKey: string | null`** (két különböző üzenet), és született a közös **`guardedNav(phase, noticeKey)`** helper; a `ScreenRouter`-ben a `isSocialPhase` → **`needsAccount`** (`friends | chat | friendWall | shop`), a `blockSocial` → **`blockPhase`**.
+- [x] **Kiterjesztés a `shop` fázisra** ([[002-ingame-shop-frontend]] F rész, 2026-07-28): ugyanez a kétrétegű minta védi az áruházat is (a vásárlásnak túl kell élnie egy eldobható vendég-sessiont). Ekkor lett a `MainMenu` `showGuestNotice: boolean` state-je `guestNoticeKey: string | null` (két különböző üzenet), és született a közös **`guardedNav(phase, noticeKey)`** helper; a `ScreenRouter`-ben a `isSocialPhase` → **`needsAccount`** (`friends | chat | friendWall | shop`), a `blockSocial` → **`blockPhase`**. *(2026-07-29: a `guestNoticeKey` state megszűnt — a `guardedNav` a kulcsot közvetlenül az `addToast`-nak adja át; a `guardedNav` és a `needsAccount` lista változatlan.)*
+
+**P. Rules-szintű vendég-tiltás — a mag (2026-07-29)**
+
+> Az O. blokk **UI-gate**-et épített. Ez a blokk ugyanazt a szabályt **szerveroldalon** kényszeríti ki. A kettő nem alternatíva: a UI-gate a felhasználói élményért van (érthető üzenet), a rules a valódi határ.
+
+- [ ] `security.rules.json` — a nem-anonim feltétel **egységes megfogalmazása** és dokumentálása: `auth != null && auth.token.firebase.sign_in_provider != 'anonymous'`
+- [ ] **Negatív teszt, nem pozitív:** `!= 'anonymous'` és **nem** `== 'google.com'` — így egy jövőbeli email/jelszó, Apple vagy OIDC provider nem esik ki némán (a `sign_in_provider` értéke Google-nél `"google.com"`, **nem** `"google"`)
+- [ ] `usersPublic/$uid` `.write` — kiegészítés a nem-anonim feltétellel → **a vendégnek nem lehet publikus sora** (nem kereshető, nincs jelenléte)
+- [ ] `friends/$uid` `.write` — mindhárom ág kiegészítve a nem-anonim feltétellel
+- [ ] `friendRequests/$uid/$fromUid` `.write` — nem-anonim feltétel (a gyerek-szintű átalakítás a T. blokkban)
+- [ ] `outgoingRequests/$uid/$toUid` `.write` — nem-anonim feltétel
+- [ ] `chats/$chatId/participants` `.write` — nem-anonim
+- [ ] `chats/$chatId/messages/$msgId` `.write` — nem-anonim (a meglévő `newData.child('from').val() === auth.uid` **mellé**, nem helyette)
+- [ ] `chats/$chatId/unread/$uid` `.write` + `typing/$uid` `.write` — nem-anonim (különben egy vendég számlálót írhatna egy idegen chatben)
+- [ ] `notifications/$uid/$notificationId` **peer-push ága** — nem-anonim. A tulajdonos saját `.read`/`.write`-ja (mark-read, törlés) **változatlan**: a vendég inboxa amúgy is üres marad, és a szigorítás csak regressziót okozna
+- [ ] **Döntés rögzítve:** a `.read` szabályokat **nem** szigorítjuk vendégre. A `friends/$uid` / `friendRequests/$uid` olvasás már ma is `$uid == auth.uid`-hez kötött → a vendég csak a saját, garantáltan üres listáját látja. Egy `.read` szigorítás csak `PERMISSION_DENIED` zajt szülne a listenerekben
+- [ ] `database.rules.json` regenerálása a `security.rules.json`-ból (W. blokk) + **deploy** (a szabály deploy nélkül nem hat)
+- [ ] A `sign_in_provider` mezőnév, értékkészlet és a linkelés utáni viselkedés **emulátoros teszttel igazolva** (U. blokk) — a terv egésze ezen áll
+
+**Q. `linkWithPopup` és a token `sign_in_provider` — a bővítés legkockázatosabb pontja (2026-07-29)**
+
+> Részletes elemzés és a nyitott kérdés: **8.3**. Ez a blokk addig **nem indítható**, amíg a 8.3 kérdését emulátoros méréssel el nem döntöttük.
+
+- [ ] **Mérés először:** emulátorban `linkWithPopup` (ill. `linkWithCredential`) anonim sessionre → a linkelés utáni ID token `firebase.sign_in_provider` értékének **rögzítése** (marad `"anonymous"`, vagy `"google.com"` lesz?)
+- [ ] **Mérés:** `getIdToken(true)` force-refresh után **változik-e** a claim (a refresh-token csere valószínűleg **átörökíti** az eredeti `sign_in_provider`-t → önmagában nem elég)
+- [ ] `src/firebase/auth.ts` — +`getSignInProvider(user): Promise<string | null>` (`user.getIdTokenResult()` → `signInProvider`) — **kliensoldali** előrejelzés a rules döntéséről
+- [ ] `src/firebase/auth.ts` — +`isRegisteredToken(user): Promise<boolean>` (`provider !== "anonymous"`)
+- [ ] `startGoogleAuth` (`src/firebase/auth.ts:36-38`) — a `linkWithPopup` **sikere után azonnal** `signInWithCredential(auth, GoogleAuthProvider.credentialFromResult(cred))` → **friss sign-in event**, a uid **megmarad** (a credential ekkor már ehhez a fiókhoz van linkelve)
+- [ ] `checkRedirectResult` — ugyanez a `linkWithRedirect` visszatérési ágára (`auth.ts:77-88`)
+- [ ] `useAuthStore` — +`tokenRegistered: boolean | null` (`null` = még nem mértük). **Derivált értékként**, ha lehet — a [[009-firebase-identity-split-bugfix]] 2.1 tanulsága szerint az írható duplikált state divergál
+- [ ] `authBootstrap` — belépéskor `isRegisteredToken(user)` kiértékelése és a store-ba írása
+- [ ] **Átmeneti (legacy) userek kezelése:** ha `!user.isAnonymous`, de `tokenRegistered === false` → warning toast + „jelentkezz be újra" felajánlása. Enélkül egy régebben linkelt, perzisztált sessionű user **némán** kizáródna a saját friend/chat írásaiból
+- [ ] `ScreenRouter` `isGuest` / `MainMenu` `isGuest` — döntés: bevonjuk-e a `tokenRegistered`-et a vendég-definícióba (**javaslat: igen**, de csak `false` esetén — `null` (még nem mért) ne blokkoljon, ugyanaz a hibaosztály, mint a `status === "loading"` az O. blokkban)
+- [ ] Regressziós ellenőrzés: a **közvetlen** `signInWithPopup` (nem linkelt) útvonal `sign_in_provider`-e `"google.com"` — nem törik el
+
+**R. Kulcshasadás felszámolása a publikus/social rétegben (2026-07-29)**
+
+> Cél: egyetlen írás se célozza a `usersPublic`-ot `deviceId`-vel. **Nem** a kulcs átírásával — hanem azzal, hogy vendégnél az írás **el sem indul**.
+
+- [ ] `src/firebase/authBootstrap.ts:176-178` — `updateUserPublicProfile(rtdbKey, …)` → **kihagyva**, ha `user.isAnonymous`
+- [ ] `src/App.tsx:218-227` — ugyanez a `handleUserData` nickname-szinkron ágban
+- [ ] `src/components/screens/SettingsScreen.tsx:78` — ugyanez a nickname mentés ágban
+- [ ] `src/firebase/authBootstrap.ts:165` — `updateOnlineStatus(rtdbKey, "online")` → vendégnél kihagyva
+- [ ] `src/firebase/authBootstrap.ts:169-171` — az `onDisconnect(usersPublic/{rtdbKey}/onlineStatus)` regisztráció → vendégnél kihagyva
+- [ ] `src/App.tsx:649`, `:660`, `:666` — a gamePhase-watcher `updateOnlineStatus` hívásai → vendégnél kihagyva
+- [ ] `src/components/screens/SettingsScreen.tsx:184` — a kijelentkezés előtti `updateOnlineStatus(authUid, "offline")` **marad** (regisztrált user írja a saját sorát)
+- [ ] **Egy kapu, egy helyen:** a fenti hét call site ne külön-külön `if`-eljen. `userData.ts` — a `updateUserPublicProfile` / `updateOnlineStatus` **maga** dobja el a hívást, ha az aktuális auth user anonim (`getRtdbKey()` mintájára egy `isRegisteredUser()` helperrel), vagy egy közös `withRegisteredUser(fn)` wrapperrel
+- [ ] **Paraméter-átnevezés** a szándék rögzítéséhez: `updateUserPublicProfile(uid, …)` / `updateOnlineStatus(uid, …)` paramétere **`authUid`**, nem `rtdbKey` — a hívók ezt adják át (regisztrált usernél a 009 invariánsa szerint a kettő azonos)
+- [ ] `walls/` — **NEM változik:** marad `rtdbKey` (indoklás a döntési táblázatban és a 1.9-ben). A `saveFailureRecord` / `saveSuccessRecord` call site-ok (`App.tsx:122`, `:429`, `:708`, `WallOfShame.tsx:381`, `:411`) érintetlenek
+- [ ] `collectGuestWallUpdates` (`userData.ts:529-549`) — regressziós ellenőrzés: a `walls/{deviceId}` → `walls/{targetUid}` migráció linkelés után **továbbra is** működik (U. blokk teszt)
+- [ ] **Néma hibaelnyelés felszámolása:** ahol egy `.catch(console.error)` egy **rules-megtagadást** rejt el, ott a hívás vagy el sem indul (a fenti kapu), vagy a hiba **felszínre kerül**. A `.catch(console.error)` csak ott maradhat, ahol a hiba tényleg nem-fatális (pl. `sendNotification`)
+
+**S. UI-gate megerősítése — minden belépési pont (2026-07-29)**
+
+- [ ] **Belépési pontok felderítése és rögzítése** a `friends` / `chat` / `friendWall` fázisokba (a teljes lista: 1.10)
+- [ ] `MainMenu.tsx:84-87` `guardedNav` — **marad**, ez az egyetlen menüből induló út
+- [ ] `FriendsScreen.tsx:324-330` `openChat` — a `chat` fázisba innen is lehet lépni; a `FriendsScreen` maga viszont már csak regisztrált usernek renderelődik (ScreenRouter őr) → **elegendő**, de rögzítendő
+- [ ] `ChatScreen.tsx:29`, `:68` és `ScreenRouter.tsx:109` — vissza-navigáció a `friends`-be; ezek **nem** új belépési pontok, mert a `blockPhase` őr a render előtt lefut
+- [ ] Toast / notification útvonalak (`useNotificationListener`, `useFriendPresenceToasts`) — ellenőrizve: **nem navigálnak** (csak megjelenítenek). Ha később kattintható toast készül, az **guardedNav-on** keresztül menjen
+- [ ] `ScreenRouter` `needsAccount` lista — változatlan (`friends | chat | friendWall | shop`), de a Q. blokk `tokenRegistered === false` esete bekerül az `isGuest`-be
+- [ ] **Kliens oldali őr a művelet előtt** (`sendFriendRequest`, `acceptFriendRequest`, `sendMessage`): ha a user nem regisztrált (vagy `tokenRegistered === false`), a hívás **el se induljon**, hanem **warning toast** jelenjen meg — a `friends.guestNotice` kulcs újrahasznosításával
+- [ ] A rules-elutasítás ne legyen néma: a `sendMessage` / `sendFriendRequest` hibaága **error toastot** kapjon (ma `console.error`-ral végződik)
+
+**T. Rules szigorítás — gyerek-szintű `.write` (FÜGGETLEN lyuk, 2026-07-29)**
+
+> ⚠️ **Ez a blokk NEM a fenti eset oka.** Kódolvasással megerősített, valós rés, ami ugyanabban a fájlban javítandó — de a `UVJYm…` barátság legitim úton keletkezett (lásd Tünet-szekció). A kettőt **ne mossuk össze**.
+
+- [ ] **Lyuk 1 — hamisított inbox:** `friendRequests/$uid` `.write` első ága `$uid == auth.uid` (`database.rules.json:30`) → **bárki bármit** beírhat a saját inboxába, tetszőleges `fromUid` kulccsal
+- [ ] **Lyuk 2 — az 1-re épülő privilégium-eszkaláció:** a hamis inbox-bejegyzés feljogosítja a `friends/$uid` `.write` `root.child('friendRequests').child(auth.uid).child($uid).exists()` ágát (`database.rules.json:18`) → **egyoldalúan** beírhatja magát bárki barátlistájába (és így megnyílik a `walls/$uid` barát-olvasás is)
+- [ ] **Lyuk 3 — barátlista-törlés:** a `friends/$uid` és `outgoingRequests/$uid` `.write` **szülő-szinten** szól → `set(ref('friends/{áldozat}'), { saját_uid: true })` **LETÖRLI** az áldozat teljes barátlistáját
+- [ ] `friendRequests/$uid/$fromUid` — `.write` **gyerek-szintre** költöztetve; a szülő szintű `.write` **megszűnik**
+- [ ] `friendRequests/$uid/$fromUid` — `.validate`: `newData.child('from').val() === $fromUid` (a payload nem hazudhat a küldőről)
+- [ ] `friendRequests/$uid/$fromUid` — a **tulajdonos** (`$uid == auth.uid`) csak **MEGLÉVŐT** módosíthat vagy törölhet: `data.exists() || !newData.exists()` — újat **nem gyárthat**
+- [ ] `friendRequests/$uid/$fromUid` — a **küldő** (`$fromUid == auth.uid`) csak akkor írhat, ha az bejegyzés még **nem létezik** (`!data.exists()`), és nem-anonim (P. blokk)
+- [ ] `friends/$uid/$friendUid` — `.write` gyerek-szintre; a szülő szintű `.write` megszűnik → egyetlen `set()` sem söpörheti el a listát
+- [ ] `friends/$uid/$friendUid` — a három engedélyezett eset gyerek-szinten: (a) tulajdonos ír/töröl; (b) elfogadó beírja magát (`$friendUid == auth.uid` **és** létező friend request); (c) **barát-eltávolítás a másik oldalon**: `$friendUid == auth.uid && data.exists() && !newData.exists()`
+- [ ] **(c) kritikus:** a `removeFriend` (`userData.ts:1091-1102`) akkor is működjön, amikor a friend request **már rég nem létezik** — a mai harmadik ág (`data.child(auth.uid).val() === true && newData.child(auth.uid).val() === null`, `database.rules.json:18`) gyerek-szintű megfelelője
+- [ ] `outgoingRequests/$uid/$toUid` — `.write` gyerek-szintre, ugyanezzel a mintával (tulajdonos + a kérés címzettje törölheti accept/reject során)
+- [ ] **Regressziós csapda átvezetése:** az `acceptFriendRequest` (`userData.ts:1053-1058`) és a `rejectFriendRequest` (`:1079-1082`) **root multi-path update**-et használ — **egy** elbukó path az **EGÉSZ** írást megbuktatja. A 8.6 táblázat path-onként végigvezeti mind a négy/két útvonalat az új szabályok ellen
+- [ ] `sendFriendRequest` (`userData.ts:1015-1027`) — ugyanez a path-onkénti átvezetés (2 path)
+- [ ] `removeFriend` (`userData.ts:1098-1101`) — ugyanez (2 path, mindkettő törlés)
+- [ ] `database.rules.json` regenerálás + deploy; a T. blokk **nem** deployolható az U. blokk tesztjei nélkül
+
+**U. Rules-tesztek — emulátor + `@firebase/rules-unit-testing` (2026-07-29)**
+
+> A projektben **ma nincs security-rules teszt**. Szigorított szabályokat vakon deployolni azért kockázatos, mert a social hívások fele `.catch(console.error)`-ral el van nyelve → egy elrontott feltétel **némán** megölné a friend flow-t (ugyanaz a hibaosztály, mint az N. blokk „nincs még üzenet" tünete).
+
+- [ ] `package.json` — +`@firebase/rules-unit-testing` devDependency, +`firebase-tools` (dev), +`test:rules` script
+- [ ] `firebase.json` — +`emulators` blokk (`database` port, `singleProjectMode`)
+- [ ] **Külön vitest projekt/konfig** a rules-teszteknek: `environment: "node"` (a fő konfig `jsdom` + `src/test/setup.ts`, ami itt nem kell), és a rules-teszt **ne** fusson a sima `npm run test`-ben emulátor nélkül
+- [ ] `src/test/rules/setup.ts` — `initializeTestEnvironment({ database: { rules: readFileSync("database.rules.json") } })`, `authenticatedContext(uid, { firebase: { sign_in_provider: "google.com" } })` és `…{ sign_in_provider: "anonymous" }` helperek
+- [ ] `src/test/rules/guestGate.rules.test.ts` — vendég-tiltás (a 8.7 táblázat 1–8. esete)
+- [ ] `src/test/rules/friendGraph.rules.test.ts` — támadási minták (8.7 / 9–13.)
+- [ ] `src/test/rules/friendFlow.rules.test.ts` — legitim flow-k, **path-onként és teljes multi-path update-ként is** (8.7 / 14–22.)
+- [ ] `src/test/rules/linkedToken.rules.test.ts` — a Q. blokk mérése: linkelés utáni első írás (8.7 / 23–24.)
+- [ ] **Az emulátor a `database.rules.json`-t olvassa** (a deployolt fájlt), nem a `security.rules.json`-t → a W. blokk szinkronja a teszt **előfeltétele**
+- [ ] CI/README jegyzet: a rules-teszt futtatásához emulátor kell; emulátor nélkül **skip**, nem hamis zöld
+
+**V. Egyszeri kézi adattakarítás — pre-gate vendég-barátságok (2026-07-29)**
+
+> Konkrét checklist: **9. szekció**. A `SvVrrs9TRhRL52g1MieUlVCZDZR2` ↔ `UVJYm6vwZrZOT0PWiOskN55Lxbr1` barátság **zombi**: a gate óta `UVJYm…` soha nem tud belépni a Friends menübe.
+
+- [ ] **Felderítés (általános ismérv):** minden `friends/{uid}/{friendUid}`, ahol a `friendUid`-hoz **nincs `usersPublic/{friendUid}` sor** → pre-gate vendég-barátság gyanús
+- [ ] A gyanús uid megerősítése: `friendRequests/**/{uid}` `fromNickname`-je illeszkedik-e a `generateRandomNickname()` mintájára (`<ANON_NICKNAMES elem>_<4 számjegy>`), és van-e rá `device_map` bejegyzés
+- [ ] Az érintett `friends/` bejegyzések törlése **mindkét** oldalon
+- [ ] A hozzá tartozó `friendRequests/` és `outgoingRequests/` bejegyzések törlése
+- [ ] A `chats/{chatId}` node törlése (`getChatId` rendezett `uid1_uid2` formátuma szerint, `userData.ts:1317-1319`)
+- [ ] A kapcsolódó `notifications/` bejegyzések törlése ([[018-notification-retention]] hatóköre)
+- [ ] **Export JSON minden törlés ELŐTT** (a 009 E. blokk mintájára)
+- [ ] ⚠️ Rögzítendő: a `users/{deviceId}` vendég-node és a `walls/{deviceId}` fal **NEM törlendő** — az a játékos játékadata, és `linkWithPopup` után ugyanaz a uid **legitim regisztrált userré válhat**
+
+**W. Dokumentáció és rules-fájl szinkron (2026-07-29)**
+
+- [ ] ⚠️ **Felderített drift:** a `security.rules.json` és a `database.rules.json` **ma nincs szinkronban** — a `chats/$chatId/messages` (N. blokk javítása), a `walls/$uid/.read` és a `walls/$uid/{failures,successes}/.write` `device_map`-ága, valamint a `notifications` node **csak a `database.rules.json`-ban** van a helyes formájában. A `security.rules.json` a **dokumentált forrás**, tehát a drift visszairányú: **előbb vissza kell porolni**, csak utána szabad új szabályt írni
+- [ ] `security.rules.json` — a `chats/$chatId/messages` szabály visszaportolása a deployolt (N. blokk szerinti) alakra
+- [ ] `security.rules.json` — a `walls/$uid` `.read` és `.write` szabályok visszaportolása (a `device_map` ág)
+- [ ] `security.rules.json` — a P./T. blokk új szabályai **kommentekkel** (miért `!= 'anonymous'`, miért gyerek-szintű `.write`)
+- [ ] `security.rules.json` — RTDB séma-komment kiegészítése: `friends`, `friendRequests`, `outgoingRequests`, `chats`, `sessions`, `walls` (ma csak `users`, `device_map`, `notifications` szerepel)
+- [ ] `database.rules.json` **regenerálása** a `security.rules.json`-ból a dokumentált one-linerrel (`security.rules.json:30-33`) — **kézi szerkesztés tilos**
+- [ ] Deploy + a deployolt szabály visszaellenőrzése a Console-ban
+- [ ] `.claude/lessons-learned.md` — bejegyzés: „a UI-gate nem hozzáférés-vezérlés"; és: „egy némán megbukó írás véletlenül teljesíthet egy követelményt — a javítás iránya ilyenkor nem a hiba elhárítása"
+- [ ] `.claude/references/architecture-current.md` — a kétrétegű (UI + rules) vendég-kapu rögzítése
 
 ---
 
@@ -449,13 +619,17 @@ friend mód (friendWallTargetUid):
 isGuest = !authUser || authUser.isAnonymous          # a barát-gráf a GOOGLE auth uid-ra kulcsol
 
 1. réteg — MainMenu (megelőzés)
-   guardedNav(phase, noticeKey) = isGuest ? () => setGuestNoticeKey(noticeKey)
-                                          : () => transitionTo(phase)
+   guardedNav(phase, noticeKey) =
+       isGuest ? () => addToast("warning", t(noticeKey), GUEST_NOTICE_DURATION_MS)
+               : () => transitionTo(phase)
    Barátok gomb  →  🔒 prefix + title tooltip
-                 →  kattintás: setGuestNoticeKey("friends.guestNotice")   (NEM transitionTo("friends"))
-                 →  <p role="status">{t(guestNoticeKey)}</p>
-                 →  sikeres bejelentkezés → useEffect(!isGuest) → a notice eltűnik
+                 →  kattintás: warning toast a bal felső sarokban   (NEM transitionTo("friends"))
+                 →  GUEST_NOTICE_DURATION_MS = 7000 (kétmondatos üzenet), auto-dismiss
+                 →  ismételt kattintás: addToast no-op, amíg ugyanaz a toast látható
    RTDB listenerek (subscribeFriends / subscribeUnreadCount) vendégnél EL SEM INDULNAK
+
+   (2026-07-29 előtt: guestNoticeKey state + <p role="status"> a gombok alatt,
+    .guestNotice CSS osztállyal — lásd [[015-toast-notification]] H. blokk / 0.9)
 
 2. réteg — ScreenRouter (perzisztált fázis)
    isGuest = authStatus !== "loading" && (!authUser || authUser.isAnonymous)
@@ -468,6 +642,144 @@ isGuest = !authUser || authUser.isAnonymous          # a barát-gráf a GOOGLE a
 ```
 
 **Miért kell a második réteg?** Mert a `gamePhase` **perzisztálódik** ([[007-state-persist-page-refresh]]): kijelentkezés egy social képernyőn, vagy F5 egy localStorage-ból visszaállított social fázisba, megkerülné a főmenü gombját.
+
+### 1.8 Vendég-őr — a HARMADIK réteg: rules (P. blokk, 2026-07-29)
+
+Az 1.7 két rétege **kizárólag kliensoldali**. Egy DevTools konzolból kiadott `set(ref(db, 'friends/…'), …)` mindkettőt megkerüli. A harmadik réteg a valódi határ:
+
+```
+1. réteg — MainMenu guardedNav      →  UX: érthető üzenet, 🔒 prefix        (megelőzés)
+2. réteg — ScreenRouter blockPhase  →  perzisztált fázis visszairányítása   (megelőzés)
+3. réteg — RTDB security rules      →  auth.token.firebase.sign_in_provider (KIKÉNYSZERÍTÉS)
+                                        != 'anonymous'
+```
+
+**A feltétel alakja — és miért negatív:**
+
+```jsonc
+// Egységes, minden érintett node .write-jában:
+"auth != null && auth.token.firebase.sign_in_provider != 'anonymous'"
+```
+
+| Változat | Miért nem |
+|---|---|
+| `== 'google.com'` | Egy jövőbeli email/jelszó, Apple vagy OIDC provider **némán** kiesne. A követelmény „nem-anonim", nem „Google". |
+| `== 'google'` | **Rossz érték.** A `sign_in_provider` Google-nél `"google.com"` — a provider ID, nem a rövid név. |
+| `auth.provider != 'anonymous'` | Legacy (Firebase 2.x) mező; modern SDK-val nem megbízható. |
+| Kliensoldali flag (`usersPublic/{uid}/registered: true`) | **Kör-hivatkozás:** a flag maga is kliens-írható → egy vendég beírhatná magának. Nem hozzáférés-vezérlés. |
+
+**Melyik node kap gate-et:**
+
+| Node | `.write` gate | `.read` gate | Indok |
+|---|---|---|---|
+| `usersPublic/$uid` | ✅ nem-anonim | — (marad `auth != null`) | **Ez a láthatóság kapcsolója.** Nincs sor → nincs keresőtalálat, nincs UID-lookup, nincs jelenlét |
+| `friends/$uid/$friendUid` | ✅ | — (`$uid == auth.uid`) | Barátkozás fiókhoz kötött |
+| `friendRequests/$uid/$fromUid` | ✅ | — (`$uid == auth.uid`) | Barátkérés fiókhoz kötött |
+| `outgoingRequests/$uid/$toUid` | ✅ | — | Ugyanaz, küldő oldalon |
+| `chats/$chatId/{participants,messages,unread,typing}` | ✅ | — (résztvevőkre szűkítve, N. blokk) | Chat üzenet küldése fiókhoz kötött |
+| `notifications/$uid/$notificationId` (**peer-push ág**) | ✅ | — | Vendég ne tudjon toastot küldeni idegen inboxba |
+| `notifications/$uid` (**tulajdonos ág**) | ❌ változatlan | ❌ változatlan | A vendég inboxa üres; a szigorítás csak regressziót okozna (mark-read, törlés) |
+| `walls/$uid` | ❌ változatlan | ❌ változatlan | Lásd 1.9 |
+| `users/$key`, `device_map` | ❌ változatlan | ❌ változatlan | Device-hoz kötött játékadat — nem social |
+
+### 1.9 Két kulcs, két irány — miért NEM egységesítünk mindent `authUid`-re (R. blokk)
+
+```
+                     ┌──────────────────────────────────────────────┐
+rtdbKey              │  users/{rtdbKey}      device-hez kötött       │
+(anon: deviceId)     │  walls/{rtdbKey}      játékadat  →  MARAD     │
+                     └──────────────────────────────────────────────┘
+                     ┌──────────────────────────────────────────────┐
+authUid              │  friends/ friendRequests/ outgoingRequests/  │
+(mindig auth.uid)    │  notifications/ chats/    →  MÁR MA IS jó    │
+                     └──────────────────────────────────────────────┘
+                     ┌──────────────────────────────────────────────┐
+usersPublic          │  regisztrált: authUid  (== rtdbKey, 009)     │
+(a hasadás helye)    │  vendég:      NEM ÍRJUK  →  láthatatlan      │
+                     └──────────────────────────────────────────────┘
+```
+
+**Miért nem írjuk át a `usersPublic`-ot `authUid`-re vendégnél?** Mert az **pont a követelmény ellentéte**: a vendég ekkor kapna publikus sort, megjelenne a keresőben és lenne jelenlét-státusza. A helyes javítás: **vendégnél az írás el sem indul**. A hatás felhasználói szempontból változatlan (ma is nincs sora) — a különbség az, hogy ma egy **némán megbukó** írás állítja elő, holnap egy **szándékos kapu**.
+
+**Miért marad a `walls/` `rtdbKey`-en?** Három ok:
+
+1. A vendég falának **nincs olvasóközönsége** — senki nem látja őt, tehát a fal barát-olvasási grantje értelmezhetetlen.
+2. A `collectGuestWallUpdates` (`userData.ts:529-549`) a **`walls/{deviceId}`** ágat olvassa és viszi át `walls/{targetUid}` alá linkeléskor ([[010-firebase-guest-merge-single-gate]]). Ha vendégnél `walls/{anonUid}`-re írnánk, a migráció **nem találná meg** → **adatvesztés** minden linkeléskor.
+3. A `walls/$uid/{failures,successes}/.write` szabály `$uid == auth.uid`-ot **is** enged (`database.rules.json:92,95`) → a `walls/{anonUid}` írás **sikerülne**, tehát a hiba **néma** lenne. Ez a legveszélyesebb változat: működőnek látszó adatvesztés.
+
+### 1.10 Belépési pontok a social fázisokba — teljes lista (S. blokk)
+
+| Fázis | Belépési pont | Védve? |
+|---|---|---|
+| `friends` | `MainMenu.tsx:159` → `guardedNav("friends", "friends.guestNotice")` | ✅ 1. réteg |
+| `friends` | `ChatScreen.tsx:29` (nincs célpont) és `:68` (Vissza gomb) | ✅ közvetve — a `ChatScreen` csak nem-vendégnek renderelődik |
+| `friends` | `ScreenRouter.tsx:109` (Vissza a barát faláról) | ✅ közvetve — ugyanaz |
+| `friends` / `chat` / `friendWall` | **perzisztált `gamePhase`** (F5, kijelentkezés a képernyőn) | ✅ 2. réteg (`blockPhase`) |
+| `chat` | `FriendsScreen.tsx:324-330` `openChat` | ✅ közvetve — a `FriendsScreen` már csak nem-vendégnek renderelődik |
+| `friendWall` | `FriendsScreen.tsx:415-418` | ✅ közvetve — ugyanaz |
+| — | `useNotificationListener` / `useFriendPresenceToasts` toastjai | ✅ **nem navigálnak** (csak megjelenítenek). Kattintható toast bevezetésekor `guardedNav` kötelező |
+
+**Következtetés:** új *navigációs* lyuk **nincs**; a `MainMenu` + `ScreenRouter` kettős lefedi az összes utat. A hiányzó védelem a **művelet** szintjén van: a `sendFriendRequest` / `sendMessage` hívások előtt nincs kliensoldali őr, ezért a rules-elutasítás **néma hibaként** jelenne meg. Ezt zárja le az S. blokk.
+
+### 1.11 A friend-gráf írási szabályai — szülő-szintről gyerek-szintre (T. blokk)
+
+**Ma (szülő-szintű `.write`) — két támadás:**
+
+```
+① Hamis inbox-bejegyzés + eszkaláció
+   set(ref('friendRequests/{támadó}/{áldozat}'), { from: '{áldozat}', … })
+        ▲ engedi: friendRequests/$uid/.write  →  $uid == auth.uid        (rules:30)
+        │
+        ▼
+   set(ref('friends/{áldozat}/{támadó}'), true)
+        ▲ engedi: friends/$uid/.write  →  root.child('friendRequests')
+        │            .child(auth.uid).child($uid).exists()               (rules:18)
+        ▼
+   a támadó BENNE VAN az áldozat barátlistájában  →  megnyílik walls/{áldozat}
+
+② Barátlista-törlés
+   set(ref('friends/{áldozat}'), { '{támadó}': true })
+        ▲ ugyanaz a szülő-szintű .write ág, de a set() a TELJES node-ot cseréli
+        ▼
+   az áldozat összes barátja ELTŰNIK
+```
+
+**Új alak (gyerek-szintű `.write` + `.validate`):**
+
+```jsonc
+"friendRequests": {
+  "$uid": {
+    ".read": "auth != null && $uid == auth.uid",
+    /* NINCS szülő-szintű .write → set() nem cserélheti le az inboxot */
+    "$fromUid": {
+      ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous' && (
+                   ($fromUid == auth.uid && !data.exists())         /* küldő: csak ÚJAT */
+                   || ($uid == auth.uid && (data.exists() || !newData.exists()))
+                 )",                                               /* tulajdonos: csak MEGLÉVŐT */
+      ".validate": "!newData.exists() || newData.child('from').val() === $fromUid"
+    }
+  }
+},
+"friends": {
+  "$uid": {
+    ".read": "auth != null && $uid == auth.uid",
+    /* NINCS szülő-szintű .write */
+    "$friendUid": {
+      ".write": "auth != null && auth.token.firebase.sign_in_provider != 'anonymous' && (
+                   $uid == auth.uid                                              /* (a) tulajdonos */
+                   || ($friendUid == auth.uid && newData.val() === true
+                       && root.child('friendRequests').child(auth.uid).child($uid).exists())
+                                                                                 /* (b) elfogadó */
+                   || ($friendUid == auth.uid && data.exists() && !newData.exists())
+                 )"                                                              /* (c) removeFriend */
+    }
+  }
+}
+```
+
+**A (c) ág nélkül a `removeFriend` eltörik.** A `removeFriend` (`userData.ts:1091-1102`) a **másik fél** listájából is töröl (`friends/{friendUid}/{uid}: null`), és ilyenkor a friend request **már rég nem létezik** — a (b) ág `exists()` feltétele tehát nem segít. A mai szabály harmadik ága (`data.child(auth.uid).val() === true && newData.child(auth.uid).val() === null`, `database.rules.json:18`) pontosan ezt fedi le szülő-szinten; gyerek-szinten ez a (c).
+
+> ⚠️ **Multi-path csapda.** Az `acceptFriendRequest` / `rejectFriendRequest` **root multi-path `update`**-et használ (`userData.ts:1053-1058`, `:1079-1082`). Az RTDB minden útvonalat külön értékel ki, de **EGY** elbukó path az **EGÉSZ** írást megbuktatja — és a hiba `PERMISSION_DENIED`, ami ma `console.error`-ba fut. A 8.6 táblázat path-onként vezeti végig mind a négy műveletet.
 
 ---
 
@@ -500,10 +812,14 @@ src/components/routing/ScreenRouter.tsx           # +"friends", +"friendWall", +
                                                   #  +vendég-őr: blockPhase → transitionTo("mainMenu") + <MainMenu />
                                                   #  needsAccount = friends | chat | friendWall | shop (a shop: 002 F rész)
                                                   #  (authStatus "loading" NEM vendég) — O. blokk
-src/components/screens/MainMenu.tsx               # "Barátok" gomb; +isGuest → 🔒 prefix, guestNotice (role="status"),
+src/components/screens/MainMenu.tsx               # "Barátok" gomb; +isGuest → 🔒 prefix, guestNotice,
                                                   #  title tooltip, listenerek kihagyása vendégnél — O. blokk;
-                                                  #  guestNoticeKey: string | null + guardedNav() helper (002 F rész)
+                                                  #  guardedNav() helper (002 F rész)
+                                                  #  2026-07-29: a notice toastból jön (addToast, 7000 ms) —
+                                                  #  guestNoticeKey state + a hozzá tartozó useEffect TÖRÖLVE
+                                                  #  (015-toast-notification H. blokk)
 src/components/screens/MainMenu.module.css        # +.guestNotice — O. blokk
+                                                  #  2026-07-29: az osztály TÖRÖLVE (a notice toast lett)
 src/components/screens/FriendsScreen.tsx          # +"View Wall of Shame" gomb → transitionTo("friendWall");
                                                   #  💬 gomb → setChatTarget + transitionTo("chat") (a ChatPanel import + beágyazott render kikerült)
 src/components/screens/WallOfShame.tsx            # +read-only mód paraméter (opcionális, újrahasználható);
@@ -523,6 +839,51 @@ database.rules.json                                # Regenerálva; chats/$chatId
 src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 ```
 
+### Új fájlok (2026-07-29, P.–W. blokk)
+```
+src/test/rules/setup.ts                     # initializeTestEnvironment + auth-context helperek
+                                            #  (google.com / anonymous sign_in_provider)
+src/test/rules/guestGate.rules.test.ts      # vendég-tiltás (8.7 / 1–8.)
+src/test/rules/friendGraph.rules.test.ts    # támadási minták (8.7 / 9–13.)
+src/test/rules/friendFlow.rules.test.ts     # legitim flow-k, path-onként ÉS multi-path-ként (8.7 / 14–22.)
+src/test/rules/linkedToken.rules.test.ts    # linkelés utáni első írás (8.7 / 23–24.)
+vitest.rules.config.ts                      # environment: "node", emulátor-függő projekt
+                                            #  (a fő konfig jsdom + src/test/setup.ts — itt nem kell)
+```
+
+### Módosuló fájlok (2026-07-29, P.–W. blokk)
+```
+security.rules.json                         # ⚠️ ELŐBB a drift visszaportolása (W.):
+                                            #   chats/$chatId/messages (N. blokk), walls/$uid device_map-ág
+                                            #  MAJD: sign_in_provider gate (P.), gyerek-szintű .write (T.),
+                                            #        séma-komment kiegészítés (friends/chats/sessions/walls)
+database.rules.json                         # REGENERÁLVA a security.rules.json-ból + DEPLOY
+firebase.json                               # +emulators blokk (database port, singleProjectMode)
+package.json                                # +@firebase/rules-unit-testing, +firebase-tools (dev),
+                                            #  +"test:rules" script
+src/firebase/auth.ts                        # +getSignInProvider(), +isRegisteredToken();
+                                            #  startGoogleAuth: linkWithPopup után signInWithCredential
+                                            #  (friss sign-in event, a uid megmarad) — Q. blokk
+src/firebase/authBootstrap.ts               # :165 updateOnlineStatus, :169-171 onDisconnect,
+                                            #  :176-178 updateUserPublicProfile → vendégnél KIHAGYVA;
+                                            #  +isRegisteredToken mérés a store-ba
+src/firebase/userData.ts                    # updateUserPublicProfile / updateOnlineStatus: közös
+                                            #  "csak regisztrált user" kapu (withRegisteredUser);
+                                            #  paraméter authUid-re átnevezve (nem rtdbKey);
+                                            #  sendFriendRequest / sendMessage: felszínre hozott hibaág
+src/state/useAuthStore.ts                   # +tokenRegistered: boolean | null (Q. blokk)
+src/App.tsx                                 # :218-227 usersPublic írás, :649/:660/:666 updateOnlineStatus
+                                            #  → vendégnél kihagyva
+src/components/screens/SettingsScreen.tsx   # :78 usersPublic írás → vendégnél kihagyva
+                                            #  (:184 offline-írás MARAD — regisztrált user saját sora)
+src/components/screens/FriendsScreen.tsx    # kliens oldali őr sendFriendRequest/accept előtt + error toast
+src/components/screens/ChatScreen.tsx       # kliens oldali őr sendMessage előtt + error toast
+src/components/routing/ScreenRouter.tsx     # isGuest kiegészítése: tokenRegistered === false (Q. blokk)
+src/components/screens/MainMenu.tsx         # ugyanaz az isGuest kiegészítés
+.claude/lessons-learned.md                  # „a UI-gate nem hozzáférés-vezérlés"
+.claude/references/architecture-current.md  # háromrétegű vendég-kapu
+```
+
 ---
 
 ## 3. Függőségek
@@ -535,6 +896,19 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 - **Érinti:** [[009-firebase-identity-split-bugfix]] — a rtdbKey/uid invariáns biztosítja, hogy a barátok és chat a helyes user node-okhoz kapcsolódnak; a `walls/{uid}` kulcs is innen jön (bejelentkezve `auth.uid`)
 - **Előfeltétel/kölcsönös:** [[012-wall-of-shame]] — a barát szégyenfala a `walls/{uid}` node barát-olvasási szabályára épül (012 O. blokk). A 012 **azért** vezette be a top-level `walls` node-ot, mert a `users/$key/.read` szülő szinten blokkolja a barát-hozzáférést. A legacy fallback olvasás (L. blokk) a 012 migrációjának hatóköri korlátját (csak a tulajdonos migrál) fedi le.
 - **Érinti:** [[010-firebase-guest-merge-single-gate]] — a vendég fala a guest→Google váltáskor kerül át `walls/{deviceId}` → `walls/{targetUid}`; enélkül a barát-rendszer (ami `auth.uid`-del kulcsol) nem látná
+
+### A P.–W. blokk függőségei (2026-07-29)
+
+- **Ugyanaz a hibaosztály:** [[009-firebase-identity-split-bugfix]] — a `selectRtdbKey` / `getRtdbKey` (`useAuthStore.ts:48-52`) a 009-ben született, és a `users/` node hasadását zárta le. **Ez a bővítés ugyanannak a hasadásnak a social/publikus oldalát** (`usersPublic`, `onlineStatus`) számolja fel — más eszközzel (kapu, nem kulcscsere), mert itt a láthatatlanság **követelmény**, nem hiba.
+- **Kölcsönös:** [[010-firebase-guest-merge-single-gate]] — a `collectGuestWallUpdates` (`userData.ts:529-549`) a `walls/{deviceId}` ágra épül. Az R. blokk döntése (a `walls/` **nem** áll át `authUid`-re) **ennek a migrációnak a feltétele**; a U. blokk tesztje ezt regressziósan lefedi.
+- **Előfeltétel:** [[003-firebase-auth-settings]] — az RTDB séma és a rules eredeti forrása; a `security.rules.json` ↔ `database.rules.json` kettősség onnan származik (W. blokk).
+- **Érinti:** [[015-toast-notification]] — az S. blokk kliensoldali őrei a meglévő toast rendszert használják (`friends.guestNotice` warning toast, `GUEST_NOTICE_DURATION_MS = 7000`); a rules-elutasítás **error** toastot kap.
+- **Érinti:** [[012-wall-of-shame]] — a `walls/` kulcsdöntés (1.9) itt dől el véglegesen; a T. blokk (1) lyukának mellékhatása, hogy a hamis barátság **megnyitná a `walls/{áldozat}` olvasását** is.
+- **Érinti:** [[018-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a vendég-spam vektort zárja.
+- **Érinti:** [[002-ingame-shop-frontend]] — az O. blokk `needsAccount` listája a `shop` fázist is tartalmazza; a Q. blokk `tokenRegistered` kiegészítése **a shopot is érinti** (egy frissen linkelt user ne essen ki a boltból sem).
+- **Új dev-függőség:** `@firebase/rules-unit-testing` + `firebase-tools` + RTDB emulátor (U. blokk). Ez a projekt **első** emulátor-függő tesztje.
+- **Végrehajtási branch:** `develop`.
+- **Kézi (nem kódolható) lépések:** Firebase Console — rules deploy, valamint a V. blokk / 9. szekció adattakarítása.
 
 ---
 
@@ -593,6 +967,24 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 | `multiplayer.sessionEnded` | The session has ended | A munkamenet véget ért |
 | `multiplayer.inviteReceived` | {{name}} invited you to a mission! | {{name}} meghívott egy küldetésbe! |
 
+### 4.1 i18n a P.–W. blokkhoz (2026-07-29)
+
+**Alapelv: a meglévő kulcsok újrahasznosítása a preferált.** Ez a bővítés hozzáférés-vezérlés, nem új funkció — a felhasználó számára a viselkedés ugyanaz marad, mint az O. blokk óta.
+
+| Eset | Kulcs | Státusz |
+|---|---|---|
+| Vendég a Barátok/Chat gombra kattint | `friends.guestNotice` | ✅ **létezik**, mind az 5 nyelven — **újrahasznosítjuk** (S. blokk kliensoldali őrei is ezt használják) |
+| Vendég a Shop gombra kattint | `shop.guestNotice` | ✅ létezik, változatlan |
+| Barátkérés / üzenetküldés rules-elutasítás | `login.error.generic` | ✅ létezik — **javasolt újrahasznosítás** error toastként |
+
+**Feltételesen új kulcs — a Q. blokk „jelentkezz be újra" esete:**
+
+| Kulcs | en | hu | Mikor kell |
+|---|---|---|---|
+| `login.reauthRequired` | Please sign in again to use the social features. | Jelentkezz be újra a közösségi funkciók használatához. | **Csak akkor**, ha a 8.3 mérés azt mutatja, hogy a `linkWithPopup` utáni token `sign_in_provider`-e `"anonymous"` marad, **és** a Q. blokk `signInWithCredential` megoldása nem elég |
+
+> ⚠️ Ha a `login.reauthRequired` kulcs mégis kell, az **mind az 5 nyelven** (`en`, `hu`, `fr`, `de`, `es`) kötelező, teljes paritással — ez az **`i18n` agent feladata** ([[000-i18n-nyelvesites]]). A `planner`/`react-dev` agent **ne** írjon fordítást.
+
 ---
 
 ## 5. Kockázatok / figyelmeztetések
@@ -639,8 +1031,36 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 - **A social funkciók a Google auth uid-ra kulcsolnak.** Vendégnek (kijelentkezett **vagy** anonim) nincs tartós social identitása → a Barátok menü **letiltva**, a hozzászólás-számláló listenerek **el sem indulnak**.
 - **A gomb letiltása önmagában nem elég.** A `gamePhase` perzisztálódik ([[007-state-persist-page-refresh]]), ezért a `ScreenRouter`-ben is kell **vendég-őr** — kijelentkezés egy social képernyőn vagy F5 egy visszaállított social fázisba különben megkerülné a menüt.
 - **⚠️ Az auth aszinkron feloldódása nem lehet „vendég".** A `status === "loading"` **nem** számít vendégnek — enélkül minden oldalfrissítés kidobná a bejelentkezett játékost a chatből/barát-falról, mielőtt az auth megérkezne. Ugyanaz az időzítési hibaosztály, mint a [[012-wall-of-shame]] R. blokkjában (a fiókváltás-figyelő kiindulási értéke sem indulhat `null`-ról).
-- **Tájékoztatás, nem néma tiltás.** A letiltott gomb visszajelzés nélkül hibának látszik: ezért 🔒 prefix + `title` tooltip + `role="status"` üzenet, ami sikeres bejelentkezés után **automatikusan eltűnik**.
-- **A minta újrahasznosítható, de két helyen kell karbantartani.** A `MainMenu` gombja és a `ScreenRouter` `needsAccount` listája **külön** kód: új, fiókot igénylő fázisnál mindkettőt bővíteni kell (a `shop` felvétele — [[002-ingame-shop-frontend]] F rész — pontosan ezt az utat járta be). A notice-t tartó state ezért lett `boolean` helyett **`guestNoticeKey: string | null`**, a navigáció pedig a közös `guardedNav(phase, noticeKey)` helperbe került.
+- **Tájékoztatás, nem néma tiltás.** A letiltott gomb visszajelzés nélkül hibának látszik: ezért 🔒 prefix + `title` tooltip + tájékoztató üzenet. **2026-07-29 óta** az üzenet **warning toast** (`GUEST_NOTICE_DURATION_MS = 7000`), ami magától eltűnik, és ismételt kattintásra sem duplikálódik (az `addToast` no-op, ha azonos típusú és szövegű toast még látható) — [[015-toast-notification]] H. blokk / 0.9.
+- **A minta újrahasznosítható, de két helyen kell karbantartani.** A `MainMenu` gombja és a `ScreenRouter` `needsAccount` listája **külön** kód: új, fiókot igénylő fázisnál mindkettőt bővíteni kell (a `shop` felvétele — [[002-ingame-shop-frontend]] F rész — pontosan ezt az utat járta be). A navigáció ezért került a közös `guardedNav(phase, noticeKey)` helperbe; a notice-t azonosító i18n kulcsot a helper adja tovább a toast rendszernek (a korábbi `guestNoticeKey: string | null` state 2026-07-29-én megszűnt).
+
+### 5.10 A UI-gate nem hozzáférés-vezérlés (P. blokk, 2026-07-29)
+
+- **A mai teljes védelem a `MainMenu` `guardedNav`-ja és a `ScreenRouter` `blockPhase`-e.** Mindkettő **kliensoldali**. Egy DevTools konzolból kiadott közvetlen RTDB írás mindkettőt megkerüli — és a `friends` / `friendRequests` / `chats` szabályok ma **nem** kérdezik meg, hogy a user anonim-e.
+- **A kapu és a következménye nem ugyanaz a réteg.** Az O. blokk azt oldotta meg, hogy a vendég **ne lásson** üres/hibás képernyőt. Ez a blokk azt, hogy a vendég **ne tudjon írni**. A kettőt együtt kell karbantartani: ha a rules szigorúbb, mint a UI, néma `PERMISSION_DENIED` lesz; ha a UI szigorúbb, mint a rules, a védelem látszat.
+- **⚠️ Deploy-kötelezettség.** A `database.rules.json` módosítása **csak deploy után** hat (az N. blokk tanulsága). A P./T. blokk kódmódosításai a deploy **előtt** nem tesztelhetők élesben.
+
+### 5.11 A `sign_in_provider` egyetlen pontja — a terv legnagyobb kockázata (Q. blokk)
+
+- **Az egész P. blokk egyetlen token-claimre épül.** Ha a `auth.token.firebase.sign_in_provider` nem úgy viselkedik, ahogy feltételezzük (különösen `linkWithPopup` után), a szigorítás **a saját felhasználóinkat zárja ki**, nem a vendégeket. Részletes elemzés + nyitott kérdés: **8.3**.
+- **A linkelés a fő útvonal, nem a kivétel.** A `startGoogleAuth` (`src/firebase/auth.ts:36-38`) **anonim sessionre `linkWithPopup`**-ot hív, hogy a uid és minden RTDB adat megmaradjon. Vagyis a tipikus regisztrált user **linkelt anonim userként** keletkezik — pontosan az az eset, ahol a `sign_in_provider` claim gyanús.
+- **A tünet, ha rosszul mérünk fel:** egy frissen linkelt user `!user.isAnonymous` (a kliens szerint regisztrált, a UI beengedi), de a **rules** anonimnak látja → minden friend/chat írása `PERMISSION_DENIED`, akár **1 órán át** (a token élettartama), és a `.catch(console.error)` miatt **némán**.
+- **Mitigáció:** (1) mérés **először**, kód **utána** (U. blokk); (2) `signInWithCredential` a link után (friss sign-in event); (3) kliensoldali előrejelzés `getIdTokenResult().signInProvider`-rel, hogy a hiba **soha ne legyen néma**.
+- **A már linkelt, meglévő userek** perzisztált sessionje **régi** tokent hordozhat. A Q. blokk „legacy user" ága nélkül ők is kizáródnának, amíg ki-be nem jelentkeznek.
+
+### 5.12 Rules-szigorítás regressziós kockázata (T. blokk)
+
+- **A multi-path `update` mindent vagy semmit.** Az `acceptFriendRequest` / `rejectFriendRequest` / `sendFriendRequest` / `removeFriend` root `update()`-eket ad ki; **egy** elbukó path az egész műveletet megbuktatja. A 8.6 táblázat path-onkénti átvezetése **kötelező** a deploy előtt.
+- **A `removeFriend` a legkönnyebben eltörhető.** A másik fél listájából való törléshez a friend request már nem létezik → csak a (c) ág menti meg. Ha kimarad, a barát-eltávolítás féloldalasan hajtódik végre: az egyik listán marad a bejegyzés → **inkonzisztens gráf**.
+- **Az `.validate` szigorúbb, mint amire számítunk.** Az RTDB `.validate` **nem** fut törléskor (`newData` nem létezik), ezért a `!newData.exists() ||` előtag kötelező — enélkül a szabály viselkedése implementációfüggőnek látszik és félrevezet.
+- **Szigorítás, nem lazítás — de mérve.** Minden új szabály a mainál szigorúbb. Egy szigorítás hibája **funkcióvesztés**, nem biztonsági rés — ezért a U. blokk teszteseteinek **fele legitim flow**, nem támadás.
+- **A T. blokk függetlensége.** A T. blokk lyukai **nem** okozták a `UVJYm…` esetet. Ne kerüljön a commit üzenetébe vagy a lessons-learnedbe olyan megfogalmazás, ami ezt sugallja — egy későbbi olvasó rossz irányba indulna.
+
+### 5.13 Néma megtagadás — a visszatérő hibaosztály (R./S. blokk)
+
+- **Harmadszor ugyanaz.** N. blokk: néma `PERMISSION_DENIED` → „nincs még üzenet". L. blokk: néma megtagadás → „üres fal". Most: néma megtagadás → „a vendégnek nincs `usersPublic` sora". **Minden alkalommal egy `.catch(console.error)` vagy egy hiányzó `onValue` error-callback rejtette el.**
+- **A szabály:** ha egy írás **elvárt** módon bukhat el (pl. vendég), akkor **el se induljon** (kapu). Ha **nem elvárt** módon bukik el, akkor **látszódjon** (toast + log). A `.catch(console.error)` csak akkor marad, ha a hiba tényleg mellékes (pl. `sendNotification` — egy elmaradt toast nem törhet meg egy sikeres barátkérést).
+- **Veszélyes eset: a néma SIKER.** Az 1.9 (3) pontja szerint a `walls/{anonUid}` írás **sikerülne** — és mégis adatvesztéshez vezetne a linkeléskor. A néma megtagadásnál csak a néma *helytelen siker* rosszabb.
 
 ---
 
@@ -667,11 +1087,24 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 
 ### Bővítés (2026-07-28) — O. blokk (vendég-hozzáférés)
 
-- **A Barátok menü csak regisztrált (Google) usernek elérhető.** Vendégnél (kijelentkezett vagy anonim) a gomb 🔒 prefixet kap, kattintásra nem navigál, hanem a `friends.guestNotice` üzenetet mutatja (`role="status"` + `title` tooltip); a notice sikeres bejelentkezés után eltűnik.
+- **A Barátok menü csak regisztrált (Google) usernek elérhető.** Vendégnél (kijelentkezett vagy anonim) a gomb 🔒 prefixet kap, kattintásra nem navigál, hanem a `friends.guestNotice` üzenetet mutatja (`title` tooltip + tájékoztató üzenet). **2026-07-29 óta** ez **warning toast** a bal felső sarokban, 7000 ms auto-dismissel, ismételt kattintásra sem duplikálódva ([[015-toast-notification]] H. blokk) — korábban beágyazott `<p role="status">` volt a gombok alatt.
 - **Vendégnél a hozzászólás-számláló RTDB listenerek el sem indulnak.**
 - **A perzisztált social fázis (`friends` / `chat` / `friendWall`) vendégnél a főmenübe irányít vissza** — a `status === "loading"` **nem** számít vendégnek, így az oldalfrissítés a bejelentkezett játékost nem dobja ki. *(A `shop` fázis ugyanezt a listát kapta meg a [[002-ingame-shop-frontend]] F részében.)*
 - **i18n:** `friends.guestNotice` mind az 5 nyelven.
 - **Ellenőrzés:** `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres.
+
+### Bővítés (2026-07-29) — P.–W. blokk (kötelező regisztráció, rules szinten is)
+
+- **Vendég egyáltalán nem látható:** nincs `usersPublic` sora, nem jelenik meg a keresőben, nem található UID-lookuppal, nincs jelenlét-státusza. Ez már **nem** egy némán megbukó írás mellékhatása, hanem **szándékos kapu** (R. blokk).
+- **Csak nem-anonim user barátkozhat és küldhet chat üzenetet** — és ezt a **security rules** kényszeríti ki (`auth.token.firebase.sign_in_provider != 'anonymous'`), nem csak a UI. Egy közvetlen RTDB írás DevTools konzolból **elbukik**.
+- **Három réteg, nem kettő:** `MainMenu.guardedNav` (UX) → `ScreenRouter.blockPhase` (perzisztált fázis) → **RTDB rules** (kikényszerítés).
+- **A `linkWithPopup` utáni token bizonyítottan regisztrált providert hordoz** (Q. blokk) — vagy ha nem, a kliens ezt **előre felismeri** (`getIdTokenResult().signInProvider`) és **érthető üzenetet** ad, nem néma `PERMISSION_DENIED`-et.
+- **A friend-gráf írási szabályai gyerek-szintűek:** senki nem gyárthat hamis inbox-bejegyzést, nem írhatja be magát egyoldalúan más barátlistájába, és **egyetlen `set()` sem törölheti le** más teljes barátlistáját (T. blokk). A `removeFriend` a friend request hiányában is működik.
+- **Rules-tesztek futnak:** `@firebase/rules-unit-testing` + RTDB emulátor; a 8.7 mátrix mind a 24 esete zöld — **támadási minták ÉS legitim flow-k** (a multi-path `update`-ek path-onként **és** egyben is).
+- **A `security.rules.json` és a `database.rules.json` szinkronban van**, a `database.rules.json` **regenerált** (nem kézzel szerkesztett), és **deployolva**.
+- **A pre-gate vendég-barátságok eltakarítva** (9. szekció), a `users/{deviceId}` és `walls/{deviceId}` vendég-adat **érintetlen**.
+- **Nincs néma hiba:** a rules-elutasítás minden social műveletnél toastként jelenik meg; ahol az elutasítás **elvárt** (vendég), ott a hívás el sem indul.
+- `tsc --noEmit` · `npm run test` · `npm run test:rules` (emulátorral) · `npm run build` — **mind zöld**.
 
 ---
 
@@ -683,6 +1116,18 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json  # 35+ új kulcs
 - [[009-firebase-identity-split-bugfix]] — a `getRtdbKey()` / `selectRtdbKey` invariáns adja a `walls/{uid}`, `friends/{uid}`, `chats/{chatId}` kulcsokat.
 - [[003-firebase-auth-settings]] — **előfeltétel.** Firebase Auth + az eredeti RTDB séma és rules forrása.
 - [[007-state-persist-page-refresh]] — a `chatTargetUid` / `chatTargetName` perzisztálás ugyanabba a `useGameStore` `partialize`-ba illeszkedik; a session állapot szándékosan **nem** perzisztálódik. **Két 2026-07-28-i következmény:** (1) a perzisztált `gamePhase` miatt kell a `ScreenRouter` vendég-őre (O. blokk); (2) fiókváltáskor a `clearUserScopedData` nullázza a `chatTarget*` / `friendWallTarget*` mezőket, mert azok az előző fiók barát-gráfjára mutatnak (007 G. blokk).
-- [[001-main-menu-settings]] — a Barátok gomb és a vendég-tájékoztató (`.guestNotice`) a főmenü panelen él; a főmenü elrendezésének 2026-07-28-i bővítése ott van dokumentálva.
-- [[002-ingame-shop-frontend]] — az O. blokk vendég-őrét az **F rész** terjesztette ki a `shop` fázisra (közös `guardedNav` + `guestNoticeKey`, `needsAccount` lista). A shop-specifikus indoklás és a vállalt következmény (a vendég nem tud vásárolni, csak örökölni kreditet) ott van rögzítve.
+- [[001-main-menu-settings]] — a Barátok gomb a főmenü panelen él; a főmenü elrendezésének 2026-07-28-i bővítése ott van dokumentálva. A vendég-tájékoztató **2026-07-29 óta nem a panelen jelenik meg**, hanem toastként (lásd alább).
+- [[015-toast-notification]] — **a vendég-tájékoztató megjelenítésének kanonikus forrása (2026-07-29).** A `guardedNav` a `friends.guestNotice` üzenetet `addToast("warning", …, GUEST_NOTICE_DURATION_MS)`-szal jeleníti meg; a `guestNoticeKey` state és a `MainMenu.module.css` `.guestNotice` osztálya megszűnt (H. blokk / 0.9). A terv a barátkérés-, chat- és jelenlét-eseményekre is épít toastokat.
+- [[002-ingame-shop-frontend]] — az O. blokk vendég-őrét az **F rész** terjesztette ki a `shop` fázisra (közös `guardedNav` helper + `needsAccount` lista). A shop-specifikus indoklás és a vállalt következmény (a vendég nem tud vásárolni, csak örökölni kreditet) ott van rögzítve.
 - [[000-i18n-nyelvesites]] — a `friends.*`, `chat.*`, `friendWall.*`, `multiplayer.*` kulcsok teljes paritása mind az 5 nyelven.
+
+### A P.–W. blokk kereszthivatkozásai (2026-07-29)
+
+- [[009-firebase-identity-split-bugfix]] — **ugyanaz a hibaosztály, másik fele.** A 009 a `users/` node kulcshasadását zárta le a `selectRtdbKey` / `getRtdbKey` derivált selectorral (`useAuthStore.ts:48-52`). A social/publikus réteg (`usersPublic`, `onlineStatus`) hasadása **ma is él** — a Tünet-szekció és az R. blokk ezt számolja fel. **Fontos különbség:** ott a kulcs egységesítése volt a megoldás, itt a **kapu** — mert a vendég láthatatlansága **követelmény**, nem hiba (1.9).
+- [[010-firebase-guest-merge-single-gate]] — **az R. blokk `walls/` döntésének feltétele.** A `collectGuestWallUpdates` (`userData.ts:529-549`) a `walls/{deviceId}` ágra épül; ha a fal `authUid`-re állna át, a merge **némán adatot vesztene** minden linkeléskor. A U. blokk erre regressziós tesztet ír.
+- [[012-wall-of-shame]] — a `walls/{uid}` kulcs és a barát-olvasási grant forrása. A T. blokk (2) lyukának mellékhatása, hogy a hamis barátság a `walls/{áldozat}` **olvasását is megnyitná** — a gyerek-szintű `.write` ezt is lezárja.
+- [[015-toast-notification]] — az S. blokk kliensoldali őrei ezt a toast rendszert használják: vendégnél **warning** (`friends.guestNotice`, 7000 ms), rules-elutasításnál **error** toast. Kattintható toast bevezetésekor a navigáció **`guardedNav`-on** keresztül menjen (1.10).
+- [[003-firebase-auth-settings]] — az RTDB séma és a `security.rules.json` ↔ `database.rules.json` kettősség forrása. A W. blokk **driftet talált**: a `chats/$chatId/messages` (N. blokk javítása), a `walls/$uid` `device_map`-ága és a `notifications` node csak a **generált** fájlban helyes → a dokumentált forrást vissza kell portolni.
+- [[018-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a **vendég-spam** vektort zárja (ma bármely bejelentkezett user pusholhat toastot **bármely** uid inboxába, ha a `fromUid` a sajátja).
+- [[002-ingame-shop-frontend]] — az O. blokk `needsAccount` listáján a `shop` is rajta van; a Q. blokk `tokenRegistered` kiegészítése ezért **a boltot is érinti**: egy frissen linkelt user ne essen ki a vásárlásból sem.
+- [[016-stripe-fraud-defense]] / [[017-stripe-go-live]] — **közvetve érintett.** A rules-teszt infrastruktúra (U. blokk) az első a projektben; a `wallet` szabályok jövőbeli szigorítása ugyanezt a keretet fogja használni.

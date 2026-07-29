@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-25"
 created_at: "2026-07-25"
-updated_at: "2026-07-28"  # frissítve: vásárlási előzmény RTDB-be, identitásváltás-takarítás, vendég-zár, shop.sort i18n (E–G rész)
+updated_at: "2026-07-29"  # frissítve: vásárlási előzmény RTDB-be, identitásváltás-takarítás, vendég-zár, shop.sort i18n (E–G rész); a vendég-tájékoztató 2026-07-29 óta toast ([[015-toast-notification]] H. blokk)
 author: exphoenee
 step: 2
 phases: []
@@ -94,7 +94,7 @@ tags:
 | `purchaseHistory` perzisztálás | **Megszűnt** a `partialize`-ból — fiókhoz kötött adat nem élhet a böngésző-szintű localStorage-ban ([[007-state-persist-page-refresh]] G. blokk) |
 | Kijelentkezéskori shop-takarítás | **Lokális-only** `setState` (`credits`, `creditsLoaded`, `owned`, `cart`, `purchaseHistory`) — **nem** `resetShop()`, mert az RTDB-be is kiírná a resetet és az elhagyott fiók walletjét rongálná |
 | **Vendég hozzáférése az áruházhoz** (2026-07-28, F rész) | **Nincs.** A vásárlásoknak **túl kell élniük egy eldobható vendég-sessiont**, ezért az áruház regisztrált (Google) fiókot igényel — ugyanaz a kétrétegű minta, mint a barátoknál ([[013-social-multiplayer]] O. blokk) |
-| Vendég visszajelzése | A Áruház gomb **🔒 prefixet** kap; kattintásra **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja (`role="status"`), ugyanez a szöveg a gomb `title` tooltipjében |
+| Vendég visszajelzése | A Áruház gomb **🔒 prefixet** kap; kattintásra **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja, ugyanez a szöveg a gomb `title` tooltipjében. **2026-07-29 óta** az üzenet **warning toast** a bal felső sarokban, nem beágyazott bekezdés ([[015-toast-notification]] H. blokk) |
 | Perzisztált `shop` fázis vendégnél | A `ScreenRouter` a `shop`-ot is a „regisztrált fiókot igénylő" listára teszi (`friends`, `chat`, `friendWall`, `shop`) → vendégnél vissza a főmenübe |
 
 ---
@@ -188,15 +188,17 @@ tags:
 **F rész — Áruház letiltása nem regisztrált usereknél (2026-07-28)**
 
 > A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[017-stripe-go-live]]).
+>
+> ℹ️ **Frissítve (2026-07-29):** az üzenet **megjelenítése** azóta megváltozott — beágyazott bekezdés helyett **warning toast**. Kanonikus leírás: [[015-toast-notification]] H. blokk / 0.9. A `shop.guestNotice` kulcs, a 🔒 prefix, a `title` tooltip és a `ScreenRouter` `needsAccount` listája **változatlan**.
 
 - [x] **Vendég definíció (közös):** `!authUser || authUser.isAnonymous`
 - [x] `MainMenu.tsx` — az Áruház gomb **🔒 prefixet** kap vendégnél
-- [x] `MainMenu.tsx` — kattintás vendégként **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja (`<p role="status">`)
+- [x] `MainMenu.tsx` — kattintás vendégként **nem navigál**, hanem a `shop.guestNotice` üzenetet mutatja — **2026-07-29 óta** `addToast("warning", t("shop.guestNotice"), GUEST_NOTICE_DURATION_MS)` a bal felső sarokban (korábban `<p role="status">` a gombok alatt)
 - [x] `MainMenu.tsx` — ugyanaz a szöveg a gomb `title` tooltipjében
-- [x] **Refaktor:** a `showGuestNotice: boolean` state → **`guestNoticeKey: string | null`**, mert már **két** különböző üzenet van (`shop.guestNotice`, `friends.guestNotice`); a `<p>` a `t(guestNoticeKey)`-t rendereli
-- [x] **Refaktor:** új `guardedNav(phase: "shop" | "friends", noticeKey: string)` helper adja a gomb `onClick`-jét — `isGuest ? () => setGuestNoticeKey(noticeKey) : () => transitionTo(phase)`
+- [x] **Refaktor:** a `showGuestNotice: boolean` state → `guestNoticeKey: string | null`, mert már **két** különböző üzenet van (`shop.guestNotice`, `friends.guestNotice`). ⚠️ **Elavult:** a `guestNoticeKey` state 2026-07-29-én **megszűnt** — a kulcsot a `guardedNav` közvetlenül adja át az `addToast`-nak
+- [x] **Refaktor:** új `guardedNav(phase: "shop" | "friends", noticeKey: string)` helper adja a gomb `onClick`-jét — vendégnél `addToast("warning", t(noticeKey), GUEST_NOTICE_DURATION_MS)`, egyébként `transitionTo(phase)`
 - [x] A korábbi `handleShop` helper **megszűnt** (a `guardedNav("shop", "shop.guestNotice")` váltotta ki)
-- [x] Sikeres bejelentkezés után a notice automatikusan eltűnik (`useEffect(!isGuest) → setGuestNoticeKey(null)`)
+- [x] A tájékoztató magától eltűnik (toast auto-dismiss, 7000 ms). A korábbi „bejelentkezéskor tüntesd el" `useEffect(!isGuest)` **megszűnt** — nincs mit takarítani
 - [x] `ScreenRouter.tsx` — a `shop` felkerült a **regisztrált fiókot igénylő** fázisok listájára: `needsAccount = friends | chat | friendWall | shop`; vendégnél `transitionTo("mainMenu")` + `<MainMenu />` (a `blockSocial` átnevezve `blockPhase`-re)
 - [x] `ScreenRouter.tsx` — a `status === "loading"` továbbra **sem** vendég (az auth aszinkron feloldódása nem dobhatja ki a bejelentkezett játékost oldalfrissítéskor)
 - [x] i18n: új `shop.guestNotice` kulcs **mind az 5 nyelven**
@@ -242,8 +244,8 @@ MissionSelector ──(cél kiválasztás)──▶ kamera ellenőrzés ──�
 > ### 🔒 Vendég-zár (2026-07-28, F rész)
 >
 > ```
-> mainMenu ──(Áruház)──▶  isGuest ?  ──igen──▶  guestNoticeKey = "shop.guestNotice"
->                            │                   (🔒 gomb + title tooltip + role="status" üzenet)
+> mainMenu ──(Áruház)──▶  isGuest ?  ──igen──▶  addToast("warning", t("shop.guestNotice"), 7000)
+>                            │                   (🔒 gomb + title tooltip + toast a bal felső sarokban)
 >                            └──nem───▶  transitionTo("shop")
 >
 > ScreenRouter:  needsAccount = friends | chat | friendWall | shop
@@ -252,7 +254,7 @@ MissionSelector ──(cél kiválasztás)──▶ kamera ellenőrzés ──�
 >                isGuest = authStatus !== "loading" && (!authUser || authUser.isAnonymous)
 > ```
 >
-> A `MainMenu` egyetlen `guardedNav(phase, noticeKey)` helperrel kezeli az Áruház és a Barátok gombot is; a notice-t `guestNoticeKey: string | null` tartja (nem `boolean`), mert két különböző üzenet van.
+> A `MainMenu` egyetlen `guardedNav(phase, noticeKey)` helperrel kezeli az Áruház és a Barátok gombot is; a kulcsot közvetlenül az `addToast`-nak adja át. **2026-07-29 óta** nincs `guestNoticeKey` state és nincs beágyazott `<p role="status">` — a tájékoztató toast, `GUEST_NOTICE_DURATION_MS = 7000` élettartammal ([[015-toast-notification]] H. blokk).
 
 - `phaseToFlags("shop")` = **ugyanaz a szüneteltetett pre-game állapot**, mint `mainMenu`/`missionSelect`/`settings` (`showIntro:false, isPaused:true, …`).
 - `App.isPreGame` bővül a `shop` fázissal. A háttérzene **NEM szól** a shopban (`shouldPlayMusic` kizárja).
@@ -649,8 +651,11 @@ database.rules.json                # +users/$key/purchases .write (device_map | 
 
 ```
 src/components/screens/MainMenu.tsx        # Áruház gomb: 🔒 prefix + title tooltip vendégnél;
-                                           # showGuestNotice: boolean → guestNoticeKey: string | null;
                                            # +guardedNav(phase, noticeKey) helper; handleShop MEGSZŰNT
+                                           # 2026-07-29: a notice toastból jön (addToast, 7000 ms) —
+                                           #   a guestNoticeKey state + a hozzá tartozó useEffect és a
+                                           #   MainMenu.module.css .guestNotice osztálya TÖRÖLVE
+                                           #   (015-toast-notification H. blokk)
 src/components/routing/ScreenRouter.tsx    # needsAccount: +"shop" (friends | chat | friendWall | shop);
                                            # blockSocial → blockPhase átnevezés
 src/i18n/locales/{en,hu,fr,de,es}/translation.json
@@ -685,7 +690,8 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json
 
 - **⚠️ A vendég kreditje elérhetetlenné vált a shop felől.** A vendégnek **van** pénztárcája (`users/{deviceId}/wallet`, kezdő kredittel), és a `migrateGuestData` a bejelentkezéskor **átviszi** a kreditjeit ([[010-firebase-guest-merge-single-gate]]) — de **vásárolni nem tud**, amíg be nem jelentkezik. Ez **tudatosan vállalt következmény** (a vásárlásnak túl kell élnie egy eldobható sessiont), viszont azt jelenti, hogy a guest-merge kredit-logikája a shop felől **jelenleg nem elérhető**: vendég nem tud kreditet elkölteni, csak örökölni. Ha a vendég-vásárlás valaha visszatérne, a merge-politikát ([[009-firebase-identity-split-bugfix]] wallet-politika) újra kell értékelni.
 - **Két helyen kell karbantartani a fázislistát.** A `MainMenu` gombja és a `ScreenRouter` `needsAccount` listája **külön** kód — egy új, fiókot igénylő fázis felvételekor **mindkettőt** módosítani kell, különben vagy a gomb enged be, vagy a perzisztált fázis kerüli meg a zárat.
-- **A `guestNoticeKey` string, nem boolean.** Új vendég-zárt kapó képernyőnél csak egy új i18n kulcs kell, a state-et nem kell bővíteni — de a kulcsnak **léteznie kell** (lásd a következő pontot).
+- **A vendég-tájékoztatót i18n kulcs azonosítja, nem külön state.** Új vendég-zárt kapó képernyőnél csak egy új i18n kulcs kell (a `guardedNav` továbbadja az `addToast`-nak) — de a kulcsnak **léteznie kell** (lásd a következő pontot). *(2026-07-29: a korábbi `guestNoticeKey: string | null` state megszűnt, [[015-toast-notification]] H. blokk.)*
+- **Toast-zaj a zárt gombnál.** A tájékoztató toast ismételt kattintásra nem duplikálódik: az `addToast` no-op, ha azonos típusú és szövegű toast még látható. Erre a védelemre **jelenleg nincs teszt** ([[015-toast-notification]] H. blokk, nyitott tétel).
 - **⚠️ A kulcsparitás-ellenőrzés nem fogja meg a mindenhonnan hiányzó kulcsot.** A `shop.sort` névtér **egyik** nyelvben sem létezett, mégis „paritásban" volt — a felhasználó a nyers kulcsokat látta a `<select>`-ben. A paritás-ellenőrzés a nyelveket **egymáshoz** méri, nem a kódhoz. **Külön ellenőrzés kellene** arra, hogy a komponensekben hivatkozott `t("…")` kulcsok léteznek-e a locale-okban. Ugyanez a hibaosztály bármelyik új névtérnél megismételhető (lásd [[011-difficulty-event-system]]: `event.doom` a `EventModal` kulcstérképében szerepel, de egyetlen locale-ban sincs).
 
 ---
@@ -721,7 +727,7 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json
 
 **Kész definíció — bővítés (2026-07-28, E rész):** a vásárlási előzmény a **`users/{uid}/purchases/{pushId}`** ágban él, minden keletkezési ágból (`checkout`, `buyCredits`, `recordPurchase`) mentődik, és a `subscribeUser` élő frissítésével — **külön subscription nélkül** — érkezik vissza a kliensre. A rekord megtartja a lokális `id`-jét, így az RTDB-visszhang nem duplikál. A `purchaseHistory` **nem** perzisztálódik localStorage-ba, és fiókváltáskor a `clearUserScopedData` **lokálisan** üríti a shop állapotát (RTDB-írás nélkül). A `database.rules.json` `users/$key/purchases` írási szabálya **deployt igényel**. `tsc --noEmit` tiszta · `npm run test` 77/77 zöld · `npm run build` sikeres.
 
-**Kész definíció — bővítés (2026-07-28, F / G rész):** az áruház **regisztrált (Google) fiókot igényel**. Vendégnél a főmenü Áruház gombja 🔒 prefixet kap, kattintásra a `shop.guestNotice` üzenetet mutatja (`role="status"` + `title` tooltip) navigáció helyett, a `ScreenRouter` pedig a **perzisztált** `shop` fázisból is visszairányít a főmenübe (`needsAccount = friends | chat | friendWall | shop`; a `status === "loading"` nem vendég). A `MainMenu` a `guardedNav(phase, noticeKey)` helperrel és `guestNoticeKey: string | null` state-tel kezeli mindkét zárt gombot. A `shop.sort.*` névtér (6 kulcs) pótolva mind az 5 nyelven — korábban a rendezés-dropdown nyers kulcsokat mutatott. i18n paritás **366/366** · `tsc --noEmit` tiszta · `npm run test` 77/77 zöld · `npm run build` sikeres.
+**Kész definíció — bővítés (2026-07-28, F / G rész):** az áruház **regisztrált (Google) fiókot igényel**. Vendégnél a főmenü Áruház gombja 🔒 prefixet kap, kattintásra a `shop.guestNotice` üzenetet mutatja (`title` tooltip + tájékoztató üzenet) navigáció helyett, a `ScreenRouter` pedig a **perzisztált** `shop` fázisból is visszairányít a főmenübe (`needsAccount = friends | chat | friendWall | shop`; a `status === "loading"` nem vendég). A `MainMenu` a `guardedNav(phase, noticeKey)` helperrel kezeli mindkét zárt gombot. **2026-07-29 óta** az üzenet **warning toast** a bal felső sarokban (`GUEST_NOTICE_DURATION_MS = 7000`), nem beágyazott `<p role="status">` — a `guestNoticeKey` state és a `.guestNotice` CSS osztály megszűnt ([[015-toast-notification]] H. blokk). A `shop.sort.*` névtér (6 kulcs) pótolva mind az 5 nyelven — korábban a rendezés-dropdown nyers kulcsokat mutatott. i18n paritás **366/366** · `tsc --noEmit` tiszta · `npm run test` 77/77 zöld · `npm run build` sikeres.
 
 **Kész definíció elérve:** a Főmenü „Áruház" gombja a `shop` fázisra visz; a játékos **4 fül** között választhat: (1) Exobolygók + kereső, (2) Űrhajók + kereső, (3) Zenék + kereső, (4) **Kredit vásárlás** (azonos layout). 100 exobolygó (JSON) + 3 alap exobolygó (Birtokolt), 3 űrhajó preview-vel, 5 zene singleton-preview-val. Kosár „Eltávolítás" gombbal. **Normál induló egyenleg: 0 ⭐**. Debug módban 9000 ⭐, reset gombbal. Háttérzene nem szól a shopban. Csak a grid scrollázik. Birtokolt exobolygók a küldetésválasztóban, info gombbal (a kártya alján). Generikus Modal/Tabs komponensek `src/components/ui/`-ben. A Beállítások menüben **zeneválasztó** (alap + birtokolt zenék), letiltva ha nincs megvett zene. `useAudio` dinamikus track-váltással. ActiveMusicId perszisztálva `useUIStore`-ban. **Ship Select** (`shipSelect` GamePhase): küldetésválasztás után hajókiválasztás (alap hajó + birtokolt shop hajók), info modal műszaki adatokkal, sebesség alapján újraszámolt utazási idő. Kamera ellenőrzés a destination kiválasztás után történik.
 
@@ -734,7 +740,8 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json
 - [[005-ingame-shop-strapi-stripe]] – a mock katalógus → Strapi, a mock checkout → Stripe.
 - [[000-i18n-nyelvesites]] – a `shop.*` nyelvi réteg; a tulajdonnevek nem fordítandók.
 - [[007-state-persist-page-refresh]] – a `partialize` elve: **localStorage-ban csak eszközszintű adat**. Az E rész ennek megfelelően vezette ki a `purchaseHistory`-t, és itt él a `clearUserScopedData` teljes leírása (G. blokk).
-- [[013-social-multiplayer]] – **a vendég-őr forrása.** Az O. blokk vezette be a kétrétegű mintát (MainMenu gomb + `ScreenRouter` fázis-őr) a `friends` / `chat` / `friendWall` fázisokra; az itteni F rész terjesztette ki a `shop`-ra, közös `guardedNav` helperrel és `guestNoticeKey` state-tel.
+- [[013-social-multiplayer]] – **a vendég-őr forrása.** Az O. blokk vezette be a kétrétegű mintát (MainMenu gomb + `ScreenRouter` fázis-őr) a `friends` / `chat` / `friendWall` fázisokra; az itteni F rész terjesztette ki a `shop`-ra, közös `guardedNav` helperrel.
+- [[015-toast-notification]] – **a vendég-tájékoztató megjelenítésének kanonikus forrása (2026-07-29).** A `guardedNav` a `shop.guestNotice` üzenetet `addToast("warning", …, GUEST_NOTICE_DURATION_MS)`-szal jeleníti meg; a `guestNoticeKey` state és a `.guestNotice` CSS osztály megszűnt (H. blokk / 0.9).
 - [[010-firebase-guest-merge-single-gate]] – a vendég **örökölheti** a kreditjét bejelentkezéskor, de vendégként **nem költheti el** (F rész, 8.2 kockázat).
 - [[012-wall-of-shame]] – **ugyanaz a hibaosztály** (fiókhoz kötött adat a böngésző-szintű localStorage-ban). A fal R. blokkja írja le a kiváltó tünetet; a shopnál a javítás **plusz** egy új szerveroldali ág (`users/{uid}/purchases`) bevezetésével járt, mert korábban semmilyen RTDB-pár nem létezett.
 - [[016-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.

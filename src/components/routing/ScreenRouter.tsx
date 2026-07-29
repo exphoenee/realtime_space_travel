@@ -12,7 +12,7 @@ import ShipSelectScreen from "../screens/ShipSelectScreen";
 import WallOfShame from "../screens/WallOfShame";
 import FriendsScreen from "../screens/FriendsScreen";
 import ChatScreen from "../screens/ChatScreen";
-import CameraConsentModal from "../features/CameraConsentModal";
+import CameraConsentScreen from "../screens/CameraConsentScreen";
 import MultiplayerStatusBar from "../features/MultiplayerStatusBar";
 
 interface ScreenRouterProps {
@@ -76,7 +76,7 @@ const ScreenRouter: React.FC<ScreenRouterProps> = ({
 
   switch (phase) {
     case "cameraConsent":
-      return <CameraConsentModal />;
+      return <CameraConsentScreen />;
     case "intro":
       return <IntroScreen onSkip={onSkipIntro} />;
     case "mainMenu":

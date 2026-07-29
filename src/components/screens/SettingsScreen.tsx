@@ -36,14 +36,11 @@ const SettingsScreen = () => {
   const setMergeNotice = useAuthStore((s) => s.setMergeNotice);
   const storeDisplayName = useAuthStore((s) => s.displayName);
   const cameraConsent = useUIStore((s) => s.cameraConsent);
-  const setCameraConsent = useUIStore((s) => s.setCameraConsent);
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const clearUser = useAuthStore((s) => s.clearUser);
   const nickname = useAuthStore((s) => s.nickname);
   const nicknameLoaded = useAuthStore((s) => s.nicknameLoaded);
-  const [cameraBtnError, setCameraBtnError] = useState<string | null>(null);
-  const [isCameraEnabling, setIsCameraEnabling] = useState(false);
   const setNickname = useAuthStore((s) => s.setNickname);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [editingNickname, setEditingNickname] = useState(false);
@@ -137,23 +134,10 @@ const SettingsScreen = () => {
 
   const hasOwnedMusic = ownedMusicTracks.length > 0;
 
-  const handleEnableCamera = useCallback(async () => {
-    setIsCameraEnabling(true);
-    setCameraBtnError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((track) => track.stop());
-      setCameraConsent("granted");
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setCameraBtnError(t("cameraConsent.browserDenied"));
-      } else {
-        setCameraBtnError(t("cameraConsent.error"));
-      }
-    } finally {
-      setIsCameraEnabling(false);
-    }
-  }, [setCameraConsent, t]);
+  const handleEnableCamera = useCallback(() => {
+    // Navigate to the camera consent screen for the full flow
+    transitionTo("cameraConsent");
+  }, [transitionTo]);
 
   const handleBack = () => transitionTo("mainMenu");
 
@@ -421,19 +405,13 @@ const SettingsScreen = () => {
             {cameraConsent === "granted" ? (
               <span>✅</span>
             ) : (
-              <>
-                <button
-                  type="button"
-                  className={styles.authBtn}
-                  onClick={handleEnableCamera}
-                  disabled={isCameraEnabling}
-                >
-                  {isCameraEnabling ? "..." : t("settings.enableCamera")}
-                </button>
-                {cameraBtnError && (
-                  <span className={styles.loginError}>{cameraBtnError}</span>
-                )}
-              </>
+              <button
+                type="button"
+                className={styles.authBtn}
+                onClick={handleEnableCamera}
+              >
+                {t("settings.enableCamera")}
+              </button>
             )}
           </div>
         </div>
