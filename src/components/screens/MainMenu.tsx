@@ -25,6 +25,8 @@ const MainMenu = () => {
   const setAuthError = useAuthStore((s) => s.setAuthError);
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
+  const screenCheckEnabled = useUIStore((s) => s.screenCheckEnabled);
+  const setScreenCheckEnabled = useUIStore((s) => s.setScreenCheckEnabled);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // The Start button is always clickable — if consent is not granted,
@@ -225,6 +227,16 @@ const MainMenu = () => {
             >
               🛠 Debug {debugMode ? "ON" : "OFF"}
             </button>
+            {debugMode && (
+              <button
+                type="button"
+                className={`${styles.debugBtn} ${!screenCheckEnabled ? styles.screenCheckBtnOff : ""}`}
+                onClick={() => setScreenCheckEnabled(!screenCheckEnabled)}
+                title={screenCheckEnabled ? 'ScreenCheck ki' : 'ScreenCheck be'}
+              >
+                📐 ScreenCheck {screenCheckEnabled ? "ON" : "OFF"}
+              </button>
+            )}
           </div>
         )}
       </div>

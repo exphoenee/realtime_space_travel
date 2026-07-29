@@ -1,46 +1,40 @@
 import { useState, useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
-
-interface ScreenSize {
-  width: number;
-  height: number;
-}
+import useUIStore from "../../state/useUIStore";
 
 interface ScreenCheckProps {
   children: React.ReactNode;
-  /**
-   * If true, checks that the viewport is in landscape orientation (width > height).
-   * When omitted, the orientation check is skipped entirely.
-   */
-  landscape?: boolean;
-  /**
-   * If provided with { width, height }, checks that the viewport meets
-   * the minimum dimensions. When omitted, the size check is skipped entirely.
-   */
-  size?: ScreenSize;
+  /** Required orientation — shows a warning if the screen doesn't match. */
+  orientation?: "landscape" | "portrait";
+  /** Minimum size thresholds — shows a warning if below any given value. */
+  size?: { height?: number; width?: number };
 }
 
-const ScreenCheck = ({ children, landscape, size }: ScreenCheckProps) => {
+const ScreenCheck = ({ children, orientation, size }: ScreenCheckProps) => {
   const { t } = useTranslation();
-  const [reason, setReason] = useState<"portrait" | "small" | null>(null);
+  const screenCheckEnabled = useUIStore((s) => s.screenCheckEnabled);
+  const [reason, setReason] = useState<"orientation" | "small" | null>(null);
 
   useEffect(() => {
     const checkScreen = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
-      // Orientation check (only if landscape prop is true)
-      if (landscape) {
+      if (orientation) {
         const isLandscape = width > height;
-        if (!isLandscape) {
-          setReason("portrait");
+        const matches =
+          orientation === "landscape" ? isLandscape : !isLandscape;
+        if (!matches) {
+          setReason("orientation");
           return;
         }
       }
 
-      // Size check (only if size prop is provided)
       if (size) {
-        if (width < size.width || height < size.height) {
+        if (
+          (size.width !== undefined && width < size.width) ||
+          (size.height !== undefined && height < size.height)
+        ) {
           setReason("small");
           return;
         }
@@ -57,7 +51,11 @@ const ScreenCheck = ({ children, landscape, size }: ScreenCheckProps) => {
       window.removeEventListener("resize", checkScreen);
       window.removeEventListener("orientationchange", checkScreen);
     };
-  }, [landscape, size]);
+  }, [orientation, size]);
+
+  if (!screenCheckEnabled) {
+    return <>{children}</>;
+  }
 
   if (reason) {
     return (
@@ -77,9 +75,11 @@ const ScreenCheck = ({ children, landscape, size }: ScreenCheckProps) => {
         }}
       >
         <div style={{ maxWidth: "400px" }}>
-          {reason === "portrait" ? (
+          {reason === "orientation" ? (
             <>
-              <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📱↔️</div>
+              <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
+                {orientation === "landscape" ? "📱↔️" : "📱↕️"}
+              </div>
               <h2
                 style={{
                   fontSize: "1.5rem",
@@ -107,11 +107,11 @@ const ScreenCheck = ({ children, landscape, size }: ScreenCheckProps) => {
               </h2>
               <p style={{ color: "#94a3b8", lineHeight: 1.6 }}>
                 <Trans i18nKey="screenCheck.tooSmallText">
-                  Legalább{" "}
+                  At least{" "}
                   <strong style={{ color: "#67e8f9" }}>
-                    {size?.width ?? 900}×{size?.height ?? 530}
+                    {size?.width ?? "?"}×{size?.height ?? "?"}
                   </strong>{" "}
-                  felbontás szükséges.
+                  resolution is required.
                 </Trans>
               </p>
               <p

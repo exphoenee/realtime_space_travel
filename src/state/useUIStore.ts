@@ -41,6 +41,8 @@ interface UIState {
   activeShipId: string | null;
   /** Debug mód bekapcsolva (runtime toggle, csak VITE_DEBUG_MODE=true esetén jelenik meg) */
   debugMode: boolean;
+  /** ScreenCheck bekapcsolva (debug gomb melletti toggle, debug módban érhető el) */
+  screenCheckEnabled: boolean;
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setCameraConsent: (status: CameraConsent) => void;
@@ -55,6 +57,7 @@ interface UIState {
   setActiveMusicId: (id: string | null) => void;
   setActiveShipId: (id: string | null) => void;
   setDebugMode: (mode: boolean) => void;
+  setScreenCheckEnabled: (enabled: boolean) => void;
 }
 
 const useUIStore = create<UIState>()((set) => ({
@@ -71,10 +74,19 @@ const useUIStore = create<UIState>()((set) => ({
   activeMusicId: null,
   activeShipId: null,
   debugMode: import.meta.env.VITE_DEBUG_MODE === "true",
+  screenCheckEnabled: true,
 
   setActiveMusicId: (id) => set({ activeMusicId: id }),
   setActiveShipId: (id) => set({ activeShipId: id }),
-  setDebugMode: (mode) => set({ debugMode: mode }),
+  setDebugMode: (mode) =>
+    set((state) => ({
+      debugMode: mode,
+      screenCheckEnabled: mode ? state.screenCheckEnabled : true,
+    })),
+  setScreenCheckEnabled: (enabled) =>
+    set((state) => ({
+      screenCheckEnabled: !state.debugMode ? true : enabled,
+    })),
 
   setCameraError: (updater) =>
     set((state) => ({
