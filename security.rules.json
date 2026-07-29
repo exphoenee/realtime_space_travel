@@ -69,6 +69,10 @@
  *  device_map/
  *    {deviceId}: "{firebaseAuthUid}"
  *
+ *  notifications/
+ *    {uid}/
+ *      {pushId}: { type, fromUid, fromName, at, read }
+ *
  *  ═══════════════════════════════════════════════════════════════
  *  GUEST DATA MIGRATION
  *  ═══════════════════════════════════════════════════════════════
@@ -154,6 +158,33 @@
       }
     },
 
+    /* ——— NOTIFICATIONS (toast inbox) ——— */
+    "notifications": {
+      "$uid": {
+        /*
+         * Read: STRICTLY the owner. Nobody may inspect somebody else's inbox.
+         *
+         * Write: the owner (mark read / delete) at the parent level, PLUS a
+         * child-level grant so a peer can PUSH one entry into this inbox.
+         * That child grant is required because sendNotification writes into the
+         * RECIPIENT's node ($uid != auth.uid); an owner-only rule would deny the
+         * feature's own core operation. The `friendRequests` trick
+         * (`newData.hasChild(auth.uid)`) is not usable here — entries are keyed
+         * by push ID, not by sender uid — so the sender is verified through the
+         * payload instead: `newData.child('fromUid').val() === auth.uid`.
+         *
+         * RTDB write rules cascade DOWNWARD, so this child rule ADDS to (never
+         * revokes) the parent grant: the owner keeps full write access, and a
+         * non-owner may only create entries stamped with their own uid.
+         */
+        ".read": "auth != null && $uid == auth.uid",
+        ".write": "auth != null && $uid == auth.uid",
+        "$notificationId": {
+          ".write": "auth != null && ($uid == auth.uid || newData.child('fromUid').val() === auth.uid)"
+        }
+      }
+    },
+
     /* ——— CHATS ——— */
     "chats": {
       "$chatId": {
@@ -174,10 +205,15 @@
         },
         "unread": {
           "$uid": {
-            ".read": "auth != null && $uid == auth.uid",
-            /* Write: any authenticated user can write (for sendMessage
-             * incrementing the recipient's counter). Only the owner can read
-             * their own count. */
+            /*
+             * Read/Write: any authenticated user may read or write unread
+             * counts. The .read must be open because sendMessage uses
+             * runTransaction() to atomically increment the RECIPIENT's
+             * counter — runTransaction needs to read before writing, and
+             * the recipient's counter is owned by the recipient.
+             * The unread count is a small integer — no privacy concern.
+             */
+            ".read": "auth != null",
             ".write": "auth != null"
           }
         },

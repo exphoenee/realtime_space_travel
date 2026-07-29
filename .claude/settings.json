@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -)",
+      "Bash(awk '/^\\\\*\\\\*[A-Z]\\\\./{blk=$0} /^\\\\s*- \\\\[[ ~]\\\\]/{print blk\" ||| \"$0}' plans/013-social-multiplayer.md)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('database.rules.json','utf8'\\)\\); console.log\\('database.rules.json OK'\\); const stripped=require\\('fs'\\).readFileSync\\('security.rules.json','utf8'\\).replace\\(/\\\\/\\\\*[\\\\s\\\\S]*?\\\\*\\\\//g,''\\); const p=JSON.parse\\(stripped\\); console.log\\('security.rules.json OK, notifications:', JSON.stringify\\(p.rules.notifications\\)\\);\")",
+      "Bash(grep -n \"^#\\\\{1,3\\\\} \\\\|^> 🔁\\\\|^> 📌\\\\|^> ⚠️\" plans/012-wall-of-shame.md)"
+    ]
+  }
+}
