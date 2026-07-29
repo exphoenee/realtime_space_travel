@@ -107,6 +107,96 @@
   margin-left: 0.3rem;
 }
 
+/* ── Compact (mobile/small) layout ── */
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.compactItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.compactLabel {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #67e8f9;
+  opacity: 0.7;
+}
+
+.compactValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cffafe;
+  white-space: nowrap;
+}
+
+.detailsBtn {
+  flex-shrink: 0;
+  padding: 0.45rem 0.85rem;
+  min-height: 2.5rem;
+  background: rgba(103, 232, 249, 0.12);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 0.5rem;
+  color: #67e8f9;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.detailsBtn:hover {
+  background: rgba(103, 232, 249, 0.22);
+  border-color: rgba(103, 232, 249, 0.6);
+}
+
+/* ── Details modal ── */
+
+.detailsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detailsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.1);
+}
+
+.detailsRow:last-child {
+  border-bottom: none;
+}
+
+.detailsLabel {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.detailsValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e0f2fe;
+  text-align: right;
+}
+
 /* Asteroid warning banner */
 .asteroidWarning {
   display: flex;

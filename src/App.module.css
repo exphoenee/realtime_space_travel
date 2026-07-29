@@ -215,3 +215,93 @@
   font-size: 1rem;
   color: #fecdd3;
 }
+
+/* ── Reszponzív: rövid viewportokra ──────────────────────────── */
+
+@media (max-height: 650px) {
+  .overlay {
+    padding: 0.75rem;
+  }
+  .overlayCard {
+    padding: 1.25rem;
+  }
+  .overlayTitle {
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    margin-bottom: 0.6rem;
+  }
+  .overlayText {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+  .overlayActions {
+    gap: 0.6rem;
+  }
+  .exitButton {
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.6rem 1rem;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    background: rgba(239, 68, 68, 0.55);
+  }
+  .statsPanel {
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  .statsRecord {
+    font-size: 0.68rem;
+    margin-top: 0.1rem;
+  }
+  .cameraErrorTitle {
+    font-size: 1.2rem;
+  }
+  .cameraErrorText {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-height: 550px) {
+  .overlayCard {
+    padding: 0.75rem;
+  }
+  .overlayTitle {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    margin-bottom: 0.4rem;
+  }
+  .overlayText {
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+  .overlayActions {
+    gap: 0.4rem;
+  }
+  .exitButton {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    background: rgba(239, 68, 68, 0.45);
+  }
+  .statsPanel {
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.72rem;
+  }
+  .statsRecord {
+    font-size: 0.6rem;
+    margin-top: 0.05rem;
+  }
+  .cameraErrorTitle {
+    font-size: 1rem;
+  }
+  .cameraErrorText {
+    font-size: 0.78rem;
+  }
+}

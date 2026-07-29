@@ -6,6 +6,8 @@ import { getRtdbKey } from "../../state/useAuthStore";
 import { subscribeFailures, subscribeSuccesses, subscribeLegacyFailures, subscribeLegacySuccesses, saveSuccessRecord, saveFailureRecord, incrementUserWallet, migrateWallData } from "../../firebase/userData";
 import useShopStore from "../../state/useShopStore";
 import Collapse from "../ui/Collapse";
+import Modal from "../ui/Modal";
+import BackButton from "../ui/BackButton";
 import type { FailureRecord, SuccessRecord } from "../../types";
 import styles from "./WallOfShame.module.css";
 
@@ -262,6 +264,75 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
   const reasonLabel = (reason: string) =>
     t(REASON_I18N_KEYS[reason] ?? "wallOfShame.reason.unknown");
 
+  // ─── Reszponzív statisztika: modal < 760px magasságnál ───
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+
+  // A statisztika grid kirajzolása (újrafelhasználható — inline + modal)
+  const renderStatsGrid = (compact = false) => (
+    <div className={compact ? styles.statsGridCompact : styles.statsGrid}>
+      <div className={styles.statsRow}>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>{stats!.totalMissions}</span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.totalMissions")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>{stats!.totalFailures}</span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.totalFailures")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>{stats!.totalSuccesses}</span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.totalSuccesses")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>{stats!.successRate}%</span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.successRate")}
+          </span>
+        </div>
+      </div>
+      <div className={styles.statsRow}>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>
+            {stats!.mostCommonReason
+              ? reasonLabel(stats!.mostCommonReason)
+              : "—"}
+          </span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.mostCommonDeath")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>{stats!.mostUsedShip}</span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.mostUsedShip")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>
+            {formatYears(stats!.totalTravelYears)}
+          </span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.totalTravelTime")}
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statCardValue}>
+            {formatDuration(stats!.longestService)}
+          </span>
+          <span className={styles.statCardLabel}>
+            {t("wallOfShame.stats.longestService")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
@@ -277,90 +348,41 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
               {t("wallOfShame.subtitle", { count: allRecords.length })}
             </p>
           </div>
-          <button type="button" className={styles.backButton} onClick={onBack}>
-            ← {friendUid ? t("friendWall.back") : t("settings.back")}
-          </button>
+          <div className={styles.headerActions}>
+            {stats && (
+              <button
+                type="button"
+                className={styles.statsToggleBtn}
+                onClick={() => setStatsModalOpen(true)}
+                title={t("wallOfShame.stats.title", "Statistics")}
+              >
+                📊
+              </button>
+            )}
+            <BackButton onClick={onBack}>
+              ← {friendUid ? t("friendWall.back") : t("settings.back")}
+            </BackButton>
+          </div>
         </div>
 
-        {/* Summary statistics banner */}
+        {/* Summary statistics banner (inline — elrejtve < 760px magasságnál) */}
         {stats && (
           <div className={styles.statsBanner}>
-            <div className={styles.statsGrid}>
-              {/* Row 1 — compact numeric stats */}
-              <div className={styles.statsRow}>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.totalMissions}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.totalMissions")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.totalFailures}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.totalFailures")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.totalSuccesses}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.totalSuccesses")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.successRate}%
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.successRate")}
-                  </span>
-                </div>
-              </div>
-              {/* Row 2 — text-heavy stats */}
-              <div className={styles.statsRow}>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.mostCommonReason
-                      ? reasonLabel(stats.mostCommonReason)
-                      : "—"}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.mostCommonDeath")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {stats.mostUsedShip}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.mostUsedShip")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {formatYears(stats.totalTravelYears)}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.totalTravelTime")}
-                  </span>
-                </div>
-                <div className={styles.statCard}>
-                  <span className={styles.statCardValue}>
-                    {formatDuration(stats.longestService)}
-                  </span>
-                  <span className={styles.statCardLabel}>
-                    {t("wallOfShame.stats.longestService")}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {renderStatsGrid()}
           </div>
         )}
+
+        {/* Statistics modal (alacsony viewportokon) */}
+        <Modal
+          isOpen={statsModalOpen}
+          onClose={() => setStatsModalOpen(false)}
+          title={t("wallOfShame.stats.title", "Statistics")}
+          closeAriaLabel={t("settings.back")}
+        >
+          <div className={styles.statsModalBody}>
+            {stats && renderStatsGrid(true)}
+          </div>
+        </Modal>
 
         {/* Debug: generate random records + save to Firebase (self only) */}
         {debugMode && !friendUid && (

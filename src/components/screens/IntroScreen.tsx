@@ -14,6 +14,39 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [instructionsVisible, setInstructionsVisible] = useState(false);
 
+  // Viewport-reszponzív scroll animáció: a kezdő- és végpozíciót a viewport-
+  // magasság + tartalom alapján számolja, hogy az első blokk mindig a képernyő
+  // alatt kezdődjön, az utolsó pedig a képernyő fölött végződjön, a sebesség
+  // pedig viewport-mérettől függetlenül állandó maradjon (~3.5 px/s).
+  useEffect(() => {
+    if (DEBUG_MODE) return; // debug mód saját duration-t használ
+
+    const el = scrollRef.current;
+    if (!el || el.scrollHeight < 50) return;
+
+    const vh = window.innerHeight;
+    const contentHeight = el.scrollHeight;
+
+    // A .scroll természetes (transzformálatlan) pozíciója a flex center miatt
+    // (vh - contentHeight) / 2 pixelre van a viewport tetejétől.
+    //
+    // Start: az első szövegblokk (headline) a viewport alja alatt legyen.
+    // Ehhez a .scroll-t (vh + contentHeight) / 2 + 64px-el kell lenyomni.
+    const startOffset = (vh + contentHeight) / 2 + 64;
+
+    // End: az utolsó szövegblokk alja a viewport teteje fölött legyen.
+    const endOffset = -(vh + contentHeight) / 2 - 64;
+
+    // Teljes görgetési távolság → duration számítás állandó sebességhez
+    const totalDist = startOffset - endOffset;
+    const PX_PER_SECOND = 3.5;
+    const durationSec = Math.max(120, Math.round(totalDist / PX_PER_SECOND));
+
+    el.style.setProperty("--intro-start", `${startOffset}px`);
+    el.style.setProperty("--intro-end", `${endOffset}px`);
+    el.style.setProperty("--intro-duration", `${durationSec}s`);
+  }, []);
+
   useEffect(() => {
     const root = scrollRef.current;
     if (!root) return;
@@ -82,7 +115,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
           style={
             DEBUG_MODE
               ? ({
-                  ["--intro-scroll-duration" as string]: INTRO_SCROLL_DURATION,
+                  ["--intro-duration" as string]: INTRO_SCROLL_DURATION,
                 } as React.CSSProperties)
               : undefined
           }

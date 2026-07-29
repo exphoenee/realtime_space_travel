@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import BackButton from "../ui/BackButton";
 import { Destination } from "../../types";
 import { SHIP_SPEED_LIGHTYEARS_PER_YEAR } from "../../constants/constants";
 import { baseDestinations } from "../../constants/universeData";
@@ -72,13 +73,9 @@ const MissionSelector = ({ onSelectDestination }: MissionSelectorProps) => {
 
   return (
     <div className={styles.overlay}>
-      <button
-        type="button"
-        className={styles.backButton}
-        onClick={() => transitionTo("mainMenu")}
-      >
+      <BackButton className={styles.backButton} onClick={() => transitionTo("mainMenu")}>
         ← {t("settings.back")}
-      </button>
+      </BackButton>
       <div className={styles.panel}>
         <h1 className={styles.title}>{t("menu.title")}</h1>
 
@@ -115,13 +112,6 @@ const MissionSelector = ({ onSelectDestination }: MissionSelectorProps) => {
           ))}
         </div>
 
-        <h2 className={styles.dlcText}>
-          <Trans i18nKey="menu.dlcMilkyWay">
-            Vedd meg a <span>Tejút DLC</span>-t $19.99-ért további
-            csillagrendszerekért!
-          </Trans>
-        </h2>
-        <h2 className={styles.dlcText}>{t("menu.dlcComingSoon")}</h2>
       </div>
 
       {/* Exoplanet info modal */}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import useUIStore from "../../state/useUIStore";
 
 interface ScreenCheckProps {
   children: React.ReactNode;
@@ -10,11 +11,37 @@ const MIN_HEIGHT = 530;
 
 const ScreenCheck = ({ children }: ScreenCheckProps) => {
   const { t } = useTranslation();
-  const [isBlocked, setIsBlocked] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [reason, setReason] = useState<"portrait" | "small" | null>(null);
+
+  // ── KIKAPCSOLVA ──────────────────────────────────────────────
+  // A reszponzív munkák után (Settings, Loading, PauseMenu, App modálok,
+  // Dashboard kompakt mód, Shop, WallOfShame) a képernyő-figyelmeztetés
+  // már nem szükséges — minden screen jól skálázódik.
+  //
+  // DEBUG módban is ki van kapcsolva (lásd lentebb), de mivel a normál
+  // mód is reszponzív, a teljes ellenőrzést kikapcsoljuk.
+  //
+  // Visszakapcsoláshoz: állítsd a DISABLED változót false-ra.
+  // ──────────────────────────────────────────────────────────────
+  const DISABLED = true;
 
   useEffect(() => {
     const checkScreen = () => {
+      if (DISABLED) {
+        setIsBlocked(false);
+        setReason(null);
+        return;
+      }
+
+      // Debug módban nincs képernyő-figyelmeztetés
+      const debugMode = useUIStore.getState().debugMode;
+      if (debugMode) {
+        setIsBlocked(false);
+        setReason(null);
+        return;
+      }
+
       const width = window.innerWidth;
       const height = window.innerHeight;
       const isLandscape = width > height;

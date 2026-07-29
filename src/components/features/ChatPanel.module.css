@@ -19,40 +19,16 @@
   flex-shrink: 0;
 }
 
-.backBtn {
-  background: none;
-  border: 1px solid rgba(103, 232, 249, 0.3);
-  border-radius: 0.5rem;
-  color: #7dd3fc;
-  font-family: inherit;
-  font-size: 0.85rem;
-  padding: 0.35rem 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.backBtn:hover {
-  border-color: rgba(103, 232, 249, 0.7);
-  background: rgba(6, 182, 212, 0.15);
-  color: #67e8f9;
-}
 
 .friendInfo {
   flex: 1;
-  text-align: center;
+  text-align: right;
 }
 
 .friendName {
   color: #e0f2fe;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.headerSpacer {
-  width: 60px;
-  flex-shrink: 0;
 }
 
 /* Messages area */

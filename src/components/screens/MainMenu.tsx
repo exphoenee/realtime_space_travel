@@ -152,24 +152,25 @@ const MainMenu = () => {
         </div>
 
         <div className={styles.actions}>
+          <button type="button" className={styles.button} onClick={handleIntro}>
+            {t("mainMenu.intro")}
+          </button>
+          {(!authUser || authUser.isAnonymous) && (
+            <button
+              type="button"
+              className={styles.button}
+              onClick={handleLogin}
+              disabled={authStatus === "loading"}
+            >
+              {authStatus === "loading" ? "..." : t("mainMenu.login")}
+            </button>
+          )}
           <button
             type="button"
             className={`${styles.button} ${styles.primary}`}
             onClick={handleStart}
           >
             {t("mainMenu.start")}
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={guardedNav("shop", "shop.guestNotice")}
-            title={isGuest ? t("shop.guestNotice") : ""}
-          >
-            {isGuest ? "🔒 " : ""}
-            {t("mainMenu.shop")}
-          </button>
-          <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
-            {t("mainMenu.wallOfShame")}
           </button>
           <button
             type="button"
@@ -190,23 +191,22 @@ const MainMenu = () => {
           <button
             type="button"
             className={styles.button}
+            onClick={guardedNav("shop", "shop.guestNotice")}
+            title={isGuest ? t("shop.guestNotice") : ""}
+          >
+            {isGuest ? "🔒 " : ""}
+            {t("mainMenu.shop")}
+          </button>
+          <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
+            {t("mainMenu.wallOfShame")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
             onClick={handleSettings}
           >
             {t("mainMenu.settings")}
           </button>
-          <button type="button" className={styles.button} onClick={handleIntro}>
-            {t("mainMenu.intro")}
-          </button>
-          {(!authUser || authUser.isAnonymous) && (
-            <button
-              type="button"
-              className={styles.button}
-              onClick={handleLogin}
-              disabled={authStatus === "loading"}
-            >
-              {authStatus === "loading" ? "..." : t("mainMenu.login")}
-            </button>
-          )}
         </div>
 
         {errorKey && (
