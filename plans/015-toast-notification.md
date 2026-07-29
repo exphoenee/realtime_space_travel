@@ -122,7 +122,7 @@ tags:
 - [x] `useToastStore.addToast` — **duplikáció-védelem**: ha azonos `type` + azonos `message` toast MÁR látható, az új hívás **no-op**. Enélkül a zárt gombra ötször kattintva öt egyforma toast állna sorba
 - [ ] `useToastStore.test.ts` — teszt az `addToast` duplikáció-védelmére (**nyitott**, jelenleg nincs rá lefedettség)
 
-> ⚠️ Ez a [[001-main-menu-settings]], [[002-ingame-shop-frontend]] és [[013-social-multiplayer]] tervekben leírt **vendég-zár UI-t módosítja**. Azok a tervfájlok nem lettek szerkesztve — a vendég-tájékoztató megjelenítésének kanonikus leírása ez a blokk és a 0.9 szekció.
+> ⚠️ Ez a [[001-main-menu-settings]], [[002-ingame-shop-frontend]] és [[013-social-multiplayer]] tervekben leírt **vendég-zár UI-t módosítja**. Azok a tervek **2026-07-29-én át lettek vezetve** a toast-alapú vendég-tájékoztatóra; a megjelenítés kanonikus leírása továbbra is ez a blokk és a 0.9 szekció.
 
 **I. Chat-üzenet toast (2026-07-29)**
 - [x] `src/types/index.ts` — `NotificationType` bővítve: `"chatMessage"`
@@ -131,7 +131,7 @@ tags:
 - [x] `ChatPanel.tsx` — a küldő a **saját** nevét a `useAuthStore`-ból oldja fel (`nickname || displayName || uid.slice(0, 8)`) és adja át; a `userData.ts`-nek nincs hozzáférése a profilmezőkhöz
 - [x] `useNotificationListener.ts` — `TOAST_TYPE.chatMessage = "info"`, `MESSAGE_KEY.chatMessage = "toast.chatMessage"`
 - [x] `useNotificationListener.ts` — **elnyomás**: új `isViewingChatWith(fromUid)` helper (`useGameStore`: `gamePhase === "chat" && chatTargetUid === fromUid`); ha a játékos épp azt a beszélgetést nézi, nincs toast
-- [ ] `notifications/{uid}` **takarítása** (régi / olvasott értesítések törlése) — **nyitott**, lásd 7.3
+- [ ] `notifications/{uid}` **takarítása** (régi / olvasott értesítések törlése) — **átkerült (superseded)** → [[018-notification-retention]] (2026-07-29). A tétel **nyitott marad**, amíg az a terv nincs implementálva; a kockázat leírása: 7.3
 
 **J. Barát jelenlét-toast — online / offline (2026-07-29)**
 - [x] `src/hooks/useFriendPresenceToasts.ts` (ÚJ)
@@ -210,7 +210,7 @@ A 7 mp-es időtartam (`GUEST_NOTICE_DURATION_MS`) tudatosan hosszabb az 5 mp-es 
 
 Részletes tételek: **H. blokk**.
 
-> ⚠️ Ez a [[001-main-menu-settings]], [[002-ingame-shop-frontend]] és [[013-social-multiplayer]] tervekben leírt **vendég-zár UI-ját változtatja meg**. Azok a tervfájlok nem lettek módosítva — a vendég-tájékoztató megjelenítésének kanonikus leírása innentől ez a szekció.
+> ⚠️ Ez a [[001-main-menu-settings]], [[002-ingame-shop-frontend]] és [[013-social-multiplayer]] tervekben leírt **vendég-zár UI-ját változtatja meg**. Azok a tervek **2026-07-29-én át lettek vezetve** erre a megjelenítésre; a vendég-tájékoztató kanonikus leírása innentől ez a szekció.
 
 ### 0.10 ÚJ FUNKCIÓ — chat-üzenet toast
 
@@ -418,9 +418,11 @@ A `database.rules.json` kész, de **nincs deployolva** (A. blokk). Amíg ez nem 
 
 A barátkéréssel ellentétben a chat-üzenet **gyakori esemény**, tehát a `notifications/{uid}` node **üzenetenként nő**. Az eredeti becslés („minden friend request művelethez +1 írás — elhanyagolható") a chat-toasttal (I. blokk) már nem áll.
 
-Hosszabb távon takarítás kell (pl. a régi / olvasott értesítések törlése, vagy TTL-szerű nyesés a `markAllNotificationsRead` mellett). **Jelenleg nincs ilyen** — nyitott tétel az I. blokkban.
+Hosszabb távon takarítás kell (pl. a régi / olvasott értesítések törlése, vagy TTL-szerű nyesés a `markAllNotificationsRead` mellett). **Jelenleg nincs ilyen** — a megoldás **átkerült (superseded)** → [[018-notification-retention]] (2026-07-29). Az a terv **két, egymástól független** eszközzel dolgozik: a **tárolást** kliensoldali takarítás (`pruneNotifications`: 7 napos megőrzés az olvasott rekordokra + 100-as plafon, olvasatlant soha nem törölve) fogja meg, a **sávszélességet** pedig a listener áttérése `query(ref, orderByKey(), limitToLast(N))`-re. Az I. blokk tétele addig **nyitva marad**.
 
-Mellékhatás az olvasási oldalon is: a `subscribeNotifications` `onValue`-ja a **teljes** listát replayeli minden változásnál, tehát a node növekedése a listener sávszélesség-igényét is növeli (a toast-duplikáció ellen a `toastedIds` Set véd — 0.3).
+Mellékhatás az olvasási oldalon is: a `subscribeNotifications` `onValue`-ja a **teljes** listát replayeli minden változásnál, tehát a node növekedése a listener sávszélesség-igényét is növeli (a toast-duplikáció ellen a `toastedIds` Set véd — 0.3). Ez a költség nem lineáris, hanem **kvadratikus** a session során; ezt szünteti meg a `limitToLast` ([[018-notification-retention]] 3.1).
+
+> ⏳ **A probléma jelenleg lappang.** Amíg a `database.rules.json` **deployja nem futott le** (A. blokk / 7.2), a `sendNotification` a címzett **idegen** node-jába íráskor `PERMISSION_DENIED`-et kap, ami a 0.8 szerint **elnyelődik** — a `notifications` node tehát ma gyakorlatilag alig nő. A növekedés **a deploy pillanatában válik élővé**. Ezért ideális, ha a [[018-notification-retention]] a deployjal **együtt vagy előtte** landol.
 
 ### 7.4 Tanulság — az `onDisconnect` nem helyettesíti az explicit állapotírást (2026-07-29)
 
@@ -443,4 +445,4 @@ A jelenlét-toast azért maradt néma, mert a fiók sosem lett `offline` (0.12).
 - i18n: `toast` névtér 7 kulcs, **373/373 paritás** mind az 5 nyelven. ✅
 - `tsc --noEmit` tiszta, `npm run test` 84/84 zöld (7 fájl), `npm run build` sikeres. ✅
 
-**Nyitott tételek a lezárás után:** `database.rules.json` deploy (felhasználói művelet, A. blokk) · `addToast` duplikáció-védelmének tesztje (H. blokk) · `notifications` node takarítása (I. blokk / 7.3).
+**Nyitott tételek a lezárás után:** `database.rules.json` deploy (felhasználói művelet, A. blokk) · `addToast` duplikáció-védelmének tesztje (H. blokk) · `notifications` node takarítása (I. blokk / 7.3) — **átkerült (superseded)** → [[018-notification-retention]].

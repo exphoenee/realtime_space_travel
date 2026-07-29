@@ -3,12 +3,12 @@
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-07-29"
-total_plans: 18
+total_plans: 19
 implemented: 15
 in_progress: 1
-not_started: 2
-tasks_done: 795
-tasks_total: 974
+not_started: 3
+tasks_done: 797
+tasks_total: 1116
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -106,15 +106,15 @@ plans:
     status: "in-progress"
     category: "core"
     tasks_done: 93
-    tasks_total: 121
+    tasks_total: 207
     dependencies: [003-firebase-auth-settings, 010-firebase-guest-merge-single-gate, 011-difficulty-event-system, 012-wall-of-shame]
   - step: 14
     slug: "014-camera-consent"
     status: "implemented"
     category: "ui"
-    tasks_done: 33
-    tasks_total: 35
-    dependencies: [001-main-menu-settings]
+    tasks_done: 35
+    tasks_total: 43
+    dependencies: [001-main-menu-settings, 003-firebase-auth-settings]
   - step: 15
     slug: "015-toast-notification"
     status: "implemented"
@@ -136,6 +136,13 @@ plans:
     tasks_done: 0
     tasks_total: 85
     dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense]
+  - step: 18
+    slug: "018-notification-retention"
+    status: "not-started"
+    category: "core"
+    tasks_done: 0
+    tasks_total: 48
+    dependencies: [015-toast-notification]
 ---
 
 # Roadmap
@@ -146,8 +153,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 15 implemented · 1 in progress · 2 not started (of 18)
-- **Tasks:** 795/974 done (82%)
+- **Plans:** 15 implemented · 1 in progress · 3 not started (of 19)
+- **Tasks:** 797/1116 done (71%)
 
 ## Overview
 
@@ -166,11 +173,12 @@ plans:
 | 10 | Firebase guest→fiók merge egyszeri kapu + figyelmeztetések | ✅ Implemented | 66/66 | — | auth | 9 |
 | 11 | Nehézségi szintek + eseményrendszer | ✅ Implemented | 62/62 | — | core | 1 |
 | 12 | Szégyenfal | ✅ Implemented | 109/109 | — | ui | 11 |
-| 13 | Social és multiplayer | 🟨 In progress | 93/121 | — | core | 3, 10, 11, 12 |
-| 14 | Kamera hozzájárulás | ✅ Implemented | 33/35 | — | ui | 1 |
+| 13 | Social és multiplayer | 🟨 In progress | 93/207 | — | core | 3, 10, 11, 12 |
+| 14 | Kamera hozzájárulás | ✅ Implemented | 35/43 | — | ui | 1, 3 |
 | 15 | Toast notification rendszer | ✅ Implemented | 69/72 | — | ui | 13 |
 | 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
+| 18 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
 
 ## Next Open Tasks
 
@@ -180,11 +188,12 @@ plans:
 - **Step 1 — Főmenü + Beállítások képernyő terve** (21/25): **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
 - **Step 2 — Helyi működésű áruház (frontend-only) terve** (83/84): Vitest: `useShopStore` (kosár, checkout, kredithiány, birtoklás, `buyCredits`), ár-/wage-képlet determinizmus, debug-kredit inicializálás (TODO, a tesztek még hiányoznak)
 - **Step 3 — Firebase bejelentkezés + perzisztens felhasználói beállítások terve** (23/27): **Security Rules deploy** a Firebase Console-ba (másold be a `security.rules.json` tartalmát a Realtime Database → Rules oldalon)
-- **Step 13 — Social és multiplayer** (93/121): Chat játék közben (kisebb panel, jobb alsó sarok)
-- **Step 14 — Kamera hozzájárulás** (33/35): Permissions API helper: `checkCameraPermission(): Promise<"granted" | "denied" | "prompt">` — (opcionális, jelenleg nem implementálva)
+- **Step 13 — Social és multiplayer** (93/207): Chat játék közben (kisebb panel, jobb alsó sarok)
+- **Step 14 — Kamera hozzájárulás** (35/43): `npm run test` zöld
 - **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
 - **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- **Step 18 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
 
 ## Insertion Guide
 
@@ -197,7 +206,7 @@ plans:
 | 0 | `000-i18n-nyelvesites` | i18n | — | 1, 3 |
 | 1 | `001-main-menu-settings` | ui | 000-i18n-nyelvesites | 2, 3, 11, 14 |
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
-| 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5, 13 |
+| 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5, 13, 14 |
 | 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6, 7, 9 |
 | 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 16, 17 |
 | 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
@@ -208,10 +217,11 @@ plans:
 | 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13 |
 | 12 | `012-wall-of-shame` | ui | 011-difficulty-event-system | 13 |
 | 13 | `013-social-multiplayer` | core | 003-firebase-auth-settings, 010-firebase-guest-merge-single-gate, 011-difficulty-event-system, 012-wall-of-shame | 15 |
-| 14 | `014-camera-consent` | ui | 001-main-menu-settings | — |
-| 15 | `015-toast-notification` | ui | 013-social-multiplayer | — |
+| 14 | `014-camera-consent` | ui | 001-main-menu-settings, 003-firebase-auth-settings | — |
+| 15 | `015-toast-notification` | ui | 013-social-multiplayer | 18 |
 | 16 | `016-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 17 |
 | 17 | `017-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense | — |
+| 18 | `018-notification-retention` | core | 015-toast-notification | — |
 
 ## Phase Details
 
@@ -237,3 +247,4 @@ plans:
 | 15 | `plans/015-toast-notification.md` | Toast notification rendszer |
 | 16 | `plans/016-stripe-fraud-defense.md` | Stripe csalásvédelem |
 | 17 | `plans/017-stripe-go-live.md` | Stripe élesítés |
+| 18 | `plans/018-notification-retention.md` | Notification retention |

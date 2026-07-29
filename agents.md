@@ -133,3 +133,36 @@ A fő agent és a subagentek a natív eszközöket használják:
 - **Konvenciók:** `.claude/references/project-conventions.md`
 - **Pusztító parancsok** (`git push`, `rm -rf`, stb.) csak kifejezett kérésre.
 - **Tanulságok:** mielőtt új feature-t implementálsz, olvasd el a `.claude/lessons-learned.md`-t!
+
+---
+
+## Freebuff (Buffy) kompatibilitás
+
+Ez a projekt Freebuff-ban (deepseek-v4-flash modell, Buffy agent) is teljes mértékben használható a `.claude/skills/freebuff/SKILL.md` bootstrap skill segítségével.
+
+### Skill-ek Freebuff-ban
+
+A `skill()` eszköz **natívan működik** Freebuff-ban — minden `.claude/skills/` alatti skill betölthető:
+- `skill("dev")` → implementációs orchestrátor
+- `skill("plan")` → új terv létrehozása
+- `skill("freebuff")` → Freebuff bootstrap (kontextus betöltés induláskor)
+- Firebase / Stripe skill-ek → szintén működnek
+
+### Agent-ek Freebuff-ban
+
+A `.claude/agents/` mappában definiált agent-ek (react-dev, i18n, manage-roadmap, planner) **nem regisztrált agent típusok** Freebuff `spawn_agents` eszközében. Helyettük:
+
+| Claude Code agent | Freebuff megközelítés |
+|---|---|
+| `react-dev` | A fő agent (Buffy) beolvassa `react-dev.md`-t → implementál `str_replace`/`write_file` eszközökkel |
+| `i18n` | A fő agent beolvassa `i18n.md`-t → hozzáadja a kulcsokat + `basher` parity check |
+| `manage-roadmap` | A fő agent beolvassa `manage-roadmap.md`-t → frissíti a plan fájlokat + `basher(python generate_roadmap.py)` |
+| `planner` | A fő agent beolvassa `planner.md`-t → `write_file` a terv fájlba |
+
+A beépített Freebuff agent-ek (`basher`, `code-searcher`, `file-picker`, `researcher-web`, `researcher-docs`, `browser-use`, `code-reviewer-deepseek-flash`, `thinker-gpt`) továbbra is `spawn_agents`-szel indíthatók.
+
+### Részletes dokumentáció
+
+- `.freebuff/README.md` — Teljes Freebuff ↔ Claude Code hibrid modell leírása
+- `.claude/skills/freebuff/SKILL.md` — Freebuff bootstrap skill (elsőként betöltendő)
+- `skill("freebuff")` → betölti a bootstrap kontextust

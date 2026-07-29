@@ -7,7 +7,7 @@ status: implemented
 implemented: true
 implemented_at: "2026-07-28"
 created_at: "2026-07-25"
-updated_at: "2026-07-28"  # frissítve: cím banner (title.webp), „Meet the creator" link, vendég-zár a Barátok/Áruház gombon
+updated_at: "2026-07-29"  # frissítve: cím banner (title.webp), „Meet the creator" link, vendég-zár a Barátok/Áruház gombon; a vendég-tájékoztató 2026-07-29 óta toast ([[015-toast-notification]] H. blokk)
 author: exphoenee
 step: 1
 phases: []
@@ -206,9 +206,12 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 - [x] Ellenőrzés: `tsc --noEmit` tiszta · `npm run test` **77/77** zöld · `npm run build` sikeres
 
 **Bővítés (2026-07-28) — vendég-tájékoztató a Barátok és az Áruház gombnál**
-- [x] A Barátok gomb vendégnél 🔒 prefixet kap + `friends.guestNotice` üzenetet mutat (`role="status"`, `.guestNotice` stílus) — a részletes leírás és indoklás: [[013-social-multiplayer]] O. blokk
+
+> ℹ️ **Frissítve (2026-07-29):** a tájékoztató **megjelenítése** időközben megváltozott — a gombok alatti beágyazott bekezdés helyett **toastként** jelenik meg a bal felső sarokban. A kanonikus leírás: [[015-toast-notification]] H. blokk / 0.9. Az alábbi tételek szövege ezt már követi; a 🔒 prefix, a `title` tooltip és az i18n kulcsok változatlanok.
+
+- [x] A Barátok gomb vendégnél 🔒 prefixet kap + `friends.guestNotice` üzenetet mutat — a részletes leírás és indoklás: [[013-social-multiplayer]] O. blokk
 - [x] Ugyanez az **Áruház** gombra is: 🔒 prefix + `shop.guestNotice` — indoklás: a vásárlásnak túl kell élnie egy eldobható vendég-sessiont ([[002-ingame-shop-frontend]] F rész)
-- [x] **Közös minta a `MainMenu`-ben:** `guestNoticeKey: string | null` state (nem `boolean`, mert két üzenet van) + `guardedNav(phase, noticeKey)` helper adja mindkét gomb `onClick`-jét; a korábbi `handleShop` helper megszűnt. A `<p role="status">` a `t(guestNoticeKey)`-t rendereli, és sikeres bejelentkezéskor eltűnik.
+- [x] **Közös minta a `MainMenu`-ben:** `guardedNav(phase, noticeKey)` helper adja mindkét gomb `onClick`-jét; a korábbi `handleShop` helper megszűnt. Vendégnél navigáció helyett `addToast("warning", t(noticeKey), GUEST_NOTICE_DURATION_MS)` fut ([[015-toast-notification]] H. blokk) — a `GUEST_NOTICE_DURATION_MS = 7000` azért hosszabb az 5 mp-es alapértelmezésnél, mert ezek kétmondatos üzenetek. A korábbi `guestNoticeKey: string | null` state, a hozzá tartozó „bejelentkezéskor tüntesd el" `useEffect` és a `MainMenu.module.css` `.guestNotice` osztálya **megszűnt**; a toast magától eltűnik, ismételt kattintásra pedig az `addToast` duplikáció-védelme miatt nem áll sorba több egyforma üzenet.
 - [ ] **Login bekötése** (Firebase) → [[003-firebase-auth-settings]]
 - [ ] **Áruház gomb bekötése** → [[002-ingame-shop-frontend]] (helyi bolt), később backend: [[005-ingame-shop-strapi-stripe]]
 - [ ] **Nehézség hatása a játékmenetre** (későbbi)
@@ -224,6 +227,7 @@ A `LanguageSwitcher` a Beállítások képernyőn él.
 - [[012-wall-of-shame]] – a „Szégyenfal" gomb belépési pontja a főmenüben.
 - [[013-social-multiplayer]] – a „Barátok" gomb; **vendégnél letiltva** (🔒 + `friends.guestNotice`), a `ScreenRouter` vendég-őrével együtt (O. blokk).
 - [[014-camera-consent]] – a „Játék indítása" gomb kamera-hozzájárulás nélküli letiltása ugyanezen a panelen.
+- [[015-toast-notification]] – **a vendég-tájékoztató megjelenítésének kanonikus forrása (2026-07-29).** A `guardedNav` a beágyazott bekezdés helyett `addToast("warning", …, GUEST_NOTICE_DURATION_MS)`-t hív; a `.guestNotice` CSS osztály és a `guestNoticeKey` state megszűnt (H. blokk / 0.9).
 
 ---
 

@@ -3,6 +3,8 @@ import { MUSIC_ACTIVE_VOLUME } from "../constants/constants";
 import type { Difficulty } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
+import { getRtdbKey } from "./useAuthStore";
+import { updateUserSettings } from "../firebase/userData";
 
 export type CameraConsent = "undecided" | "granted" | "denied";
 
@@ -28,6 +30,8 @@ interface UIState {
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setCameraConsent: (status: CameraConsent) => void;
+  /** Set camera consent locally AND persist to Firebase RTDB. */
+  persistCameraConsent: (status: CameraConsent) => Promise<void>;
   setShowExitConfirm: (updater: StateUpdater<boolean>) => void;
   setIsMusicMuted: (updater: StateUpdater<boolean>) => void;
   setMusicVolume: (updater: StateUpdater<number>) => void;
@@ -57,6 +61,19 @@ const useUIStore = create<UIState>()((set) => ({
       cameraError: resolveState(updater, state.cameraError),
     })),
   setCameraConsent: (status) => set({ cameraConsent: status }),
+  persistCameraConsent: async (status) => {
+    // 1. Update local state immediately
+    set({ cameraConsent: status });
+    // 2. Persist to Firebase RTDB
+    const rtdbKey = getRtdbKey();
+    if (rtdbKey) {
+      try {
+        await updateUserSettings(rtdbKey, { cameraConsent: status });
+      } catch (err) {
+        console.error("Failed to persist cameraConsent:", err);
+      }
+    }
+  },
   setShowExitConfirm: (updater) =>
     set((state) => ({
       showExitConfirm: resolveState(updater, state.showExitConfirm),

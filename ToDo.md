@@ -1,5 +1,5 @@
 Legyen egy olyan funkció, hogy kirabolhatod a barátodat. 3:1 az esélye, ha sikerül akkor, választhatsz egy hajót, vagy bolygót, a cuccai közül, ha nem a user elveszít egy tárggyat a sajátjaiból.
 
-E:\Projects\realtime_space_travel\plans\014-camera-consent.md a terv szerint az intro után de még a fõmenû elött meg kellene jelenjen egy tájékoztató modal arról, hogy az app kamerát használ, és ezt el kell fogadja a user, ezt a db-ben le kell tárolni, ha ezt már elfogadta a user, akkor ez a modal nem kell megjelenjen, ha elfogadja akkor az után kell a böngészõ engedélyt kérjen a kamera használatra. Ez miért nincs így
+A chatben egy usernek legyen több csatornája, és egy chatben lehessen több user is bent, egy chatbe több user is tudjon írni, és a chatben lehessen privát üzeneteket is küldeni, és a chatben lehessen moderálni a felhasználókat, pl. ki lehet tiltani valakit a chaten belül, de csak annak a usernek aki létrehozta a csatornát. Egy meglévõ személyes catornából is lehessen csoportos chatet létrehozni.
 
 A Multiplayerben 2 féle játékmód legyen, az egyik, hogy elegendõ egy embernek nézni a csapatból a képernõt, a másik, hogy mindegyiknek kell nézni a képernyõt. A játék hostolója dönt, hogyan indítja a játékot.

@@ -85,6 +85,8 @@ export interface UserNode {
     musicVolume: number;
     difficulty: string;
     language: string;
+    /** Camera consent state — undecided (default), granted, or denied */
+    cameraConsent: "undecided" | "granted" | "denied";
   };
   wallet: {
     credits: number;
@@ -122,6 +124,7 @@ const getDefaultUserNode = (user: User, provider: "anonymous" | "google"): UserN
     musicVolume: 0.5,
     difficulty: "medium",
     language: navigator.language?.split("-")[0] ?? "en",
+    cameraConsent: "undecided",
   },
   wallet: {
     credits: DEBUG_MODE ? DEBUG_STARTING_CREDITS : STARTING_CREDITS,
@@ -674,6 +677,7 @@ export const updateUserSettings = async (
   if (settings.musicVolume !== undefined) updates.musicVolume = settings.musicVolume;
   if (settings.difficulty !== undefined) updates.difficulty = settings.difficulty;
   if (settings.language !== undefined) updates.language = settings.language;
+  if (settings.cameraConsent !== undefined) updates.cameraConsent = settings.cameraConsent;
 
   await update(settingsRef, updates);
 };

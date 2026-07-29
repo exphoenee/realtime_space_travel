@@ -26,10 +26,10 @@ const MainMenu = () => {
   const debugMode = useUIStore((s) => s.debugMode);
   const setDebugMode = useUIStore((s) => s.setDebugMode);
   const cameraConsent = useUIStore((s) => s.cameraConsent);
-  const setCameraConsent = useUIStore((s) => s.setCameraConsent);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  const isStartDisabled = cameraConsent !== "granted";
+  // The Start button is always clickable — if consent is not granted,
+  // handleStart redirects to the camera consent screen instead.
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   // Guests (signed out or anonymous) have no registered account: the friend
@@ -96,7 +96,50 @@ const MainMenu = () => {
     Object.values(unreadCounts).reduce((sum, c) => sum + c, 0) +
     (isGuest ? 0 : unreadNotifications);
 
-  const handleStart = () => transitionTo("missionSelect");
+  const handleStart = async () => {
+    const ui = useUIStore.getState();
+    const cc = ui.cameraConsent;
+
+    if (cc !== "granted") {
+      // Redirect to camera consent screen — user can re-try the flow
+      transitionTo("cameraConsent");
+      return;
+    }
+
+    // User already gave UI consent — now request browser permission.
+    // Only the browser prompt appears here, on the main menu, not during
+    // the consent screen.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      // Browser granted — proceed to mission selection
+      transitionTo("missionSelect");
+    } catch (err) {
+      // Determine the specific error so the consent screen can explain
+      // why the attempt failed.
+      let errorKey = "app.camera.needAccess";
+      if (err instanceof DOMException) {
+        switch (err.name) {
+          case "NotAllowedError":
+            errorKey = "app.camera.denied";
+            break;
+          case "NotFoundError":
+            errorKey = "app.camera.notFound";
+            break;
+          case "NotReadableError":
+            errorKey = "app.camera.notReadable";
+            break;
+        }
+      }
+      // Show the error as a toast so the user knows why they are being
+      // redirected back to the consent screen.
+      addToast("error", t(errorKey), 7000);
+
+      // Reset consent so the camera consent screen shows again.
+      await ui.persistCameraConsent("denied");
+      transitionTo("cameraConsent");
+    }
+  };
   const handleSettings = () => transitionTo("settings");
   const handleIntro = () => transitionTo("intro");
 
@@ -134,10 +177,8 @@ const MainMenu = () => {
         <div className={styles.actions}>
           <button
             type="button"
-            className={`${styles.button} ${styles.primary}${isStartDisabled ? ` ${styles.startDisabled}` : ""}`}
-            onClick={isStartDisabled ? undefined : handleStart}
-            disabled={isStartDisabled}
-            title={isStartDisabled ? t("mainMenu.cameraRequired") : ""}
+            className={`${styles.button} ${styles.primary}`}
+            onClick={handleStart}
           >
             {t("mainMenu.start")}
           </button>
