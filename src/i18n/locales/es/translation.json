@@ -19,8 +19,8 @@
   "intro": {
     "headline": "Realtime Space Travel",
     "motto": "¡La experiencia de tu vida!",
-    "paragraph1": "¡Eres el elegido! Eres la última y única esperanza de la humanidad. Esto no es un juego: nuestra supervivencia está en juego. Esta es nuestra última oportunidad: la promesa de un nuevo hogar en sistemas estelares lejanos. El arca que lleva el futuro de la humanidad está lista para partir.",
-    "paragraph2": "Toda la tripulación –científicos, ingenieros, los fundadores de una nueva civilización– ha entrado en un sueño criogénico profundo. Su destino, sus sueños, nuestro futuro... El destino de la humanidad está ahora en tus manos. Eres el componente vivo que respira, que ninguna inteligencia artificial puede reemplazar.",
+    "paragraph1": "El último arca de la humanidad está lista en la plataforma de lanzamiento. Esto no es un juego: la supervivencia de nuestra especie depende de este viaje. Un nuevo hogar espera en sistemas estelares lejanos, pero el viaje lo exigirá todo de nosotros. No hay una segunda oportunidad.",
+    "paragraph2": "Toda la tripulación —científicos, ingenieros, los fundadores de una nueva civilización— ha entrado en un sueño criogénico. Su destino, sus sueños, nuestro futuro... todo está confiado a ti. Eres el único despierto. El que vigila. El que debe guiarnos.",
     "sectionTitle": "Tus tareas – Los protocolos más estrictos de la misión",
     "rule1": "<1>El Protocolo de Vigilancia</1> – se requiere una supervisión visual continua para estabilizar los datos de navegación. Si tu atención se interrumpe, la nave inicia una parada de emergencia.",
     "rule2": "<1>El Principio de Cero Intervención</1> – los sistemas son autosuficientes; la intervención manual puede ser fatal. Tu habilidad más importante es la disciplina y la paciencia. ¡No actúes, supervisa!",
@@ -332,7 +332,7 @@
         "desc": "⚠️ NAVE DEBUG ⚠️ No deberías estar viendo esto. 1234 km/s. 1234 créditos. No hagas preguntas. 'No es un bug — es una característica.' — Debug Dynamics Ltd."
       },
       "longDrop": {
-        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
+        "desc": "El Latrina Aerospace LD-42 \"Long Drop\" combina la artesanía rural tradicional con la ingeniería interestelar de vanguardia. Cada nave está construida a mano con madera dura patrimonial recuperada y diseñada para soportar los viajes warp y... otros tipos de presión.\n\nFabricante: Latrina Aerospace\nModelo: LD-42 \"Long Drop\"\nRol: Multiusos / Exploración / Carga\nCasco: Compuesto de madera dura rural recuperada™\nPropulsor: FlushDrive FTL Mk.III\nTripulación: 1-2"
       }
     },
     "exoplanet": {
@@ -371,8 +371,8 @@
       "guestWarning": "Atención: los créditos y objetos comprados como invitado se pierden si no inicias sesión. El progreso de invitado solo se puede transferir una vez, desde una única cuenta de invitado."
     },
     "history": {
-      "title": "Purchase History",
-      "empty": "No purchases yet."
+      "title": "Historial de compras",
+      "empty": "Aún no hay compras."
     }
   },
   "sort": {
@@ -514,7 +514,7 @@
     "viewWall": "Ver Muro de la Vergüenza"
   },
   "chat": {
-    "title": "Chat",
+    "title": "Conversación",
     "back": "Volver",
     "inputPlaceholder": "Escribe un mensaje...",
     "send": "Enviar",

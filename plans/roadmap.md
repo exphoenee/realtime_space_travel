@@ -2,13 +2,13 @@
 # Auto-generated from plan files — do not edit manually
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
-generated_at: "2026-07-29"
+generated_at: "2026-07-30"
 total_plans: 20
-implemented: 15
-in_progress: 2
+implemented: 16
+in_progress: 1
 not_started: 3
-tasks_done: 958
-tasks_total: 1292
+tasks_done: 979
+tasks_total: 1295
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -127,7 +127,7 @@ plans:
     status: "not-started"
     category: "security"
     tasks_done: 0
-    tasks_total: 51
+    tasks_total: 53
     dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate]
   - step: 17
     slug: "017-stripe-go-live"
@@ -145,10 +145,10 @@ plans:
     dependencies: [015-toast-notification]
   - step: 19
     slug: "019-starfield-realism"
-    status: "in-progress"
+    status: "implemented"
     category: "ui"
-    tasks_done: 113
-    tasks_total: 133
+    tasks_done: 134
+    tasks_total: 134
     dependencies: [011-difficulty-event-system]
 ---
 
@@ -156,12 +156,12 @@ plans:
 
 > Auto-generated from `./plans/` — **do not edit by hand**. Regenerate before reading:
 > `python .claude/scripts/generate_roadmap.py`
-> Last generated: 2026-07-29
+> Last generated: 2026-07-30
 
 ## Project Status
 
-- **Plans:** 15 implemented · 2 in progress · 3 not started (of 20)
-- **Tasks:** 958/1292 done (74%)
+- **Plans:** 16 implemented · 1 in progress · 3 not started (of 20)
+- **Tasks:** 979/1295 done (76%)
 
 ## Overview
 
@@ -183,10 +183,10 @@ plans:
 | 13 | Social és multiplayer | 🟨 In progress | 105/209 | — | core | 3, 10, 11, 12 |
 | 14 | Kamera hozzájárulás | ✅ Implemented | 71/84 | — | ui | 1, 3 |
 | 15 | Toast notification rendszer | ✅ Implemented | 69/72 | — | ui | 13 |
-| 16 | Stripe csalásvédelem | ⬜ Not started | 0/51 | — | security | 5, 9, 10 |
+| 16 | Stripe csalásvédelem | ⬜ Not started | 0/53 | — | security | 5, 9, 10 |
 | 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
 | 18 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
-| 19 | Élethűbb csillagmező (Starfield realizmus) | 🟨 In progress | 113/133 | — | ui | 11 |
+| 19 | Élethűbb csillagmező (Starfield realizmus) | ✅ Implemented | 134/134 | — | ui | 11 |
 
 ## Next Open Tasks
 
@@ -199,10 +199,9 @@ plans:
 - **Step 13 — Social és multiplayer** (105/209): Chat játék közben (kisebb panel, jobb alsó sarok)
 - **Step 14 — Kamera hozzájárulás** (71/84): CameraConsentScreen megjelenik intro után (manuális teszt)
 - **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
-- **Step 16 — Stripe csalásvédelem** (0/51): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
-- **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- **Step 16 — Stripe csalásvédelem** (0/53): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
+- **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - **Step 18 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
-- **Step 19 — Élethűbb csillagmező (Starfield realizmus)** (113/133): Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s) — a későbbi vizuális összehasonlításhoz
 
 ## Insertion Guide
 

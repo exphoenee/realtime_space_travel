@@ -1,25 +1,26 @@
 ---
 title: "Stripe csalásvédelem – carding, refund-támadás és az ingyen-kredit rés"
-slug: 016-stripe-fraud-defense
+slug: 019-stripe-fraud-defense
 type: plan
 category: security
 status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-26"
-updated_at: "2026-07-28"
+updated_at: "2026-07-30"
 author: exphoenee
-step: 16
+step: 19
 phases: []
 dependencies:
   - 005-ingame-shop-strapi-stripe
   - 009-firebase-identity-split-bugfix
   - 010-firebase-guest-merge-single-gate
+  - 018-nextjs-migration
 related_plans:
   - 002-ingame-shop-frontend
   - 003-firebase-auth-settings
   - 004-firebase-auth-bugfix
-  - 017-stripe-go-live
+  - 020-stripe-go-live
 tags:
   - stripe
   - security
@@ -42,6 +43,8 @@ tags:
 | Ingyen-kredit rés | **Bekerül a tervbe** — őszinte helyzetkép + a backend nélkül elérhető szűkítések |
 | Stripe Radar | **Ingyenes Radar szint** a fő út (beépített ML kockázati pontszám + CVC/irányítószám blokkolás); a fizetős **Radar for Fraud Teams** külön, opcionális szekció (7.) |
 | Kulcskezelés | `VITE_` prefix **elhagyása** (`STRIPE_SECRET_KEY`) + a jelenlegi `sk_test_` **rotálása** + **restricted API key** a szkripthez |
+| Az átnevezés **jellege** | **Megelőzés, nem javítás.** Méréssel igazolt, hogy ma **nincs szivárgás** (a kulcs nincs a bundle-ben és nincs a git-történetben) — az átnevezés egy jövőbeli, **néma** hiba lehetőségét szünteti meg. Lásd **3.0**. |
+| A kulcs sorsa | **Marad** a `.env`-ben és a két deploy workflow-ban (átnevezve), mert a jelen terv és a [[020-stripe-go-live]] használni fogja. A **törlése felmerült, de elvetve** — nem kell miatta most cselekedni. |
 | Kredit-jóváírás forrása | A `credits` érték **soha ne a storage-ból** jöjjön, hanem a `packId` → `CREDIT_PACKS` konstansból |
 | Replay-védelem | `?session_id={CHECKOUT_SESSION_ID}` a Payment Link redirect URL-jében + **egyszer-felhasználható** `credit_claims/{sessionId}` RTDB rekord |
 | RTDB `wallet` szigorítás | **Nem** „csak nőhet" (a kredites vásárlás levon!) — helyette: **írásonkénti maximális növekmény** (2000⭐ = a legnagyobb pakk) + `lastTopUpAt` alapú ütemkorlát |
@@ -54,7 +57,12 @@ tags:
 > Jelölés: `[ ]` hátravan · `[~]` folyamatban · `[x]` kész.
 
 **A fázis — Kulcs-higiénia (a legjobb ár/érték arányú lépés, ~1 óra)**
+
+> ⚠️ **Az átnevezés megelőzés, nem javítás.** Méréssel igazolva: ma **nincs szivárgás** — a kulcs nem szerepel a `dist/` bundle-ben és soha nem került a git-történetbe. Az alábbi tételek egy **jövőbeli, néma** hibát zárnak ki, nem egy aktív incidenst kezelnek. Részletek: **3.0**.
+
 - [ ] `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
+- [ ] `.github/workflows/deploy.yml` **és** `.github/workflows/deploy-firebase.yml`: a build `env:` blokkjában is `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` — **az átnevezés mindkét workflow fájlra kiterjed**, különben a `VITE_` prefix ott marad, és a védelem kikerülhető
+- [ ] GitHub repository secret átnevezése: Settings → Secrets and variables → Actions → `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (a workflow-hivatkozásokkal egy lépésben) — ⚠️ a [[020-stripe-go-live]] A fázisa a secret **törlését** javasolja; a végállapot egyeztetendő, lásd 3.0
 - [ ] `.env.example`: ugyanez + a figyelmeztető komment átírása (a jelenlegi szöveg tévesen állítja, hogy a kulcs a prod bundle-be kerül — lásd 3.1)
 - [ ] `scripts/create_payment_links.mjs`: `env.VITE_STRIPE_SECRET_KEY` → `process.env.STRIPE_SECRET_KEY ?? env.STRIPE_SECRET_KEY` (a `loadEnv(mode, rootDir, "")` üres prefixe miatt a fájl-alapú olvasás változatlanul működik)
 - [ ] Git-történet ellenőrzése: `git log -S "sk_test_" --all --oneline` és `git log -S "sk_live_" --all --oneline` → ha bármi találat, a kulcs **kompromittáltnak** tekintendő
@@ -91,7 +99,7 @@ tags:
 - [ ] `scripts/create_payment_links.mjs`: a redirect URL kapjon `?session_id={CHECKOUT_SESSION_ID}` végződést (mindkét — dev és prod — halmazra), majd a 8 meglévő link **újragenerálása vagy frissítése**
 - [ ] `src/constants/shopCatalog.ts`: az új link URL-ek beírása (`stripePaymentLink` + `stripePaymentLinkDev`)
 
-> ℹ️ **Pontosítás a [[017-stripe-go-live]] tervből:** a fenti első pont („dev Payment Linkek deaktiválása élesítés előtt") **finomítandó**. Élesben a Stripe `https` redirectet követel, ezért a `localhost`-ra visszatérő dev linkek **nem is hozhatók létre éles módban** — teszt módban maradnak, ahol valós pénzt nem tudnak mozgatni. A fejlesztői folyamat megtartása érdekében ezek **aktívak maradhatnak**; amit ténylegesen érdemes deaktiválni, az a **prod-redirectes teszt link-készlet**, mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek (összekeverhető). Ugyanez a terv rögzíti, hogy az itteni `?session_id={CHECKOUT_SESSION_ID}` toldalék **elrontja** a `create_payment_links.mjs` `redirectUrl === PROD_REDIRECT_URL` mező-javaslatát (`stripePaymentLink` helyett `stripePaymentLinkDev`-et írna) — a `startsWith`-alapú összehasonlításra javítás **kötelező**.
+> ℹ️ **Pontosítás a [[020-stripe-go-live]] tervből:** a fenti első pont („dev Payment Linkek deaktiválása élesítés előtt") **finomítandó**. Élesben a Stripe `https` redirectet követel, ezért a `localhost`-ra visszatérő dev linkek **nem is hozhatók létre éles módban** — teszt módban maradnak, ahol valós pénzt nem tudnak mozgatni. A fejlesztői folyamat megtartása érdekében ezek **aktívak maradhatnak**; amit ténylegesen érdemes deaktiválni, az a **prod-redirectes teszt link-készlet**, mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek (összekeverhető). Ugyanez a terv rögzíti, hogy az itteni `?session_id={CHECKOUT_SESSION_ID}` toldalék **elrontja** a `create_payment_links.mjs` `redirectUrl === PROD_REDIRECT_URL` mező-javaslatát (`stripePaymentLink` helyett `stripePaymentLinkDev`-et írna) — a `startsWith`-alapú összehasonlításra javítás **kötelező**.
 
 **E fázis — Az ingyen-kredit rés szűkítése (Spark-on belül)**
 - [ ] `src/components/shop/CreditShopView.tsx`: a `PENDING_PURCHASE_KEY` payloadból a **`credits` mező kikerül** (marad `packId` + `timestamp`) — a kredit értéke a jóváíráskor a `CREDIT_PACKS`-ból származik
@@ -109,7 +117,10 @@ tags:
 - [ ] Havi egyeztetés (reconciliation) bevezetése: Stripe Dashboard → Payments export vs. RTDB `credit_claims` — az eltérés = kliensoldali hamisítás
 
 **F fázis — Opcionális: külső serverless webhook backend (a valódi megoldás)**
-- [ ] Döntés: Cloudflare Workers (ajánlott) vs. Netlify Functions vs. Vercel (⚠️ Hobby ToS = nem kereskedelmi) — lásd 6.3
+
+> ➕ **Frissítés — a [[018-nextjs-migration]] terv ezt a fázist alapjaiban egyszerűsíti.** A felhasználó döntése szerint az alkalmazás **Next.js-re költözik és Vercelen fut**. Ezzel a „külső serverless futtató" külön komponensként **feleslegessé válik**: a webhook `app/api/stripe/webhook/route.ts`-ként, **ugyanabban a repóban, ugyanabban a deployban, ugyanazzal a TypeScript kódbázissal** valósul meg, és a `firebase-admin` közvetlenül használható (nem kell kézzel épített service account JWT + RTDB REST). Az alábbi tételek ennek megfelelően olvasandók: a „Worker" mindenütt **Next API route**. Két új, kötelező implementációs megkötés: (1) az aláírás-ellenőrzéshez a **nyers body** kell — `await req.text()`, **soha nem** `await req.json()`; (2) a route-nak `export const runtime = "nodejs"` kell (az Edge runtime nem viszi a `stripe` SDK-t és a `firebase-admin`-t). ⚠️ A 6.3 tábla Vercel-sora (Hobby ToS = nem kereskedelmi) **továbbra is érvényes** — valós pénzes endpointhoz **Vercel Pro** kell; ez nyitott kérdés, lásd [[018-nextjs-migration]] 12.1.
+
+- [ ] Döntés: Cloudflare Workers (ajánlott) vs. Netlify Functions vs. Vercel (⚠️ Hobby ToS = nem kereskedelmi) — lásd 6.3 *(⚠️ **a [[018-nextjs-migration]] után ez a döntés tárgytalan**: a futtató a Vercelen futó Next.js API route)*
 - [ ] Worker: `POST /stripe/webhook` — `Stripe-Signature` fejléc ellenőrzése `whsec_…` titokkal
 - [ ] Worker: `checkout.session.completed` esemény → `metadata.credit_pack_id` → RTDB REST írás service account JWT-vel (a Spark terv ezt **nem** korlátozza)
 - [ ] Worker: idempotencia a `session.id`-re (`credit_claims/{sessionId}` szerver-írt rekord)
@@ -148,7 +159,8 @@ CreditShopView.handleBuy(packId)
 | 8 teszt Payment Link (4 prod → Firebase Hosting, 4 dev → `localhost:5173`) | ✅ Stripe fiókban |
 | `scripts/create_payment_links.mjs --redirect=<url>` | ✅ |
 | `PENDING_PURCHASE_TTL = 10 * 60 * 1000` + `pack.credits !== pending.credits` ellenőrzés | ✅ `ShopScreen.tsx` |
-| Stripe kulcs `.env`-ben `VITE_STRIPE_SECRET_KEY` néven, `sk_test_` | ⚠️ átnevezendő + rotálandó |
+| Stripe kulcs `.env`-ben `VITE_STRIPE_SECRET_KEY` néven, `sk_test_` | ⚠️ átnevezendő + rotálandó — **de ma nem szivárog** (nincs a bundle-ben, nincs a git-történetben; lásd 3.0) |
+| A két deploy workflow `env:` blokkja átadja a `VITE_STRIPE_SECRET_KEY`-t a buildnek | ⚠️ az átnevezés **ide is kiterjed** (lásd 3.0) |
 | RTDB Phase-1 rules: a kliens írhatja a `wallet`-et | ⚠️ szigorítandó |
 
 ---
@@ -180,6 +192,40 @@ Az API kulccsal minden korábbi fizetés visszatéríthető. **A támadó ezen n
 ---
 
 ## 3. Kulcskezelés — mért tények
+
+### 3.0 Empirikus ellenőrzés (2026-07-29) — ma NINCS szivárgás
+
+A „mit változtat az átnevezés, ha a mechanizmus ugyanaz marad?" kérdés nyomán empirikus vizsgálat készült. **Három ellenőrzött tény:**
+
+| # | Ellenőrzés | Eredmény |
+|---|---|---|
+| 1 | Hivatkozik-e bármi a `VITE_STRIPE_SECRET_KEY`-re a `src/`-ben? | **Nem.** Sehol nincs rá hivatkozás, és **generikus `import.meta.env` hozzáférés sincs** — a kód kizárólag konkrét property-ket olvas. |
+| 2 | Benne van-e a kulcs a lefordított bundle-ben? | **Nincs.** A `.env` **tartalmaz** egy valódi, **107 karakteres** értéket, a lefordított `dist/` mégsem tartalmazza. A Vite csak azokat a `VITE_` változókat helyettesíti be, amelyekre a kód **ténylegesen hivatkozik** — a nem hivatkozottak nem kerülnek a bundle-be. |
+| 3 | Kikerült-e valaha a kulcs a git-történetbe? | **Nem.** A `.env` gitignore-olt és nincs követve; a történeti (korábban követett) `.env` verziók **soha nem tartalmazták** a Stripe kulcsot. |
+
+#### Mit ér tehát az átnevezés
+
+Nem egy meglévő lyukat foltoz be — **olyan nincs**. Amit tesz: **leszerel egy csapdát.**
+
+A `VITE_` prefix a Vite-ban **szándéknyilatkozat**: „ez a változó a böngészőbe való". Amíg a prefix rajta van, addig abban a pillanatban, amikor bárki leír egy `import.meta.env.VITE_STRIPE_SECRET_KEY`-t — ami **legitimnek *látszik***, hiszen a prefix pont ezt sugallja —, a titok **némán** kikerül minden látogatóhoz: nincs build hiba, nincs figyelmeztetés. Prefix nélkül ugyanez a hiba `undefined`-ot ad futásidőben, tehát **azonnal és hangosan elhasal** ahelyett, hogy csendben szivárogna.
+
+> **Egy mondatban:** az átnevezés a „némán szivárog" alapértelmezést cseréli „azonnal elszáll"-ra. Ez valódi érték, de **megelőzés, nem javítás** — ezt a különbséget a terv kimondja, hogy senki ne higgye, hogy ez a tétel egy aktív incidenst kezel.
+
+#### A tágabb következtetés
+
+Egy **titkos kulcsnak egy kizárólag kliensoldali buildben nincs legitim szerepe.** A projekt Spark csomagon fut (nincs Cloud Functions), és a Payment Link megoldás ([[005-ingame-shop-strapi-stripe]]) pont azért lett választva, hogy ne kelljen szerveroldal.
+
+Amikor a jelen terv és a [[020-stripe-go-live]] **ténylegesen használni fogja** a Stripe titkos kulcsot, ahhoz **előbb szerveroldali futtatókörnyezet kell** (lásd 6. szekció — F fázis, külső serverless Worker). A kulcs **annak** a környezetébe való (Worker secret / futtatáskori env), és **soha nem kerülhet Vite build `env` blokkjába**. Az átnevezés önmagában ezt nem oldja meg — annyit tesz, hogy megakadályozza, hogy közben véletlenül kliensbe csússzon.
+
+> ➕ **Frissítés — ezt a hiányzó futtatókörnyezetet a [[018-nextjs-migration]] teremti meg.** A migráció után a kulcs `STRIPE_SECRET_KEY` néven, **`NEXT_PUBLIC_` prefix nélkül**, Vercel env változóként él. A Next build-idejű behelyettesítése **kizárólag** a `NEXT_PUBLIC_` prefixes, **szó szerint leírt** `process.env.NEXT_PUBLIC_X` alakot ismeri fel — a prefix nélküli változó tehát **fizikailag képtelen** a kliens bundle-be kerülni. Ez a fenti „tágabb következtetés" **beteljesítése**: nem csak megelőzés, hanem a kulcs végleges, legitim helyre kerülése. A `.env`, a GitHub secret és a workflow `env:` blokk **egyike sem** fog Stripe kulcsot tartalmazni (a build-workflow-k maguk is megszűnnek), így az alábbi „Döntés (egyeztetve)" — megtartás vagy törlés — kérdése **tárgytalanná válik**.
+
+#### Döntés (egyeztetve)
+
+A kulcs **marad** a `.env`-ben és a workflow-kban, mert a jelen terv és a [[020-stripe-go-live]] használni fogja. A **törlése felmerült alternatívaként, de elvetve** — nem kell miatta most cselekedni. Az **átnevezés-tétel érvényben marad**, és **kiterjed a `.github/workflows/deploy.yml` és `deploy-firebase.yml` `env:` blokkjára is** (a GitHub repository secret átnevezésével együtt) — különben a `VITE_` prefix ott marad, és a fenti védelem kikerülhető.
+
+> ⚠️ **Eltérés a [[020-stripe-go-live]] A fázisától:** az a terv a GitHub secret **törlését** és az env sor **eltávolítását** írja elő (indok: a frontend build sosem használta). A két megközelítés nem összeegyeztethetetlen — a build valóban nem igényli a kulcsot —, de a **végállapotot egyeztetni kell**: átnevezve megtartani (jelen terv döntése) vagy eltávolítani (020 A fázis). Addig is: ha a kulcs a workflow-ban marad, **át kell nevezni**.
+
+> ℹ️ **Külön ügy, csak a teljes titok-kezelési kép kedvéért:** a git-történetben (`ec96f69`, `6798cbf` commitok, a korábban követett `.env`-ben) szerepel egy valódi, a kód által **már nem használt** Google API kulcs (`VITE_GEMINI_API_KEY`). Ez **nem a Stripe ügy része**, külön kezelés alatt áll — ehhez a tervhez **nem tartozik feladat**.
 
 ### 3.1 Mit tesz a Vite az env változókkal (méréssel igazolva)
 
@@ -396,7 +442,7 @@ A felhasználó kifejezetten **Spark-kompatibilis, backend nélküli** védelmet
 | `scripts/create_payment_links.mjs` | env-név csere, `process.env` elsőbbség, `?session_id={CHECKOUT_SESSION_ID}` a redirect URL-ben | A, D |
 | `scripts/check_secrets.mjs` | **ÚJ** — a `dist/` titok-szkennelése, nem nulla exit kód találatnál | A |
 | `package.json` | `check:secrets` script + a build láncba fűzés | A |
-| `.github/workflows/deploy.yml` | `npm run check:secrets` lépés; Stripe-kulcs **nincs** az `env:` blokkban | A |
+| `.github/workflows/deploy.yml` | **`VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` az `env:` blokkban** (az átnevezés ide is kiterjed — 3.0) + `npm run check:secrets` lépés; `VITE_` prefixes Stripe-kulcs **nem maradhat** az `env:` blokkban | A |
 | `.github/workflows/deploy-firebase.yml` | ugyanaz | A |
 | `src/constants/shopCatalog.ts` | az újragenerált (session_id-s) 8 Payment Link URL | D |
 | `src/components/shop/CreditShopView.tsx` | a payloadból kikerül a `credits` mező | E |
@@ -467,6 +513,8 @@ A felhasználó kifejezetten **Spark-kompatibilis, backend nélküli** védelmet
 - **A rules szigorítás elronthatja a működő kredit-írást.** A `set` → `update` átállás a `userData.ts`-ben **kötelező** a `.validate` bevezetésével **együtt**, különben minden jóváírás `PERMISSION_DENIED`-et kap. A két változtatás egy deployban menjen.
 - **A `now` szerveridő, a `Date.now()` nem.** A rules-ben kizárólag `now`-ra szabad támaszkodni.
 - **A meglévő 8 Payment Link újragenerálása** (session_id-s redirect) után a `shopCatalog.ts` URL-jeit **azonnal** frissíteni kell, különben a fizetés visszatérése session id nélkül érkezik, és az E fázis kapuja **minden valós vásárlást is elutasít**.
+- **Az A fázis átnevezés-tétele nem incidenskezelés.** Ma **nincs szivárgás** (3.0): a kulcs nem került sem a `dist/` bundle-be, sem a git-történetbe. Az átnevezés egy **jövőbeli, néma** hibát („valaki leír egy `import.meta.env.VITE_STRIPE_SECRET_KEY`-t") vált ki **azonnali, hangos** hibára. Ne fogalmazzunk úgy — se commit üzenetben, se riportban —, mintha kompromittálódott kulcsot javítanánk.
+- **Az átnevezés részleges elvégzése rosszabb, mint semmi.** Ha a `.env` átnevezésre kerül, de a két workflow `env:` blokkjában marad a `VITE_` prefixes név, a védelem **kikerülhető**, miközben a terv késznek látszik. A `.env` + `.env.example` + `create_payment_links.mjs` + **mindkét workflow** + a GitHub secret **egy körben** menjen.
 - **Kulcs-rotáció sorrendje:** előbb az új restricted key létrehozása és a `.env` frissítése, **utána** a régi `sk_test_` rollolása — fordítva a szkript átmenetileg használhatatlan.
 - **GDPR:** a Stripe az adatfeldolgozó, a fiók tulajdonosa az adatkezelő. Kulcs-kiszivárgásból eredő vásárlói adatlopás **bejelentés-köteles** (72 óra). Az incidens-forgatókönyvet (4.2) érdemes írásban rögzíteni.
 - **Ne keletkezzen hamis biztonságérzet:** az E fázis után is igaz, hogy elszánt támadó szerez ingyen kreditet. A terv sikerkritériuma a **költség megemelése és a kimutathatóság**, nem a megszüntetés.
@@ -493,8 +541,9 @@ A felhasználó kifejezetten **Spark-kompatibilis, backend nélküli** védelmet
 ## 14. Kapcsolódó tervek
 
 - [[005-ingame-shop-strapi-stripe]] – **közvetlen előfeltétel.** Ez a terv az ott megépített Payment Links + kliensoldali jóváírás út köré épít védelmet; a 005 „Ismert korlátok" táblájának *„Kliens írja a kreditet"* és *„Nincs webhook → nincs automatikus verifikáció"* sorai itt kapnak konkrét kockázat-elemzést és enyhítést.
-- [[017-stripe-go-live]] – **ráépülő élesítési terv, amelynek ez a terv A és E fázisa blokkoló előfeltétele.** Valós pénzes fizetés nem indulhat a kulcs-higiénia és az ingyen-kredit rés szűkítése nélkül. A 012 az itteni `?session_id={CHECKOUT_SESSION_ID}` redirect-mintát viszi tovább az éles linkekre, `rk_live_` restricted kulccsal generálva, és kiegészíti a fizetési utat a Stripe Tax (`automatic_tax`, `tax_behavior`) valamint a 14 napos elállási jog lemondása (`consent_collection`) elemekkel. Fontos, hogy a 012 sem oldja meg a webhook hiányát: élesben a **refund után a kredit nem vonódik vissza** automatikusan — ez az F fázis melletti további érv.
+- [[020-stripe-go-live]] – **ráépülő élesítési terv, amelynek ez a terv A és E fázisa blokkoló előfeltétele.** Valós pénzes fizetés nem indulhat a kulcs-higiénia és az ingyen-kredit rés szűkítése nélkül. A 012 az itteni `?session_id={CHECKOUT_SESSION_ID}` redirect-mintát viszi tovább az éles linkekre, `rk_live_` restricted kulccsal generálva, és kiegészíti a fizetési utat a Stripe Tax (`automatic_tax`, `tax_behavior`) valamint a 14 napos elállási jog lemondása (`consent_collection`) elemekkel. Fontos, hogy a 012 sem oldja meg a webhook hiányát: élesben a **refund után a kredit nem vonódik vissza** automatikusan — ez az F fázis melletti további érv.
 - [[004-firebase-auth-bugfix]] – a Phase-1 RTDB rules (`wallet` kliens-írható) és a `device_map` alapú `rtdbKey` innen származik; az 5.3 (d) pont ezeket a szabályokat **szigorítja additívan**, a `device_map` logika érintetlenül marad.
 - [[009-firebase-identity-split-bugfix]] – **blokkoló előfeltétel.** A `rtdbKey` ma egy `catch`-ági fallbackkel a `deviceId`-re térülhet, ami ugyanabból a Google fiókból **két RTDB user node-ot** csinál, külön kredittel. Ez a terv a `credit_claims/{sessionId}` ledgert és a `wallet` írási limitet a user node-hoz köti — szétcsúszott identitás mellett a claim és a jóváírás a **rossz** node alá kerülne, azaz valós pénzért fizetett kredit tűnne el. **Forward-compat pont, amit itt kell átvezetni:** a tervezett `wallet` növekmény-limit szabályának **null-safe** ágat kell tartalmaznia (`!data.exists()`), mert első belépéskor és a guest-migráció kredit-átvételekor a `wallet` ág még **nem létezik** — enélkül az `ensureUserNode` create-ágja és a migráció is `PERMISSION_DENIED`-del bukik.
 - [[003-firebase-auth-settings]] – a Phase-2 rules (`wallet.write = false`) és az `awardWage` / `purchaseWithCredits` szerveroldali út itt van felvázolva Cloud Functionökkel; a jelen terv **F fázisa** ugyanezt Blaze terv nélkül, külső serverless futtatóval valósítaná meg.
 - [[002-ingame-shop-frontend]] – a `useShopStore` kredit/kosár/birtoklás logikája; a `buyCredits` és a `checkout` viselkedése a rules-limit hangolásánál számít (a `checkout` **levon**, ezért nem alkalmazható „csak nőhet" szabály).
+- [[018-nextjs-migration]] – **a hiányzó szerveroldal.** Ez a terv többször is kimondja, hogy a valódi megoldáshoz szerveroldali futtatókörnyezet kell (3.0 „tágabb következtetés", 5.1, 6.1, 11. „Ismert korlátok" mind az 5 sora) — a 018 pontosan ezt teremti meg azzal, hogy az alkalmazást Vite SPA-ról **Next.js App Routerre** költözteti Vercelre. Három konkrét hatás: (1) a Stripe titkos kulcs `STRIPE_SECRET_KEY`-ként, `NEXT_PUBLIC_` prefix **nélkül** szerveroldali env változóba kerül — az A fázis átnevezés-tételét a migráció **elvégzi**, és a 3.0/020-A ellentmondást **feloldja**; (2) az **F fázis** nem külön Cloudflare Workerrel, hanem `app/api/stripe/webhook/route.ts`-ként, `firebase-admin`-nal valósul meg (a 6.2 architektúra-ábra „Cloudflare Worker" doboza → „Next API route"); (3) az F fázis megvalósulásával az **E fázis** összes „csak szűkítés" jellegű korlátja (5.1, 11. tábla) **megszűnik**, és a `wallet` Phase-2 szabálya (`".write": false`) bevezethető. ⚠️ **Nyitott kérdés:** a 6.3 tábla a Vercelt Hobby ToS okán kizárta kereskedelmi endpointként — valós pénzes fizetéshez **Vercel Pro** kell (lásd [[018-nextjs-migration]] 12.1).

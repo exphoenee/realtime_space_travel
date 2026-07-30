@@ -4,15 +4,6 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      debug_mode:
-        description: 'Debug mode (overrides repo variable)'
-        required: true
-        default: 'true'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
 
 permissions:
   contents: read
@@ -39,7 +30,10 @@ jobs:
       - name: Build for Firebase Hosting
         run: npm run build:firebase
         env:
-          VITE_DEBUG_MODE: 'true'
+          # Hard-coded off: the Firebase-hosted build is the public one and must
+          # never expose the debug overlay or the debug event bar. Debug mode is
+          # only ever enabled on the GitHub Pages build (see deploy.yml).
+          VITE_DEBUG_MODE: 'false'
           VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_DATABASE_URL: ${{ vars.VITE_FIREBASE_DATABASE_URL }}

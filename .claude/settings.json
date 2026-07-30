@@ -10,7 +10,10 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(awk 'NR<60 && /^\\\\s*- \\\\[[ x~]\\\\]/ {print NR\": \"$0}' 019-starfield-realism.md)",
       "Bash(awk 'NR>=60 && /^#{2,4} /{print NR\": \"$0}' 019-starfield-realism.md)",
-      "Bash(echo \"=== TSC exit: $? ===\")"
+      "Bash(echo \"=== TSC exit: $? ===\")",
+      "Bash(echo \"=== exit $? ===\")",
+      "Bash(grep -v \":0$\")",
+      "Bash(git diff *)"
     ]
   }
 }

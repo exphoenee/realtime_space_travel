@@ -1,21 +1,22 @@
 ---
 title: "Stripe élesítés – teszt módból valós pénzes fizetésbe"
-slug: 017-stripe-go-live
+slug: 020-stripe-go-live
 type: plan
 category: payments
 status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-26"
-updated_at: "2026-07-28"
+updated_at: "2026-07-30"
 author: exphoenee
-step: 17
+step: 20
 phases: []
 dependencies:
   - 005-ingame-shop-strapi-stripe
   - 009-firebase-identity-split-bugfix
   - 010-firebase-guest-merge-single-gate
-  - 016-stripe-fraud-defense
+  - 018-nextjs-migration
+  - 019-stripe-fraud-defense
 related_plans:
   - 002-ingame-shop-frontend
   - 003-firebase-auth-settings
@@ -39,7 +40,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Sorrend | **Előbb a [[016-stripe-fraud-defense]] E fázisa** (ingyen-kredit rés szűkítése) **és A fázisa** (kulcs-higiénia, restricted key), **utána** élesítés. Valós pénz nem mehet triviálisan hamisítható kredit-jóváírás fölé. |
+| Sorrend | **Előbb a [[019-stripe-fraud-defense]] E fázisa** (ingyen-kredit rés szűkítése) **és A fázisa** (kulcs-higiénia, restricted key), **utána** élesítés. Valós pénz nem mehet triviálisan hamisítható kredit-jóváírás fölé. |
 | ÁFA | **Stripe Tax bekapcsolása** — automatikus, országonkénti ÁFA-számítás és -beszedés, OSS-riporttal |
 | Üzleti forma | **Egyéni vállalkozó** (magyar) — a KYC checklist ehhez igazítva |
 | Árak megjelenítése | **Bruttó (`tax_behavior: "inclusive"`)** — az EU-s fogyasztói árfeltüntetés miatt a kiírt 5 € = amennyit a vásárló fizet (lásd 6.4, döntési tábla) |
@@ -57,10 +58,18 @@ tags:
 > Jelölés a végrehajtóra: **`[K]`** = KÉZI (a felhasználó: Stripe Dashboard / hatóság / jogi szöveg) · **`[A]`** = AUTOMATIZÁLHATÓ (script vagy AI) · **`[K+A]`** = vegyes (AI előkészít, ember dönt/beír).
 
 **A fázis — Előfeltételek (blokkoló, a 011-es tervből)**
-- [ ] `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY`, kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- [ ] `[A]` [[019-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - [ ] `[K]` A GitHub repository secret **`VITE_STRIPE_SECRET_KEY` törlése** (Settings → Secrets and variables → Actions) — a frontend soha nem használta, csak kockázat
 - [ ] `[A]` `.github/workflows/deploy.yml` + `deploy-firebase.yml`: a Stripe-kulcs env sor **eltávolítása** a build blokkból
-- [ ] `[A]` [[016-stripe-fraud-defense]] **E fázis** teljes lefutása: `session_id` kapu, `credit_claims` ledger, `CREDIT_PACKS`-ból származó kredit, `wallet` növekmény-limit, i18n hibaágak
+
+> ⚠️ **Egyeztetendő eltérés a [[019-stripe-fraud-defense]] tervvel (lásd ott a 3.0 szekciót).** A 019 empirikus vizsgálata szerint a kulcs ma **nem szivárog** (nincs a `dist/` bundle-ben, nincs a git-történetben), és a felhasználó döntése szerint a kulcs **marad** a `.env`-ben és a workflow-kban — csak **átnevezve** —, mert a 019 és a 020 használni fogja. A fenti két tétel (secret törlése + env sor eltávolítása) ezzel a döntéssel **ütközik**. A végállapotot élesítés előtt tisztázni kell:
+> - **(a) Megtartás átnevezve** (019 döntése): a workflow `env:` blokkjában `STRIPE_SECRET_KEY` szerepel, a `VITE_` prefix eltűnik.
+> - **(b) Eltávolítás** (ez a terv eredeti javaslata): a build valóban nem használja a kulcsot, így a CI-ból teljesen elhagyható; a link-generálás úgyis **lokálisan, egyszeri `$env:`-vel** fut (7.1–7.2).
+>
+> Ami **mindkét ágban kötelező**: a `VITE_` prefixes név **sehol** nem maradhat, és `sk_live_` **soha** nem kerülhet se `.env`-be, se GitHub secretbe, se workflow env-be.
+>
+> ➕ **Frissítés — a [[018-nextjs-migration]] feloldja ezt az eltérést.** A migráció után az (a)/(b) kérdés **tárgytalan**: a build-workflow-k megszűnnek (a GitHub Pages deploy törlődik, a Firebase workflow csak RTDB rules-deployra csupaszodik, build és env nélkül), a Stripe kulcs pedig `STRIPE_SECRET_KEY` néven, **`NEXT_PUBLIC_` prefix nélkül**, Vercel env változóként él — ahol végre **használva is lesz** (Checkout Session + webhook API route). A fenti két tétel („secret törlése", „env sor eltávolítása") tehát **automatikusan teljesül**, csak nem törléssel, hanem a workflow-k megszűnésével.
+- [ ] `[A]` [[019-stripe-fraud-defense]] **E fázis** teljes lefutása: `session_id` kapu, `credit_claims` ledger, `CREDIT_PACKS`-ból származó kredit, `wallet` növekmény-limit, i18n hibaágak
 - [ ] `[K]` Döntés-megerősítés: a 011 E fázisa nélkül **nem indul** az éles fizetés (a kockázatot lásd 11. tábla)
 
 **B fázis — Stripe fiókaktiválás / KYC (egyéni vállalkozó)** — *túlnyomórészt KÉZI*
@@ -124,7 +133,7 @@ tags:
 - [ ] `[K]` Előfeltétel-ellenőrzés: a Dashboardon `charges_enabled = true` (a B fázis lezárult) — enélkül live link **nem hozható létre**
 - [ ] `[K]` Dashboard **live módra** kapcsolása (a jobb felső teszt/éles kapcsoló)
 - [ ] `[K]` Developers → API keys → **Create restricted key** *live* módban: `Payment Links: Write`, `Products: Write`, `Prices: Write`, minden más **None** → `rk_live_…`
-- [ ] `[K]` A `sk_live_` **teljes** kulcs **sehová** ne kerüljön: se `.env`, se GitHub secret, se workflow env (a [[016-stripe-fraud-defense]] A fázisának szabálya)
+- [ ] `[K]` A `sk_live_` **teljes** kulcs **sehová** ne kerüljön: se `.env`, se GitHub secret, se workflow env (a [[019-stripe-fraud-defense]] A fázisának szabálya)
 - [ ] `[A]` A 4 **éles** Payment Link generálása egyszeri, fájlba nem író env-átadással:
       `$env:STRIPE_SECRET_KEY="rk_live_…"; node scripts/create_payment_links.mjs --redirect=https://realtimespacetravel-e74e3.web.app/shop/success?session_id={CHECKOUT_SESSION_ID}`
       *(a `?session_id={CHECKOUT_SESSION_ID}` a 011 E fázisának kapuja — ha az már be van vezetve, az éles linkeknek ezzel kell készülniük)*
@@ -146,7 +155,7 @@ tags:
 - [ ] `[K]` **Payout ellenőrzése**: Balance → Payouts — az első kifizetés megérkezik-e a megadott IBAN-ra
 - [ ] `[A]` `scripts/deactivate_payment_links.mjs` (**ÚJ**): `stripe.paymentLinks.update(id, { active: false })` az összes aktív linkre — a rollback egy paranccsal
 - [ ] `[K]` A rollback-forgatókönyv (8.3) írásba foglalása és a support e-mail-cím működésének ellenőrzése
-- [ ] `[K]` Értesítések élesben is aktívak: Disputes, Early fraud warnings, Refunds, Failed payments, Successful payments ([[016-stripe-fraud-defense]] B fázis)
+- [ ] `[K]` Értesítések élesben is aktívak: Disputes, Early fraud warnings, Refunds, Failed payments, Successful payments ([[019-stripe-fraud-defense]] B fázis)
 
 ---
 
@@ -162,7 +171,7 @@ tags:
 | Link-választás | `getPaymentLinkUrl(pack)` — `import.meta.env.DEV` alapján | változatlan logika, csak a `stripePaymentLink` értéke lesz éles |
 | Jogi oldalak (ÁSZF, adatkezelés, elállás, impresszum) | **nincsenek** | `LegalScreen` + mély linkek |
 | Elállási jog lemondása | nincs | kötelező checkbox + ToS-elfogadás a Stripe oldalon |
-| Webhook / szerveroldali verifikáció | nincs (Spark terv) | **továbbra sincs** — lásd 11. tábla és [[016-stripe-fraud-defense]] F fázis |
+| Webhook / szerveroldali verifikáció | nincs (Spark terv) | **továbbra sincs** — lásd 11. tábla és [[019-stripe-fraud-defense]] F fázis |
 
 ### 1.1 Miért nem lehet a teszt objektumokat „átkapcsolni"
 
@@ -176,8 +185,8 @@ Ez a tábla a terv gerince: ami `[K]`, azt **senki más nem tudja elvégezni** a
 
 | # | Feladat | K/A | Ki / mivel | Nagyságrend |
 |---|---|---|---|---|
-| 1 | Kulcs-higiénia, restricted key, CI-ellenőrzés | **A** | [[016-stripe-fraud-defense]] A fázis + `check_secrets.mjs` | 1–2 óra |
-| 2 | Ingyen-kredit rés szűkítése | **A** | [[016-stripe-fraud-defense]] E fázis | ~1 nap |
+| 1 | Kulcs-higiénia, restricted key, CI-ellenőrzés | **A** | [[019-stripe-fraud-defense]] A fázis + `check_secrets.mjs` | 1–2 óra |
+| 2 | Ingyen-kredit rés szűkítése | **A** | [[019-stripe-fraud-defense]] E fázis | ~1 nap |
 | 3 | KYC / fiókaktiválás (adószám, EV-szám, okmány, IBAN) | **K** | Stripe Dashboard → Activate account | 30–60 perc + átfutás |
 | 4 | Statement descriptor, support e-mail, MCC | **K** | Dashboard → Settings → Public details | 15 perc |
 | 5 | ÁSZF / adatkezelés / elállás / impresszum **szövege** | **K+A** | AI vázlat → ember/jogász véglegesít | 2–4 óra + review |
@@ -314,7 +323,7 @@ Ezt **nem lehet sablonból átvenni**, mert a játék működése szokatlan:
 
 A távollévők közötti szerződéseknél a fogyasztót **14 napos, indokolás nélküli elállási jog** illeti meg. **Azonnal teljesített digitális tartalomnál** (a kredit a fizetés után rögtön jóváíródik) ez alól akkor van kivétel, ha a fogyasztó **előzetesen, kifejezetten hozzájárult** az azonnali teljesítéshez **és tudomásul vette, hogy ezzel elveszíti az elállási jogát** (2011/83/EU 16. cikk (m); a magyar 45/2014. (II. 26.) Korm. rendelet 29. §).
 
-**Ha ez a megerősítés hiányzik, a vásárló 14 napon belül visszakérheti a pénzt — a már elköltött kredit ellenére is.** Ez közvetlenül növeli a refund- és dispute-kockázatot, amit a [[016-stripe-fraud-defense]] terv fenyegetés-modellje is kezel.
+**Ha ez a megerősítés hiányzik, a vásárló 14 napon belül visszakérheti a pénzt — a már elköltött kredit ellenére is.** Ez közvetlenül növeli a refund- és dispute-kockázatot, amit a [[019-stripe-fraud-defense]] terv fenyegetés-modellje is kezel.
 
 ### 5.2 Megoldás — kétrétegű megerősítés
 
@@ -464,7 +473,7 @@ node scripts/create_payment_links.mjs --redirect="https://realtimespacetravel-e7
 
 A script kimenete tartalmazza a `stripePaymentLink` mezőbe illesztendő 4 URL-t.
 
-> ⚠️ A script jelenleg a `redirectUrl === PROD_REDIRECT_URL` egyezés alapján dönti el, hogy `stripePaymentLink` vagy `stripePaymentLinkDev` mezőt javasol. A `?session_id={CHECKOUT_SESSION_ID}` toldalék miatt ez az egyezés **elromlik**, és a script tévesen `stripePaymentLinkDev`-et fog írni. Javítás: a `PROD_REDIRECT_URL` konstans frissítése a session_id-s alakra, **vagy** a `startsWith`-alapú összehasonlítás. *(A `?session_id=` toldalékot a [[016-stripe-fraud-defense]] D fázisa vezeti be a scriptbe — az összehasonlítás javítását ott vagy itt kell elvégezni, de mindenképp el kell.)*
+> ⚠️ A script jelenleg a `redirectUrl === PROD_REDIRECT_URL` egyezés alapján dönti el, hogy `stripePaymentLink` vagy `stripePaymentLinkDev` mezőt javasol. A `?session_id={CHECKOUT_SESSION_ID}` toldalék miatt ez az egyezés **elromlik**, és a script tévesen `stripePaymentLinkDev`-et fog írni. Javítás: a `PROD_REDIRECT_URL` konstans frissítése a session_id-s alakra, **vagy** a `startsWith`-alapú összehasonlítás. *(A `?session_id=` toldalékot a [[019-stripe-fraud-defense]] D fázisa vezeti be a scriptbe — az összehasonlítás javítását ott vagy itt kell elvégezni, de mindenképp el kell.)*
 
 ### 7.3 Dev és éles együttélése
 
@@ -478,7 +487,7 @@ A script kimenete tartalmazza a `stripePaymentLink` mezőbe illesztendő 4 URL-t
 
 **Miért nem lehet éles localhost-link:** élesben a Stripe **`https` redirect URL-t követel meg**, `http://localhost` nem fogadható el. Ezért marad a dev készlet teszt módban.
 
-> ⚠️ A [[016-stripe-fraud-defense]] D fázisa a **dev linkek deaktiválását** írja elő élesítés előtt. Ez a terv **finomítja**: a dev linkek **teszt módban** vannak, valós pénzt nem tudnak mozgatni, ezért a fejlesztői folyamat megtartása érdekében **aktívak maradhatnak**. Amit deaktiválni kell, az a **prod-redirectes teszt link-készlet** (mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek — összekeverhető). Ezt a felhasználóval egyeztetni kell (lásd nyitott kérdések).
+> ⚠️ A [[019-stripe-fraud-defense]] D fázisa a **dev linkek deaktiválását** írja elő élesítés előtt. Ez a terv **finomítja**: a dev linkek **teszt módban** vannak, valós pénzt nem tudnak mozgatni, ezért a fejlesztői folyamat megtartása érdekében **aktívak maradhatnak**. Amit deaktiválni kell, az a **prod-redirectes teszt link-készlet** (mert az ugyanarra az éles URL-re térne vissza, mint az éles linkek — összekeverhető). Ezt a felhasználóval egyeztetni kell (lásd nyitott kérdések).
 
 ---
 
@@ -512,7 +521,7 @@ A script kimenete tartalmazza a `stripePaymentLink` mezőbe illesztendő 4 URL-t
 - [ ] A 4 jogi oldal élesben elérhető, közvetlen URL-lel
 - [ ] A Stripe fiókban a ToS URL és a Privacy URL be van állítva
 - [ ] Stripe Tax aktív, a linkeken `automatic_tax: true`
-- [ ] [[016-stripe-fraud-defense]] A + E fázis kész
+- [ ] [[019-stripe-fraud-defense]] A + E fázis kész
 - [ ] Radar CVC- és irányítószám-blokkolás bekapcsolva (011 C fázis)
 - [ ] Dispute / EFW / Refund / Failed payment értesítések bekapcsolva
 
@@ -523,7 +532,7 @@ A script kimenete tartalmazza a `stripePaymentLink` mezőbe illesztendő 4 URL-t
 | Hibás ÁFA-számítás vagy rossz ár | `[A]` `node scripts/deactivate_payment_links.mjs` → a 4 éles link `active: false` | ~1 perc |
 | Nem működő kredit-jóváírás | `[A]` `shopCatalog.ts` visszaállítása a **teszt** linkekre + `npm run build:firebase && npx firebase-tools deploy --only hosting` | ~5 perc |
 | Jogi/Stripe kifogás | `[K]` az érintett vásárlók **visszatérítése** a Dashboardon, tájékoztató e-mail a support címről | változó |
-| Kulcs-kompromittálás gyanú | `[K]` Dashboard → Developers → API keys → **minden live kulcs rollolása** ([[016-stripe-fraud-defense]] 4.2 incidens-forgatókönyv) | azonnal |
+| Kulcs-kompromittálás gyanú | `[K]` Dashboard → Developers → API keys → **minden live kulcs rollolása** ([[019-stripe-fraud-defense]] 4.2 incidens-forgatókönyv) | azonnal |
 
 > A deaktivált Payment Link URL-je **hibaoldalt** ad — a felhasználó nem tud fizetni, de a már befejezett tranzakciók érintetlenek. Ezért a deaktiválás biztonságos „vészfék".
 
@@ -618,8 +627,8 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 | **A weboldal-követelmények hiánya blokkoló** | Ma nincs ÁSZF / adatkezelés / elállás / impresszum | C fázis — **ez valódi fejlesztés**, nem konfiguráció |
 | **ÁFA-kötelezettség** keletkezik | Valós pénzes, EU-s B2C digitális értékesítés | E fázis + adószakértő |
 | **A Stripe nem állít ki magyar számlát és nem jelent a NAV Online Számla felé** | A Stripe Tax csak kalkulál | Külön számlázó (Számlázz.hu / Billingo) vagy kézi számlázás — **nyitott kérdés** |
-| **A [[016-stripe-fraud-defense]] nélküli élesítés** | Ma a kredit-jóváírás DevTools-ból hamisítható | A fázis **blokkoló** előfeltétel; valós pénzes bolt mellett a triviális hamisítás a fizető vásárlókkal szemben is tisztességtelen |
-| **Spark terv → nincs webhook** | Nincs Cloud Functions | A jóváírás **továbbra sem verifikált** szerveroldalon; a valódi megoldás a [[016-stripe-fraud-defense]] **F fázisa** (külső serverless Worker) |
+| **A [[019-stripe-fraud-defense]] nélküli élesítés** | Ma a kredit-jóváírás DevTools-ból hamisítható | A fázis **blokkoló** előfeltétel; valós pénzes bolt mellett a triviális hamisítás a fizető vásárlókkal szemben is tisztességtelen |
+| **Spark terv → nincs webhook** | Nincs Cloud Functions | A jóváírás **továbbra sem verifikált** szerveroldalon; a valódi megoldás a [[019-stripe-fraud-defense]] **F fázisa** (külső serverless Worker) |
 | **Refund után a kredit nem vonódik vissza** | Nincs webhook, nincs `charge.refunded` feldolgozás | Kézi RTDB-korrekció; havi egyeztetés Stripe export ↔ `credit_claims` |
 | **„Fizettem, de nem kaptam meg" panasz** | A jóváírás kliensoldali (megszakadt visszatérés, bezárt böngésző) | Support e-mail + kézi jóváírás a Stripe fizetés igazolása alapján; **dokumentált folyamat kell** |
 | **Teszt objektumok nem vihetők át élesbe** | A Stripe teszt/éles mód külön adatbázis | Minden újra létrehozandó — a script egy futással megoldja |
@@ -628,13 +637,13 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 | **Stripe Tax díjköteles** | A normál tranzakciós díj felett | Az aktuális árlistán ellenőrizendő; a legkisebb (5 €) pakk margóját érdemben csökkentheti |
 | **A jogi szövegek 5 nyelvű fordítása jogi kockázat** | Gépi fordítású kötelmi szöveg félreérthető | Magyar (és angol) az irányadó változat, a többi tájékoztató — `legal.authoritativeNote` |
 | **Bruttó ár mellett a bevétel országonként változik** | `tax_behavior: "inclusive"` | Tudatos döntés (6.4); a legrosszabb eset a HU 27 % |
-| **Chargeback-díj** | Kártyás vitánál a Stripe díjat számol fel | Felismerhető statement descriptor, elállási megerősítés, Radar ([[016-stripe-fraud-defense]]) |
+| **Chargeback-díj** | Kártyás vitánál a Stripe díjat számol fel | Felismerhető statement descriptor, elállási megerősítés, Radar ([[019-stripe-fraud-defense]]) |
 
 ---
 
 ## 12. Kockázatok / figyelmeztetések
 
-- **A sorrend nem felcserélhető.** A [[016-stripe-fraud-defense]] **A** (kulcs-higiénia) és **E** (ingyen-kredit rés) fázisa **előbb**. Élesítés után a rés már valós pénzt érő javakat érint, és a javítás menet közben nehezebb.
+- **A sorrend nem felcserélhető.** A [[019-stripe-fraud-defense]] **A** (kulcs-higiénia) és **E** (ingyen-kredit rés) fázisa **előbb**. Élesítés után a rés már valós pénzt érő javakat érint, és a javítás menet közben nehezebb.
 - **A Stripe Tax beállítása megelőzi a link-generálást.** A `tax_behavior` a price-on immutábilis; ha az éles linkek nélküle készülnek, mindent újra kell csinálni (és a régi linkeket deaktiválni).
 - **A `?session_id={CHECKOUT_SESSION_ID}` toldalék elrontja a script mező-javaslatát** (7.2) — javítás nélkül a kimenet tévesen `stripePaymentLinkDev`-et ír, és az éles linkek rossz mezőbe kerülnek. Ez **csendes hiba**: a prod build ilyenkor a régi teszt linket használná.
 - **Az éles Payment Link URL-ekben nincs `test_`.** Ez a leggyorsabb szemrevételezéses ellenőrzés — automatizálva a `check_live_links.mjs`-ben.
@@ -642,7 +651,7 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 - **Jogi és adózási megerősítés kötelező.** A 4., 5. és 6. szekció **technikai** útmutató. Az ÁSZF, az adatkezelési tájékoztató, az elállási szabályzat, az OSS-regisztráció, az alanyi adómentesség kezelése és a számlázás **szakértői jóváhagyást igényel**. A terv egyik állítása sem tekinthető jogi tanácsnak.
 - **A webkamerás arcfelismerés kiemelt GDPR-figyelmet igényel.** Ha a tájékoztató nem mondja ki egyértelműen, hogy a feldolgozás lokális és nem kerül szerverre, az mind a Stripe review-nál, mind adatvédelmi szempontból kockázat.
 - **A support e-mail működjön.** A Stripe és a fogyasztóvédelem is elvárja; a „fizettem, nem kaptam meg" eseteknél ez az egyetlen csatorna webhook nélkül.
-- **Az első valós tranzakció egyben az első valós adatvédelmi incidens-kockázat is.** A [[016-stripe-fraud-defense]] 4.2 incidens-forgatókönyve élesben lép érvénybe.
+- **Az első valós tranzakció egyben az első valós adatvédelmi incidens-kockázat is.** A [[019-stripe-fraud-defense]] 4.2 incidens-forgatókönyve élesben lép érvénybe.
 
 ---
 
@@ -667,7 +676,8 @@ Mind az 5 nyelven (`en`, `hu`, `fr`, `de`, `es`) **teljes paritással**. Két ú
 ## 14. Kapcsolódó tervek
 
 - [[005-ingame-shop-strapi-stripe]] – **közvetlen előfeltétel.** Az ott megépített Payment Links út, a `getPaymentLinkUrl(pack)` dev/prod választás és a 4. szekció „Élesítéskor" pontja itt kap teljes, végrehajtható kifejtést. A 005 „Ismert korlátok" táblájának *„Nincs webhook"* sora élesben is fennáll.
-- [[016-stripe-fraud-defense]] – **blokkoló előfeltétel** (A + E fázis). A kulcs-higiénia, a restricted key, a `session_id` kapu és a `credit_claims` ledger nélkül nem indulhat valós pénzes fizetés. Ez a terv két ponton **finomítja** a 011-et: (1) a dev Payment Linkek nem deaktiválandók, mert teszt módban maradnak (7.3); (2) az éles linkek a 011 D fázisa szerinti `?session_id={CHECKOUT_SESSION_ID}` redirect-mintával készülnek.
+- [[019-stripe-fraud-defense]] – **blokkoló előfeltétel** (A + E fázis). A kulcs-higiénia, a restricted key, a `session_id` kapu és a `credit_claims` ledger nélkül nem indulhat valós pénzes fizetés. Ez a terv két ponton **finomítja** a 011-et: (1) a dev Payment Linkek nem deaktiválandók, mert teszt módban maradnak (7.3); (2) az éles linkek a 011 D fázisa szerinti `?session_id={CHECKOUT_SESSION_ID}` redirect-mintával készülnek. Fordított irányban a 019 **3.0** szekciója pontosítja az itteni A fázist: a kulcs-átnevezés **megelőzés, nem javítás** (ma nincs szivárgás), és a felhasználó döntése szerint a kulcs átnevezve **marad** a `.env`-ben és a workflow-kban — ez **ütközik** az itteni „secret törlése / env sor eltávolítása" tételekkel, lásd az A fázisnál elhelyezett megjegyzést.
 - [[002-ingame-shop-frontend]] – a shop UI, a `CreditShopView` és a `ShopScreen`; az elállási checkbox és a jogi lábléc-linkek ide épülnek be.
 - [[003-firebase-auth-settings]] – az RTDB `wallet` séma és a `rtdbKey` feloldás; a valós pénzes jóváírás célja ugyanez a node. A 6. pontjában vázolt szerveroldali út (`awardWage`, `purchaseWithCredits`) a refund-visszavonás problémáját is megoldaná.
+- [[018-nextjs-migration]] – **új blokkoló előfeltétel.** A Vite SPA → Next.js App Router (Vercel) migráció négy ponton érinti ezt a tervet. (1) **Az A fázis ellenőrzése tárgytalanná válik:** a build-workflow-k megszűnnek, a Stripe kulcs `STRIPE_SECRET_KEY` néven, `NEXT_PUBLIC_` prefix **nélkül**, Vercel env változóként él — sem „megtartani átnevezve", sem „eltávolítani" nem kérdés többé. (2) **A C fázis mély linkjei** (`/legal/terms`, `/legal/privacy`, `/legal/refund`, `/legal/imprint`) a migráció catch-all route-ja (`app/[[...slug]]/page.tsx`) alatt **külön route-fájl nélkül** működnek — az `App.tsx` path-detektálásos mintája változatlan marad. (3) ⚠️ **A Payment Linkek redirect URL-jét újra kell generálni**: a mai 8 link a `https://realtimespacetravel-e74e3.web.app/shop/success` címre mutat, ami a migráció után már nem az alkalmazás origin-je; ezt **egy körben** érdemes elvégezni a [[019-stripe-fraud-defense]] D fázisának `?session_id={CHECKOUT_SESSION_ID}` toldalékával, és a Stripe Dashboard weboldal- / ToS- / Privacy-URL mezőit is át kell állítani. (4) ⚠️ **A `getPaymentLinkUrl` dev/prod választás** (`import.meta.env.DEV` → `process.env.NODE_ENV !== "production"`) a Vercel **preview** buildben is a **prod** linket adná — élesítés után ez valós pénzes linket jelentene a preview környezetben; javasolt egy explicit `NEXT_PUBLIC_STRIPE_MODE` kapcsoló (lásd [[018-nextjs-migration]] 3.4). ⚠️ **Költség-jellegű nyitott kérdés:** valós pénzt kiszolgáló Vercel endpointhoz a Hobby ToS miatt **Pro csomag** kell (018 12.1).
 - [[009-firebase-identity-split-bugfix]] – **blokkoló előfeltétel, az A fázis de facto bővítése.** A `rtdbKey` ma egy migrációs `catch`-ág miatt a `deviceId`-re térülhet, így ugyanaz a Google fiók **két RTDB node-ot** kap külön kredittel (élesben megerősített hiba). Valós pénzes fizetés **nem indítható** addig: egy ilyen szétválás **kifizetett** kreditet tüntetne el a felhasználó számára visszakövethetetlenül → chargeback / dispute, ami a Stripe fiók kockázati pontszámát is rontja. Az élesítés előtti go-live checklistbe (8. szekció) felvenni: *„ugyanaz a fiók két böngészőben és két originon ugyanazt a kreditet látja"*.

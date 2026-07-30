@@ -63,7 +63,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 015-toast-notification / 016 előtt |
+| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 015-toast-notification / 019 előtt |
 | Hol él a consent állapot? | **Firebase RTDB** `users/{rtdbKey}/settings/cameraConsent` — a `useUIStore.cameraConsent` lokális cache |
 | Milyen típusú a screen? | **Teljes képernyős GamePhase oldal** (`"cameraConsent"` fázis), nem modál. F5 után is ugyanaz az oldal jön vissza |
 | Mikor jelenik meg? | Ha `needsCameraConsent()` igazat ad: a tárolt consent nem `"granted"`, **vagy** a böngésző engedélye `"denied"` / `"prompt"` |

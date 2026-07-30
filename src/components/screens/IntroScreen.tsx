@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./IntroScreen.module.css";
 
 interface IntroScreenProps {
@@ -108,6 +109,17 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
 
   return (
     <div className={styles.overlay} onClick={onSkip}>
+      {/* Language switcher — top-right corner, so the user can read
+          the intro in their preferred language before proceeding. */}
+      <div
+        className={styles.langBar}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        <span className={styles.langLabel}>{t("language.label")}</span>
+        <LanguageSwitcher />
+      </div>
       <div className={`${styles.content} ${styles.fade}`}>
         <div
           ref={scrollRef}
@@ -162,44 +174,40 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <Trans i18nKey="intro.rule1">
-              <strong>Az Éberség Protokollja</strong> – folyamatos vizuális
-              monitorozás szükséges a navigációs adatok stabilizálásához. Ha a
-              figyelmed megszakad, a hajó vészleállást kezdeményez.
-            </Trans>
+            <Trans
+              i18nKey="intro.rule1"
+              components={{ 1: <strong key="s1" /> }}
+            />
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <Trans i18nKey="intro.rule2">
-              <strong>A Zéró Beavatkozás Elve</strong> – a rendszerek
-              önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb
-              képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!
-            </Trans>
+            <Trans
+              i18nKey="intro.rule2"
+              components={{ 1: <strong key="s2" /> }}
+            />
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <Trans i18nKey="intro.rule3">
-              <strong>Valós Idejű Utazás</strong> – tapasztald meg a csillagközi
-              utazás hiteles valóságát. A csillagok évezredek alatt mozdulnak el;
-              a legnagyobb ellenség az idő.
-            </Trans>
+            <Trans
+              i18nKey="intro.rule3"
+              components={{ 1: <strong key="s3" /> }}
+            />
           </p>
 
           <p
             className={`${styles.paragraph} ${styles.block}`}
             data-intro-block="true"
           >
-            <Trans i18nKey="intro.rule4">
-              <strong>A tét: Minden.</strong> Nincs dicsőség, nincsenek harcok,
-              nincsenek jutalmak – csak a csend, a végtelen kozmosz és a válladra
-              nehezedő felelősség. A jövő a te szemedben tükröződik.
-            </Trans>
+            <Trans
+              i18nKey="intro.rule4"
+              components={{ 1: <strong key="s4" /> }}
+            />
           </p>
         </div>
         {instructionsVisible && (

@@ -113,6 +113,40 @@
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.75);
 }
 
+.langBar {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 60;
+  cursor: default;
+  animation: introFade 0.6s ease 0.3s both;
+  pointer-events: auto;
+}
+
+.langLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .langBar {
+    top: 14px;
+    right: 12px;
+    gap: 4px;
+  }
+
+  .langLabel {
+    display: none;
+  }
+}
+
 @keyframes introFade {
   0% {
     opacity: 0;

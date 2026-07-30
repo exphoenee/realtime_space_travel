@@ -20,8 +20,8 @@ related_plans:
   - 000-i18n-nyelvesites
   - 001-main-menu-settings
   - 002-ingame-shop-frontend
-  - 016-stripe-fraud-defense
-  - 017-stripe-go-live
+  - 019-stripe-fraud-defense
+  - 020-stripe-go-live
 tags:
   - stripe
   - payments
@@ -265,13 +265,13 @@ export const getPaymentLinkUrl = (pack: CreditPack): string =>
 > - **dev szerveren kikerül a böngészőbe** — a Vite a teljes env objektumot beinjektálja minden modulba;
 > - **a prod buildbe viszont nem kerül bele** — oda csak a kódban konkrétan hivatkozott `import.meta.env.VITE_X` tagok kerülnek, és a `src/` alatt semmi nem hivatkozik erre a kulcsra.
 >
-> A prefix elhagyása (nem-`VITE_` név), a kulcs rotálása és a **restricted API key** bevezetése a [[016-stripe-fraud-defense]] terv A fázisának feladata.
+> A prefix elhagyása (nem-`VITE_` név), a kulcs rotálása és a **restricted API key** bevezetése a [[019-stripe-fraud-defense]] terv A fázisának feladata.
 
 Élesítéskor:
 - Hozd létre a 4 élő Payment Link-et (élő `sk_live_...` kulccsal), `--redirect=<éles https URL>`-lel — élesben a `http://localhost` redirect nem engedélyezett
 - Cseréld le a `stripePaymentLink` URL-eket a `shopCatalog.ts`-ban (a `stripePaymentLinkDev` mezők maradhatnak teszt-linkek, prod buildben úgysem használatosak)
 
-> 📋 **A teljes élesítési út a [[017-stripe-go-live]] tervben van.** A fenti két pont csak a technikai mag; az élesítés valójában ennél lényegesen több: Stripe fiókaktiválás (KYC, egyéni vállalkozóként), **a weboldal jogi elemeinek megépítése** (ÁSZF, adatkezelési tájékoztató, elállási/visszatérítési szabályzat, impresszum — ma egyik sincs meg, és ez a Stripe review leggyakoribb blokkolója), az EU-s 14 napos elállási jogról szóló kifejezett lemondás beépítése a vásárlási folyamatba, valamint a **Stripe Tax** bekapcsolása (digitális termék adókód, `tax_behavior: "inclusive"`, `automatic_tax`). Fontos sorrendi kötöttség: a `tax_behavior` a `price` objektumon **immutábilis**, ezért a Stripe Tax beállítása **megelőzi** az éles linkek generálását. A 012-es terv minden feladatnál jelöli, hogy **kézi** (Stripe Dashboard / hatóság) vagy **automatizálható** (script) lépésről van-e szó.
+> 📋 **A teljes élesítési út a [[020-stripe-go-live]] tervben van.** A fenti két pont csak a technikai mag; az élesítés valójában ennél lényegesen több: Stripe fiókaktiválás (KYC, egyéni vállalkozóként), **a weboldal jogi elemeinek megépítése** (ÁSZF, adatkezelési tájékoztató, elállási/visszatérítési szabályzat, impresszum — ma egyik sincs meg, és ez a Stripe review leggyakoribb blokkolója), az EU-s 14 napos elállási jogról szóló kifejezett lemondás beépítése a vásárlási folyamatba, valamint a **Stripe Tax** bekapcsolása (digitális termék adókód, `tax_behavior: "inclusive"`, `automatic_tax`). Fontos sorrendi kötöttség: a `tax_behavior` a `price` objektumon **immutábilis**, ezért a Stripe Tax beállítása **megelőzi** az éles linkek generálását. A 012-es terv minden feladatnál jelöli, hogy **kézi** (Stripe Dashboard / hatóság) vagy **automatizálható** (script) lépésről van-e szó.
 
 ---
 
@@ -285,7 +285,9 @@ export const getPaymentLinkUrl = (pack: CreditPack): string =>
 | Nincs webhook → nincs automatikus verifikáció | Spark terv korlát | CF migration után: `stripeWebhook` + idempotencia |
 | Payment Link URL-ek fixen a kódban | Nem lehet env változó a buildben | `.env` + Vite import (de publikus, így ez nem biztonsági issue) |
 
-> ⚠️ **Csalás- és visszaélés-kockázatok:** a fenti két sor (*kliens írja a kreditet*, *nincs webhook*) egy kihasználható **„ingyen kredit" rést** jelent — a jóváírás kizárólag a localStorage tartalmán alapul. Ehhez társul a Stripe API kulcs kezelésének kockázata (carding, refund-támadás, adatlopás). A teljes fenyegetés-modell, a Spark-kompatibilis enyhítések (kulcs-higiénia, restricted API key, ingyenes Radar, RTDB rules szigorítás, `session_id` alapú replay-védelem) és az opcionális külső serverless webhook út a **[[016-stripe-fraud-defense]]** tervben van.
+> ➕ **Frissítés — a fenti korlátok gyökerét a [[018-nextjs-migration]] szünteti meg.** A tábla első négy sora mind ugyanarra vezethető vissza: *nincs szerveroldal*. A Next.js migráció (Vite SPA → App Router, Vercel) ezt megteremti, **Blaze terv és Cloud Functions nélkül**: a „Nem Cloud Functions" sor tárgytalanná válik (a szerepét `app/api/**` route-ok veszik át), a „Kliens írja a kreditet" és a „Nincs webhook" sorok a webhook-alapú, `firebase-admin`-nal írt jóváírással **megszűnnek** (a `wallet` Phase-2 szabálya, `".write": false`, bevezethetővé válik), a „Payment Link URL-ek fixen a kódban" sor pedig azzal, hogy a Checkout Session **futásidőben, szerveroldalon** jön létre. ⚠️ Két konkrét, ehhez a tervhez tartozó teendő a migráció után: (1) a 8 Payment Link `after_completion.redirect.url` mezője a `…web.app/shop/success` címre mutat, ezt **újra kell generálni** a Vercel domainre; (2) a `getPaymentLinkUrl` `import.meta.env.DEV` feltétele `process.env.NODE_ENV !== "production"`-re változik, ami a Vercel **preview** buildben a prod linket adja (részletek: 018 3.4).
+
+> ⚠️ **Csalás- és visszaélés-kockázatok:** a fenti két sor (*kliens írja a kreditet*, *nincs webhook*) egy kihasználható **„ingyen kredit" rést** jelent — a jóváírás kizárólag a localStorage tartalmán alapul. Ehhez társul a Stripe API kulcs kezelésének kockázata (carding, refund-támadás, adatlopás). A teljes fenyegetés-modell, a Spark-kompatibilis enyhítések (kulcs-higiénia, restricted API key, ingyenes Radar, RTDB rules szigorítás, `session_id` alapú replay-védelem) és az opcionális külső serverless webhook út a **[[019-stripe-fraud-defense]]** tervben van.
 
 ---
 
@@ -312,5 +314,6 @@ export const getPaymentLinkUrl = (pack: CreditPack): string =>
 - [[003-firebase-auth-settings]] – auth, RTDB séma, Security Rules
 - [[004-firebase-auth-bugfix]] – **blokkoló előfeltétel.** A kredit írás (`updateUserWallet`) csak működő auth + RTDB rules felett építhető
 - [[009-firebase-identity-split-bugfix]] – **az `updateUserWallet(rtdbKey, …)` célútvonalát javítja.** Ma egy migrációs `catch`-ág a `rtdbKey`-t a `deviceId`-re térítheti, így a jóváírás a **rossz** RTDB node alá kerül (élesben megerősített hiba: ugyanaz a Google fiók két node, 0 vs. 1837 kredit). A `rtdbKey` derivált értékké válik, a `setRtdbKey` action megszűnik
-- [[017-stripe-go-live]] – **az élesítés terve.** Teszt módból valós pénzes fizetésbe: KYC / fiókaktiválás, a kötelező jogi oldalak megépítése, elállási jog lemondása, Stripe Tax, a 4 éles Payment Link generálása és a go-live / rollback checklist. Módosítja a `create_payment_links.mjs`-t (`tax_code`, `tax_behavior`, `automatic_tax`, `consent_collection`), a `shopCatalog.ts` `stripePaymentLink` mezőit, a `CreditShopView`-t (elállási checkbox) és új `LegalScreen` képernyőt vezet be
-- [[016-stripe-fraud-defense]] – **ráépülő biztonsági terv.** Carding / refund-támadás / adatlopás elleni Spark-kompatibilis védelem + az ingyen-kredit rés szűkítése (`session_id` kapu, `credit_claims` ledger, `wallet` növekmény-limit). Módosítja a `CreditShopView` pending payloadját, a `ShopScreen` jóváírási ágát, az `updateUserWallet` írásmódját (`set` → `update`) és a `create_payment_links.mjs` redirect URL-jét
+- [[020-stripe-go-live]] – **az élesítés terve.** Teszt módból valós pénzes fizetésbe: KYC / fiókaktiválás, a kötelező jogi oldalak megépítése, elállási jog lemondása, Stripe Tax, a 4 éles Payment Link generálása és a go-live / rollback checklist. Módosítja a `create_payment_links.mjs`-t (`tax_code`, `tax_behavior`, `automatic_tax`, `consent_collection`), a `shopCatalog.ts` `stripePaymentLink` mezőit, a `CreditShopView`-t (elállási checkbox) és új `LegalScreen` képernyőt vezet be
+- [[019-stripe-fraud-defense]] – **ráépülő biztonsági terv.** Carding / refund-támadás / adatlopás elleni Spark-kompatibilis védelem + az ingyen-kredit rés szűkítése (`session_id` kapu, `credit_claims` ledger, `wallet` növekmény-limit). Módosítja a `CreditShopView` pending payloadját, a `ShopScreen` jóváírási ágát, az `updateUserWallet` írásmódját (`set` → `update`) és a `create_payment_links.mjs` redirect URL-jét
+- [[018-nextjs-migration]] – **a hiányzó szerveroldal megteremtése.** Ez a terv azért választotta a Payment Link megoldást, mert a Firebase **Spark** csomagon nincs Cloud Functions, tehát nem volt hova tenni a webhookot és a Stripe titkos kulcsot. A 018 az egész alkalmazást Vite SPA-ról **Next.js App Routerre** költözteti Vercelre, így az 5. szekció „Ismert korlátok" táblájának első négy sora feloldhatóvá válik. Két konkrét, ezt a tervet érintő teendő: a **Payment Link redirect URL-ek újragenerálása** a Vercel domainre (a mai 8 link a Firebase Hosting URL-re mutat), és a `getPaymentLinkUrl` dev/prod kapcsolójának átvezetése (`import.meta.env.DEV` → `process.env.NODE_ENV`, 018 3.4). A `/shop/success` mély link a migráció catch-all route-ja alatt **változatlanul** működik, a `window.history.replaceState` URL-tisztítással együtt

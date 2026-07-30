@@ -19,8 +19,8 @@
   "intro": {
     "headline": "Realtime Space Travel",
     "motto": "Az életedre szóló élmény!",
-    "paragraph1": "Te vagy a kiválaszott! Te vagy az Emberiség utolsó és egyetlen reménye. Ez nem egy játék, a túlélésünk a tét. Ez az utolsó esélyünk: egy új otthon ígérete távoli csillagrendszerekben. A bárka, amely az emberiség jövőjét hordozza, indulásra kész.",
-    "paragraph2": "A teljes legénység – tudósok, mérnökök, az új civilizáció alapítói – mély, kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... Az emberiség sorsa most a te kezedben van. Te vagy az az élő, lélegző komponens, amelyet semmilyen mesterséges intelligencia nem pótolhat.",
+    "paragraph1": "Az emberiség utolsó bárkája áll a kilövőálláson, indulásra készen. Ez nem egy játék — a fajunk túlélése múlik ezen az úton. Egy új otthon vár ránk távoli csillagrendszerekben, de az utazás mindenünket követeli. Nincs második esély.",
+    "paragraph2": "A teljes legénység — tudósok, mérnökök, egy új civilizáció alapítói — kriogén álomba merült. A sorsuk, az álmaik, a jövőnk... mind rád van bízva. Te vagy az egyetlen, aki ébren van. Aki figyel. Aki át kell vezessen minket.",
     "sectionTitle": "A Feladataid – A Küldetés Legszigorúbb Protokolljai",
     "rule1": "<1>Az Éberség Protokollja</1> – folyamatos vizuális monitorozás szükséges a navigációs adatok stabilizálásához. Ha a figyelmed megszakad, a hajó vészleállást kezdeményez.",
     "rule2": "<1>A Zéró Beavatkozás Elve</1> – a rendszerek önfenntartóak, a manuális beavatkozás végzetes lehet. A legfontosabb képességed a fegyelem és a türelem. Ne cselekedj – felügyelj!",
@@ -340,7 +340,7 @@
         "desc": "⚠️ DEBUG HAJÓ ⚠️ Ezt nem kéne látnod. 1234 km/s. 1234 kredit. Ne kérdezz semmit. 'Nem bug — ez egy feature.' — Debug Dynamics Ltd."
       },
       "longDrop": {
-        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
+        "desc": "A Latrina Aerospace LD-42 \"Long Drop\" egyesíti a hagyományos vidéki mesterséget a csúcstechnológiás csillagközi mérnöki tudással. Minden jármű kézzel épül újrahasznosított örökség-keményfából, és úgy tervezték, hogy ellenálljon a warp-utazásnak és... másfajta nyomásoknak is.\n\nGyártó: Latrina Aerospace\nModell: LD-42 \"Long Drop\"\nSzerepkör: Többcélú / Felfedező / Teherszállító\nTörzs: Újrahasznosított vidéki keményfa kompozit™\nHajtómű: FlushDrive FTL Mk.III\nLegénység: 1-2"
       }
     },
     "exoplanet": {
@@ -379,8 +379,8 @@
       "guestWarning": "Figyelem: a vendégként vásárolt kreditek és tárgyak elvesznek, ha nem jelentkezel be. A vendég haladás csak egyszer, egyetlen vendég fiókból vihető át regisztrált fiókba."
     },
     "history": {
-      "title": "Purchase History",
-      "empty": "No purchases yet."
+      "title": "Vásárlási előzmények",
+      "empty": "Még nincs vásárlás."
     }
   },
   "sort": {
