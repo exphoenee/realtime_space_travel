@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
 import styles from "./IntroScreen.module.css";
@@ -15,28 +15,28 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [instructionsVisible, setInstructionsVisible] = useState(false);
 
-  // Viewport-reszponzív scroll animáció: a kezdő- és végpozíciót a viewport-
-  // magasság + tartalom alapján számolja, hogy az első blokk mindig a képernyő
-  // alatt kezdődjön, az utolsó pedig a képernyő fölött végződjön, a sebesség
-  // pedig viewport-mérettől függetlenül állandó maradjon (~3.5 px/s).
-  useEffect(() => {
-    if (DEBUG_MODE) return; // debug mód saját duration-t használ
+  // Viewport-reszponzív scroll animáció: a kezdő- és végpozíciót kizárólag
+  // a viewport magassága alapján számolja, hogy a szövegek minden nyelven
+  // ugyanott jelenjenek meg, és nyelv váltáskor ne ugorjanak.
+  //
+  // A tartalom magasságát (contentHeight) NEM használjuk, mert az nyelvenként
+  // eltérő hosszúságú szövegek miatt változó pozíciókat és ugrálást okozna.
+  // Viewport-only számolás: konstans sebesség (~3.5 px/s).
+  const updateScrollPositions = useCallback(() => {
+    if (DEBUG_MODE) return;
 
     const el = scrollRef.current;
-    if (!el || el.scrollHeight < 50) return;
+    if (!el) return;
 
     const vh = window.innerHeight;
-    const contentHeight = el.scrollHeight;
+    const PADDING = 100;
 
-    // A .scroll természetes (transzformálatlan) pozíciója a flex center miatt
-    // (vh - contentHeight) / 2 pixelre van a viewport tetejétől.
-    //
-    // Start: az első szövegblokk (headline) a viewport alja alatt legyen.
-    // Ehhez a .scroll-t (vh + contentHeight) / 2 + 64px-el kell lenyomni.
-    const startOffset = (vh + contentHeight) / 2 + 64;
-
-    // End: az utolsó szövegblokk alja a viewport teteje fölött legyen.
-    const endOffset = -(vh + contentHeight) / 2 - 64;
+    // Start: a tartalom egy viewport-nyival + paddinggel a képernyő alatt
+    // kezdődjön, így az első blokk mindig lentről úszik be.
+    const startOffset = vh + PADDING;
+    // End: a tartalom egy viewport-nyival + paddinggel a képernyő fölött
+    // végződjön, hogy az utolsó blokk is eltűnjön felfelé.
+    const endOffset = -(vh + PADDING);
 
     // Teljes görgetési távolság → duration számítás állandó sebességhez
     const totalDist = startOffset - endOffset;
@@ -47,6 +47,13 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onSkip }) => {
     el.style.setProperty("--intro-end", `${endOffset}px`);
     el.style.setProperty("--intro-duration", `${durationSec}s`);
   }, []);
+
+  useEffect(() => {
+    updateScrollPositions();
+
+    window.addEventListener("resize", updateScrollPositions);
+    return () => window.removeEventListener("resize", updateScrollPositions);
+  }, [updateScrollPositions]);
 
   useEffect(() => {
     const root = scrollRef.current;

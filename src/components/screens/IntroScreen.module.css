@@ -47,23 +47,26 @@
 }
 
 .headline {
-  font-size: clamp(3rem, 6vw, 4.5rem);
-  letter-spacing: 0.35em;
+  font-size: clamp(1.4rem, 4.5vw, 4.5rem);
+  letter-spacing: clamp(0.08em, 1vw, 0.35em);
   text-transform: uppercase;
   margin: 0.5rem 0;
   text-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .motto {
-  font-size: 2.4rem;
+  font-size: clamp(1.2rem, 3vw, 2.4rem);
   font-style: italic;
   color: #bae6fd;
   font-weight: 600;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.7);
+  overflow-wrap: break-word;
 }
 
 .paragraph {
-  font-size: 1.75rem;
+  font-size: clamp(1rem, 2.5vw, 1.75rem);
   font-weight: 600;
   line-height: 1.5;
   margin-top: 1.6rem;
@@ -72,18 +75,20 @@
   text-align: left;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
 }
 
 .sectionTitle {
-  font-size: 2rem;
+  font-size: clamp(1.1rem, 2.8vw, 2rem);
   text-transform: uppercase;
-  letter-spacing: 0.4em;
+  letter-spacing: clamp(0.1em, 1vw, 0.4em);
   color: #fcd34d;
   margin-top: 2rem;
   text-align: left;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 3px 16px rgba(0, 0, 0, 0.7);
+  overflow-wrap: break-word;
 }
 
 .instruction {
