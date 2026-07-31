@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Adj meg egy megjelenítendő nevet",
     "nicknameEdit": "Szerkesztés",
     "nicknameSave": "Mentés",
+    "nicknameForbidden": "A becenév nem megfelelő szavakat tartalmaz",
     "enableCamera": "Kamera engedélyezése",
     "cameraGranted": "Kamera elérhető",
     "cameraBlocked": "Kamera letiltva a böngészőben",

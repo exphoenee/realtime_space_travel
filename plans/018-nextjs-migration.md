@@ -1,5 +1,5 @@
 ---
-title: "Next.js migráció – Vite SPA → Next.js App Router Vercelen (a hiányzó szerveroldal megteremtése)"
+title: "Next.js 16 migráció – Vite SPA → Next.js App Router Vercelen, a Stripe szerveroldal megteremtéséért"
 slug: 018-nextjs-migration
 type: plan
 category: core
@@ -18,6 +18,7 @@ dependencies:
 related_plans:
   - 016-notification-retention
   - 017-starfield-realism
+  - 021-intro-deterministic-layout
 tags:
   - nextjs
   - migration
@@ -88,7 +89,8 @@ tags:
 
 **B. Next.js váz felállítása** *(a `src/` még hozzá sem nyúlunk)*
 
-- [ ] Verzió-döntés rögzítése: **Next.js 15.x (App Router)**. ⚠️ A Next 15+ App Router **React 19**-et igényel → a `react` / `react-dom` `18.x` → `19.x` frissítés **része a migrációnak**. A kockázatot és a mérést lásd 7.2. *(Ha a felhasználó React 18-nál akar maradni: Next 14.x az utolsó, ami ezt támogatja — nyitott kérdés, lásd 12.)*
+- [ ] Verzió-döntés rögzítése: **Next.js 16.x (App Router)** + **React 19.x**. A `react` / `react-dom` `18.x` → `19.x` frissítés **része a migrációnak**. A kockázatot és a mérést lásd 7.2. *(✅ **Eldőlt (2026-07-30):** a felhasználó vállalta a React 19-et — lásd 12.2.)*
+- [ ] ⚠️ **Verzió-ellenőrzés a registry-ben, ne emlékezetből.** A terv első változata Next 15-öt írt elő, mert az AI asszisztens tudásbázisa elavult volt; a `npm view next version` **16.2.12**-t adott (2026-07-31). Az implementáció **első lépése** legyen `npm view next version` és `npm view react version` — a verziószámot a registry döntse el, ne a terv szövege
 - [ ] `npm i next@15 react@19 react-dom@19` + `npm i -D @types/react@19 @types/react-dom@19 eslint-config-next`
 - [ ] `npm uninstall @vitejs/plugin-react` **NEM** — marad devDependencyként, mert a Vitest React-teszteket futtat (I. blokk)
 - [ ] `next.config.ts` (**ÚJ**) — üres vázzal indul, a webpack alias és a headerek az E. blokkban kerülnek bele
@@ -97,7 +99,7 @@ tags:
 - [ ] `app/layout.tsx`: `metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://<vercel-domain>")` — ez váltja ki a `scripts/build.mjs` `__OG_DOMAIN__` helyettesítését
 - [ ] `app/globals.css` (**ÚJ**) — a gyökérben lévő `index.css` **áthelyezve**, importálva a `layout.tsx`-ben
 - [ ] `app/AppShell.tsx` (**ÚJ**, `"use client"`) — `const App = dynamic(() => import("../src/App"), { ssr: false })`, körülötte az `ErrorBoundary` + `ScreenCheck` (a mai `index.tsx` render-fája)
-- [ ] ⚠️ Az `AppShell` **kliens komponens kell legyen**: a `dynamic(..., { ssr: false })` szerver komponensben **hibát dob** Next 15-ben
+- [ ] ⚠️ Az `AppShell` **kliens komponens kell legyen**: a `dynamic(..., { ssr: false })` szerver komponensben **hibát dob**. ⚠️ Ez az állítás Next **15**-re lett ellenőrizve — a Next 16 upgrade guide alapján **újra igazolandó** (12.2)
 - [ ] `app/[[...slug]]/page.tsx` (**ÚJ**, szerver komponens) — mindössze `<AppShell />`-t renderel. ⚠️ **Nem** jön létre `app/page.tsx`, mert az ütközne az opcionális catch-all route-tal
 - [ ] `app/api/health/route.ts` (**ÚJ**) — `export const runtime = "nodejs"`, `GET` → `{ ok: true, env: process.env.VERCEL_ENV ?? "local" }`. Ez a **szerveroldal füstteszte**, egyben a Stripe route-ok mintája
 - [ ] `tsconfig.json` frissítése: `"jsx": "preserve"`, `"moduleResolution": "bundler"`, `"plugins": [{ "name": "next" }]`, `"incremental": true`, `include`-ba `next-env.d.ts` és `.next/types/**/*.ts`
@@ -652,8 +654,8 @@ A `shopCatalog.ts:54` ma `import.meta.env.DEV` alapján választ dev vagy prod P
 
 | Függőség | Verzió | Megjegyzés |
 |---|---|---|
-| `next` | ^15 | App Router; **React 19-et igényel** |
-| `react` / `react-dom` | 18 → **19** | A Next 15 App Router feltétele — lásd 7.2 |
+| `next` | **^16** (ellenőrizve: 16.2.12, 2026-07-31) | App Router. ⚠️ Peer range: `react: ^18.2.0 \|\| ^19.0.0` — tehát a React 19 **nem kényszer**, hanem választás |
+| `react` / `react-dom` | 18 → **19** (legfrissebb: 19.2.8) | **Választott** frissítés, nem a Next követelménye — lásd 7.2 és 12.2 |
 | `zustand` | ^4.5 (marad) | A `persist` `skipHydration` opciója 4.x-ben elérhető |
 | `i18next` / `react-i18next` | marad | A `react-i18next` 17 támogatja a React 19-et |
 | `@tensorflow/tfjs` · `@tensorflow-models/face-detection` | marad | Kliens-only, `ssr: false` mögött |
@@ -664,7 +666,7 @@ A `shopCatalog.ts:54` ma `import.meta.env.DEV` alapján választ dev vagy prod P
 ### 5.3 Külső / fiók-szintű függőségek
 
 - **Vercel fiók + projekt** a GitHub repóhoz kötve.
-- ⚠️ **Vercel csomag:** a Hobby ToS **tiltja a kereskedelmi használatot** — valós pénzes fizetést kiszolgáló deploymenthez **Pro csomag** kell. Ez ütközik a [[019-stripe-fraud-defense]] 6.3 táblájának Vercel-sorával, ami pont ezért zárta ki a Vercelt. **Nyitott kérdés — lásd 12.1**
+- ⚠️ **Vercel csomag:** a Hobby ToS **tiltja a kereskedelmi használatot** — valós pénzes fizetést kiszolgáló deploymenthez **Pro csomag** kell. ✅ **Eldőlt (2026-07-30): Hobby-n maradunk, valós pénzes fizetés nélkül** — lásd 12.1. A migráció és a teszt módú Stripe ezzel nem ütközik; a [[019-stripe-fraud-defense]] 6.3 táblájának Vercel-kizárása **kizárólag a valós pénzes endpointra** marad érvényben, azaz a [[020-stripe-go-live]] külön Pro-döntést igényel
 - **Firebase Console** hozzáférés az authorized domains bővítéséhez.
 - **Stripe Dashboard** hozzáférés a Payment Link redirect URL-ek újragenerálásához.
 
@@ -716,7 +718,9 @@ Ez **robusztusabb** (nem függ a Next script-stratégiájától), de a betölté
 
 ### 7.2 ⚠️ React 18 → 19 — rejtett költség a migrációban
 
-A Next 15 App Router React 19-et igényel. A mérés szerint a kódbázis **jól áll**:
+⚠️ **Javítva 2026-07-31:** a terv első változata azt állította, hogy a Next App Router **megköveteli** a React 19-et. A `next@16.2.12` peer range-e (`react: ^18.2.0 || ^19.0.0`) szerint ez **nem igaz** — a React 18 is elfogadott. A React 19 tehát **tudatos választás** (12.2), nem a keretrendszer kényszere. Ez a különbség számít: a visszalépés nem igényel Next-major visszalépést is.
+
+A mérés szerint a kódbázis **jól áll**:
 
 | React 19 töréspont | Érintettség itt |
 |---|---|
@@ -727,7 +731,7 @@ A Next 15 App Router React 19-et igényel. A mérés szerint a kódbázis **jól
 | StrictMode dupla-effekt szigorúbb | ⚠️ **Figyelendő** — a `useCamera`, `useFaceDetection`, `useAudio` és a `Starfield` rAF-hurka mind cleanup-érzékeny |
 | `@testing-library/react` React 19 kompatibilitás | ⚠️ A 16.3.2 támogatja, de a 147 teszt a bizonyíték |
 
-**Ha a React 19 váratlanul sok problémát okoz:** a visszavonulási út a **Next 14.x** (React 18-cal). Ekkor a `next/script` `beforeInteractive`, a webpack alias és az App Router **ugyanúgy** működik — csak a Turbopack-alias és néhány újabb API esik ki. Ezt a 12.2 nyitott kérdésként rögzíti.
+**Ha a React 19 váratlanul sok problémát okoz:** a visszavonulási út **React 18 a Next 16 alatt** — a peer range ezt megengedi, tehát a Next major verziót **nem** kell visszaléptetni. Ez lényegesen olcsóbb visszaút, mint amit a terv első változata feltételezett (Next 14-re esés). A 12.2 szerint ez **nem** az alapterv, hanem kizárólag tartalék — a döntés a **Next 16 + React 19**.
 
 ### 7.3 ⚠️ Az eager `window` olvasás a stubban — a legalattomosabb hiba
 
@@ -874,7 +878,7 @@ A migráció **27 env/asset-sort** és **3 SSR-védelmet** érint. Minden ezen f
 | L | Validáció (16 kézi forgatókönyv ×2 környezet) | ~0,5 nap |
 | M | Dokumentáció (CLAUDE.md, konvenciók, lessons-learned) | ~2 óra |
 
-**Összesen: ~3–5 munkanap**, ebből a legnagyobb szórást az **E. blokk (MediaPipe)** és az **I. blokk (React 19 + tesztek)** adja. Ha a React 19 kompatibilitás problémás, a Next 14-re visszalépés (7.2) további ~fél napot jelent.
+**Összesen: ~3–5 munkanap**, ebből a legnagyobb szórást az **E. blokk (MediaPipe)** és az **I. blokk (React 19 + tesztek)** adja. Ha a React 19 kompatibilitás problémás, a React 18-ra visszalépés **a Next 16 megtartásával** (7.2) további ~fél napot jelent.
 
 ---
 
@@ -891,13 +895,16 @@ A migráció **27 env/asset-sort** és **3 SSR-védelmet** érint. Minden ezen f
 - [[003-firebase-auth-settings]] – **Előfeltétel és haszonélvező.** A Firebase Auth + RTDB séma változatlanul marad; a migráció **egyetlen** Firebase-érintettsége az authorized domains bővítése (7.7) és a `NEXT_PUBLIC_FIREBASE_*` átnevezés. A 003 6. pontjában felvázolt szerveroldali `awardWage` / `purchaseWithCredits` (ott Cloud Functionökkel, Blaze tervvel) a migráció után **Vercel API route-ként**, Blaze terv nélkül valósítható meg.
 - [[007-state-persist-page-refresh]] – **Előfeltétel és referencia.** A `space-travel-game` persist viselkedése a hidratálási munka (F. blokk) mércéje: a migráció után az F5-viselkedésnek **bitre azonosnak** kell lennie. A `skipHydration` bevezetése technikai védelem, nem viselkedésváltás — ha bármi eltérés adódik, az **regresszió**.
 - [[012-wall-of-shame]] – **Érintett közvetve.** A küldetésnapló RTDB-ben él, tehát a domainváltás (7.8) nem érinti a bejelentkezett felhasználóknál; a **vendégek** viszont új `deviceId`-t kapnak az új originen, tehát a naplójuk „eltűnik". Kommunikálandó.
+- [[021-intro-deterministic-layout]] – ⚠️ **Kódütközés, egyik irányban sem függőség.** A C. blokk **3.1 táblájának 14. tétele** (`src/components/screens/IntroScreen.tsx` · `VITE_DEBUG_MODE` → `NEXT_PUBLIC_DEBUG_MODE`) **pontosan azt a sort** érinti (`IntroScreen.tsx:10`), amit a 021 G. blokkja is átír a komponens jelentős átalakítása közben. **Feloldás:** ha a 021 **előbb** fut, a 14. tétel változatlanul elvégezhető, csak a sor környezete néz ki másképp; ha a migráció fut előbb, a 021-nek a már átírt `process.env`-es formát kell megtartania. Mindkét irányban **egyetlen sor**. ⚠️ A 021 `dependencies: []` — **nem** vár erre a migrációra, és ez a migráció sem vár rá. **Két ellenőrzési pont a migráció után** (ha a 021 már megvan): (a) a 021 `useIntroLayout` hookja **kliens-only** (`document.fonts`, `window.innerHeight`), tehát a `ssr: false` határ mögé kell essen — a `document.fonts` szerveroldalon nem létezik; (b) a React 18 → 19 **StrictMode dupla-effekt** viselkedése a hook `await document.fonts.ready` utáni `setState`-jét érinti, ott cleanup-védelem kell. A 021 tiszta moduljai (`src/services/introLayout.ts`, `introFit.ts`) keretrendszer-függetlenek, tehát a migráció **nem érinti** őket.
 - [[016-notification-retention]] – **Nem érintett**, de megjegyzendő: a `notifications/{uid}` node takarítása a migráció után szintén **szerveroldalról** (Vercel API route + cron) elvégezhető, nem csak kliensoldali TTL-lel. Ez a 016 hatókörét bővítő lehetőség, nem ennek a tervnek a feladata.
 
 ---
 
-## 12. Nyitott kérdések
+## 12. Eldöntött kérdések
 
-### 12.1 ⚠️ Vercel Hobby vs. Pro — közvetlen ütközés a 019-tal
+> ✅ **A 12.1–12.4 kérdések 2026-07-30-án eldőltek** (a felhasználó döntései a `dev` skill hangoló körében). A szekciók megtartják az eredeti indoklást, mert az magyarázza, **miért** így dőlt el — de mindegyik alatt ott a végleges döntés. Ezek a pontok **nem** nyitottak.
+
+### 12.1 ✅ Vercel Hobby — valós pénzes fizetés nélkül
 
 A [[019-stripe-fraud-defense]] 6.3 táblája a serverless futtatók összevetésénél a Vercelt **kifejezetten kizárta**:
 
@@ -905,20 +912,57 @@ A [[019-stripe-fraud-defense]] 6.3 táblája a serverless futtatók összevetés
 
 A felhasználó a Vercelt választotta deploy célként. A migráció **önmagában** (fizetés nélkül) Hobby csomagon is fut, de amint a [[020-stripe-go-live]] élesedik, a valós pénzt kiszolgáló endpoint **Pro csomagot** igényel (~20 USD/hó/felhasználó).
 
-**Kérdés a felhasználóhoz:** vállalt-e a Vercel Pro előfizetés az élesítéssel egy időben, vagy a fizetési endpointot egy másik futtatóra (Cloudflare Workers, ahogy a 019 ajánlotta) kell tenni? **A terv a Pro csomagot feltételezi**, mert a felhasználó a „teljes migráció Vercelre" döntést hozta — de ez a költség eddig nem került szóba.
+**✅ DÖNTÉS (2026-07-30): Hobby csomagon maradunk, valós pénzes fizetés nélkül.** A Vercel Pro (~20 USD/hó) **nincs vállalva**.
 
-### 12.2 Next 15 + React 19, vagy Next 14 + React 18?
+Mit jelent ez a gyakorlatban:
 
-A brief nem rendelkezett a verzióról. A terv **Next 15 + React 19**-et javasol (ez a támogatott, jövőálló út; a kódbázis mérés szerint jól áll — 7.2), de ez a migráció hatókörét egy **React major frissítéssel** bővíti. Az alternatíva (Next 14 + React 18) kisebb kockázat most, nagyobb adósság később.
+| Terület | Hobby-n megvalósítható? |
+|---|---|
+| A migráció maga (A–N blokkok) | ✅ **Igen**, teljes egészében |
+| Stripe **teszt módú** Checkout Session + webhook | ✅ **Igen** — a teszt mód nem kereskedelmi használat, a Hobby ToS nem tiltja |
+| A Stripe titkos kulcs szerveroldali env-be költöztetése | ✅ **Igen** |
+| `firebase-admin` szerveroldalon + a **Phase-2** RTDB szabályok (szerver-only wallet/inventory írás) | ✅ **Igen** — és ez a [[019-stripe-fraud-defense]] legfontosabb hiányzó építőköve |
+| **Valós pénz** átvétele ([[020-stripe-go-live]]) | ❌ **Nem** — ehhez Pro kell |
 
-**Kérdés:** vállalja-e a felhasználó a React 19 frissítést a migráció részeként?
+**Következmény a roadmapre:** a [[020-stripe-go-live]] végrehajtása egy **külön, későbbi Pro-döntéshez** van kötve. Ez jól illeszkedik ahhoz, hogy a 020 a lista utolsó eleme. A [[019-stripe-fraud-defense]] viszont **nem** blokkolt: a csalásvédelem érdemi része (Admin SDK, Phase-2 szabályok, a kliensoldali egyenlegírás megszüntetése) független attól, hogy valós pénz mozog-e — ma ugyanis a **kliens írja a saját egyenlegét**, és ez a rés Hobby-n is bezárható.
 
-### 12.3 A Firebase Hosting sorsa
+⚠️ Aki a 020-hoz ér, annak **először** a Vercel Pro (vagy egy alternatív futtató — a 019 6.3 táblája Cloudflare Workerst ajánlott) kérdését kell eldöntenie. A 019 6.3 táblájának Vercel-kizárása tehát **érvényben marad a valós pénzes endpointra**, és nincs ellentmondásban ezzel a migrációval.
+
+### 12.2 ✅ Next 16 + React 19
+
+A brief nem rendelkezett a verzióról. A terv **React 19**-et javasol (jövőálló út; a kódbázis mérés szerint jól áll — 7.2), de ez a migráció hatókörét egy **React major frissítéssel** bővíti.
+
+**✅ DÖNTÉS (2026-07-30): React 19.** A React major frissítés **a migráció hatókörének része**.
+
+⚠️ **Verzió-korrekció (2026-07-31).** A döntés eredetileg „Next 15 + React 19" néven került rögzítésre. A registry ellenőrzése (`npm view next version` → **16.2.12**) kimutatta, hogy a Next legfrissebb stabil majorja a **16**, nem a 15 — a terv azért írt 15-öt, mert az AI asszisztens tudásbázisa elavult volt, és a verziót senki nem ellenőrizte a forrásnál. A felhasználó döntése (React 19, a legfrissebb támogatott úton) **változatlan**; a Next major **15 → 16**-ra javítva.
+
+⚠️ **Ebből következő átvizsgálási kötelezettség:** a terv Next-verzióhoz kötött állításai **15-ös feltételezéssel** íródtak. Az implementáció előtt a hivatalos Next 16 upgrade guide alapján **újra kell ellenőrizni** legalább ezeket:
+- a `dynamic(..., { ssr: false })` viselkedése szerver komponensben (3.2 / B. blokk),
+- a Turbopack alapértelmezettsége és a webpack-alias továbbélése (az E. blokk MediaPipe-megoldásának alapja),
+- a `next/script` `beforeInteractive` stratégia szerződése,
+- az aszinkron request API-k (`cookies`, `headers`, `params`) és a caching alapértelmezések,
+- a `node` engine követelmény (`>=20.9.0`) a CI `node-version` beállításához képest.
+
+A döntés alapja a 7.2-es mérés: a kódbázis jól áll (nulla argumentum nélküli `useRef()`, már `createRoot`, nincs `propTypes`). A vállalt kockázat két ponton koncentrálódik, mindkettőnek külön ellenőrzési pont jár:
+
+- **StrictMode dupla-effekt** — a projektben több modul-szintű singleton véd ellene (`authBootstrap.ts`), ezek viselkedését React 19 alatt újra igazolni kell.
+- **A 147 meglévő teszt** — ezek ma zöldek; a migráció után is zöldnek kell lenniük. Ha a React 19 miatt bukik közülük bármelyik, azt **javítani** kell, nem kikapcsolni.
+
+### 12.3 ✅ A Firebase Hosting sorsa — saját domén később, külön
 
 Három lehetőség: (a) teljes leállítás, (b) 301 redirect a Vercel domainre, (c) párhuzamos üzem egy ideig. A terv **(b)**-t javasolja átmenetileg, a Payment Link redirect URL-ek miatt (7.9).
 
-**Kérdés:** meddig maradjon élő a redirect, és van-e saját domain terv (`realtimespacetravel.com`), ami egyszerre oldaná meg a 7.8 localStorage-vesztést és a 7.9 redirect-problémát? **Ha van saját domain**, azt érdemes a migrációval **egy körben** bevezetni, hogy a játékosok csak **egyszer** veszítsék el a vendég-haladásukat.
+**✅ DÖNTÉS (2026-07-30): a saját domén NEM ebben a körben jön.** A migráció a Vercel által adott aldoménre megy; a redirect-változat **(b)** marad érvényben a Payment Link visszatérési címek miatt (7.9).
 
-### 12.4 A `category` mező
+⚠️ **Tudatosan vállalt következmény:** a `localStorage` nem vándorol doménváltásnál, ezért a **be nem jelentkezett vendégek kétszer** veszítik el a haladásukat — egyszer most, a Vercelre költözéskor, és még egyszer a későbbi saját doménre váltáskor. A felhasználó ezt a kérdés ismeretében fogadta el.
 
-A brief `core` vagy `infra` kategóriát javasolt. A projektben ma használt kategóriák: `i18n`, `ui`, `shop`, `auth`, `core`, `security`, `payments` — **`infra` nem létezik**. A terv ezért **`core`**-t használ. Ha a `manage-roadmap` agent szerint indokolt egy új `infra` kategória bevezetése, azt ő állítsa be.
+Ebből két teendő következik:
+
+- A 7.8-as enyhítés (a doménváltás előtti figyelmeztetés / bejelentkezésre buzdítás a vendégeknek) **mindkét** alkalommal esedékes, nem csak egyszer — a migráció **nem** oldja meg véglegesen ezt a problémát.
+- Amikor a saját domén mégis megjön, az **külön terv** lesz, és a Payment Link visszatérési címeket (8 db) **másodszor is** át kell állítani. Ezt a majdani terv nyitó tételeként kell rögzíteni.
+
+> A vesztés csak a **vendégeket** érinti: a bejelentkezett felhasználók adatai az RTDB-ben vannak, ami doménfüggetlen.
+
+### 12.4 ✅ A `category` mező — `core`
+
+A brief `core` vagy `infra` kategóriát javasolt. A projektben ma használt kategóriák: `i18n`, `ui`, `shop`, `auth`, `core`, `security`, `payments` — **`infra` nem létezik**. A terv ezért **`core`**-t használ. **✅ Eldőlt:** a `manage-roadmap` agent az átszámozáskor a `core`-t hagyta érvényben — új `infra` kategória **nem** jön létre.

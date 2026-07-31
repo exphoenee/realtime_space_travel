@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Enter a display name",
     "nicknameEdit": "Edit",
     "nicknameSave": "Save",
+    "nicknameForbidden": "Nickname contains inappropriate language",
     "enableCamera": "Enable Camera",
     "cameraGranted": "Camera available",
     "cameraBlocked": "Camera blocked in browser",

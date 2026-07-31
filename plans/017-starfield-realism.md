@@ -16,6 +16,7 @@ dependencies:
 related_plans:
   - 002-ingame-shop-frontend
   - 018-nextjs-migration
+  - 021-intro-deterministic-layout
 tags:
   - starfield
   - canvas
@@ -962,4 +963,5 @@ A banking ráadásul **kiszámíthatóvá** tenné az effektet: minden balra kit
 
 - [[011-difficulty-event-system]] – **előfeltétel.** Az `evasiveManeuverAt` trigger és az aszteroida-esemény innen származik; a 6. munkacsomag (roll) erre a triggerre ül rá, új időzítő nélkül.
 - [[002-ingame-shop-frontend]] – a `cockpitImageUrl` a shopban megvásárolt / kiválasztott űrhajóból származik; a `Starfield` a `drawImage`-dzsel ezt rajzolja a transzformációs blokkon kívül.
+- [[021-intro-deterministic-layout]] – **Ez a terv szolgál mintaként, kódütközés nélkül.** A 021 három konvenciót vesz át innen: (a) a **tiszta függvény / `src/services/`** szétválasztás (`introLayout.ts`, `introFit.ts` — a `starColor.ts` / `starfieldMath.ts` mintájára), (b) a **„nincs és ne is legyen `src/utils/`"** szabály (1.2 „Miért a `src/services/`" bekezdése), (c) a mért/véletlen mennyiségek **paraméterként** való átvétele a determinisztikus tesztelhetőségért (5.3) — ott `Math.random()`, itt a DOM-mérés eredménye. ⚠️ Emellett a 021 A. blokkja **kifejezetten az itteni A. blokk elmaradására** hivatkozik indoklásként: mivel a baseline itt kimaradt, a K. blokk hangolása abszolút megítéléssel zárult — a 021 ezért teszi kötelezővé a kiindulási állapot rögzítését. **Kódütközés a két terv közt nincs:** ez a `Starfield.tsx`-et írja, a 021 az `IntroScreen.tsx`-et.
 - [[018-nextjs-migration]] – **kódütközési pont, utólagos kereszthivatkozás.** A Next.js migráció D. blokkja megszünteti az `import.meta.env.BASE_URL` hivatkozásokat (a `/realtime_space_travel/` base path a GitHub Pages öröksége, Vercelen az app a gyökéren fut). Ez a `Starfield.tsx` **120. sorát** érinti — a cockpit fallback képet (`${import.meta.env.BASE_URL}spaceships/russian1.webp` → `/spaceships/russian1.webp`) —, ami **pontosan az a kódrégió**, amit ez a terv frissen írt. A migráció diffje itt ütközhet, ha ez a terv még nincs mergelve. **Egyéb érintettség nincs:** a HiDPI (`devicePixelRatio`), a delta-idő, a `ctx.rotate` és az összes `src/services/starfieldMath.ts` / `starColor.ts` helper **keretrendszer-független**, tehát a migráció után változatlanul működik. ⚠️ Két dolgot viszont ellenőrizni kell a migráció után (a 018 8. szekció 7. forgatókönyve): (a) a React 18 → 19 frissítés a StrictMode dupla-effekt viselkedésén keresztül érinti a `Starfield` rAF-hurkának cleanupját, (b) a `dynamic(..., { ssr: false })` határ mögött a canvas mount időzítése kissé eltolódik.

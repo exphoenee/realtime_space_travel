@@ -30,6 +30,7 @@
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
+  padding-top: 2px;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(103, 232, 249, 0.3) transparent;
@@ -102,6 +103,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.25em;
+  /* align-items only centres the boxes; the wrapped lines inside them need
+     this, or a two-line headline reads as left-aligned. */
+  text-align: center;
   /* Keeps the text clear of the astronaut (left) and the rocket cow (right). */
   padding: 0 21% 0 25%;
 }

@@ -2,9 +2,16 @@
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  /* Top-anchored, NOT centred. Vertical centring puts the content top at
+     (viewportHeight - contentHeight) / 2 — a content-dependent term, which is
+     exactly what made the old geometry unpredictable and the closing caption
+     unreachable. Anchored to the top, translateY is a direct screen
+     coordinate. */
+  align-items: flex-start;
   justify-content: center;
-  padding: 1.5rem;
+  /* Horizontal only: any vertical padding would offset the content top, and the
+     scroll geometry assumes it sits at exactly 0. */
+  padding: 0 1.5rem;
   cursor: pointer;
   background: rgba(0, 0, 0, 0.85);
   z-index: 50;
@@ -14,8 +21,11 @@
 .content {
   color: #f8fafc;
   max-width: 900px;
+  width: 100%;
   text-align: center;
-  padding: 1rem;
+  /* Horizontal only — see .overlay. The column width is what the measurement
+     probe reproduces, so this value must stay in step with it. */
+  padding: 0 1rem;
 }
 
 .fade {
@@ -23,15 +33,40 @@
 }
 
 .scroll {
-  /* A kezdő- és végpozíciót JavaScript számolja viewport + tartalom alapján
-     és --intro-start / --intro-end CSS változókba teszi (px-ben).
-     Fallback: 87.5vh kezdés, -250%-os vég (eredeti viselkedés). */
-  transform: translateY(var(--intro-start, 87.5vh));
+  /* Start/end offsets, duration and delay all come from useIntroLayout, which
+     derives them from the fixed slot table — never from how tall the rendered
+     text happens to be. */
+  transform: translateY(var(--intro-start, 100vh));
   animation-name: introScroll;
-  animation-duration: var(--intro-duration, 600s);
+  animation-duration: var(--intro-duration, 540s);
   animation-timing-function: linear;
-  animation-delay: 4s;
+  animation-delay: var(--intro-delay, 4s);
   animation-fill-mode: forwards;
+  /* Held until fitting finishes, so the first frames can't run at the wrong
+     font size or the wrong offset. */
+  animation-play-state: paused;
+}
+
+.scroll[data-ready="true"] {
+  animation-play-state: running;
+}
+
+/* The fixed slot. Text is top-aligned inside it: centring would push a shorter
+   translation's first line down, which is the per-language drift this whole
+   layout exists to remove. Slack collects at the bottom, where it reads as
+   spacing before the next block. */
+.slot {
+  /* A hard height, not min-height. The scroll end offset is derived from the
+     sum of these slots, so a slot that grows to fit its text would silently
+     push the last block below the point where the animation stops — and the
+     closing caption would never be reached. Clipping one overflowing block is
+     recoverable and visible; breaking the geometry is neither.
+     `didFitOverflow` warns in the console if fitting ever bottoms out. */
+  height: var(--intro-slot-height, auto);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .block {
@@ -46,8 +81,11 @@
   transition-delay: var(--intro-block-delay, 0s);
 }
 
+/* Each block's font size is fitted at runtime to the tallest of the five
+   translations. The clamp() stays as a fallback so the text is still readable
+   if the fitting pass never runs. */
 .headline {
-  font-size: clamp(1.4rem, 4.5vw, 4.5rem);
+  font-size: var(--intro-font-size, clamp(1.4rem, 4.5vw, 4.5rem));
   letter-spacing: clamp(0.08em, 1vw, 0.35em);
   text-transform: uppercase;
   margin: 0.5rem 0;
@@ -57,7 +95,7 @@
 }
 
 .motto {
-  font-size: clamp(1.2rem, 3vw, 2.4rem);
+  font-size: var(--intro-font-size, clamp(1.2rem, 3vw, 2.4rem));
   font-style: italic;
   color: #bae6fd;
   font-weight: 600;
@@ -66,7 +104,7 @@
 }
 
 .paragraph {
-  font-size: clamp(1rem, 2.5vw, 1.75rem);
+  font-size: var(--intro-font-size, clamp(1rem, 2.5vw, 1.75rem));
   font-weight: 600;
   line-height: 1.5;
   margin-top: 1.6rem;
@@ -79,7 +117,7 @@
 }
 
 .sectionTitle {
-  font-size: clamp(1.1rem, 2.8vw, 2rem);
+  font-size: var(--intro-font-size, clamp(1.1rem, 2.8vw, 2rem));
   text-transform: uppercase;
   letter-spacing: clamp(0.1em, 1vw, 0.4em);
   color: #fcd34d;
@@ -100,22 +138,29 @@
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
 }
 
+/* Sized for the longest translation (fr, 62 characters). The old fixed 33%
+   width with 0.4em tracking was never exercised — the caption could not appear
+   under the previous geometry — and would have wrapped the French string to
+   roughly thirteen lines on a phone. */
 .finalInstruction {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
-  width: 33%;
   transform: translate(-50%, -50%);
+  width: min(90%, 640px);
   padding: 1rem 1.5rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(103, 232, 249, 0.4);
   background: rgba(2, 6, 23, 0.85);
   color: #cffafe;
-  font-size: 1.2rem;
-  letter-spacing: 0.4em;
+  font-size: clamp(0.85rem, 2.2vw, 1.2rem);
+  letter-spacing: clamp(0.12em, 0.8vw, 0.4em);
   text-transform: uppercase;
+  text-align: center;
   animation: introFade 1.5s ease forwards;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  z-index: 55;
 }
 
 .langBar {
@@ -150,6 +195,12 @@
   .langLabel {
     display: none;
   }
+
+  .finalInstruction {
+    width: min(94%, 420px);
+    padding: 0.75rem 1rem;
+    letter-spacing: 0.1em;
+  }
 }
 
 @keyframes introFade {
@@ -162,11 +213,13 @@
   100% {
     opacity: 1;
   }
-}  @keyframes introScroll {
+}
+
+@keyframes introScroll {
   0% {
-    transform: translateY(var(--intro-start, 87.5vh));
+    transform: translateY(var(--intro-start, 100vh));
   }
   100% {
-    transform: translateY(var(--intro-end, -250%));
+    transform: translateY(var(--intro-end, -400vh));
   }
 }

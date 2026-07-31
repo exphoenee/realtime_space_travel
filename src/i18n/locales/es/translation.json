@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Introduce un nombre para mostrar",
     "nicknameEdit": "Editar",
     "nicknameSave": "Guardar",
+    "nicknameForbidden": "El apodo contiene lenguaje inapropiado",
     "enableCamera": "Activar cámara",
     "cameraGranted": "Cámara disponible",
     "cameraBlocked": "Cámara bloqueada en el navegador",

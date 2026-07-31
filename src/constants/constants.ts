@@ -1,3 +1,5 @@
+import type { IntroSlot } from "../types";
+
 export const FACE_BALANCE_MIN_RATIO = 0.4;
 export const FACE_BALANCE_MAX_RATIO = 1 / FACE_BALANCE_MIN_RATIO;
 export const EYE_LEVEL_MAX_OFFSET_RATIO = 0.35;
@@ -26,6 +28,145 @@ export const TRAVEL_YEARS_PER_SECOND = 1 / SECONDS_PER_YEAR;
 export const CAMERA_OPEN_RETRY_DELAYS_MS = [300, 700];
 
 export const INTRO_AUTO_SKIP_TIMEOUT_MS = 600_000;
+
+/**
+ * Fixed-height slots for the nine intro blocks — **the main tuning surface of
+ * the deterministic intro layout.**
+ *
+ * `heightVh` multiplies `window.innerHeight`. Because the slots are viewport
+ * proportions rather than text-derived heights, every block sits at the same
+ * relative position on every screen and in every language. Text is top-aligned
+ * inside its slot, so a shorter translation leaves its slack at the bottom
+ * rather than shifting the first line down.
+ *
+ * Total: 3.02 viewports.
+ *
+ * The per-block font ranges carry the typographic hierarchy. They are
+ * deliberately generous — this is a cinematic crawl, not a document, so the
+ * body text is meant to be large. The ranges bias the order rather than prove
+ * it: the ceilings descend from headline to body, so with any realistic
+ * translation the headline comes out largest.
+ *
+ * Two things make that reliable in practice. The headline text — "Realtime
+ * Space Travel" — is byte-identical in all five languages, so language variance
+ * cannot shrink it at all; its size follows only from its slot and the column
+ * width. And the block that *is* most variable, the section title, has the
+ * shortest text of the three heading-like blocks.
+ *
+ * If a future translation ever does invert the order, the fix is the ranges
+ * here, not the fitting logic.
+ */
+export const INTRO_SLOTS: readonly IntroSlot[] = Object.freeze([
+  { id: "headline", heightVh: 0.3, minFontPx: 34, maxFontPx: 120 },
+  { id: "motto", heightVh: 0.2, minFontPx: 24, maxFontPx: 72 },
+  { id: "paragraph1", heightVh: 0.42, minFontPx: 18, maxFontPx: 56 },
+  { id: "paragraph2", heightVh: 0.42, minFontPx: 18, maxFontPx: 56 },
+  { id: "sectionTitle", heightVh: 0.24, minFontPx: 22, maxFontPx: 68 },
+  { id: "rule1", heightVh: 0.36, minFontPx: 18, maxFontPx: 56 },
+  { id: "rule2", heightVh: 0.36, minFontPx: 18, maxFontPx: 56 },
+  { id: "rule3", heightVh: 0.36, minFontPx: 18, maxFontPx: 56 },
+  { id: "rule4", heightVh: 0.36, minFontPx: 18, maxFontPx: 56 },
+] as const);
+
+/**
+ * Where the content starts, in viewports below the top of the screen.
+ *
+ * Must stay **above 1.0**, otherwise the first block begins already on screen
+ * instead of flying in from below. The 0.02 margin is what gives the headline
+ * its ~2.6 s glide before it reaches the reveal line.
+ */
+export const INTRO_START_PAD_VH = 1.02;
+
+/**
+ * Where the content ends, in viewports above the top of the screen.
+ *
+ * Must stay **above 0** — this is the single most important invariant here. It
+ * is what guarantees the last block's bottom edge clears the top of the screen,
+ * and therefore that the closing caption appears at all. The old layout had no
+ * such guarantee: it only worked when the content happened to be no taller than
+ * `viewport + 200px`, which nine blocks of text never are.
+ */
+export const INTRO_END_PAD_VH = 0.1;
+
+/**
+ * Total scroll duration in seconds (9 minutes).
+ *
+ * **The duration is fixed, not the speed** — that is what makes the intro run
+ * for the same length of time on every screen. 540 s keeps the old glacial feel
+ * while fitting inside the 600 s auto-skip: the old code asked for ~674 s at
+ * 1080p and was always cut short, which is why the closing caption was never
+ * reachable in time either.
+ */
+export const INTRO_TOTAL_DURATION_SEC = 540;
+
+/** The pre-existing `animation-delay: 4s`, lifted into a name. */
+export const INTRO_SCROLL_DELAY_SEC = 4;
+
+/**
+ * Extra beat between the last block leaving the screen and the closing caption
+ * appearing, so the caption does not arrive on top of the final line still
+ * fading out. Scales with the debug multiplier like the rest of the timeline.
+ */
+export const INTRO_FINAL_INSTRUCTION_DELAY_SEC = 2;
+
+/**
+ * The screen line at which a block is revealed, as a fraction of the viewport
+ * height. `1.0` is the bottom edge.
+ *
+ * **This is not the old value** (the old code used 2/3). At a constant scroll
+ * speed the headline can only travel ~25 px in the few seconds allowed before
+ * it must appear, while the 2/3 line sits ~360 px above the bottom edge — so
+ * "flies in from below" and "appears within 5–10 s" cannot both hold unless the
+ * reveal line is the bottom edge itself. Side benefit: the old permanently
+ * blank bottom third of the screen goes away.
+ *
+ * Documented fallback if the edge reveal reads badly: `2/3` with
+ * `INTRO_START_PAD_VH = 0.688`, at the cost of the first block no longer
+ * flying in.
+ */
+export const INTRO_REVEAL_TRIGGER_RATIO = 1.0;
+
+/**
+ * Font-size bounds for the fitting pass. Hitting the floor means the text
+ * overflows its slot and the slot table needs tuning.
+ */
+export const INTRO_MIN_FONT_SIZE_PX = 12;
+export const INTRO_MAX_FONT_SIZE_PX = 140;
+
+/** Starting font size for the measurement probe. */
+export const INTRO_FIT_PROBE_FONT_SIZE_PX = 24;
+
+/**
+ * Bisection refinement steps after the linear first guess.
+ *
+ * Rendered height is a *step* function of font size — line breaking is discrete
+ * — so a purely linear estimate can land on either side of the target.
+ */
+export const INTRO_FIT_BISECTION_STEPS = 5;
+
+/** Period of the self-correcting reveal scheduler. */
+export const INTRO_SCHEDULE_TICK_MS = 250;
+
+/** Debounce before re-measuring after a resize. */
+export const INTRO_RESIZE_DEBOUNCE_MS = 250;
+
+/**
+ * Height-only viewport changes below this are ignored for re-measurement.
+ * Mobile browsers fire resize as the URL bar slides in and out; re-fitting the
+ * whole crawl for that would be both wasteful and visibly jumpy.
+ */
+export const INTRO_RESIZE_HEIGHT_THRESHOLD_PX = 120;
+
+/** In debug mode the whole timeline is divided by this — every reveal too. */
+export const INTRO_DEBUG_SPEED_MULTIPLIER = 8;
+
+/**
+ * Mandatory reading margin between the closing caption and the auto-skip.
+ * A unit test asserts the schedule respects it, so raising the slot heights or
+ * the duration past the auto-skip fails the build rather than silently making
+ * the caption unreachable again.
+ */
+export const INTRO_FINAL_READ_MARGIN_MS = 30_000;
 export const FACE_DETECTION_INTERVAL_MS = 1000;
 export const SERVICE_UPDATE_INTERVAL_MS = 50;
 export const ATTENTION_INTERVAL_MS = 1_000;
@@ -133,8 +274,8 @@ export const STAR_DRIFT_SMOOTHING = 0.08;
 export const STAR_ROLL_MAX_DEGREES = 12;
 
 /**
- * Forbidden words for chat. Comparison is case-insensitive.
- * Message is rejected if it contains any of these words.
+ * Forbidden words for chat and nicknames. Comparison is case-insensitive.
+ * Message/nickname is rejected if it contains any of these words.
  */
 export const FORBIDDEN_WORDS: string[] = [
   // ── English ──
@@ -153,6 +294,23 @@ export const FORBIDDEN_WORDS: string[] = [
   "slut",
   "pussy",
   "cunt",
+  "motherfucker",
+  "douchebag",
+  "twat",
+  "wanker",
+  "wank",
+  "tosser",
+  "bellend",
+  "knobhead",
+  "shithead",
+  "dickhead",
+  "arsehole",
+  "bollocks",
+  "bugger",
+  "nonce",
+  "retard",
+  "tranny",
+  "sod",
   // ── Hungarian ──
   "szex",
   "kurva",
@@ -168,20 +326,38 @@ export const FORBIDDEN_WORDS: string[] = [
   "seggfej",
   "balfasz",
   "kúr",
+  "kúrva",
   "fos",
   "hülye",
+  "barom",
+  "fattyú",
+  "fatty",
+  "rohadt",
+  "picsába",
+  "genyó",
+  "pöcs",
+  "faszszopó",
+  "kurvanyátok",
+  "rohadék",
+  "tahó",
+  "bunkó",
+  "tróger",
+  "taknyos",
   // ── French ──
   "merde",
   "putain",
   "connard",
+  "connasse",
   "salope",
   "enculé",
   "encule",
+  "enculée",
   "bordel",
   "foutre",
   "bite",
   "chatte",
   "niquer",
+  "nique",
   "pute",
   "bâtard",
   "batard",
@@ -191,6 +367,16 @@ export const FORBIDDEN_WORDS: string[] = [
   "conne",
   "couille",
   "salaud",
+  "fils de pute",
+  "ta gueule",
+  "emmerde",
+  "emmerdeur",
+  "salopard",
+  "branleur",
+  "fumier",
+  "ordure",
+  "crétin",
+  "débile",
   // ── German ──
   "scheisse",
   "scheiße",
@@ -209,6 +395,15 @@ export const FORBIDDEN_WORDS: string[] = [
   "kacke",
   "missgeburt",
   "drecksau",
+  "vollidiot",
+  "mistkerl",
+  "dreckskerl",
+  "saupreuss",
+  "sauhund",
+  "dummkopf",
+  "hirnlos",
+  "idiot",
+  "spasti",
   // ── Spanish ──
   "puta",
   "mierda",
@@ -230,6 +425,55 @@ export const FORBIDDEN_WORDS: string[] = [
   "concha",
   "chingar",
   "chinga",
+  "capullo",
+  "imbécil",
+  "imbecil",
+  "estúpido",
+  "estupido",
+  "idiota",
+  "subnormal",
+  "desgraciado",
+  // ── Italian ──
+  "cazzo",
+  "merda",
+  "troia",
+  "stronzo",
+  "frocio",
+  "culattone",
+  "bastardo",
+  "testa di cazzo",
+  "vaffanculo",
+  "porco",
+  "minchia",
+  "puttana",
+  "figlio di puttana",
+  "coglione",
+  "deficiente",
+  "stupido",
+  // ── Portuguese ──
+  "porra",
+  "caralho",
+  "puta",
+  "merda",
+  "fodasse",
+  "foda-se",
+  "cabrão",
+  "cabanão",
+  "filho da puta",
+  "otário",
+  "otario",
+  "arrombado",
+  "piranha",
+  "bicha",
+  "corno",
+  "desgraçado",
+  // ── Japanese (romanized) ──
+  "kuso",
+  "shimatta",
+  "temee",
+  "kisama",
+  "orya",
+  "chikusho",
 ];
 
 /** Check if text contains any forbidden word (case-insensitive) */

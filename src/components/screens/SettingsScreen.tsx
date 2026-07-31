@@ -6,6 +6,7 @@ import useGameStore from "../../state/useGameStore";
 import useShopStore from "../../state/useShopStore";
 import useAuthStore, { selectRtdbKey, getRtdbKey } from "../../state/useAuthStore";
 import useUIStore from "../../state/useUIStore";
+import { containsForbiddenWords } from "../../constants/constants";
 import { startGoogleAuth, signOut, getAuthErrorMessage } from "../../firebase/auth";
 import { updateUserSettings, updateUserNickname, updateUserPublicProfile, updateOnlineStatus } from "../../firebase/userData";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
@@ -54,6 +55,7 @@ const SettingsScreen = () => {
   const [cameraHelpOpen, setCameraHelpOpen] = useState(false);
   const [editingNickname, setEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [uidCopied, setUidCopied] = useState(false);
   const uidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
@@ -73,6 +75,11 @@ const SettingsScreen = () => {
 
   const handleNicknameSave = useCallback(async () => {
     const trimmed = nicknameInput.trim();
+    if (containsForbiddenWords(trimmed)) {
+      setNicknameError(t("settings.nicknameForbidden"));
+      return;
+    }
+    setNicknameError(null);
     setNickname(trimmed);
     setEditingNickname(false);
     // Persist to RTDB (use rtdbKey)
@@ -86,7 +93,7 @@ const SettingsScreen = () => {
         console.error("Failed to save nickname:", err);
       }
     }
-  }, [nicknameInput, setNickname, storeDisplayName]);
+  }, [nicknameInput, setNickname, storeDisplayName, t]);
 
   const handleNicknameKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -95,6 +102,7 @@ const SettingsScreen = () => {
       }
       if (e.key === "Escape") {
         setEditingNickname(false);
+        setNicknameError(null);
         setNicknameInput(nickname); // revert
       }
     },
@@ -244,7 +252,10 @@ const SettingsScreen = () => {
                     type="text"
                     className={`${styles.nicknameInput}${editingNickname ? ` ${styles.nicknameInputEditing}` : ""}`}
                     value={editingNickname ? nicknameInput : (nickname || storeDisplayName || "")}
-                    onChange={(e) => setNicknameInput(e.target.value)}
+                    onChange={(e) => {
+                      setNicknameInput(e.target.value);
+                      if (nicknameError) setNicknameError(null);
+                    }}
                     onKeyDown={handleNicknameKeyDown}
                     disabled={!editingNickname}
                     placeholder={storeDisplayName ?? t("settings.nicknamePlaceholder")}
@@ -262,6 +273,9 @@ const SettingsScreen = () => {
                   {editingNickname ? "✓" : "✏️"}
                 </button>
               </div>
+              {nicknameError && (
+                <span className={styles.loginError}>{nicknameError}</span>
+              )}
             </div>
 
             {/* User ID (rtdbKey/uid for authenticated users) */}

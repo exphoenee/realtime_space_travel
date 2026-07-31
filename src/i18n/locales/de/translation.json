@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Gib einen Anzeigenamen ein",
     "nicknameEdit": "Bearbeiten",
     "nicknameSave": "Speichern",
+    "nicknameForbidden": "Der Nickname enthält unangemessene Sprache",
     "enableCamera": "Kamera aktivieren",
     "cameraGranted": "Kamera verfügbar",
     "cameraBlocked": "Kamera im Browser blockiert",

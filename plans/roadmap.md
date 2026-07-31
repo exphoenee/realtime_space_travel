@@ -2,13 +2,13 @@
 # Auto-generated from plan files — do not edit manually
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
-generated_at: "2026-07-30"
-total_plans: 20
+generated_at: "2026-07-31"
+total_plans: 22
 implemented: 16
 in_progress: 1
-not_started: 3
+not_started: 5
 tasks_done: 979
-tasks_total: 1295
+tasks_total: 1582
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -123,45 +123,59 @@ plans:
     tasks_total: 72
     dependencies: [013-social-multiplayer]
   - step: 16
-    slug: "016-stripe-fraud-defense"
-    status: "not-started"
-    category: "security"
-    tasks_done: 0
-    tasks_total: 53
-    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate]
-  - step: 17
-    slug: "017-stripe-go-live"
-    status: "not-started"
-    category: "payments"
-    tasks_done: 0
-    tasks_total: 85
-    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense]
-  - step: 18
-    slug: "018-notification-retention"
+    slug: "016-notification-retention"
     status: "not-started"
     category: "core"
     tasks_done: 0
     tasks_total: 48
     dependencies: [015-toast-notification]
-  - step: 19
-    slug: "019-starfield-realism"
+  - step: 17
+    slug: "017-starfield-realism"
     status: "implemented"
     category: "ui"
     tasks_done: 134
     tasks_total: 134
     dependencies: [011-difficulty-event-system]
+  - step: 18
+    slug: "018-nextjs-migration"
+    status: "not-started"
+    category: "core"
+    tasks_done: 0
+    tasks_total: 153
+    dependencies: [003-firebase-auth-settings, 005-ingame-shop-strapi-stripe, 007-state-persist-page-refresh]
+  - step: 19
+    slug: "019-stripe-fraud-defense"
+    status: "not-started"
+    category: "security"
+    tasks_done: 0
+    tasks_total: 53
+    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration]
+  - step: 20
+    slug: "020-stripe-go-live"
+    status: "not-started"
+    category: "payments"
+    tasks_done: 0
+    tasks_total: 85
+    dependencies: [005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration, 019-stripe-fraud-defense]
+  - step: 21
+    slug: "021-intro-deterministic-layout"
+    status: "not-started"
+    category: "ui"
+    tasks_done: 0
+    tasks_total: 134
+    dependencies: []
 ---
 
 # Roadmap
 
 > Auto-generated from `./plans/` — **do not edit by hand**. Regenerate before reading:
 > `python .claude/scripts/generate_roadmap.py`
-> Last generated: 2026-07-30
+> Last generated: 2026-07-31
 
 ## Project Status
 
-- **Plans:** 16 implemented · 1 in progress · 3 not started (of 20)
-- **Tasks:** 979/1295 done (76%)
+- **Plans:** 16 implemented · 1 in progress · 5 not started (of 22)
+- **Tasks:** 979/1582 done (62%)
 
 ## Overview
 
@@ -183,10 +197,12 @@ plans:
 | 13 | Social és multiplayer | 🟨 In progress | 105/209 | — | core | 3, 10, 11, 12 |
 | 14 | Kamera hozzájárulás | ✅ Implemented | 71/84 | — | ui | 1, 3 |
 | 15 | Toast notification rendszer | ✅ Implemented | 69/72 | — | ui | 13 |
-| 16 | Stripe csalásvédelem | ⬜ Not started | 0/53 | — | security | 5, 9, 10 |
-| 17 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 16 |
-| 18 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
-| 19 | Élethűbb csillagmező (Starfield realizmus) | ✅ Implemented | 134/134 | — | ui | 11 |
+| 16 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
+| 17 | Élethűbb csillagmező (Starfield realizmus) | ✅ Implemented | 134/134 | — | ui | 11 |
+| 18 | Next.js 16 migráció | ⬜ Not started | 0/153 | — | core | 3, 5, 7 |
+| 19 | Stripe csalásvédelem | ⬜ Not started | 0/53 | — | security | 5, 9, 10, 18 |
+| 20 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 18, 19 |
+| 21 | Determinisztikus intró-elrendezés | ⬜ Not started | 0/134 | — | ui | — |
 
 ## Next Open Tasks
 
@@ -199,9 +215,11 @@ plans:
 - **Step 13 — Social és multiplayer** (105/209): Chat játék közben (kisebb panel, jobb alsó sarok)
 - **Step 14 — Kamera hozzájárulás** (71/84): CameraConsentScreen megjelenik intro után (manuális teszt)
 - **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
-- **Step 16 — Stripe csalásvédelem** (0/53): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
-- **Step 17 — Stripe élesítés** (0/85): `[A]` [[016-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
-- **Step 18 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
+- **Step 16 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
+- **Step 18 — Next.js 16 migráció** (0/153): `npm run test` lefuttatva a migráció **előtt**, a pontos szám rögzítve (elvárt: **147 teszt / 9 fájl**, mind zöld)
+- **Step 19 — Stripe csalásvédelem** (0/53): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
+- **Step 20 — Stripe élesítés** (0/85): `[A]` [[019-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
+- **Step 21 — Determinisztikus intró-elrendezés** (0/134): Böngészős megerősítés: `DEBUG_MODE=true` (210 s-os intró) mellett végigfuttatás **legalább 2 nyelven** (leghosszabb: `fr`, legrövidebb: `hu`) és **2 képernyőméreten** (mobil portré 390×844, desktop 1920×1080) — az elvárt eredmény: a `intro.continue` felirat **egyszer sem** jelenik meg
 
 ## Insertion Guide
 
@@ -214,23 +232,25 @@ plans:
 | 0 | `000-i18n-nyelvesites` | i18n | — | 1, 3 |
 | 1 | `001-main-menu-settings` | ui | 000-i18n-nyelvesites | 2, 3, 11, 14 |
 | 2 | `002-ingame-shop-frontend` | shop | 001-main-menu-settings | — |
-| 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5, 13, 14 |
+| 3 | `003-firebase-auth-settings` | auth | 000-i18n-nyelvesites, 001-main-menu-settings | 4, 5, 13, 14, 18 |
 | 4 | `004-firebase-auth-bugfix` | auth | 003-firebase-auth-settings | 5, 6, 7, 9 |
-| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 16, 17 |
+| 5 | `005-ingame-shop-strapi-stripe` | shop | 003-firebase-auth-settings, 004-firebase-auth-bugfix | 18, 19, 20 |
 | 6 | `006-editable-displayname` | auth | 004-firebase-auth-bugfix | — |
-| 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | 8 |
+| 7 | `007-state-persist-page-refresh` | core | 004-firebase-auth-bugfix | 8, 18 |
 | 8 | `008-shop-cart-bugfixes` | core | 007-state-persist-page-refresh | — |
-| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 16, 17 |
-| 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 13, 16, 17 |
-| 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13, 19 |
+| 9 | `009-firebase-identity-split-bugfix` | auth | 004-firebase-auth-bugfix | 10, 19, 20 |
+| 10 | `010-firebase-guest-merge-single-gate` | auth | 009-firebase-identity-split-bugfix | 13, 19, 20 |
+| 11 | `011-difficulty-event-system` | core | 001-main-menu-settings | 12, 13, 17 |
 | 12 | `012-wall-of-shame` | ui | 011-difficulty-event-system | 13 |
 | 13 | `013-social-multiplayer` | core | 003-firebase-auth-settings, 010-firebase-guest-merge-single-gate, 011-difficulty-event-system, 012-wall-of-shame | 15 |
 | 14 | `014-camera-consent` | ui | 001-main-menu-settings, 003-firebase-auth-settings | — |
-| 15 | `015-toast-notification` | ui | 013-social-multiplayer | 18 |
-| 16 | `016-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate | 17 |
-| 17 | `017-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 016-stripe-fraud-defense | — |
-| 18 | `018-notification-retention` | core | 015-toast-notification | — |
-| 19 | `019-starfield-realism` | ui | 011-difficulty-event-system | — |
+| 15 | `015-toast-notification` | ui | 013-social-multiplayer | 16 |
+| 16 | `016-notification-retention` | core | 015-toast-notification | — |
+| 17 | `017-starfield-realism` | ui | 011-difficulty-event-system | — |
+| 18 | `018-nextjs-migration` | core | 003-firebase-auth-settings, 005-ingame-shop-strapi-stripe, 007-state-persist-page-refresh | 19, 20 |
+| 19 | `019-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration | 20 |
+| 20 | `020-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration, 019-stripe-fraud-defense | — |
+| 21 | `021-intro-deterministic-layout` | ui | — | — |
 
 ## Phase Details
 
@@ -254,7 +274,9 @@ plans:
 | 13 | `plans/013-social-multiplayer.md` | Social és multiplayer |
 | 14 | `plans/014-camera-consent.md` | Kamera hozzájárulás |
 | 15 | `plans/015-toast-notification.md` | Toast notification rendszer |
-| 16 | `plans/016-stripe-fraud-defense.md` | Stripe csalásvédelem |
-| 17 | `plans/017-stripe-go-live.md` | Stripe élesítés |
-| 18 | `plans/018-notification-retention.md` | Notification retention |
-| 19 | `plans/019-starfield-realism.md` | Élethűbb csillagmező (Starfield realizmus) |
+| 16 | `plans/016-notification-retention.md` | Notification retention |
+| 17 | `plans/017-starfield-realism.md` | Élethűbb csillagmező (Starfield realizmus) |
+| 18 | `plans/018-nextjs-migration.md` | Next.js 16 migráció |
+| 19 | `plans/019-stripe-fraud-defense.md` | Stripe csalásvédelem |
+| 20 | `plans/020-stripe-go-live.md` | Stripe élesítés |
+| 21 | `plans/021-intro-deterministic-layout.md` | Determinisztikus intró-elrendezés |
