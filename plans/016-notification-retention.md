@@ -1,20 +1,21 @@
 ---
 title: "Notification retention – a `notifications/{uid}` node korlátlan növekedésének megfékezése"
-slug: 018-notification-retention
+slug: 016-notification-retention
 type: plan
 category: core
 status: not-started
 implemented: false
 implemented_at: null
 created_at: "2026-07-29"
-updated_at: "2026-07-29"
+updated_at: "2026-07-30"  # frissítve: átszámozás 18 → 16 (a Stripe tervek a lista végére kerültek)
 author: exphoenee
-step: 18
+step: 16
 phases: []
 dependencies:
   - 015-toast-notification
 related_plans:
   - 013-social-multiplayer
+  - 018-nextjs-migration
 tags:
   - firebase
   - rtdb
@@ -340,7 +341,7 @@ Ha valaha mégis kell UI (pl. GDPR-adatkezelési igény), az **külön terv** le
 
 - **Előfeltétel:** [[015-toast-notification]] — ez a terv az ott létrehozott `notifications` node-ot, a `subscribeNotifications`-t és a `useNotificationListener`-t módosítja. A 015 I. blokkjának nyitott `notifications` takarítás tétele és a 7.3 kockázat **ide kerül át**
 - **Kapcsolódó:** [[013-social-multiplayer]] — a növekedés forrása a chat (`sendMessage`, `chats/{chatId}/unread`); ha valaha visszatérne a „nulla írású chat-toast" alternatíva, azt a 013 chat-rétegében kellene megvalósítani
-- **Nem függ tőle és nem függ rá:** a Stripe-tervek ([[016-stripe-fraud-defense]], [[017-stripe-go-live]]) — más node, más rules-ág
+- **Nem függ tőle és nem függ rá:** a Stripe-tervek ([[019-stripe-fraud-defense]], [[020-stripe-go-live]]) — más node, más rules-ág
 - **Elhelyezés a roadmapen:** a 015 után. Ideálisan **a 015 `database.rules.json` deployjával együtt vagy előtte** landoljon, mert a növekedés a deploy pillanatában élesedik
 
 ---
@@ -351,7 +352,7 @@ Ha valaha mégis kell UI (pl. GDPR-adatkezelési igény), az **külön terv** le
 
 Ez a megközelítés **strukturális** korlátja, nem hiba: egy elhagyott fiók `notifications` node-ja **örökre megmarad** — sőt, tovább is nő, mert a barátai továbbra is írhatnak bele. Se önmagát nem takarítja, se más nem takaríthatja (idegen node-ból törölni a szabályok szerint tilos, és helyesen tilos).
 
-Ez a **Spark csomag vállalt ára**. A valódi megoldás egy **ütemezett Cloud Function** (`onSchedule`, napi futás, minden `notifications/*` ág nyesése), ami **Blaze csomagot** igényel. Ezt jövőbeli fázisként rögzítjük, nem ennek a tervnek a hatóköre — ugyanaz a mintázat, mint a [[016-stripe-fraud-defense]] opcionális backend-fázisa.
+Ez a **Spark csomag vállalt ára**. A valódi megoldás egy **ütemezett Cloud Function** (`onSchedule`, napi futás, minden `notifications/*` ág nyesése), ami **Blaze csomagot** igényel. Ezt jövőbeli fázisként rögzítjük, nem ennek a tervnek a hatóköre — ugyanaz a mintázat, mint a [[019-stripe-fraud-defense]] opcionális backend-fázisa.
 
 Enyhítő körülmény: az elhagyott fiók node-ja **senkinek nem okoz futásidejű költséget**, mert a `limitToLast` miatt még a tulajdonos visszatérésekor is csak 100 rekord jön át. A kár tisztán tárolási.
 

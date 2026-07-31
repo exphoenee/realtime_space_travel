@@ -19,8 +19,8 @@
   "intro": {
     "headline": "Realtime Space Travel",
     "motto": "The experience of a lifetime!",
-    "paragraph1": "You are the chosen one! You are humanity's last and only hope. This is not a game — our survival is at stake. This is our final chance: the promise of a new home in distant star systems. The ark carrying the future of humankind is ready to depart.",
-    "paragraph2": "The entire crew – scientists, engineers, the founders of a new civilization – has entered a deep, cryogenic sleep. Their fate, their dreams, our future... The fate of humanity now rests in your hands. You are the living, breathing component that no artificial intelligence can replace.",
+    "paragraph1": "The last ark of humanity stands ready at the launch pad. This is not a game — the survival of our species depends on this voyage. A new home awaits in distant star systems, but the journey will demand everything we have. There is no second chance.",
+    "paragraph2": "The entire crew — scientists, engineers, the founders of a new civilization — has entered cryogenic sleep. Their fate, their dreams, our future... all entrusted to you. You are the one awake. The one watching. The one who must see us through.",
     "sectionTitle": "Your Duties – The Mission's Strictest Protocols",
     "rule1": "<1>The Vigilance Protocol</1> – continuous visual monitoring is required to stabilize the navigation data. If your attention breaks, the ship initiates an emergency shutdown.",
     "rule2": "<1>The Zero-Intervention Principle</1> – the systems are self-sustaining; manual intervention can be fatal. Your most important skill is discipline and patience. Do not act – supervise!",
@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Enter a display name",
     "nicknameEdit": "Edit",
     "nicknameSave": "Save",
+    "nicknameForbidden": "Nickname contains inappropriate language",
     "enableCamera": "Enable Camera",
     "cameraGranted": "Camera available",
     "cameraBlocked": "Camera blocked in browser",

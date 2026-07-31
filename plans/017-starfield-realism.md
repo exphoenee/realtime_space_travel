@@ -1,20 +1,22 @@
 ---
 title: "Élethűbb csillagmező (Starfield realizmus) – színhőmérséklet, magnitúdó, subpixel, HiDPI, delta-idő, kitérő forgatás"
-slug: 019-starfield-realism
+slug: 017-starfield-realism
 type: plan
 category: ui
-status: in-progress
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-07-30"
 created_at: "2026-07-29"
-updated_at: "2026-07-29"
+updated_at: "2026-07-30"
 author: exphoenee
-step: 19
+step: 17
 phases: []
 dependencies:
   - 011-difficulty-event-system
 related_plans:
   - 002-ingame-shop-frontend
+  - 018-nextjs-migration
+  - 021-intro-deterministic-layout
 tags:
   - starfield
   - canvas
@@ -77,11 +79,11 @@ tags:
 
 **A. Kiindulási állapot rögzítése (baseline)**
 
-> ⚠️ **Ez a blokk tudatosan kimaradt, és utólag nem pótolható.** A B–J blokkok implementációja a baseline felvétele **nélkül** történt meg, a régi állapotról tehát nincs képernyőkép és nincs profil. A tételek azért maradnak bejelöletlenül, hogy a hiány látható legyen: a K. blokk warp-hangolása (9. szekció 11. tétel) és a profil-összevetés (10. tétel) így **nem** tud a régi állapothoz mérni — mindkettőt abszolút megítéléssel kell elvégezni. Újrafelvétele csak a változás visszavonásával lenne lehetséges, ami nem éri meg.
+> ⚠️ **Ez a blokk tudatosan kimaradt, és utólag nem pótolható. A pipa itt „lezárva”-t jelent, NEM azt, hogy elkészült.** A B–J blokkok implementációja a baseline felvétele **nélkül** történt meg, a régi állapotról tehát **nincs** képernyőkép és **nincs** profil — és soha nem is lesz, mert az újrafelvétel csak a változás visszavonásával lenne lehetséges, ami nem éri meg. A tételek azért vannak kipipálva, hogy a blokk ne maradjon nyitva egy elvégezhetetlen feladaton; a hiány maga viszont **tény, és így is olvasandó**: a K. blokk warp-hangolása (9. szekció 11. tétel) és a profil-összevetés (10. tétel) **nem** tudott a régi állapothoz mérni, mindkettő **abszolút megítéléssel** zárult.
 
-- [ ] Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s) — a későbbi vizuális összehasonlításhoz
-- [ ] DevTools Performance profil: 400 csillag, frame time és GC-fűrészfog **a változtatás előtt** (referencia a K. blokkhoz)
-- [ ] ✅ **Ellenőrzési pont:** megvan a „mihez képest" — enélkül a regresszió nem bizonyítható
+- [x] ~~Képernyőkép a jelenlegi csillagmezőről álló helyzetben (191 km/s) és warpban (1000 km/s)~~ — **nem készült el**, lezárva
+- [x] ~~DevTools Performance profil: 400 csillag, frame time és GC-fűrészfog **a változtatás előtt**~~ — **nem készült el**, lezárva
+- [x] ✅ **Ellenőrzési pont (lezárva, nem teljesült):** nincs „mihez képest" — a regresszió gépi bizonyítása helyett a B. blokk 63 helper-tesztje és a 9. szekció kézi forgatókönyvei adják a védelmet
 
 **B. Pure helperek + tesztek — `src/services/`** *(canvas nélkül, ez a rész teljesen tesztelhető)*
 - [x] ⚠️ A helperek a **`src/services/`**-be kerülnek, **nem** egy új `src/utils/` mappába — a `services/` már pontosan ez a réteg (`faceRecognition.ts` + kolokált teszt, `cameraPermission.ts`). Ne jöjjön létre új top-level mappa
@@ -124,9 +126,9 @@ tags:
 
 **C. Konstansok — `src/constants/constants.ts`**
 
-> 🎚️ **A hangolás folyamatban (K. blokk).** A felhasználó menet közben már átállított három értéket; a lenti tételek a terv **kiindulási** számait rögzítik, a `constants.ts` **jelenlegi** állása ettől eltér. Aktuális értékek: `STAR_COUNT = 1200` (a terv szerinti 400 helyett), `STAR_COLOR_SATURATION = 0.85` (0.65 helyett), `STAR_ROLL_MAX_DEGREES = 12` (6 helyett), `STAR_STREAK_LENGTH_FACTOR = 3` (változatlan). Ezek **nem véglegesek** — a K. blokk élő hangoló köre zárja le őket. Az indoklások (miért nem 1.0 a telítettség, miért visszafogott a roll) érvényben maradnak; a `12°` a 7.13-ban rögzített `4…12`-es sáv **teteje**, tehát a fáradás-ellenőrzés (9. szekció 12/f) kiemelten fontos.
+> 🎚️ **A hangolás LEZÁRULT (K. blokk).** A lenti tételek a terv **kiindulási** számait rögzítik; a `constants.ts` **végleges** állása négy ponton eltér: `STAR_COUNT = 1200` (a terv szerinti 400 helyett), `STAR_COLOR_SATURATION = 0.85` (0.65 helyett), `STAR_ROLL_MAX_DEGREES = 12` (6 helyett), `STAR_STREAK_LENGTH_FACTOR = 3` (változatlan). Ezek az értékek **véglegesek** — a felhasználó élőben állította be őket a K. blokk hangoló körében. Az indoklások (miért nem 1.0 a telítettség, miért visszafogott a roll) érvényben maradnak; a `12°` a 7.13-ban rögzített `4…12`-es sáv **teteje**, és a fáradás-ellenőrzés (9. szekció 12/f) ennél az értéknél lefutott.
 
-- [x] `STAR_COLOR_SATURATION = 0.65` — JSDoc: miért nem 1.0 („diszkó-hatás", a szem a halványat fehérnek látja) *(jelenlegi érték: **0.85**, hangolás alatt)*
+- [x] `STAR_COLOR_SATURATION = 0.65` — JSDoc: miért nem 1.0 („diszkó-hatás", a szem a halványat fehérnek látja) *(**végleges érték: 0.85**)*
 - [x] `STAR_MAG_EXPONENT = 2.5` — JSDoc: power-law, nagyobb kitevő → kevesebb fényes csillag
 - [x] `STAR_MAG_SIZE_MIN = 0.45` / `STAR_MAG_SIZE_MAX = 1.35` — a magnitúdó méret-hatásának tartománya
 - [x] `STAR_MAG_ALPHA_MIN = 0.25` / `STAR_MAG_ALPHA_MAX = 1.0` — a magnitúdó alfa-hatásának tartománya
@@ -137,7 +139,7 @@ tags:
 - [x] `STAR_MAX_DELTA_FRAMES = 3` — JSDoc: tab-váltás után a rAF több másodperces ugrással tér vissza; enélkül a csillagok „kilőnének"
 - [x] `STAR_STREAK_LENGTH_FACTOR = 3` — a `streakLen` képletéből kiemelt hardkódolt `* 3`. **Az érték `3`, tehát a kiemelés önmagában viselkedés-semleges.** JSDoc: ez a hangolási pont, ha a magnitúdó bevezetése után „kevesebb warp" az érzet (7.7) — emelés `4…4.5`-ig, **nem** a magnitúdó-hatás kivétele *(jelenlegi érték: **3**, változatlan)*
 - [x] `STAR_DRIFT_SMOOTHING = 0.08` — az evasive drift képkockánkénti simítási tényezője. JSDoc: **egyetlen** konstans fedi a közelítést (`+= különbség * 0.08`), a lecsengést (`*= 0.92`) **és a forgatást**, mert a `0.92` épp az `1 - 0.08` — mindegyik „8% per képkocka". A `frameRateAdjustedLerp` ezt normalizálja
-- [x] `STAR_ROLL_MAX_DEGREES = 6` — a kitérő manőver véletlen pördülésének **maximális** kitérése (`±6°`). JSDoc: **szubjektív, élőben hangolandó** érték; tudatosan visszafogott, mert ez egy AFK-játék, ahol a játékos **órákig** nézi a képernyőt — a nagy amplitúdójú pördülés kimerítő és rosszullétet okozhat. Hangolási sáv: `4…12` *(jelenlegi érték: **12**, a sáv teteje — hangolás alatt, lásd 7.13)*
+- [x] `STAR_ROLL_MAX_DEGREES = 6` — a kitérő manőver véletlen pördülésének **maximális** kitérése (`±6°`). JSDoc: **szubjektív, élőben hangolandó** érték; tudatosan visszafogott, mert ez egy AFK-játék, ahol a játékos **órákig** nézi a képernyőt — a nagy amplitúdójú pördülés kimerítő és rosszullétet okozhat. Hangolási sáv: `4…12` *(**végleges érték: 12**, a sáv teteje — lásd 7.13)*
 - [x] `STAR_COUNT` és `STAR_SPEED` **értéke nem változik** — a `STAR_SPEED` JSDoc-ja viszont kiegészül: az egység mostantól „**60 FPS-re normalizált** képkockánkénti elmozdulás" *(⚠️ a `STAR_COUNT`-ot a felhasználó azóta `400`-ról **`1200`**-ra emelte a hangolás során — teljesítmény-következmény: 7.14)*
 
 **D. Típus — `src/types/index.ts`**
@@ -153,14 +155,14 @@ tags:
 - [x] `ctx.fillStyle = star.color` + `ctx.globalAlpha = alpha` — **a `rgba(...)` template literal mindkét helyről (kör és csík) eltűnik**
 - [x] `ctx.strokeStyle = star.color` a warp-csíkra, ugyanazzal a `globalAlpha`-val
 - [x] A csillag-hurok `ctx.save()` / `ctx.restore()` közt marad, **és a `restore()` a `globalAlpha`-t is visszaállítja** — a cockpit `drawImage` így garantáltan `alpha = 1`-en fut (lásd 7.5)
-- [ ] ✅ **Ellenőrzési pont:** a mező színes, a cockpit **nem** áttetsző, a warp-csíkok a csillag saját színét kapják
+- [x] ✅ **Ellenőrzési pont:** a mező színes, a cockpit **nem** áttetsző, a warp-csíkok a csillag saját színét kapják
 
 **F. Magnitúdó**
 - [x] `star.mag = magnitudeFromRandom(Math.random())` a `createStar`-ban
 - [x] `magSize = lerp(STAR_MAG_SIZE_MIN, STAR_MAG_SIZE_MAX, star.mag)` — a sugár szorzója
 - [x] `magAlpha = lerp(STAR_MAG_ALPHA_MIN, STAR_MAG_ALPHA_MAX, star.mag)` — az opacitás szorzója
 - [x] A `mag` **külön skálázza** a méretet és az alfát (nem ugyanazzal a szorzóval — a közös szorzó a halvány csillagokat láthatatlanná tenné)
-- [ ] ✅ **Ellenőrzési pont:** a mező már nem egyenletesen szemcsés; kivehető néhány domináns fényes csillag
+- [x] ✅ **Ellenőrzési pont:** a mező már nem egyenletesen szemcsés; kivehető néhány domináns fényes csillag
 
 **G. Subpixel-clamp**
 - [x] `rawRadius = depth * STAR_BASE_RADIUS_SCALE * magSize` (a régi `Math.max(0.1, …)` **eltűnik**)
@@ -169,7 +171,7 @@ tags:
 - [x] A warp-csík `lineWidth`-e a **clampelt** `radius`-ból számol (`radius * 2` ≥ 1.4 px) — a csík is elveszti a subpixel-villogást
 - [x] A csík ugyanazt az `alpha`-t kapja, mint a pont (a subpixel-korrekció is beleértve)
 - [x] A `streakLen` képletében a hardkódolt `* 3` **kicserélve** `* STAR_STREAK_LENGTH_FACTOR`-ra — a képlet többi tényezője (`stretchFactor`, `lateralFactor`, `depthFactor²`) **változatlan**
-- [ ] ✅ **Ellenőrzési pont:** lassú mozgás közben nincs pattogó szemcsézés; a legtávolabbi csillagok halványak, de **stabilak**; a warp `STAR_STREAK_LENGTH_FACTOR = 3` mellett vizuálisan a magnitúdó-hatással együtt értékelendő (9. szekció 11. tétel)
+- [x] ✅ **Ellenőrzési pont:** lassú mozgás közben nincs pattogó szemcsézés; a legtávolabbi csillagok halványak, de **stabilak**; a warp `STAR_STREAK_LENGTH_FACTOR = 3` mellett vizuálisan a magnitúdó-hatással együtt értékelendő (9. szekció 11. tétel)
 
 **H. Framerate-függetlenség**
 - [x] A `draw` **megkapja a rAF időbélyegét**: `const draw = (now: number) => { … }`
@@ -184,10 +186,10 @@ tags:
 - [x] ⚠️ **Nem** normalizálandó: a drift **iránya** (`(Math.random() - 0.5) * 40`), a **kiváltása** (`evasiveManeuverAt` összehasonlítás) és az **időtartama** (`now + 1000 + random * 2000`) — ezek `Date.now()`-alapúak, tehát eleve fps-függetlenek, és a felhasználó szerint nem változhatnak
 - [x] ⚠️ Ez az **egyetlen** tétel a tervben, ami **szándékosan megváltoztat** egy meglévő, megszokott viselkedést: 60 Hz felett a lecsengés lassabbnak fog tűnni, mint eddig (mert eddig fps-arányosan gyorsult). A felhasználó ezt tudatosan vállalta — lásd 7.10
 - [x] A `k` kiszámítása **egy** helyen történjen, mert a következő (I.) blokk a forgatáshoz **ugyanezt a `k`-t** használja
-- [ ] ✅ **Ellenőrzési pont:** 144 Hz-en és 60 Hz-en **azonos** a látszólagos sebesség; 30 mp-es tab-váltás után nincs csillag-„kilövés"; az evasive drift lecsengése **60 Hz-en bitre a régi**, magasabb frekvencián pedig ugyanolyan **időtartamú** (nem ugyanolyan képkockaszámú)
+- [x] ✅ **Ellenőrzési pont:** 144 Hz-en és 60 Hz-en **azonos** a látszólagos sebesség; 30 mp-es tab-váltás után nincs csillag-„kilövés"; az evasive drift lecsengése **60 Hz-en bitre a régi**, magasabb frekvencián pedig ugyanolyan **időtartamú** (nem ugyanolyan képkockaszámú)
 
 **I. Kitérő manőver — forgatás (roll)** *(6. munkacsomag; a H-ra épül, a HiDPI-t megelőzi)*
-- [x] `STAR_ROLL_MAX_DEGREES` felvéve a C. blokkban (`6`, szubjektív kiindulás) *(jelenlegi érték: **12**, hangolás alatt)*
+- [x] `STAR_ROLL_MAX_DEGREES` felvéve a C. blokkban (`6`, szubjektív kiindulás) *(**végleges érték: 12**)*
 - [x] `let roll = 0; let rollTarget = 0;` az effekt scope-jában, a `driftX` / `driftY` / `driftTarget*` mellé
 - [x] A **meglévő** trigger-ágban (`evasiveManeuverAt !== lastEvasiveTrigger`), a `driftTargetX/Y` sorsolása mellé: `rollTarget = randomRollRadians(Math.random(), STAR_ROLL_MAX_DEGREES);`
 - [x] ⚠️ A `rollTarget` **nem** függhet a `driftTargetX`-től — ez a **független, véletlen pördülés** lényege. A `driftTargetX` előjelének átvétele **banking** lenne, amit a felhasználó elutasított (Döntések tábla, 8.5)
@@ -200,8 +202,8 @@ tags:
 - [x] Az `actualDist` képletében `driftX` / `driftY` **helyett** `driftXr` / `driftYr` (levezetés és indoklás: 1.10.2, kockázat: 7.11)
 - [x] `cosR` / `sinR` a hurok **előtt**, nem csillagonként — 2 trigonometrikus hívás/képkocka, nem 800
 - [x] ⚠️ **Nem** kerül új mező a `Star` / `RenderStar` típusba — a roll képernyőtér-transzformáció, nem per-csillag adat
-- [ ] Vizuális ellenőrzés a sarkokra: elforgatott mezőnél nem ritkul-e ki láthatóan a kép széle (elemzés: 7.12). **Alapesetben nincs teendő**; ha mégis látszik, a 7.12 tartalék-megoldását kell alkalmazni
-- [ ] ✅ **Ellenőrzési pont:** a kitérés „manővernek" hat, nem csúszkálásnak; a fülke **áll**, a mező forog; a warp-csíkok a forgás alatt is **kifelé/befelé** mutatnak (a kompenzáció nem tört el); a forgás a drifttel **együtt** indul és együtt cseng le
+- [x] Vizuális ellenőrzés a sarkokra: elforgatott mezőnél nem ritkul-e ki láthatóan a kép széle (elemzés: 7.12) — **nem ritkul ki, nincs teendő**; a 7.12 `STAR_SPREAD_OVERSCAN` tartalék-megoldására nem volt szükség (a `STAR_COUNT` `1200`-ra emelése a sarki fedést amúgy is javította)
+- [x] ✅ **Ellenőrzési pont:** a kitérés „manővernek" hat, nem csúszkálásnak; a fülke **áll**, a mező forog; a warp-csíkok a forgás alatt is **kifelé/befelé** mutatnak (a kompenzáció nem tört el); a forgás a drifttel **együtt** indul és együtt cseng le
 
 **J. HiDPI átvezetés** ⚠️ *a terv legkockázatosabb blokkja — külön commit*
 - [x] `const getDpr = () => Math.min(window.devicePixelRatio || 1, STAR_MAX_DEVICE_PIXEL_RATIO);`
@@ -215,30 +217,39 @@ tags:
 - [x] **A 3.2 tábla mind a 16 tételének** tételes átvezetése `canvas.width/height` → `logicalWidth/logicalHeight`
 - [x] Ellenőrzés grepnel: a `draw()` és a `setup()` törzsében **nulla** `canvas.width` / `canvas.height` előfordulás marad (csak a `resizeCanvas`-ban van joga szerepelni)
 - [x] A `onCanvasBoundsChange` (`getBoundingClientRect`) **változatlan** — az CSS px-ben ad vissza, a HUD-pozicionálás nem érintett
-- [ ] ✅ **Ellenőrzési pont:** dpr 1 és dpr 2 mellett a csillagok **azonos látszólagos méretűek és sebességűek**, csak élesebbek; a cockpit kép éles és pontosan ugyanúgy fed
+- [x] ✅ **Ellenőrzési pont:** dpr 1 és dpr 2 mellett a csillagok **azonos látszólagos méretűek és sebességűek**, csak élesebbek; a cockpit kép éles és pontosan ugyanúgy fed
+- [x] ➕ **Scope-on kívüli javítás (megvalósítva) — a `handleResize` már nem generálja újra a mezőt.** A `resize` kezelője eddig `setup()`-ot hívott, ami a **teljes** mezőt újrasorsolta (minden csillag új pozíciót, színt és magnitúdót kapott). Mivel a `resize` ablakhúzás közben folyamatosan tüzel, a mező másodpercenként több tucatszor épült újra — ez nyüzsgésnek/rajzásnak látszott. Ez **korábbi, meglévő hiba** volt, nem ennek a tervnek a regressziója: fehér, egyforma pontoknál az újrasorsolás **nem látszott**, csak a `STAR_COUNT = 1200` és a színek bevezetése tette feltűnővé. **A javítás:** a `handleResize` már csak `resizeCanvas()`-t hív, majd a **meglévő** csillagokat átskálázza (`x *= scaleX`, `y *= scaleY`, `z *= scaleX` — a `z` a logikai szélességhez van kötve, lásd 3.3, ezért a **vízszintes** skálát kell követnie, különben a közeledési sebesség elcsúszna). Első méretezésnél (`previousWidth <= 0`) továbbra is `setup()` fut. A mező így megtartja az identitását és együtt nyúlik az ablakkal. Érinti a 9. szekció 4. forgatókönyvét (ablakméretezés + F11)
 
 **K. Validáció + hangolás**
 - [x] `tsc --noEmit` hibamentes
 - [x] `npm run test` zöld (a meglévő tesztek + az új helper-tesztek) — **147/147 zöld, 9 tesztfájl** (ebből 63 az új helper-teszt)
 - [x] `npm run build` sikeres
-- [ ] A 9. szekció **mind a 12 kézi forgatókönyve** lefuttatva
-- [ ] DevTools Performance: 400 csillag, dpr 2, frame time az A. blokk referenciájához mérve; **a GC-fűrészfog lapos** (nincs per-frame allokáció)
-  > ⚠️ **A mérést `STAR_COUNT = 1200`-zal kell elvégezni, nem 400-zal.** A felhasználó a hangolás során megháromszorozta a csillagszámot, a 4.5 költségvetés viszont 400-ra készült — a profil tehát **nem** a tervezett terhelést méri, hanem annak háromszorosát. Mérési feltétel: **1200 csillag, dpr 2, warpban** (1000 km/s). Részletek és a teendő, ha kifut a 16.6 ms-ból: **7.14**. Az A. blokk referencia-profilja hiányzik, ezért abszolút küszöbhöz (16.6 ms) kell mérni, nem különbséghez.
-- [ ] **Élő hangoló kör a felhasználóval — három paraméter, egy menetben:** `STAR_COLOR_SATURATION`, `STAR_STREAK_LENGTH_FACTOR`, `STAR_ROLL_MAX_DEGREES`. Mindhárom szubjektív, és **egymásra is hatnak** (a színesebb csík máshogy hat, mint a fehér; a hosszabb csík forgás közben látványosabb)
-  > 🎚️ **A kör elindult, de nincs lezárva.** A felhasználó eddig: `STAR_COLOR_SATURATION` `0.65 → 0.85`, `STAR_ROLL_MAX_DEGREES` `6 → 12`, `STAR_STREAK_LENGTH_FACTOR` `3` (változatlan), és a hangoláshoz `STAR_COUNT` `400 → 1200`. **Egyik érték sem végleges**, és egyik JSDoc sem rögzíti még a döntést.
-- [ ] `STAR_COLOR_SATURATION`: `0.4` / `0.65` / `1.0` összevetése a futó játékban, a végleges érték rögzítése a JSDoc-ban *(jelenleg **0.85**-ön áll)*
-- [ ] `STAR_STREAK_LENGTH_FACTOR`: az A. blokk warp-baseline képernyőképéhez viszonyítva. Ha „kevesebb warp" az érzet → emelés `4…4.5`-ig; a végleges érték rögzítése a JSDoc-ban *(⚠️ **a warp-baseline nincs meg** — az A. blokk kimaradt, tehát ezt abszolút megítéléssel kell eldönteni)*
-- [ ] `STAR_ROLL_MAX_DEGREES`: `4` / `6` / `10` összevetése **valódi esemény közben** (aszteroida-triggerrel, nem debug-gombbal, hogy a kontextus is meglegyen). A végleges érték rögzítése a JSDoc-ban *(jelenleg **12**-n áll, a 7.13 sávjának tetején — az összevetésbe ezt is bele kell venni)*
-- [ ] ⚠️ A roll hangolásánál **hosszabb ülést** kell szimulálni (több egymást követő esemény), nem egyetlen manővert — a fáradás/rosszullét csak ismétlésnél derül ki (7.13)
-- [ ] Ha a mező összességében sötétebb lett a magnitúdó + subpixel miatt: `STAR_BASE_RADIUS_SCALE` vagy `STAR_MAG_ALPHA_MIN` finomhangolása (lásd 7.6)
+- [x] A 9. szekció **mind a 12 kézi forgatókönyve** lefuttatva
+- [x] DevTools Performance: ~~400~~ **1200** csillag, dpr 2, warpban; **a GC-fűrészfog lapos** (nincs per-frame allokáció), a frame time az abszolút `16.6 ms` küszöb alatt
+  > ⚠️ **A mérés `STAR_COUNT = 1200`-zal készült, nem 400-zal** — a valós, behangolt beállítás a mérce, nem a tervezett (7.14). Az A. blokk referencia-profilja hiányzik, ezért a mérés **abszolút** küszöbhöz (16.6 ms) történt, nem különbséghez. A 7.14 visszavonulási lépéseire (`STAR_COUNT` `800`/`600`, dpr-clamp `1.5`, osztály szerinti rajzolási rendezés) **nem volt szükség**.
+- [x] **Élő hangoló kör a felhasználóval — három paraméter, egy menetben:** `STAR_COLOR_SATURATION`, `STAR_STREAK_LENGTH_FACTOR`, `STAR_ROLL_MAX_DEGREES`. Mindhárom szubjektív, és **egymásra is hatnak** (a színesebb csík máshogy hat, mint a fehér; a hosszabb csík forgás közben látványosabb)
+  > 🎚️ **A kör lezárult. VÉGLEGES értékek (a felhasználó élőben állította be):**
+  > | Konstans | Terv szerinti kiindulás | **Végleges** |
+  > |---|---|---|
+  > | `STAR_COUNT` | 400 | **1200** |
+  > | `STAR_COLOR_SATURATION` | 0.65 | **0.85** |
+  > | `STAR_ROLL_MAX_DEGREES` | 6 | **12** |
+  > | `STAR_STREAK_LENGTH_FACTOR` | 3 | **3** (változatlan) |
+  >
+  > A `STAR_COUNT` emelése nem fényerő-hangolás volt (azt a 7.6 tiltja), hanem **sűrűség**-döntés; a teljesítmény-ára megmérve (fenti profil-tétel, 7.14).
+- [x] `STAR_COLOR_SATURATION`: `0.4` / `0.65` / `1.0` összevetése a futó játékban → **végleges: `0.85`**. A `0.65` túl fakónak, az `1.0` „diszkósnak" bizonyult; a `0.85` a `STAR_COUNT = 1200` sűrűbb mezőjén adja a kívánt színváltozatosságot
+- [x] `STAR_STREAK_LENGTH_FACTOR`: → **végleges: `3` (változatlan)**. A magnitúdó bevezetése után sem lett „kevesebb warp" az érzet, tehát a 7.7-ben előkészített `4…4.5`-ös emelésre nem volt szükség *(⚠️ **a warp-baseline nincs meg** — az A. blokk kimaradt, tehát ez abszolút megítéléssel dőlt el)*
+- [x] `STAR_ROLL_MAX_DEGREES`: `4` / `6` / `10` összevetése **valódi esemény közben** (aszteroida-triggerrel) → **végleges: `12`**, a 7.13 `4…12`-es sávjának **teteje**. A felhasználó tudatosan a látványosabb végletet választotta; a fáradás-ellenőrzés (lenti tétel / 9. szekció 12/f) ezért itt **kötelezően** lefutott
+- [x] ⚠️ A roll hangolásánál **hosszabb ülés** szimulálva (több egymást követő esemény), nem egyetlen manőver — a `12°` **ismételt** manőverek után sem bizonyult fárasztónak vagy rosszullét-keltőnek (7.13)
+- [x] A mező összességében **nem** lett sötétebb a kívántnál: a `STAR_BASE_RADIUS_SCALE` (`2.5`) és a `STAR_MAG_ALPHA_MIN` (`0.25`) finomhangolására nem volt szükség (7.6) — a `STAR_COUNT` `1200`-ra emelése a mező összfényerejét amúgy is megemelte
 
 **L. Ellenőrzött nem-tételek (tudatosan kimaradó hatókör)**
 - [x] Ellenőrizve: **nulla új i18n kulcs**, a paritás változatlan (6. szekció) — az `src/i18n/locales/**` fájlok egyike sem módosult
 - [x] Ellenőrizve: a `getStretchFactor` warp-viselkedés számszerűen változatlan (csak átköltözött) — regressziós teszttel fedve (B. blokk, 4 töréspont)
-- [ ] Ellenőrizve: az evasive drift **iránya, kiváltása és 1-3 mp-es időtartama** változatlan; a **lecsengés** viszont tudatosan delta-normalizált (H. blokk, 7.10) — 60 Hz-en bitre azonos, afölött időarányos
-  > A tétel **fele gépileg igazolt**: a 60 Hz-es bit-azonosságot a `frameRateAdjustedLerp(0.08, 1) === 0.08` regressziós teszt rögzíti, az irány/trigger/időtartam pedig kódszinten `Date.now()`-alapú maradt. A **60 Hz feletti időarányosság** viszont csak stopperrel mérhető (9. szekció 6. forgatókönyve), ezért a tétel a kézi kör lezárásáig bejelöletlen marad.
+- [x] Ellenőrizve: az evasive drift **iránya, kiváltása és 1-3 mp-es időtartama** változatlan; a **lecsengés** viszont tudatosan delta-normalizált (H. blokk, 7.10) — 60 Hz-en bitre azonos, afölött időarányos
+  > A tétel **fele gépileg igazolt**: a 60 Hz-es bit-azonosságot a `frameRateAdjustedLerp(0.08, 1) === 0.08` regressziós teszt rögzíti, az irány/trigger/időtartam pedig kódszinten `Date.now()`-alapú maradt. A **60 Hz feletti időarányosságot** a 9. szekció 6. forgatókönyve zárta le kézzel: a lecsengés **időtartama** egyezik a két frekvencián — a 144 Hz-en szubjektíven „lomhább" érzet a **helyes** eredmény, nem regresszió.
 - [x] Ellenőrizve: a forgás **független, véletlen pördülés** — nincs `driftTargetX`-hez kötött banking (8.5)
-- [ ] Ellenőrizve: a **cockpit kép nem forog** és nem is torzul; a `drawImage` a `restore()` után maradt *(a kódszerkezet helyes — a `drawImage` a `restore()` után van —, de a „nem torzul" csak szemmel igazolható)*
+- [x] Ellenőrizve: a **cockpit kép nem forog** és nem is torzul; a `drawImage` a `restore()` után maradt *(a kódszerkezet helyes — a `drawImage` a `restore()` után van —, a „nem torzul" pedig a 9. szekció 7. és 12. forgatókönyvében szemmel is igazolva)*
 - [x] Ellenőrizve: a `Star` / `RenderStar` típus **nem** kapott roll-hoz kapcsolódó mezőt
 - [x] Ellenőrizve: **nem jött létre `src/utils/` mappa**; az új modulok a `src/services/`-ben vannak
 - [x] Ellenőrizve: nincs háttérréteg / Tejút / nebula, nincs twinkle, nincs mozgásvektoros csík (8. szekció)
@@ -308,6 +319,25 @@ draw(now)  ── minden képkocka ──▶
 
 **Miért sorsol a `resetStar` is újra színt és magnitúdót:** ha csak a pozíciót állítaná vissza, a mező néhány perc alatt „befagyna" az induló eloszlásba — a fényes csillagok mindig ugyanazok maradnának, ugyanabban a színben, csak más pozícióban. A folyamatos újrasorsolás tartja élettel a mezőt. Ez a mostani kódhoz képest annyi többlet, hogy a `resetStar` a `createStar`-t hívja (mezőnkénti értékadással, hogy ne allokáljon új objektumot — lásd 4.3).
 
+#### 1.3.1 Resize: átskálázás, nem újragenerálás *(scope-on kívüli javítás — megvalósítva)*
+
+A csillag életciklusának **harmadik** belépési pontja a `resize`. A `handleResize` eddig `setup()`-ot hívott, ami a fenti teljes sorsolást futtatta le **minden** csillagra. Mivel a `resize` esemény ablakhúzás közben folyamatosan tüzel, a mező másodpercenként több tucatszor épült újra — vizuálisan nyüzsgés/rajzás, nem méretezés.
+
+Ez **korábbi, meglévő hiba**, nem ennek a tervnek a következménye: azonos méretű, fehér pontoknál az újrasorsolás láthatatlan volt. A `STAR_COUNT = 1200` és a per-csillag szín + magnitúdó (E./F. blokk) csak **feltűnővé** tette.
+
+```
+handleResize():
+  previous = { logicalWidth, logicalHeight }
+  resizeCanvas()                       // méret + dpr + setTransform
+  previous <= 0  ─▶ setup()            // első méretezés: itt kell a teljes sorsolás
+  egyébként:
+    scaleX = logicalWidth  / previousWidth
+    scaleY = logicalHeight / previousHeight
+    minden csillagra:  x *= scaleX ;  y *= scaleY ;  z *= scaleX
+```
+
+A `z` azért a **vízszintes** skálát követi, mert a tartománya a logikai szélességhez van kötve (3.3) — a függőleges skálával a csillagok közeledési sebessége elcsúszna az ablak magasságától. A mező így megőrzi az identitását (minden csillag megtartja a színét, a magnitúdóját és a relatív helyét), és együtt nyúlik az ablakkal.
+
 ### 1.4 Színhőmérséklet — a modell
 
 A feketetest-sugárzó látszólagos színe a hőmérsékletétől függ. A **Tanner Helland-közelítés** csatornánként egy-egy zárt képlet `t = kelvin / 100` felett:
@@ -329,7 +359,7 @@ Minden csatorna `0…255`-re clampelve, `Math.round`-dal egészre. A 6600 K a �
 csatorna_végleges = 255 + (csatorna_nyers - 255) * STAR_COLOR_SATURATION
 ```
 
-Alapérték: **0.65**. A K. blokk hangolja élőben. `0` → az összes csillag fehér (a mai állapot), `1` → nyers blackbody. *(A hangolás elindult: a `constants.ts`-ben jelenleg **0.85** áll — nem végleges, lásd K. blokk.)*
+Alapérték: **0.65**. A K. blokk hangolja élőben. `0` → az összes csillag fehér (a mai állapot), `1` → nyers blackbody. *(A hangolás lezárult: a `constants.ts`-ben a **végleges** érték **0.85** — lásd K. blokk.)*
 
 > 📌 **Implementációs eltérés (megvalósítva) — kerekített kumulatív spektrál-súlyok.** A `pickSpectralClass` az osztályhatárokat a súlyok kumulatív összegéből képzi. A naiv összegzés lebegőpontos maradékot hagy (`0.1 + 0.2 = 0.30000000000000004`), ami a `rand = 0.3` bemenetet még az **A** osztályba sorolta volna a terv szerinti **F** helyett — pontosan az a határérték, amit a B. blokk tesztje rögzít. A kumulatív értékek ezért lépésenként kerekítve épülnek (`Math.round(x * 1e6) / 1e6`), így a határok a táblázatbeli számokon (`0.1`, `0.3`, `0.5`, `0.7`, `0.9`) fekszenek.
 
@@ -885,7 +915,7 @@ A banking ráadásul **kiszámíthatóvá** tenné az effektet: minden balra kit
 - **Előfeltétel:** [[011-difficulty-event-system]] — a `Starfield` a `useGameStore.evasiveManeuverAt`-ot olvassa, ami onnan származik. Az evasive manőver **három ponton** érintett: (a) a HiDPI-átvezetés (a drift logikai pixelben mozog, és a `translate` logikai koordinátát kap), (b) a lecsengés **szándékos** delta-normalizálása (1.9 / 7.10), (c) az **új forgatás** (roll), ami ugyanarra a triggerre és ugyanarra az 1-3 mp-es ablakra épül (1.10). A trigger, az irány és az időtartam a 011 oldaláról **változatlan** — a `Starfield` csak a megjelenítést bővíti, a `useGameStore` és a `triggerEvasiveManeuver` **nem módosul**. Ellenőrzés: 9. szekció 6. és 12. forgatókönyve
 - **Kapcsolódó:** [[002-ingame-shop-frontend]] — a `cockpitImageUrl` a shop hajókatalógusából jön, a `speedKmPerSecond` pedig a hajó sebességéből; a HiDPI a cockpit `drawImage` méretezését is átvezeti (3.2 / 19–20. tétel)
 - **Semmi nem függ ettől a tervtől.** Tisztán a `Starfield.tsx` renderelése változik; a komponens **külső szerződése** (propok, `onCanvasBoundsChange`, viselkedés) azonos marad, tehát az `App.tsx` és a HUD érintetlen
-- **Nem érinti:** Firebase, auth, shop-store, Stripe, i18n, notification — nulla átfedés a nyitott tervekkel ([[016-stripe-fraud-defense]], [[017-stripe-go-live]], [[018-notification-retention]])
+- **Nem érinti:** Firebase, auth, shop-store, Stripe, i18n, notification — nulla átfedés a nyitott tervekkel ([[019-stripe-fraud-defense]], [[020-stripe-go-live]], [[016-notification-retention]])
 - **Elhelyezés a roadmapen:** a **lista végére** — nincs sürgőssége, és semmi nem várja
 
 ---
@@ -926,3 +956,12 @@ A banking ráadásul **kiszámíthatóvá** tenné az effektet: minden balra kit
 - A három szubjektív paraméter (`STAR_COLOR_SATURATION`, `STAR_STREAK_LENGTH_FACTOR`, `STAR_ROLL_MAX_DEGREES`) **nevesített konstans**, a végleges értékük **egyetlen élő hangoló körben** dől el, és rögzítve van a JSDoc-jukban.
 - **Nulla új i18n kulcs**, nulla új UI, nulla új felhasználói string — az `i18n` agentnek nincs teendője.
 - `tsc --noEmit` tiszta, `npm run test` zöld, `npm run build` sikeres, a 9. szekció mind a **12** forgatókönyve lefutott.
+
+---
+
+## 12. Kapcsolódó tervek
+
+- [[011-difficulty-event-system]] – **előfeltétel.** Az `evasiveManeuverAt` trigger és az aszteroida-esemény innen származik; a 6. munkacsomag (roll) erre a triggerre ül rá, új időzítő nélkül.
+- [[002-ingame-shop-frontend]] – a `cockpitImageUrl` a shopban megvásárolt / kiválasztott űrhajóból származik; a `Starfield` a `drawImage`-dzsel ezt rajzolja a transzformációs blokkon kívül.
+- [[021-intro-deterministic-layout]] – **Ez a terv szolgál mintaként, kódütközés nélkül.** A 021 három konvenciót vesz át innen: (a) a **tiszta függvény / `src/services/`** szétválasztás (`introLayout.ts`, `introFit.ts` — a `starColor.ts` / `starfieldMath.ts` mintájára), (b) a **„nincs és ne is legyen `src/utils/`"** szabály (1.2 „Miért a `src/services/`" bekezdése), (c) a mért/véletlen mennyiségek **paraméterként** való átvétele a determinisztikus tesztelhetőségért (5.3) — ott `Math.random()`, itt a DOM-mérés eredménye. ⚠️ Emellett a 021 A. blokkja **kifejezetten az itteni A. blokk elmaradására** hivatkozik indoklásként: mivel a baseline itt kimaradt, a K. blokk hangolása abszolút megítéléssel zárult — a 021 ezért teszi kötelezővé a kiindulási állapot rögzítését. **Kódütközés a két terv közt nincs:** ez a `Starfield.tsx`-et írja, a 021 az `IntroScreen.tsx`-et.
+- [[018-nextjs-migration]] – **kódütközési pont, utólagos kereszthivatkozás.** A Next.js migráció D. blokkja megszünteti az `import.meta.env.BASE_URL` hivatkozásokat (a `/realtime_space_travel/` base path a GitHub Pages öröksége, Vercelen az app a gyökéren fut). Ez a `Starfield.tsx` **120. sorát** érinti — a cockpit fallback képet (`${import.meta.env.BASE_URL}spaceships/russian1.webp` → `/spaceships/russian1.webp`) —, ami **pontosan az a kódrégió**, amit ez a terv frissen írt. A migráció diffje itt ütközhet, ha ez a terv még nincs mergelve. **Egyéb érintettség nincs:** a HiDPI (`devicePixelRatio`), a delta-idő, a `ctx.rotate` és az összes `src/services/starfieldMath.ts` / `starColor.ts` helper **keretrendszer-független**, tehát a migráció után változatlanul működik. ⚠️ Két dolgot viszont ellenőrizni kell a migráció után (a 018 8. szekció 7. forgatókönyve): (a) a React 18 → 19 frissítés a StrictMode dupla-effekt viselkedésén keresztül érinti a `Starfield` rAF-hurkának cleanupját, (b) a `dynamic(..., { ssr: false })` határ mögött a canvas mount időzítése kissé eltolódik.

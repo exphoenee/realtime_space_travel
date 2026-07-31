@@ -7,7 +7,7 @@ status: in-progress
 implemented: false
 implemented_at: null
 created_at: "2026-07-27"
-updated_at: "2026-07-29"  # frissítve: a vendég-tájékoztató toastból jön ([[015-toast-notification]] H. blokk); +related_plans: [[018-notification-retention]]. **R. blokk IMPLEMENTÁLVA:** vendég usersPublic PERMISSION_DENIED javítás központi kapuval (userData.ts canWritePublicProfile + authBootstrap onDisconnect isAnonymous-őr); a database.rules.json szándékosan érintetlen — részletek: 1.9.a
+updated_at: "2026-07-29"  # frissítve: a vendég-tájékoztató toastból jön ([[015-toast-notification]] H. blokk); +related_plans: [[016-notification-retention]]. **R. blokk IMPLEMENTÁLVA:** vendég usersPublic PERMISSION_DENIED javítás központi kapuval (userData.ts canWritePublicProfile + authBootstrap onDisconnect isAnonymous-őr); a database.rules.json szándékosan érintetlen — részletek: 1.9.a
 author: exphoenee
 step: 13
 phases: []
@@ -21,7 +21,7 @@ related_plans:
   - 002-ingame-shop-frontend
   - 007-state-persist-page-refresh
   - 009-firebase-identity-split-bugfix
-  - 018-notification-retention
+  - 016-notification-retention
 tags:
   - social
   - multiplayer
@@ -87,7 +87,7 @@ authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingReques
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **13. lépés** — a 012-wall-of-shame után, a 016-stripe-fraud-defense előtt. A multiplayer az eseményrendszerre épül, de a Stripe-tól független. |
+| Elhelyezés a roadmapen | **13. lépés** — a 012-wall-of-shame után, a 019-stripe-fraud-defense előtt. A multiplayer az eseményrendszerre épül, de a Stripe-tól független. |
 | Barát keresés | **Nickname + email + user ID** alapján is lehessen keresni |
 | Barát hozzáadás | Mindig barátkérés (friend request) útján — a másik fél elfogadhatja vagy elutasíthatja |
 | MVP scope | **Teljes MVP**: barátlista + invite/join + figyelmi lista + privát chat + friend request + **barát szégyenfala** |
@@ -401,7 +401,7 @@ authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingReques
 - [ ] Az érintett `friends/` bejegyzések törlése **mindkét** oldalon
 - [ ] A hozzá tartozó `friendRequests/` és `outgoingRequests/` bejegyzések törlése
 - [ ] A `chats/{chatId}` node törlése (`getChatId` rendezett `uid1_uid2` formátuma szerint, `userData.ts:1317-1319`)
-- [ ] A kapcsolódó `notifications/` bejegyzések törlése ([[018-notification-retention]] hatóköre)
+- [ ] A kapcsolódó `notifications/` bejegyzések törlése ([[016-notification-retention]] hatóköre)
 - [ ] **Export JSON minden törlés ELŐTT** (a 009 E. blokk mintájára)
 - [ ] ⚠️ Rögzítendő: a `users/{deviceId}` vendég-node és a `walls/{deviceId}` fal **NEM törlendő** — az a játékos játékadata, és `linkWithPopup` után ugyanaz a uid **legitim regisztrált userré válhat**
 
@@ -979,7 +979,7 @@ src/components/screens/MainMenu.tsx         # ugyanaz az isGuest kiegészítés
 - **Előfeltétel:** [[003-firebase-auth-settings]] — az RTDB séma és a rules eredeti forrása; a `security.rules.json` ↔ `database.rules.json` kettősség onnan származik (W. blokk).
 - **Érinti:** [[015-toast-notification]] — az S. blokk kliensoldali őrei a meglévő toast rendszert használják (`friends.guestNotice` warning toast, `GUEST_NOTICE_DURATION_MS = 7000`); a rules-elutasítás **error** toastot kap.
 - **Érinti:** [[012-wall-of-shame]] — a `walls/` kulcsdöntés (1.9) itt dől el véglegesen; a T. blokk (1) lyukának mellékhatása, hogy a hamis barátság **megnyitná a `walls/{áldozat}` olvasását** is.
-- **Érinti:** [[018-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a vendég-spam vektort zárja.
+- **Érinti:** [[016-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a vendég-spam vektort zárja.
 - **Érinti:** [[002-ingame-shop-frontend]] — az O. blokk `needsAccount` listája a `shop` fázist is tartalmazza; a Q. blokk `tokenRegistered` kiegészítése **a shopot is érinti** (egy frissen linkelt user ne essen ki a boltból sem).
 - **Új dev-függőség:** `@firebase/rules-unit-testing` + `firebase-tools` + RTDB emulátor (U. blokk). Ez a projekt **első** emulátor-függő tesztje.
 - **Végrehajtási branch:** `develop`.
@@ -1203,6 +1203,6 @@ src/components/screens/MainMenu.tsx         # ugyanaz az isGuest kiegészítés
 - [[012-wall-of-shame]] — a `walls/{uid}` kulcs és a barát-olvasási grant forrása. A T. blokk (2) lyukának mellékhatása, hogy a hamis barátság a `walls/{áldozat}` **olvasását is megnyitná** — a gyerek-szintű `.write` ezt is lezárja.
 - [[015-toast-notification]] — az S. blokk kliensoldali őrei ezt a toast rendszert használják: vendégnél **warning** (`friends.guestNotice`, 7000 ms), rules-elutasításnál **error** toast. Kattintható toast bevezetésekor a navigáció **`guardedNav`-on** keresztül menjen (1.10).
 - [[003-firebase-auth-settings]] — az RTDB séma és a `security.rules.json` ↔ `database.rules.json` kettősség forrása. A W. blokk **driftet talált**: a `chats/$chatId/messages` (N. blokk javítása), a `walls/$uid` `device_map`-ága és a `notifications` node csak a **generált** fájlban helyes → a dokumentált forrást vissza kell portolni.
-- [[018-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a **vendég-spam** vektort zárja (ma bármely bejelentkezett user pusholhat toastot **bármely** uid inboxába, ha a `fromUid` a sajátja).
+- [[016-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a **vendég-spam** vektort zárja (ma bármely bejelentkezett user pusholhat toastot **bármely** uid inboxába, ha a `fromUid` a sajátja).
 - [[002-ingame-shop-frontend]] — az O. blokk `needsAccount` listáján a `shop` is rajta van; a Q. blokk `tokenRegistered` kiegészítése ezért **a boltot is érinti**: egy frissen linkelt user ne essen ki a vásárlásból sem.
-- [[016-stripe-fraud-defense]] / [[017-stripe-go-live]] — **közvetve érintett.** A rules-teszt infrastruktúra (U. blokk) az első a projektben; a `wallet` szabályok jövőbeli szigorítása ugyanezt a keretet fogja használni.
+- [[019-stripe-fraud-defense]] / [[020-stripe-go-live]] — **közvetve érintett.** A rules-teszt infrastruktúra (U. blokk) az első a projektben; a `wallet` szabályok jövőbeli szigorítása ugyanezt a keretet fogja használni.

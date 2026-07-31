@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import useGameStore from "../../state/useGameStore";
 import useUIStore from "../../state/useUIStore";
 import { getRtdbKey } from "../../state/useAuthStore";
-import { subscribeFailures, subscribeSuccesses, subscribeLegacyFailures, subscribeLegacySuccesses, saveSuccessRecord, saveFailureRecord, incrementUserWallet, migrateWallData } from "../../firebase/userData";
-import useShopStore from "../../state/useShopStore";
+import { subscribeFailures, subscribeSuccesses, subscribeLegacyFailures, subscribeLegacySuccesses, migrateWallData } from "../../firebase/userData";
+import { generateDebugArrival, generateDebugFailure } from "../../services/debugRecords";
 import Collapse from "../ui/Collapse";
 import Modal from "../ui/Modal";
 import BackButton from "../ui/BackButton";
@@ -390,50 +390,14 @@ const WallOfShame = ({ onBack, friendUid, friendName }: WallOfShameProps) => {
             <button
               type="button"
               className={styles.debugBtn}
-              onClick={() => {
-                const gs = useGameStore.getState();
-                gs.addDummySuccessRecord();
-
-                const rtdbKey = getRtdbKey();
-                const updated = useGameStore.getState();
-                const latest = updated.successRecords[updated.successRecords.length - 1];
-                if (latest) {
-                  // Save to Firebase
-                  if (rtdbKey) {
-                    saveSuccessRecord(rtdbKey, latest).catch(console.error);
-                  }
-
-                  // Add reward credits to the user's wallet
-                  const reward = latest.rewardCredits ?? 0;
-                  if (reward > 0) {
-                    const shopState = useShopStore.getState();
-                    const newCredits = shopState.credits + reward;
-                    useShopStore.setState({ credits: newCredits });
-                    if (rtdbKey) {
-                      incrementUserWallet(rtdbKey, reward).catch(console.error);
-                    }
-                  }
-                }
-              }}
+              onClick={() => generateDebugArrival()}
             >
               🎲 Generate Arrival
             </button>
             <button
               type="button"
               className={`${styles.debugBtn} ${styles.debugBtnFail}`}
-              onClick={() => {
-                const gs = useGameStore.getState();
-                gs.addDummyFailureRecord();
-
-                const rtdbKey = getRtdbKey();
-                if (rtdbKey) {
-                  const updated = useGameStore.getState();
-                  const latest = updated.failureRecords[updated.failureRecords.length - 1];
-                  if (latest) {
-                    saveFailureRecord(rtdbKey, latest).catch(console.error);
-                  }
-                }
-              }}
+              onClick={() => generateDebugFailure()}
             >
               💀 Generate Failure
             </button>

@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import type { EventType } from "../../types";
 import { EVENT_DEFINITIONS } from "../../hooks/useEventSystem";
 import useGameStore from "../../state/useGameStore";
+import { generateDebugArrival } from "../../services/debugRecords";
 import styles from "./DebugEventBar.module.css";
-
-const useAddDummySuccessRecord = () => useGameStore((s) => s.addDummySuccessRecord);
 
 interface DebugEventBarProps {
   onTrigger: (eventType: EventType) => void;
@@ -59,8 +58,6 @@ const DebugEventBar = ({ onTrigger }: DebugEventBarProps) => {
     },
     [onTrigger],
   );
-
-  const addDummySuccessRecord = useAddDummySuccessRecord();
 
   // Unique event types for the debug buttons
   const eventTypes: EventType[] = [
@@ -129,7 +126,7 @@ const DebugEventBar = ({ onTrigger }: DebugEventBarProps) => {
             <button
               type="button"
               className={`${styles.btn} ${styles.btnSuccess}`}
-              onClick={() => addDummySuccessRecord()}
+              onClick={() => generateDebugArrival()}
               title="Create a dummy arrival record on the Wall of Shame"
             >
               🎉 Arrival

@@ -175,6 +175,73 @@ export interface RenderStar extends Star {
   mag: number;
 }
 
+/** The nine text blocks of the intro crawl, in scroll order. */
+export type IntroBlockId =
+  | "headline"
+  | "motto"
+  | "paragraph1"
+  | "paragraph2"
+  | "sectionTitle"
+  | "rule1"
+  | "rule2"
+  | "rule3"
+  | "rule4";
+
+/**
+ * A fixed-height slot for one intro block.
+ *
+ * `heightVh` is a multiplier on `window.innerHeight` (0.42 = 42% of the
+ * viewport), not a CSS `vh` string. Slots are the reason the layout is
+ * deterministic: block positions come from this table, never from how long the
+ * translated text happens to be.
+ */
+export interface IntroSlot {
+  id: IntroBlockId;
+  heightVh: number;
+  /**
+   * Font-size range for this block, in px.
+   *
+   * These carry the typographic hierarchy — a headline must outrank a body
+   * paragraph no matter how long the translation is. Fitting only ever shrinks
+   * *within* this range, so it can absorb language variance without ever
+   * inverting the visual order.
+   */
+  minFontPx: number;
+  maxFontPx: number;
+}
+
+/** A slot resolved to its cumulative position. Still in viewport multiples. */
+export interface IntroSlotBox {
+  id: IntroBlockId;
+  /** Distance from the top of the content to the top of this slot. */
+  topVh: number;
+  heightVh: number;
+}
+
+/** Pixel geometry of the scroll animation for one viewport size. */
+export interface IntroScrollGeometry {
+  startOffsetPx: number;
+  endOffsetPx: number;
+  distancePx: number;
+  durationSec: number;
+}
+
+/**
+ * When each block is revealed, in milliseconds from animation start.
+ *
+ * Deliberately contains no viewport term: because the slots are proportional to
+ * the viewport *and* the total duration is fixed, the viewport height cancels
+ * out of the timing formula. The schedule is the same on every screen.
+ */
+export interface IntroRevealSchedule {
+  reveals: { id: IntroBlockId; atMs: number }[];
+  finalInstructionAtMs: number;
+  totalMs: number;
+}
+
+/** The fitted font size per block, in px — shared by all five languages. */
+export type IntroFitResult = Record<IntroBlockId, number>;
+
 export interface Destination {
   name: string;
   travelYears: number;

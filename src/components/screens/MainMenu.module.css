@@ -11,14 +11,48 @@
 }
 
 .panel {
-  text-align: center;
-  /* Sized for the title banner; the buttons cap at 320px regardless. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 760px;
   width: 100%;
   max-height: calc(100dvh - 4rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
   color: #e0f2fe;
+}
+
+/* A gombok listája — egyedül ez scrollozható, a fejléc (titleBanner)
+   mindig a panel tetején marad. */
+.menuList {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding-top: 2px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(103, 232, 249, 0.3) transparent;
+  padding-bottom: 1rem;
+}
+
+.menuList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menuList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menuList::-webkit-scrollbar-thumb {
+  background: rgba(103, 232, 249, 0.3);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.menuList::-webkit-scrollbar-thumb:hover {
+  background: rgba(103, 232, 249, 0.5);
 }
 
 /* Text-only credit link, pinned to the bottom-right of the menu overlay. */
@@ -69,6 +103,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.25em;
+  /* align-items only centres the boxes; the wrapped lines inside them need
+     this, or a two-line headline reads as left-aligned. */
+  text-align: center;
   /* Keeps the text clear of the astronaut (left) and the rocket cow (right). */
   padding: 0 21% 0 25%;
 }

@@ -19,8 +19,8 @@
   "intro": {
     "headline": "Realtime Space Travel",
     "motto": "L'expérience d'une vie !",
-    "paragraph1": "Vous êtes l'élu ! Vous êtes le dernier et unique espoir de l'humanité. Ce n'est pas un jeu — notre survie est en jeu. C'est notre dernière chance : la promesse d'un nouveau foyer dans des systèmes stellaires lointains. L'arche qui transporte l'avenir de l'humanité est prête à partir.",
-    "paragraph2": "L'équipage tout entier – scientifiques, ingénieurs, fondateurs d'une nouvelle civilisation – est plongé dans un profond sommeil cryogénique. Leur destin, leurs rêves, notre avenir... Le sort de l'humanité repose désormais entre vos mains. Vous êtes le composant vivant et respirant qu'aucune intelligence artificielle ne peut remplacer.",
+    "paragraph1": "La dernière arche de l'humanité se tient prête sur le pas de tir. Ce n'est pas un jeu — la survie de notre espèce dépend de ce voyage. Un nouveau foyer attend dans des systèmes stellaires lointains, mais le voyage exigera tout de nous. Il n'y a pas de seconde chance.",
+    "paragraph2": "L'équipage tout entier — scientifiques, ingénieurs, fondateurs d'une nouvelle civilisation — est plongé dans un sommeil cryogénique. Leur destin, leurs rêves, notre avenir... tout vous est confié. Vous êtes le seul éveillé. Celui qui regarde. Celui qui doit nous guider.",
     "sectionTitle": "Vos missions – Les protocoles les plus stricts de la mission",
     "rule1": "<1>Le protocole de vigilance</1> – une surveillance visuelle continue est nécessaire pour stabiliser les données de navigation. Si votre attention se relâche, le vaisseau déclenche un arrêt d'urgence.",
     "rule2": "<1>Le principe de zéro intervention</1> – les systèmes sont autonomes ; une intervention manuelle peut être fatale. Votre compétence la plus importante est la discipline et la patience. N'agissez pas – surveillez !",
@@ -153,6 +153,7 @@
     "nicknamePlaceholder": "Choisissez un nom d'affichage",
     "nicknameEdit": "Modifier",
     "nicknameSave": "Sauvegarder",
+    "nicknameForbidden": "Le pseudo contient un langage inapproprié",
     "enableCamera": "Activer la caméra",
     "cameraGranted": "Caméra disponible",
     "cameraBlocked": "Caméra bloquée dans le navigateur",
@@ -332,7 +333,7 @@
         "desc": "⚠️ VAISSEAU DEBUG ⚠️ Tu ne devrais pas voir ça. 1234 km/s. 1234 crédits. Ne pose pas de questions. 'Ce n'est pas un bug — c'est une fonctionnalité.' — Debug Dynamics Ltd."
       },
       "longDrop": {
-        "desc": "The Latrina Aerospace LD-42 \"Long Drop\" combines traditional rural craftsmanship with cutting-edge interstellar engineering. Every vessel is hand-built from reclaimed heritage hardwood and engineered to withstand both warp travel and... other kinds of pressure.\n\nManufacturer: Latrina Aerospace\nModel: LD-42 \"Long Drop\"\nRole: Utility / Exploration / Cargo\nHull: Reclaimed Rural Hardwood Composite™\nDrive: FlushDrive FTL Mk.III\nCrew: 1-2"
+        "desc": "Le Latrina Aerospace LD-42 \"Long Drop\" allie l'artisanat rural traditionnel à l'ingénierie interstellaire de pointe. Chaque vaisseau est construit à la main à partir de bois dur patrimonial récupéré et conçu pour résister aux voyages warp et... à d'autres types de pression.\n\nFabricant : Latrina Aerospace\nModèle : LD-42 \"Long Drop\"\nRôle : Utilitaire / Exploration / Cargo\nCoque : Composite de bois dur rural récupéré™\nPropulsion : FlushDrive FTL Mk.III\nÉquipage : 1-2"
       }
     },
     "exoplanet": {
@@ -371,8 +372,8 @@
       "guestWarning": "Attention : les crédits et objets achetés en tant qu'invité sont perdus si vous ne vous connectez pas. La progression d'invité ne peut être transférée qu'une seule fois, depuis un seul compte invité."
     },
     "history": {
-      "title": "Purchase History",
-      "empty": "No purchases yet."
+      "title": "Historique des achats",
+      "empty": "Aucun achat pour l'instant."
     }
   },
   "sort": {
@@ -540,7 +541,7 @@
     "leave": "Quitter la mission",
     "host": "Hôte",
     "participants": "Participants ({{count}}/8)",
-    "maxReached": "Maximum 8 participants",
+    "maxReached": "8 participants maximum",
     "eventToast": {
       "horn": "{{name}} répond à un signal de corne !",
       "asteroid": "{{name}} évite un astéroïde !",

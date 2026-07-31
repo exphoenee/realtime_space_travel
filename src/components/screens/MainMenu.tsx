@@ -153,92 +153,94 @@ const MainMenu = () => {
           </div>
         </div>
 
-        <div className={styles.actions}>
-          <button type="button" className={styles.button} onClick={handleIntro}>
-            {t("mainMenu.intro")}
-          </button>
-          {(!authUser || authUser.isAnonymous) && (
+        <div className={styles.menuList}>
+          <div className={styles.actions}>
+            <button type="button" className={styles.button} onClick={handleIntro}>
+              {t("mainMenu.intro")}
+            </button>
+            {(!authUser || authUser.isAnonymous) && (
+              <button
+                type="button"
+                className={styles.button}
+                onClick={handleLogin}
+                disabled={authStatus === "loading"}
+              >
+                {authStatus === "loading" ? "..." : t("mainMenu.login")}
+              </button>
+            )}
+            <button
+              type="button"
+              className={`${styles.button} ${styles.primary}`}
+              onClick={handleStart}
+            >
+              {t("mainMenu.start")}
+            </button>
             <button
               type="button"
               className={styles.button}
-              onClick={handleLogin}
-              disabled={authStatus === "loading"}
+              onClick={guardedNav("friends", "friends.guestNotice")}
+              title={isGuest ? t("friends.guestNotice") : ""}
             >
-              {authStatus === "loading" ? "..." : t("mainMenu.login")}
-            </button>
-          )}
-          <button
-            type="button"
-            className={`${styles.button} ${styles.primary}`}
-            onClick={handleStart}
-          >
-            {t("mainMenu.start")}
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={guardedNav("friends", "friends.guestNotice")}
-            title={isGuest ? t("friends.guestNotice") : ""}
-          >
-            <span>
-              {isGuest ? "🔒 " : ""}
-              {t("mainMenu.friends")}
-            </span>
-            {totalUnread > 0 && (
-              <span className={styles.notificationBadge}>
-                {totalUnread > 99 ? "99+" : totalUnread}
+              <span>
+                {isGuest ? "🔒 " : ""}
+                {t("mainMenu.friends")}
               </span>
-            )}
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={guardedNav("shop", "shop.guestNotice")}
-            title={isGuest ? t("shop.guestNotice") : ""}
-          >
-            {isGuest ? "🔒 " : ""}
-            {t("mainMenu.shop")}
-          </button>
-          <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
-            {t("mainMenu.wallOfShame")}
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={handleSettings}
-          >
-            {t("mainMenu.settings")}
-          </button>
-        </div>
-
-        {errorKey && (
-          <p className={styles.loginError} role="alert">
-            {t(errorKey)}
-          </p>
-        )}
-
-        {DEBUG_ENV && (
-          <div className={styles.debugActions}>
+              {totalUnread > 0 && (
+                <span className={styles.notificationBadge}>
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </span>
+              )}
+            </button>
             <button
               type="button"
-              className={`${styles.debugBtn} ${debugMode ? styles.debugBtnActive : ""}`}
-              onClick={() => setDebugMode(!debugMode)}
-              title={debugMode ? 'Debug ki' : 'Debug be'}
+              className={styles.button}
+              onClick={guardedNav("shop", "shop.guestNotice")}
+              title={isGuest ? t("shop.guestNotice") : ""}
             >
-              🛠 Debug {debugMode ? "ON" : "OFF"}
+              {isGuest ? "🔒 " : ""}
+              {t("mainMenu.shop")}
             </button>
-            {debugMode && (
+            <button type="button" className={styles.button} onClick={() => transitionTo("wallOfShame")}>
+              {t("mainMenu.wallOfShame")}
+            </button>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={handleSettings}
+            >
+              {t("mainMenu.settings")}
+            </button>
+          </div>
+
+          {errorKey && (
+            <p className={styles.loginError} role="alert">
+              {t(errorKey)}
+            </p>
+          )}
+
+          {DEBUG_ENV && (
+            <div className={styles.debugActions}>
               <button
                 type="button"
-                className={`${styles.debugBtn} ${!screenCheckEnabled ? styles.screenCheckBtnOff : ""}`}
-                onClick={() => setScreenCheckEnabled(!screenCheckEnabled)}
-                title={screenCheckEnabled ? 'ScreenCheck ki' : 'ScreenCheck be'}
+                className={`${styles.debugBtn} ${debugMode ? styles.debugBtnActive : ""}`}
+                onClick={() => setDebugMode(!debugMode)}
+                title={debugMode ? 'Debug ki' : 'Debug be'}
               >
-                📐 ScreenCheck {screenCheckEnabled ? "ON" : "OFF"}
+                🛠 Debug {debugMode ? "ON" : "OFF"}
               </button>
-            )}
-          </div>
-        )}
+              {debugMode && (
+                <button
+                  type="button"
+                  className={`${styles.debugBtn} ${!screenCheckEnabled ? styles.screenCheckBtnOff : ""}`}
+                  onClick={() => setScreenCheckEnabled(!screenCheckEnabled)}
+                  title={screenCheckEnabled ? 'ScreenCheck ki' : 'ScreenCheck be'}
+                >
+                  📐 ScreenCheck {screenCheckEnabled ? "ON" : "OFF"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <a

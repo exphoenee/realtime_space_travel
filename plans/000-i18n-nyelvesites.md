@@ -19,6 +19,7 @@ related_plans:
   - 003-firebase-auth-settings
   - 004-firebase-auth-bugfix
   - 005-ingame-shop-strapi-stripe
+  - 021-intro-deterministic-layout
 tags:
   - i18n
   - localization
