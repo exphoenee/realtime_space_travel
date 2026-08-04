@@ -1,0 +1,148 @@
+import {
+  CAMERA_ORIENTATION_COMPENSATION,
+  CAMERA_ROTATION_SIGN,
+} from "../constants/constants";
+
+/**
+ * Pure geometry + device-capability helpers for the mobile/tablet camera
+ * orientation compensation. None of these touch a real canvas, so the whole
+ * module is unit-testable under jsdom. The actual `ctx.setTransform` /
+ * `drawImage` lives in `useFaceDetection`, built from `computeRotatedCanvasLayout`.
+ */
+
+export interface RotatedCanvasLayout {
+  /** Canvas width in px (swapped with height for 90°/270°). */
+  canvasWidth: number;
+  /** Canvas height in px (swapped with width for 90°/270°). */
+  canvasHeight: number;
+  /** Rotation in radians, already carrying `CAMERA_ROTATION_SIGN`. */
+  rotationRad: number;
+  /** Canvas-centre X the transform translates to before rotating. */
+  translateX: number;
+  /** Canvas-centre Y the transform translates to before rotating. */
+  translateY: number;
+}
+
+type SupportedAngle = 0 | 90 | 180 | 270;
+
+interface UserAgentDataLike {
+  mobile?: boolean;
+}
+
+interface NavigatorWithUAData extends Navigator {
+  userAgentData?: UserAgentDataLike;
+}
+
+/** Snap an arbitrary angle to the nearest of {0, 90, 180, 270}. */
+const normalizeAngle = (raw: number): SupportedAngle => {
+  if (!Number.isFinite(raw)) return 0;
+  const snapped = ((Math.round(raw / 90) * 90) % 360 + 360) % 360;
+  return snapped as SupportedAngle;
+};
+
+/**
+ * Whether the device's **primary** input is touch (phone/tablet), so the camera
+ * sensor is fixed to the device body and rotates with the screen.
+ *
+ * Layers, first match wins:
+ * 1. `(pointer: coarse) and (hover: none)` — the real, capability-based signal.
+ * 2. `navigator.maxTouchPoints > 1` — iPadOS desktop-mode reports as Mac.
+ * 3. `navigator.userAgentData?.mobile === true` — Chromium on a phone.
+ * 4. UA-string regex — **only** when `matchMedia` is unavailable.
+ *
+ * Missing `navigator` (SSR) returns a safe `false`, i.e. no compensation.
+ */
+export const isTouchPrimaryDevice = (): boolean => {
+  if (typeof navigator === "undefined") return false;
+
+  const hasMatchMedia =
+    typeof window !== "undefined" && typeof window.matchMedia === "function";
+
+  if (hasMatchMedia) {
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const noHover = window.matchMedia("(hover: none)").matches;
+    if (coarse && noHover) return true;
+  }
+
+  // Supplementary capability checks (iPadOS desktop-mode, Chromium mobile).
+  if (
+    typeof navigator.maxTouchPoints === "number" &&
+    navigator.maxTouchPoints > 1
+  ) {
+    return true;
+  }
+
+  const uaData = (navigator as NavigatorWithUAData).userAgentData;
+  if (uaData?.mobile === true) return true;
+
+  // UA-string sniffing is the brittle last resort — only when the browser
+  // exposes no matchMedia to ask the real capability.
+  if (!hasMatchMedia) {
+    return /Android|iP(hone|ad|od)|Mobile|Tablet/.test(navigator.userAgent ?? "");
+  }
+
+  return false;
+};
+
+/**
+ * The screen rotation angle, normalized to {0, 90, 180, 270}.
+ *
+ * Primary source `screen.orientation.angle`; fallback the legacy
+ * `window.orientation` (`-90 → 270`, `90 → 90`, `180 → 180`, `0 → 0`).
+ * Unknown / unavailable → `0` (no compensation, today's behaviour).
+ */
+export const getSensorRotationAngle = (): SupportedAngle => {
+  if (typeof window === "undefined") return 0;
+
+  const orientationAngle = window.screen?.orientation?.angle;
+  if (typeof orientationAngle === "number") {
+    return normalizeAngle(orientationAngle);
+  }
+
+  const legacy = (window as Window & { orientation?: number }).orientation;
+  if (typeof legacy === "number") {
+    return normalizeAngle(legacy);
+  }
+
+  return 0;
+};
+
+/**
+ * Canvas dimensions + transform that bring a sensor-tilted video upright.
+ *
+ * For 90°/270° the canvas width/height are **swapped** (a landscape sensor
+ * frame lands in a portrait canvas). The transform translates to the canvas
+ * centre and rotates by `CAMERA_ROTATION_SIGN * angle`; the caller then draws
+ * the video centred (`drawImage(video, -videoW/2, -videoH/2, videoW, videoH)`).
+ * For 0° dimensions are unchanged and `rotationRad === 0`; for 180° dimensions
+ * are unchanged and `rotationRad === ±π`.
+ */
+export const computeRotatedCanvasLayout = (
+  videoW: number,
+  videoH: number,
+  angle: SupportedAngle,
+): RotatedCanvasLayout => {
+  const swapDimensions = angle === 90 || angle === 270;
+  const canvasWidth = swapDimensions ? videoH : videoW;
+  const canvasHeight = swapDimensions ? videoW : videoH;
+  const rotationRad =
+    angle === 0 ? 0 : (CAMERA_ROTATION_SIGN * angle * Math.PI) / 180;
+
+  return {
+    canvasWidth,
+    canvasHeight,
+    rotationRad,
+    translateX: canvasWidth / 2,
+    translateY: canvasHeight / 2,
+  };
+};
+
+/**
+ * Whether to run the orientation compensation for this frame: the kill switch
+ * is on, the device is touch-primary, and the screen is rotated.
+ */
+export const shouldCompensateOrientation = (
+  angle: number,
+  isTouch: boolean,
+): boolean =>
+  CAMERA_ORIENTATION_COMPENSATION && isTouch && angle !== 0;
