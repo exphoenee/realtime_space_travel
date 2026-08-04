@@ -2,13 +2,13 @@
 # Auto-generated from plan files — do not edit manually
 # Single source of truth: ./plans/ directory
 # Regenerate with: python .claude/scripts/generate_roadmap.py
-generated_at: "2026-07-31"
-total_plans: 22
+generated_at: "2026-08-04"
+total_plans: 23
 implemented: 16
-in_progress: 1
+in_progress: 2
 not_started: 5
-tasks_done: 979
-tasks_total: 1582
+tasks_done: 1009
+tasks_total: 1616
 plans:
   - step: 0
     slug: "000-i18n-nyelvesites"
@@ -164,18 +164,25 @@ plans:
     tasks_done: 0
     tasks_total: 134
     dependencies: []
+  - step: 22
+    slug: "022-mobile-camera-orientation"
+    status: "in-progress"
+    category: "core"
+    tasks_done: 30
+    tasks_total: 34
+    dependencies: []
 ---
 
 # Roadmap
 
 > Auto-generated from `./plans/` — **do not edit by hand**. Regenerate before reading:
 > `python .claude/scripts/generate_roadmap.py`
-> Last generated: 2026-07-31
+> Last generated: 2026-08-04
 
 ## Project Status
 
-- **Plans:** 16 implemented · 1 in progress · 5 not started (of 22)
-- **Tasks:** 979/1582 done (62%)
+- **Plans:** 16 implemented · 2 in progress · 5 not started (of 23)
+- **Tasks:** 1009/1616 done (62%)
 
 ## Overview
 
@@ -203,6 +210,7 @@ plans:
 | 19 | Stripe csalásvédelem | ⬜ Not started | 0/53 | — | security | 5, 9, 10, 18 |
 | 20 | Stripe élesítés | ⬜ Not started | 0/85 | — | payments | 5, 9, 10, 18, 19 |
 | 21 | Determinisztikus intró-elrendezés | ⬜ Not started | 0/134 | — | ui | — |
+| 22 | Mobil/tablet kamera orientáció-kompenzáció | 🟨 In progress | 30/34 | — | core | — |
 
 ## Next Open Tasks
 
@@ -220,6 +228,7 @@ plans:
 - **Step 19 — Stripe csalásvédelem** (0/53): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 20 — Stripe élesítés** (0/85): `[A]` [[019-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
 - **Step 21 — Determinisztikus intró-elrendezés** (0/134): Böngészős megerősítés: `DEBUG_MODE=true` (210 s-os intró) mellett végigfuttatás **legalább 2 nyelven** (leghosszabb: `fr`, legrövidebb: `hu`) és **2 képernyőméreten** (mobil portré 390×844, desktop 1920×1080) — az elvárt eredmény: a `intro.continue` felirat **egyszer sem** jelenik meg
+- **Step 22 — Mobil/tablet kamera orientáció-kompenzáció** (30/34): **Kézi teszt — mobil:** telefon fekvőbe fordítva → az arc detektálódik, a `crewLost` nem lő be figyelő játékosnál
 
 ## Insertion Guide
 
@@ -251,6 +260,7 @@ plans:
 | 19 | `019-stripe-fraud-defense` | security | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration | 20 |
 | 20 | `020-stripe-go-live` | payments | 005-ingame-shop-strapi-stripe, 009-firebase-identity-split-bugfix, 010-firebase-guest-merge-single-gate, 018-nextjs-migration, 019-stripe-fraud-defense | — |
 | 21 | `021-intro-deterministic-layout` | ui | — | — |
+| 22 | `022-mobile-camera-orientation` | core | — | — |
 
 ## Phase Details
 
@@ -280,3 +290,4 @@ plans:
 | 19 | `plans/019-stripe-fraud-defense.md` | Stripe csalásvédelem |
 | 20 | `plans/020-stripe-go-live.md` | Stripe élesítés |
 | 21 | `plans/021-intro-deterministic-layout.md` | Determinisztikus intró-elrendezés |
+| 22 | `plans/022-mobile-camera-orientation.md` | Mobil/tablet kamera orientáció-kompenzáció |

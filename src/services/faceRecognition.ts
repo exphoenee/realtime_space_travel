@@ -29,6 +29,14 @@ export interface FaceAnalysis {
   eyeEarMargin: number;
 }
 
+/**
+ * Assumes an **upright** face: its `eyesLevel` / `eyesAboveEars` heuristics
+ * break on a 90°-rotated (sensor-tilted) image. On mobile/tablet the orientation
+ * compensation in `useFaceDetection` rotates the frame back to upright *before*
+ * detection, so the face this receives is already upright. The logic here is
+ * therefore left rotation-dependent on purpose — introducing a rotation-invariant
+ * heuristic would needlessly loosen the `crewLost` strictness.
+ */
 export const analyzeFace = (face: Face): FaceAnalysis => {
   const namedKeypoints = face.keypoints.reduce<Record<string, Keypoint>>(
     (acc, keypoint) => {

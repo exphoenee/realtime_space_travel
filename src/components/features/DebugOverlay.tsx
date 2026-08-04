@@ -31,11 +31,18 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   if (!destination) return null;
 
   const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
+  const debugCanvas = debugCanvasRef.current;
   const videoElement = videoRef.current;
+  // The debug canvas already carries the correct (possibly orientation-swapped)
+  // aspect ratio once a frame has been drawn — the compensated path sizes it to
+  // the rotated dimensions, the plain path to the video's. Prefer it; fall back
+  // to the raw video only before the first draw.
   const videoAspect =
-    videoElement && videoElement.videoHeight > 0
-      ? videoElement.videoWidth / videoElement.videoHeight
-      : 16 / 9;
+    debugCanvas && debugCanvas.width > 0 && debugCanvas.height > 0
+      ? debugCanvas.width / debugCanvas.height
+      : videoElement && videoElement.videoHeight > 0
+        ? videoElement.videoWidth / videoElement.videoHeight
+        : 16 / 9;
   const debugHeight = debugWidth / videoAspect;
   const lastUpdateAgoSeconds = Math.max(
     0,

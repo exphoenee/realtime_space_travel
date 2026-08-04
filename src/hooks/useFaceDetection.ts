@@ -6,6 +6,13 @@ import {
   analyzeFace,
   FaceAnalysis,
 } from "../services/faceRecognition";
+import {
+  isTouchPrimaryDevice,
+  getSensorRotationAngle,
+  shouldCompensateOrientation,
+  computeRotatedCanvasLayout,
+  type RotatedCanvasLayout,
+} from "../services/cameraOrientation";
 import { Destination } from "../types";
 import useGameStore from "../state/useGameStore";
 import useUIStore from "../state/useUIStore";
@@ -27,6 +34,12 @@ export const useFaceDetection = (
   const debugCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDetectingRef = useRef(false);
   const detectorRef = useRef<FaceDetector | null>(null);
+  // Reused offscreen canvas for the orientation compensation. Allocated lazily
+  // once and never per frame (see the mobile orientation plan, block C).
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Lets the orientation-change listener force an immediate re-detection so the
+  // debug canvas does not lag a whole interval behind a portrait↔landscape flip.
+  const detectFaceRef = useRef<(() => void) | null>(null);
 
   const [faceStatus, setFaceStatus] = useState<{
     detected: boolean;
@@ -91,6 +104,17 @@ export const useFaceDetection = (
       }
       detectorRef.current = detector;
 
+      // Device-primary input does not change during a session, so this is
+      // computed once. The screen angle, in contrast, is read live every cycle.
+      const isTouch = isTouchPrimaryDevice();
+
+      const getOffscreenCanvas = () => {
+        if (!offscreenCanvasRef.current) {
+          offscreenCanvasRef.current = document.createElement("canvas");
+        }
+        return offscreenCanvasRef.current;
+      };
+
       const detectFace = async () => {
         if (isDetectingRef.current || !videoRef.current || !detectorRef.current) return;
 
@@ -100,7 +124,42 @@ export const useFaceDetection = (
         isDetectingRef.current = true;
 
         try {
-          const faces = await detectorRef.current.estimateFaces(video, {
+          const angle = getSensorRotationAngle();
+          const compensate = shouldCompensateOrientation(angle, isTouch);
+
+          // Default path (desktop / webcam / upright device): the raw <video>
+          // goes straight to the detector — bit-for-bit today's behaviour.
+          let detectionInput: HTMLVideoElement | HTMLCanvasElement = video;
+          let layout: RotatedCanvasLayout | null = null;
+
+          if (compensate) {
+            const offscreen = getOffscreenCanvas();
+            const octx = offscreen.getContext("2d");
+            if (octx) {
+              layout = computeRotatedCanvasLayout(
+                video.videoWidth,
+                video.videoHeight,
+                angle,
+              );
+              offscreen.width = layout.canvasWidth;
+              offscreen.height = layout.canvasHeight;
+              octx.setTransform(1, 0, 0, 1, 0, 0);
+              octx.clearRect(0, 0, offscreen.width, offscreen.height);
+              octx.translate(layout.translateX, layout.translateY);
+              octx.rotate(layout.rotationRad);
+              octx.drawImage(
+                video,
+                -video.videoWidth / 2,
+                -video.videoHeight / 2,
+                video.videoWidth,
+                video.videoHeight,
+              );
+              octx.setTransform(1, 0, 0, 1, 0, 0);
+              detectionInput = offscreen;
+            }
+          }
+
+          const faces = await detectorRef.current.estimateFaces(detectionInput, {
             flipHorizontal: false,
           });
           let primaryAnalysis: FaceAnalysis | null = null;
@@ -116,9 +175,19 @@ export const useFaceDetection = (
             const canvas = debugCanvasRef.current;
             const ctx = canvas.getContext("2d");
             if (ctx) {
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              if (compensate && layout && detectionInput !== video) {
+                // Show the same upright image the detector saw. Keypoints are
+                // already in this canvas's (upright) coordinate space, so they
+                // are drawn directly below — no manual transform.
+                canvas.width = layout.canvasWidth;
+                canvas.height = layout.canvasHeight;
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.drawImage(detectionInput, 0, 0);
+              } else {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              }
               ctx.strokeStyle = hasForwardFacingFace ? "#22c55e" : "#ef4444";
               ctx.lineWidth = 4;
               faces.forEach((face) => {
@@ -152,6 +221,8 @@ export const useFaceDetection = (
         }
       };
 
+      detectFaceRef.current = detectFace;
+
       detectionInterval = window.setInterval(
         detectFace,
         FACE_DETECTION_INTERVAL_MS,
@@ -166,6 +237,7 @@ export const useFaceDetection = (
     return () => {
       isCancelled = true;
       clearInterval(detectionInterval);
+      detectFaceRef.current = null;
       if (detectorRef.current) {
         detectorRef.current.dispose();
         detectorRef.current = null;
@@ -181,6 +253,29 @@ export const useFaceDetection = (
     setCameraError,
     videoRef,
   ]);
+
+  // Re-run detection the moment the screen rotates, so the debug canvas and the
+  // compensated frame follow a portrait↔landscape flip without waiting up to a
+  // full detection interval. Detection itself reads the angle live, so this is
+  // purely to smooth the visible one-cycle lag.
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      detectFaceRef.current?.();
+    };
+
+    const orientation =
+      typeof window !== "undefined" ? window.screen?.orientation : undefined;
+
+    if (orientation && typeof orientation.addEventListener === "function") {
+      orientation.addEventListener("change", handleOrientationChange);
+      return () =>
+        orientation.removeEventListener("change", handleOrientationChange);
+    }
+
+    window.addEventListener("orientationchange", handleOrientationChange);
+    return () =>
+      window.removeEventListener("orientationchange", handleOrientationChange);
+  }, []);
 
   return { debugCanvasRef, faceStatus, debugMetrics };
 };

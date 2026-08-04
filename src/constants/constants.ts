@@ -168,6 +168,31 @@ export const INTRO_DEBUG_SPEED_MULTIPLIER = 8;
  */
 export const INTRO_FINAL_READ_MARGIN_MS = 30_000;
 export const FACE_DETECTION_INTERVAL_MS = 1000;
+
+/**
+ * Master switch for the mobile/tablet camera orientation compensation.
+ *
+ * When `true`, on a touch-primary device held in a rotated orientation the
+ * sensor image is drawn onto an offscreen canvas rotated back to upright before
+ * being handed to the face detector (see `useFaceDetection` +
+ * `src/services/cameraOrientation.ts`). Set to `false` as an emergency kill
+ * switch to restore the pre-022 behaviour globally: the raw `<video>` is fed to
+ * `estimateFaces` on every device and orientation.
+ */
+export const CAMERA_ORIENTATION_COMPENSATION = true;
+
+/**
+ * Sign of the back-rotation applied to the sensor image.
+ *
+ * The rotation direction that brings the image upright is device- and
+ * sensor-orientation dependent (front-camera mirroring complicates it further),
+ * so it is a tunable constant rather than a fixed value. Starting point: rotate
+ * the image opposite to the screen angle (`-1`).
+ *
+ * **Tune live:** if the face arrives upside-down on the debug canvas, flip this
+ * to `+1`.
+ */
+export const CAMERA_ROTATION_SIGN = -1;
 export const SERVICE_UPDATE_INTERVAL_MS = 50;
 export const ATTENTION_INTERVAL_MS = 1_000;
 export const MIN_WEATHER_UPDATE_INTERVAL_MS = 30 * 60 * 1000;
