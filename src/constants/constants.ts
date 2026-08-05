@@ -195,21 +195,13 @@ export const CAMERA_ORIENTATION_COMPENSATION = true;
 export const CAMERA_ROTATION_SIGN = -1;
 
 /**
- * Fixed sensor-mount offset, in degrees (`0 | 90 | 180 | 270`).
- *
- * On some devices the camera sensor is physically mounted at a fixed quarter
- * turn relative to the screen orientation, so even after applying
- * `CAMERA_ROTATION_SIGN` the image lands tilted 90° (face on its side) rather
- * than upside-down. This offset is added on top of the signed base rotation to
- * bring it upright; the effective angle drives both the dimension swap and the
- * rotation (see `computeRotatedCanvasLayout`).
- *
- * **Tune live:** this is the quarter-turn knob — reach for it when the face
- * arrives tilted sideways (not the `CAMERA_ROTATION_SIGN`, which only flips a
- * full 180°). Per user feedback `90` is the starting point; if the face comes
- * out upside-down instead, set it to `270`.
+ * A live képernyő-szöghöz ADOTT fix bázis-offszet fokban (0/90/180/270). Az
+ * automatikus offszet = normalize(screen angle + ez a bázis). Alap 0: az offszet
+ * maga a képernyő-szög (a felhasználó által verifikált 90@landscape-A,
+ * 270@landscape-B). Ha MINDKÉT fekvő irányban fejjel lefelé jönne a kép, állítsd
+ * 180-ra (globális 180°-os billentés).
  */
-export const CAMERA_ROTATION_OFFSET_DEG = 90;
+export const CAMERA_ROTATION_OFFSET_BASE_DEG = 0;
 export const SERVICE_UPDATE_INTERVAL_MS = 50;
 export const ATTENTION_INTERVAL_MS = 1_000;
 export const MIN_WEATHER_UPDATE_INTERVAL_MS = 30 * 60 * 1000;

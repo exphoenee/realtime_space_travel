@@ -1,7 +1,7 @@
 import {
   CAMERA_ORIENTATION_COMPENSATION,
   CAMERA_ROTATION_SIGN,
-  CAMERA_ROTATION_OFFSET_DEG,
+  CAMERA_ROTATION_OFFSET_BASE_DEG,
 } from "../constants/constants";
 
 /**
@@ -108,14 +108,18 @@ export const getSensorRotationAngle = (): SupportedAngle => {
   return 0;
 };
 
+/** Az automatikus orientáció-offszet: a live képernyő-szög + fix bázis, negyed-fordulatra normalizálva. */
+export const getAutoOffsetDeg = (angle: SupportedAngle): SupportedAngle =>
+  normalizeAngle(angle + CAMERA_ROTATION_OFFSET_BASE_DEG);
+
 /**
  * Canvas dimensions + transform that bring a sensor-tilted video upright.
  *
  * Everything derives from the **effective** rotation, i.e. the signed base
- * rotation plus the fixed sensor-mount offset:
+ * rotation plus the offset:
  *
  *   baseDeg      = CAMERA_ROTATION_SIGN * angle
- *   effectiveDeg = normalize(baseDeg + CAMERA_ROTATION_OFFSET_DEG)  // → {0,90,180,270}
+ *   effectiveDeg = normalize(baseDeg + offsetDeg)  // → {0,90,180,270}
  *
  * The **effective** angle — not the raw screen `angle` — decides both the
  * dimension swap and the rotation. For an effective 90°/270° the canvas
@@ -128,10 +132,12 @@ export const getSensorRotationAngle = (): SupportedAngle => {
  * dimensions with `rotationRad === 270°` (visually `-90°`, which the full
  * translate+rotate transform handles correctly).
  *
- * @param offsetDeg Optional runtime override for the sensor-mount offset. When
- *   omitted, the production constant `CAMERA_ROTATION_OFFSET_DEG` is used. The
- *   debug live-rotate control passes the user-cycled quarter-turn here so the
- *   working value can be found on a physical device without a rebuild.
+ * @param offsetDeg Optional override for the offset. When omitted, the
+ *   screen-angle-driven automatic offset `getAutoOffsetDeg(angle)` is used, so
+ *   the offset tracks the live screen angle (effective angle then =
+ *   normalize(sign*angle + (angle + base))). The debug live-rotate control
+ *   passes an explicit user-cycled quarter-turn here to override the automatic
+ *   value on a physical device without a rebuild.
  */
 export const computeRotatedCanvasLayout = (
   videoW: number,
@@ -140,7 +146,7 @@ export const computeRotatedCanvasLayout = (
   offsetDeg?: number,
 ): RotatedCanvasLayout => {
   const baseDeg = CAMERA_ROTATION_SIGN * angle;
-  const effectiveOffset = offsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
+  const effectiveOffset = offsetDeg ?? getAutoOffsetDeg(angle);
   const effectiveDeg = (((baseDeg + effectiveOffset) % 360) + 360) % 360;
 
   const swapDimensions = effectiveDeg === 90 || effectiveDeg === 270;
