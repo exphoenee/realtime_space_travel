@@ -5,48 +5,118 @@ import {
   isTouchPrimaryDevice,
   shouldCompensateOrientation,
 } from "./cameraOrientation";
-import { CAMERA_ROTATION_SIGN } from "../constants/constants";
+import {
+  CAMERA_ROTATION_SIGN,
+  CAMERA_ROTATION_OFFSET_DEG,
+} from "../constants/constants";
+
+/**
+ * The effective full rotation the layout must realise: the signed base rotation
+ * plus the fixed sensor-mount offset, normalized to {0, 90, 180, 270}. Mirrors
+ * the production formula so the tests pin the *formula* against whatever the
+ * live-tuned constants happen to be, not a hard-coded number.
+ */
+const expectedEffectiveDeg = (angle: number): number =>
+  (((CAMERA_ROTATION_SIGN * angle + CAMERA_ROTATION_OFFSET_DEG) % 360) + 360) %
+  360;
 
 describe("computeRotatedCanvasLayout", () => {
-  it("leaves dimensions unchanged and rotation at 0 for 0°", () => {
+  it.each([0, 90, 180, 270] as const)(
+    "derives dimensions and rotation from the effective angle for screen %i°",
+    (angle) => {
+      const layout = computeRotatedCanvasLayout(640, 480, angle);
+      const effectiveDeg = expectedEffectiveDeg(angle);
+      const swap = effectiveDeg === 90 || effectiveDeg === 270;
+
+      expect(layout.canvasWidth).toBe(swap ? 480 : 640);
+      expect(layout.canvasHeight).toBe(swap ? 640 : 480);
+      expect(layout.translateX).toBe(layout.canvasWidth / 2);
+      expect(layout.translateY).toBe(layout.canvasHeight / 2);
+      expect(layout.rotationRad).toBeCloseTo(
+        (effectiveDeg * Math.PI) / 180,
+        10,
+      );
+    },
+  );
+
+  // Explicit expectations for the shipped constants (sign = -1, offset = 90),
+  // so a change to either is caught here as well as by the formula above.
+  it("with the default sign=-1 / offset=90: screen 0° → effective 90° (swap)", () => {
     const layout = computeRotatedCanvasLayout(640, 480, 0);
+    expect(layout.canvasWidth).toBe(480);
+    expect(layout.canvasHeight).toBe(640);
+    expect(layout.rotationRad).toBeCloseTo(Math.PI / 2, 10);
+  });
+
+  it("with the default sign=-1 / offset=90: screen 90° → effective 0° (no swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 90);
     expect(layout.canvasWidth).toBe(640);
     expect(layout.canvasHeight).toBe(480);
     expect(layout.rotationRad).toBe(0);
-    expect(layout.translateX).toBe(320);
-    expect(layout.translateY).toBe(240);
   });
 
-  it("swaps dimensions for 90°", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 90);
-    expect(layout.canvasWidth).toBe(480);
-    expect(layout.canvasHeight).toBe(640);
-    expect(layout.translateX).toBe(240);
-    expect(layout.translateY).toBe(320);
-  });
-
-  it("swaps dimensions for 270°", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 270);
-    expect(layout.canvasWidth).toBe(480);
-    expect(layout.canvasHeight).toBe(640);
-  });
-
-  it("keeps dimensions for 180° with a ±π rotation", () => {
+  it("with the default sign=-1 / offset=90: screen 180° → effective 270° (swap)", () => {
     const layout = computeRotatedCanvasLayout(640, 480, 180);
+    expect(layout.canvasWidth).toBe(480);
+    expect(layout.canvasHeight).toBe(640);
+    expect(layout.rotationRad).toBeCloseTo((270 * Math.PI) / 180, 10);
+  });
+
+  it("with the default sign=-1 / offset=90: screen 270° → effective 180° (no swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 270);
     expect(layout.canvasWidth).toBe(640);
     expect(layout.canvasHeight).toBe(480);
-    expect(Math.abs(layout.rotationRad)).toBeCloseTo(Math.PI, 10);
+    expect(layout.rotationRad).toBeCloseTo(Math.PI, 10);
+  });
+});
+
+describe("computeRotatedCanvasLayout effective-angle formula (mocked constants)", () => {
+  afterEach(() => {
+    vi.resetModules();
+    vi.doUnmock("../constants/constants");
   });
 
-  it("applies CAMERA_ROTATION_SIGN to the rotation direction", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 90);
-    expect(layout.rotationRad).toBeCloseTo(
-      (CAMERA_ROTATION_SIGN * 90 * Math.PI) / 180,
-      10,
-    );
-    // Sign matches the constant (constant is -1 → negative rotation).
-    expect(Math.sign(layout.rotationRad)).toBe(CAMERA_ROTATION_SIGN);
-  });
+  const loadWith = async (sign: number, offset: number) => {
+    vi.resetModules();
+    vi.doMock("../constants/constants", async () => {
+      const actual = await vi.importActual<
+        typeof import("../constants/constants")
+      >("../constants/constants");
+      return {
+        ...actual,
+        CAMERA_ROTATION_SIGN: sign,
+        CAMERA_ROTATION_OFFSET_DEG: offset,
+      };
+    });
+    const mod = await import("./cameraOrientation");
+    return mod.computeRotatedCanvasLayout;
+  };
+
+  const cases: Array<{ sign: number; offset: number }> = [
+    { sign: -1, offset: 90 },
+    { sign: -1, offset: 270 },
+    { sign: 1, offset: 90 },
+    { sign: 1, offset: 0 },
+    { sign: -1, offset: 180 },
+  ];
+
+  it.each(cases)(
+    "swap + rotation follow the effective angle for sign=$sign offset=$offset",
+    async ({ sign, offset }) => {
+      const compute = await loadWith(sign, offset);
+      for (const angle of [0, 90, 180, 270] as const) {
+        const effectiveDeg = (((sign * angle + offset) % 360) + 360) % 360;
+        const swap = effectiveDeg === 90 || effectiveDeg === 270;
+        const layout = compute(640, 480, angle);
+        expect(layout.canvasWidth).toBe(swap ? 480 : 640);
+        expect(layout.canvasHeight).toBe(swap ? 640 : 480);
+        expect(layout.rotationRad).toBeCloseTo(
+          (effectiveDeg * Math.PI) / 180,
+          10,
+        );
+      }
+    },
+  );
 });
 
 describe("getSensorRotationAngle", () => {
