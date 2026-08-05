@@ -1,6 +1,7 @@
 import {
   CAMERA_ORIENTATION_COMPENSATION,
   CAMERA_ROTATION_SIGN,
+  CAMERA_ROTATION_OFFSET_DEG,
 } from "../constants/constants";
 
 /**
@@ -110,23 +111,35 @@ export const getSensorRotationAngle = (): SupportedAngle => {
 /**
  * Canvas dimensions + transform that bring a sensor-tilted video upright.
  *
- * For 90°/270° the canvas width/height are **swapped** (a landscape sensor
- * frame lands in a portrait canvas). The transform translates to the canvas
- * centre and rotates by `CAMERA_ROTATION_SIGN * angle`; the caller then draws
- * the video centred (`drawImage(video, -videoW/2, -videoH/2, videoW, videoH)`).
- * For 0° dimensions are unchanged and `rotationRad === 0`; for 180° dimensions
- * are unchanged and `rotationRad === ±π`.
+ * Everything derives from the **effective** rotation, i.e. the signed base
+ * rotation plus the fixed sensor-mount offset:
+ *
+ *   baseDeg      = CAMERA_ROTATION_SIGN * angle
+ *   effectiveDeg = normalize(baseDeg + CAMERA_ROTATION_OFFSET_DEG)  // → {0,90,180,270}
+ *
+ * The **effective** angle — not the raw screen `angle` — decides both the
+ * dimension swap and the rotation. For an effective 90°/270° the canvas
+ * width/height are **swapped** (a landscape sensor frame lands in a portrait
+ * canvas). The transform translates to the canvas centre and rotates by
+ * `effectiveDeg`; the caller then draws the video centred
+ * (`drawImage(video, -videoW/2, -videoH/2, videoW, videoH)`). Effective 0°
+ * leaves dimensions unchanged with `rotationRad === 0`; effective 180° leaves
+ * dimensions unchanged with `rotationRad === π`; effective 270° swaps
+ * dimensions with `rotationRad === 270°` (visually `-90°`, which the full
+ * translate+rotate transform handles correctly).
  */
 export const computeRotatedCanvasLayout = (
   videoW: number,
   videoH: number,
   angle: SupportedAngle,
 ): RotatedCanvasLayout => {
-  const swapDimensions = angle === 90 || angle === 270;
+  const baseDeg = CAMERA_ROTATION_SIGN * angle;
+  const effectiveDeg = (((baseDeg + CAMERA_ROTATION_OFFSET_DEG) % 360) + 360) % 360;
+
+  const swapDimensions = effectiveDeg === 90 || effectiveDeg === 270;
   const canvasWidth = swapDimensions ? videoH : videoW;
   const canvasHeight = swapDimensions ? videoW : videoH;
-  const rotationRad =
-    angle === 0 ? 0 : (CAMERA_ROTATION_SIGN * angle * Math.PI) / 180;
+  const rotationRad = (effectiveDeg * Math.PI) / 180;
 
   return {
     canvasWidth,
