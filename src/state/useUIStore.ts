@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { MUSIC_ACTIVE_VOLUME } from "../constants/constants";
+import {
+  MUSIC_ACTIVE_VOLUME,
+  CAMERA_ROTATION_OFFSET_DEG,
+} from "../constants/constants";
 import type { Difficulty } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
@@ -43,6 +46,13 @@ interface UIState {
   debugMode: boolean;
   /** ScreenCheck bekapcsolva (debug gomb melletti toggle, debug módban érhető el) */
   screenCheckEnabled: boolean;
+  /**
+   * Debug-only runtime override a kamera orientáció-offszetjéhez (fok).
+   * `null` = a `CAMERA_ROTATION_OFFSET_DEG` konstans van érvényben; egyébként a
+   * megadott negyed-fordulat (0/90/180/270) írja felül élőben a detektálásnál.
+   * Nem perzisztált — csak fizikai mobilon való élő hangoláshoz.
+   */
+  debugRotationOffsetDeg: number | null;
 
   setCameraError: (updater: StateUpdater<string | null>) => void;
   setCameraConsent: (status: CameraConsent) => void;
@@ -58,6 +68,10 @@ interface UIState {
   setActiveShipId: (id: string | null) => void;
   setDebugMode: (mode: boolean) => void;
   setScreenCheckEnabled: (enabled: boolean) => void;
+  /** Lépteti az override-ot 90°-onként: null/0 → 90 → 180 → 270 → 0. */
+  cycleDebugRotationOffset: () => void;
+  /** Visszaállítja az override-ot null-ra (a konstans lép érvénybe). */
+  resetDebugRotationOffset: () => void;
 }
 
 const useUIStore = create<UIState>()((set) => ({
@@ -75,6 +89,17 @@ const useUIStore = create<UIState>()((set) => ({
   activeShipId: null,
   debugMode: import.meta.env.VITE_DEBUG_MODE === "true",
   screenCheckEnabled: true,
+  debugRotationOffsetDeg: null,
+
+  cycleDebugRotationOffset: () =>
+    set((state) => {
+      // Step from the current *effective* offset so the very first press starts
+      // at the constant's value and the four quarter-turns cycle: 90 → 180 →
+      // 270 → 0 → 90 …
+      const current = state.debugRotationOffsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
+      return { debugRotationOffsetDeg: (current + 90) % 360 };
+    }),
+  resetDebugRotationOffset: () => set({ debugRotationOffsetDeg: null }),
 
   setActiveMusicId: (id) => set({ activeMusicId: id }),
   setActiveShipId: (id) => set({ activeShipId: id }),

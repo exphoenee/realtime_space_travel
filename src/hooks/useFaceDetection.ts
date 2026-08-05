@@ -40,6 +40,10 @@ export const useFaceDetection = (
   // Lets the orientation-change listener force an immediate re-detection so the
   // debug canvas does not lag a whole interval behind a portrait↔landscape flip.
   const detectFaceRef = useRef<(() => void) | null>(null);
+  // Latest debug rotation override, read live inside the interval loop so a
+  // press of the debug "rotate 90°" button takes effect on the next detection
+  // cycle without rebuilding this effect. `null` = the constant is in force.
+  const debugRotationOffsetRef = useRef<number | null>(null);
 
   const [faceStatus, setFaceStatus] = useState<{
     detected: boolean;
@@ -55,6 +59,10 @@ export const useFaceDetection = (
   // Subscribed (not read via getState) so the effect below re-runs when the
   // camera fails after this effect has already settled into its idle branch.
   const cameraError = useUIStore((s) => s.cameraError);
+  // Subscribed so the ref stays current; the detection loop reads the ref, so
+  // an offset change does not tear down and rebuild the detection effect.
+  const debugRotationOffsetDeg = useUIStore((s) => s.debugRotationOffsetDeg);
+  debugRotationOffsetRef.current = debugRotationOffsetDeg;
 
   useEffect(() => {
     if (!destination || !isStreamReady) {
@@ -140,6 +148,7 @@ export const useFaceDetection = (
                 video.videoWidth,
                 video.videoHeight,
                 angle,
+                debugRotationOffsetRef.current ?? undefined,
               );
               offscreen.width = layout.canvasWidth;
               offscreen.height = layout.canvasHeight;

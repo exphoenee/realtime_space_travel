@@ -127,14 +127,21 @@ export const getSensorRotationAngle = (): SupportedAngle => {
  * dimensions unchanged with `rotationRad === π`; effective 270° swaps
  * dimensions with `rotationRad === 270°` (visually `-90°`, which the full
  * translate+rotate transform handles correctly).
+ *
+ * @param offsetDeg Optional runtime override for the sensor-mount offset. When
+ *   omitted, the production constant `CAMERA_ROTATION_OFFSET_DEG` is used. The
+ *   debug live-rotate control passes the user-cycled quarter-turn here so the
+ *   working value can be found on a physical device without a rebuild.
  */
 export const computeRotatedCanvasLayout = (
   videoW: number,
   videoH: number,
   angle: SupportedAngle,
+  offsetDeg?: number,
 ): RotatedCanvasLayout => {
   const baseDeg = CAMERA_ROTATION_SIGN * angle;
-  const effectiveDeg = (((baseDeg + CAMERA_ROTATION_OFFSET_DEG) % 360) + 360) % 360;
+  const effectiveOffset = offsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
+  const effectiveDeg = (((baseDeg + effectiveOffset) % 360) + 360) % 360;
 
   const swapDimensions = effectiveDeg === 90 || effectiveDeg === 270;
   const canvasWidth = swapDimensions ? videoH : videoW;
