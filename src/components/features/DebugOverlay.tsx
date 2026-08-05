@@ -35,7 +35,12 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
 
   if (!destination) return null;
 
-  const debugWidth = canvasBounds ? canvasBounds.width / 4 : 320;
+  const maxWidth = canvasBounds ? canvasBounds.width / 4 : 320;
+  // In compensated (orientation-swapped) mode the canvas turns portrait and,
+  // driven by width alone, grows taller than a phone's landscape viewport —
+  // overflowing off the top and pushing the rotate control out of view. Cap the
+  // display height to a fraction of the game viewport and keep the aspect ratio.
+  const maxHeight = canvasBounds ? canvasBounds.height * 0.4 : 240;
   const debugCanvas = debugCanvasRef.current;
   const videoElement = videoRef.current;
   // The debug canvas already carries the correct (possibly orientation-swapped)
@@ -48,7 +53,9 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
       : videoElement && videoElement.videoHeight > 0
         ? videoElement.videoWidth / videoElement.videoHeight
         : 16 / 9;
-  const debugHeight = debugWidth / videoAspect;
+  // Fit within the (maxWidth × maxHeight) box, height-capped, aspect preserved.
+  const debugHeight = Math.min(maxWidth / videoAspect, maxHeight);
+  const debugWidth = debugHeight * videoAspect;
   const lastUpdateAgoSeconds = Math.max(
     0,
     (Date.now() - faceStatus.timestamp) / 1000,
