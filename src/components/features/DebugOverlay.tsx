@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { FaceAnalysis } from "../../services/faceRecognition";
 import type { Destination } from "../../types";
 import useUIStore from "../../state/useUIStore";
-import { CAMERA_ROTATION_OFFSET_DEG } from "../../constants/constants";
+import { getSensorRotationAngle } from "../../services/cameraOrientation";
 import styles from "./DebugOverlay.module.css";
 
 interface DebugOverlayProps {
@@ -31,7 +31,9 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
   const debugRotationOffsetDeg = useUIStore((s) => s.debugRotationOffsetDeg);
   const cycleDebugRotationOffset = useUIStore((s) => s.cycleDebugRotationOffset);
-  const effectiveOffset = debugRotationOffsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
+  // null override → the automatic screen-angle-driven offset is in force.
+  const offsetLabel =
+    debugRotationOffsetDeg === null ? "auto" : `${debugRotationOffsetDeg}°`;
 
   if (!destination) return null;
 
@@ -100,7 +102,10 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
             >
               🔄 Forgatás 90°
             </button>
-            <span className={styles.rotateOffset}>Offset: {effectiveOffset}°</span>
+            <span className={styles.rotateOffset}>Offset: {offsetLabel}</span>
+            <span className={styles.rotateOffset}>
+              Angle: {getSensorRotationAngle()}°
+            </span>
           </div>
           <div className={styles.info}>
             <p>

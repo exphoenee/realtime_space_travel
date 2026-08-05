@@ -9,6 +9,7 @@ import {
 import {
   isTouchPrimaryDevice,
   getSensorRotationAngle,
+  getAutoOffsetDeg,
   shouldCompensateOrientation,
   computeRotatedCanvasLayout,
   type RotatedCanvasLayout,
@@ -144,11 +145,15 @@ export const useFaceDetection = (
             const offscreen = getOffscreenCanvas();
             const octx = offscreen.getContext("2d");
             if (octx) {
+              // Debug override wins; otherwise the automatic, screen-angle-driven
+              // offset (verified on a physical device: 90@landscape-A, 270@landscape-B).
+              const offset =
+                debugRotationOffsetRef.current ?? getAutoOffsetDeg(angle);
               layout = computeRotatedCanvasLayout(
                 video.videoWidth,
                 video.videoHeight,
                 angle,
-                debugRotationOffsetRef.current ?? undefined,
+                offset,
               );
               offscreen.width = layout.canvasWidth;
               offscreen.height = layout.canvasHeight;

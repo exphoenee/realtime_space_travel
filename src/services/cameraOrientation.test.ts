@@ -1,102 +1,97 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   computeRotatedCanvasLayout,
+  getAutoOffsetDeg,
   getSensorRotationAngle,
   isTouchPrimaryDevice,
   shouldCompensateOrientation,
 } from "./cameraOrientation";
-import {
-  CAMERA_ROTATION_SIGN,
-  CAMERA_ROTATION_OFFSET_DEG,
-} from "../constants/constants";
+import { CAMERA_ROTATION_OFFSET_BASE_DEG } from "../constants/constants";
 
-/**
- * The effective full rotation the layout must realise: the signed base rotation
- * plus the fixed sensor-mount offset, normalized to {0, 90, 180, 270}. Mirrors
- * the production formula so the tests pin the *formula* against whatever the
- * live-tuned constants happen to be, not a hard-coded number.
- */
-const expectedEffectiveDeg = (angle: number): number =>
-  (((CAMERA_ROTATION_SIGN * angle + CAMERA_ROTATION_OFFSET_DEG) % 360) + 360) %
-  360;
+describe("getAutoOffsetDeg", () => {
+  // With the shipped base (0), the automatic offset equals the live screen
+  // angle — the user-verified 90@landscape-A, 270@landscape-B behaviour.
+  it("equals the screen angle when the base offset is 0", () => {
+    expect(CAMERA_ROTATION_OFFSET_BASE_DEG).toBe(0);
+    expect(getAutoOffsetDeg(0)).toBe(0);
+    expect(getAutoOffsetDeg(90)).toBe(90);
+    expect(getAutoOffsetDeg(180)).toBe(180);
+    expect(getAutoOffsetDeg(270)).toBe(270);
+  });
+
+  it("follows normalize(angle + base) for a mocked base of 180", async () => {
+    vi.resetModules();
+    vi.doMock("../constants/constants", async () => {
+      const actual = await vi.importActual<
+        typeof import("../constants/constants")
+      >("../constants/constants");
+      return { ...actual, CAMERA_ROTATION_OFFSET_BASE_DEG: 180 };
+    });
+    const { getAutoOffsetDeg: autoOffset } = await import("./cameraOrientation");
+    expect(autoOffset(0)).toBe(180);
+    expect(autoOffset(90)).toBe(270);
+    expect(autoOffset(180)).toBe(0);
+    expect(autoOffset(270)).toBe(90);
+    vi.resetModules();
+    vi.doUnmock("../constants/constants");
+  });
+});
 
 describe("computeRotatedCanvasLayout", () => {
+  // Without an explicit offset the automatic, screen-angle-driven offset is
+  // used: offset = getAutoOffsetDeg(angle) = normalize(angle + base). With the
+  // shipped base (0) and sign (-1) the effective angle is
+  // normalize(-angle + angle) = 0 for EVERY screen angle → no net rotation on
+  // the verified device: dimensions unchanged, rotationRad === 0.
   it.each([0, 90, 180, 270] as const)(
-    "derives dimensions and rotation from the effective angle for screen %i°",
+    "auto offset yields no net rotation for screen %i° (base 0, sign -1)",
     (angle) => {
       const layout = computeRotatedCanvasLayout(640, 480, angle);
-      const effectiveDeg = expectedEffectiveDeg(angle);
-      const swap = effectiveDeg === 90 || effectiveDeg === 270;
-
-      expect(layout.canvasWidth).toBe(swap ? 480 : 640);
-      expect(layout.canvasHeight).toBe(swap ? 640 : 480);
-      expect(layout.translateX).toBe(layout.canvasWidth / 2);
-      expect(layout.translateY).toBe(layout.canvasHeight / 2);
-      expect(layout.rotationRad).toBeCloseTo(
-        (effectiveDeg * Math.PI) / 180,
-        10,
-      );
+      expect(layout.canvasWidth).toBe(640);
+      expect(layout.canvasHeight).toBe(480);
+      expect(layout.translateX).toBe(320);
+      expect(layout.translateY).toBe(240);
+      expect(layout.rotationRad).toBe(0);
     },
   );
 
-  // Explicit expectations for the shipped constants (sign = -1, offset = 90),
-  // so a change to either is caught here as well as by the formula above.
-  it("with the default sign=-1 / offset=90: screen 0° → effective 90° (swap)", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 0);
-    expect(layout.canvasWidth).toBe(480);
-    expect(layout.canvasHeight).toBe(640);
-    expect(layout.rotationRad).toBeCloseTo(Math.PI / 2, 10);
-  });
-
-  it("with the default sign=-1 / offset=90: screen 90° → effective 0° (no swap)", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 90);
-    expect(layout.canvasWidth).toBe(640);
-    expect(layout.canvasHeight).toBe(480);
-    expect(layout.rotationRad).toBe(0);
-  });
-
-  it("with the default sign=-1 / offset=90: screen 180° → effective 270° (swap)", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 180);
-    expect(layout.canvasWidth).toBe(480);
-    expect(layout.canvasHeight).toBe(640);
-    expect(layout.rotationRad).toBeCloseTo((270 * Math.PI) / 180, 10);
-  });
-
-  it("with the default sign=-1 / offset=90: screen 270° → effective 180° (no swap)", () => {
-    const layout = computeRotatedCanvasLayout(640, 480, 270);
-    expect(layout.canvasWidth).toBe(640);
-    expect(layout.canvasHeight).toBe(480);
-    expect(layout.rotationRad).toBeCloseTo(Math.PI, 10);
-  });
-
-  it("omitting offsetDeg matches passing the constant explicitly", () => {
+  it("omitting offsetDeg matches passing getAutoOffsetDeg(angle) explicitly", () => {
     for (const angle of [0, 90, 180, 270] as const) {
       const fromDefault = computeRotatedCanvasLayout(640, 480, angle);
       const fromExplicit = computeRotatedCanvasLayout(
         640,
         480,
         angle,
-        CAMERA_ROTATION_OFFSET_DEG,
+        getAutoOffsetDeg(angle),
       );
       expect(fromExplicit).toEqual(fromDefault);
     }
   });
 
-  it("the offsetDeg override drives the effective angle (screen 0°, offset 0° → effective 0°, no swap)", () => {
+  // Explicit offset overrides (the debug live-rotate control) drive the
+  // effective angle directly: effective = normalize(sign*angle + offset).
+  it("explicit offset 0° at screen 0° → effective 0° (no swap)", () => {
     const layout = computeRotatedCanvasLayout(640, 480, 0, 0);
     expect(layout.canvasWidth).toBe(640);
     expect(layout.canvasHeight).toBe(480);
     expect(layout.rotationRad).toBe(0);
   });
 
-  it("the offsetDeg override drives the effective angle (screen 0°, offset 180° → effective 180°, no swap)", () => {
+  it("explicit offset 90° at screen 0° → effective 90° (swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 0, 90);
+    expect(layout.canvasWidth).toBe(480);
+    expect(layout.canvasHeight).toBe(640);
+    expect(layout.rotationRad).toBeCloseTo(Math.PI / 2, 10);
+  });
+
+  it("explicit offset 180° at screen 0° → effective 180° (no swap)", () => {
     const layout = computeRotatedCanvasLayout(640, 480, 0, 180);
     expect(layout.canvasWidth).toBe(640);
     expect(layout.canvasHeight).toBe(480);
     expect(layout.rotationRad).toBeCloseTo(Math.PI, 10);
   });
 
-  it("the offsetDeg override drives the effective angle (screen 0°, offset 270° → effective 270°, swap)", () => {
+  it("explicit offset 270° at screen 0° → effective 270° (swap)", () => {
     const layout = computeRotatedCanvasLayout(640, 480, 0, 270);
     expect(layout.canvasWidth).toBe(480);
     expect(layout.canvasHeight).toBe(640);
@@ -104,23 +99,19 @@ describe("computeRotatedCanvasLayout", () => {
   });
 });
 
-describe("computeRotatedCanvasLayout effective-angle formula (mocked constants)", () => {
+describe("computeRotatedCanvasLayout effective-angle formula (explicit offset, mocked sign)", () => {
   afterEach(() => {
     vi.resetModules();
     vi.doUnmock("../constants/constants");
   });
 
-  const loadWith = async (sign: number, offset: number) => {
+  const loadWith = async (sign: number) => {
     vi.resetModules();
     vi.doMock("../constants/constants", async () => {
       const actual = await vi.importActual<
         typeof import("../constants/constants")
       >("../constants/constants");
-      return {
-        ...actual,
-        CAMERA_ROTATION_SIGN: sign,
-        CAMERA_ROTATION_OFFSET_DEG: offset,
-      };
+      return { ...actual, CAMERA_ROTATION_SIGN: sign };
     });
     const mod = await import("./cameraOrientation");
     return mod.computeRotatedCanvasLayout;
@@ -135,13 +126,13 @@ describe("computeRotatedCanvasLayout effective-angle formula (mocked constants)"
   ];
 
   it.each(cases)(
-    "swap + rotation follow the effective angle for sign=$sign offset=$offset",
+    "swap + rotation follow the effective angle for sign=$sign explicit offset=$offset",
     async ({ sign, offset }) => {
-      const compute = await loadWith(sign, offset);
+      const compute = await loadWith(sign);
       for (const angle of [0, 90, 180, 270] as const) {
         const effectiveDeg = (((sign * angle + offset) % 360) + 360) % 360;
         const swap = effectiveDeg === 90 || effectiveDeg === 270;
-        const layout = compute(640, 480, angle);
+        const layout = compute(640, 480, angle, offset);
         expect(layout.canvasWidth).toBe(swap ? 480 : 640);
         expect(layout.canvasHeight).toBe(swap ? 640 : 480);
         expect(layout.rotationRad).toBeCloseTo(

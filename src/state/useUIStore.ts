@@ -1,8 +1,5 @@
 import { create } from "zustand";
-import {
-  MUSIC_ACTIVE_VOLUME,
-  CAMERA_ROTATION_OFFSET_DEG,
-} from "../constants/constants";
+import { MUSIC_ACTIVE_VOLUME } from "../constants/constants";
 import type { Difficulty } from "../types";
 import type { StateUpdater } from "./utils";
 import { resolveState } from "./utils";
@@ -48,9 +45,9 @@ interface UIState {
   screenCheckEnabled: boolean;
   /**
    * Debug-only runtime override a kamera orientáció-offszetjéhez (fok).
-   * `null` = a `CAMERA_ROTATION_OFFSET_DEG` konstans van érvényben; egyébként a
-   * megadott negyed-fordulat (0/90/180/270) írja felül élőben a detektálásnál.
-   * Nem perzisztált — csak fizikai mobilon való élő hangoláshoz.
+   * `null` = az automatikus, képernyő-szög alapú offszet van érvényben;
+   * egyébként a megadott negyed-fordulat (0/90/180/270) írja felül élőben a
+   * detektálásnál. Nem perzisztált — csak fizikai mobilon való élő hangoláshoz.
    */
   debugRotationOffsetDeg: number | null;
 
@@ -93,10 +90,9 @@ const useUIStore = create<UIState>()((set) => ({
 
   cycleDebugRotationOffset: () =>
     set((state) => {
-      // Step from the current *effective* offset so the very first press starts
-      // at the constant's value and the four quarter-turns cycle: 90 → 180 →
-      // 270 → 0 → 90 …
-      const current = state.debugRotationOffsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
+      // Manual override starts from 0 (null = automatic screen-angle offset) and
+      // cycles the four quarter-turns: 0 → 90 → 180 → 270 → 0 …
+      const current = state.debugRotationOffsetDeg ?? 0;
       return { debugRotationOffsetDeg: (current + 90) % 360 };
     }),
   resetDebugRotationOffset: () => set({ debugRotationOffsetDeg: null }),
