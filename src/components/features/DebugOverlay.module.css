@@ -94,6 +94,37 @@
   margin: 0.15rem 0;
 }
 
+.rotateRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rotateButton {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  pointer-events: auto;
+  font-family: inherit;
+  font-size: 0.7rem;
+  color: #cffafe;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.rotateButton:hover {
+  border-color: rgba(103, 232, 249, 0.7);
+  background: rgba(2, 6, 23, 0.95);
+}
+
+.rotateOffset {
+  font-size: 0.7rem;
+  color: #67e8f9;
+  font-variant-numeric: tabular-nums;
+}
+
 .toggle {
   display: flex;
   align-items: center;

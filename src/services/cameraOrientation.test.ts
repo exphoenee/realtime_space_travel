@@ -68,6 +68,40 @@ describe("computeRotatedCanvasLayout", () => {
     expect(layout.canvasHeight).toBe(480);
     expect(layout.rotationRad).toBeCloseTo(Math.PI, 10);
   });
+
+  it("omitting offsetDeg matches passing the constant explicitly", () => {
+    for (const angle of [0, 90, 180, 270] as const) {
+      const fromDefault = computeRotatedCanvasLayout(640, 480, angle);
+      const fromExplicit = computeRotatedCanvasLayout(
+        640,
+        480,
+        angle,
+        CAMERA_ROTATION_OFFSET_DEG,
+      );
+      expect(fromExplicit).toEqual(fromDefault);
+    }
+  });
+
+  it("the offsetDeg override drives the effective angle (screen 0°, offset 0° → effective 0°, no swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 0, 0);
+    expect(layout.canvasWidth).toBe(640);
+    expect(layout.canvasHeight).toBe(480);
+    expect(layout.rotationRad).toBe(0);
+  });
+
+  it("the offsetDeg override drives the effective angle (screen 0°, offset 180° → effective 180°, no swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 0, 180);
+    expect(layout.canvasWidth).toBe(640);
+    expect(layout.canvasHeight).toBe(480);
+    expect(layout.rotationRad).toBeCloseTo(Math.PI, 10);
+  });
+
+  it("the offsetDeg override drives the effective angle (screen 0°, offset 270° → effective 270°, swap)", () => {
+    const layout = computeRotatedCanvasLayout(640, 480, 0, 270);
+    expect(layout.canvasWidth).toBe(480);
+    expect(layout.canvasHeight).toBe(640);
+    expect(layout.rotationRad).toBeCloseTo((270 * Math.PI) / 180, 10);
+  });
 });
 
 describe("computeRotatedCanvasLayout effective-angle formula (mocked constants)", () => {

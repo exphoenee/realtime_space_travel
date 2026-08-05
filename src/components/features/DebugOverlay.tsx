@@ -2,6 +2,8 @@ import React, { useState, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import type { FaceAnalysis } from "../../services/faceRecognition";
 import type { Destination } from "../../types";
+import useUIStore from "../../state/useUIStore";
+import { CAMERA_ROTATION_OFFSET_DEG } from "../../constants/constants";
 import styles from "./DebugOverlay.module.css";
 
 interface DebugOverlayProps {
@@ -27,6 +29,9 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const debugRotationOffsetDeg = useUIStore((s) => s.debugRotationOffsetDeg);
+  const cycleDebugRotationOffset = useUIStore((s) => s.cycleDebugRotationOffset);
+  const effectiveOffset = debugRotationOffsetDeg ?? CAMERA_ROTATION_OFFSET_DEG;
 
   if (!destination) return null;
 
@@ -77,6 +82,19 @@ const DebugOverlay: React.FC<DebugOverlayProps> = ({
               height: `${debugHeight}px`,
             }}
           />
+          {/* Debug-only live rotate control. Hardcoded label to match the
+              "Debug Camera"/"Camera" strings above — this overlay only renders
+              in debug mode. */}
+          <div className={styles.rotateRow}>
+            <button
+              type="button"
+              className={styles.rotateButton}
+              onClick={() => cycleDebugRotationOffset()}
+            >
+              🔄 Forgatás 90°
+            </button>
+            <span className={styles.rotateOffset}>Offset: {effectiveOffset}°</span>
+          </div>
           <div className={styles.info}>
             <p>
               {t("debug.cameraStatus")}{" "}
