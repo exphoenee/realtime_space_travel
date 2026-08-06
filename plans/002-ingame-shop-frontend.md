@@ -188,7 +188,7 @@ tags:
 
 **F rész — Áruház letiltása nem regisztrált usereknél (2026-07-28)**
 
-> A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[020-stripe-go-live]]).
+> A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[023-stripe-go-live]]).
 >
 > ℹ️ **Frissítve (2026-07-29):** az üzenet **megjelenítése** azóta megváltozott — beágyazott bekezdés helyett **warning toast**. Kanonikus leírás: [[015-toast-notification]] H. blokk / 0.9. A `shop.guestNotice` kulcs, a 🔒 prefix, a `title` tooltip és a `ScreenRouter` `needsAccount` listája **változatlan**.
 
@@ -746,4 +746,4 @@ src/i18n/locales/{en,hu,fr,de,es}/translation.json
 - [[010-firebase-guest-merge-single-gate]] – a vendég **örökölheti** a kreditjét bejelentkezéskor, de vendégként **nem költheti el** (F rész, 8.2 kockázat).
 - [[012-wall-of-shame]] – **ugyanaz a hibaosztály** (fiókhoz kötött adat a böngésző-szintű localStorage-ban). A fal R. blokkja írja le a kiváltó tünetet; a shopnál a javítás **plusz** egy új szerveroldali ág (`users/{uid}/purchases`) bevezetésével járt, mert korábban semmilyen RTDB-pár nem létezett.
 - [[017-starfield-realism]] – **a katalógus két mezője a `Starfield` renderelését vezérli.** A `ShipProduct.image` a cockpit képet adja (`cockpitImageUrl`), a `speedKmPerSecond` pedig a warp-csík hosszát (`getStretchFactor`). A 017 HiDPI-átvezetése a cockpit `drawImage` méretezését is átírja logikai koordinátákra — a képnek utána is élesen és pontosan ugyanúgy kell fednie; a hajósebesség-küszöbök (250 / 500 / 1000 km/s) **nem változnak**.
-- [[019-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.
+- [[021-stripe-fraud-defense]] – a `useShopStore.buyCredits` / `checkout` kredit-mozgásainak visszaélés-védelme. Fontos határfeltétel: a `checkout` **levon** a `wallet.credits`-ből, ezért az RTDB rules nem tehet „csak nőhet" megkötést — helyette írásonkénti növekmény-limit lép be. Új `shop.credits.claim*` i18n kulcsok mind az 5 nyelven.

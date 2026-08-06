@@ -87,7 +87,7 @@ authUid   (mindig auth.uid)     →  friends/ , friendRequests/ , outgoingReques
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **13. lépés** — a 012-wall-of-shame után, a 019-stripe-fraud-defense előtt. A multiplayer az eseményrendszerre épül, de a Stripe-tól független. |
+| Elhelyezés a roadmapen | **13. lépés** — a 012-wall-of-shame után, a 021-stripe-fraud-defense előtt. A multiplayer az eseményrendszerre épül, de a Stripe-tól független. |
 | Barát keresés | **Nickname + email + user ID** alapján is lehessen keresni |
 | Barát hozzáadás | Mindig barátkérés (friend request) útján — a másik fél elfogadhatja vagy elutasíthatja |
 | MVP scope | **Teljes MVP**: barátlista + invite/join + figyelmi lista + privát chat + friend request + **barát szégyenfala** |
@@ -1205,4 +1205,4 @@ src/components/screens/MainMenu.tsx         # ugyanaz az isGuest kiegészítés
 - [[003-firebase-auth-settings]] — az RTDB séma és a `security.rules.json` ↔ `database.rules.json` kettősség forrása. A W. blokk **driftet talált**: a `chats/$chatId/messages` (N. blokk javítása), a `walls/$uid` `device_map`-ága és a `notifications` node csak a **generált** fájlban helyes → a dokumentált forrást vissza kell portolni.
 - [[016-notification-retention]] — a V. blokk takarítása a `notifications/` bejegyzésekre is kiterjed; a P. blokk peer-push gate-je a **vendég-spam** vektort zárja (ma bármely bejelentkezett user pusholhat toastot **bármely** uid inboxába, ha a `fromUid` a sajátja).
 - [[002-ingame-shop-frontend]] — az O. blokk `needsAccount` listáján a `shop` is rajta van; a Q. blokk `tokenRegistered` kiegészítése ezért **a boltot is érinti**: egy frissen linkelt user ne essen ki a vásárlásból sem.
-- [[019-stripe-fraud-defense]] / [[020-stripe-go-live]] — **közvetve érintett.** A rules-teszt infrastruktúra (U. blokk) az első a projektben; a `wallet` szabályok jövőbeli szigorítása ugyanezt a keretet fogja használni.
+- [[021-stripe-fraud-defense]] / [[023-stripe-go-live]] — **közvetve érintett.** A rules-teszt infrastruktúra (U. blokk) az első a projektben; a `wallet` szabályok jövőbeli szigorítása ugyanezt a keretet fogja használni.
