@@ -3,9 +3,9 @@ title: "Determinisztikus intró-elrendezés – nyelv- és képernyőfüggetlen 
 slug: 019-intro-deterministic-layout
 type: plan
 category: ui
-status: not-started
-implemented: false
-implemented_at: null
+status: implemented
+implemented: true
+implemented_at: "2026-08-06"
 created_at: "2026-07-30"
 updated_at: "2026-08-06"  # átszámozva: step 21 → 19 (Stripe-tervek a lista végére kerültek)
 author: exphoenee
@@ -82,160 +82,160 @@ tags:
 
 > ⚠️ **A záró felirat hiánya IGAZOLT, LEVEZETETT hiba, nem gyanú.** A levezetés az 1.2 szekcióban áll: a feltétel `contentH ≤ vh + 200`, ami kilenc szövegblokk mellett **gyakorlatilag elérhetetlen**. A lenti böngészős lépés **megerősítés**, nem vizsgálat — a **várt** eredmény az, hogy a felirat **mindenhol, minden nyelven hiányzik**.
 
-- [ ] Böngészős megerősítés: `DEBUG_MODE=true` (210 s-os intró) mellett végigfuttatás **legalább 2 nyelven** (leghosszabb: `fr`, legrövidebb: `hu`) és **2 képernyőméreten** (mobil portré 390×844, desktop 1920×1080) — az elvárt eredmény: a `intro.continue` felirat **egyszer sem** jelenik meg
-- [ ] DevTools-ban rögzítve a tényleges `contentH` (a `.scroll` `scrollHeight`-ja) mind az 5 nyelven, 3 méreten → mind a 15 érték **jóval** a `vh + 200` limit **fölött** van
-- [ ] ⚠️ Rögzítve a mai **számított animáció-hossz** mind a 3 képernyőméreten (`(2 × vh + 200) / 3.5` másodperc) → mindhárom érték **meghaladja** a 600 s-os `INTRO_AUTO_SKIP_TIMEOUT_MS`-t (1080p-n `674 s` ≈ 11,2 perc). **Ez független, időbeli megerősítése az 1.2 geometriai levezetésének** (1.2.1)
-- [ ] Rögzítve, hogy a mai intró **soha nem ér véget magától** — minden futásban az auto-skip zárja le, nem az animáció
-- [ ] Rögzítve, **hány blokk marad felfedetlenül** a mai modellben az animáció végén (a pozícióalapú felfedés miatt a német/francia blokkok később indulnak, mint a magyarok)
-- [ ] DevTools Performance profil a mai rAF-pollozásról: a `getBoundingClientRect` hívások aránya a frame-időben (ez lesz a G. blokk nyereségének mércéje)
-- [ ] ⚠️ Rögzítve a `intro.continue` **jelenlegi** megjelenése (ha egyáltalán kikényszeríthető, pl. a `bottom <= 0` feltétel ideiglenes `true`-ra állításával) — mind az 5 nyelven, mobil portrén. **Ez a stílus soha nem volt kipróbálva** (6.11)
-- [ ] ✅ **Ellenőrzési pont:** a hiba **dokumentáltan** minden nyelven és minden méreten fennáll → a terv nem peremesetet javít, hanem **szerkezeti hibát**
+- [x] Böngészős megerősítés: `DEBUG_MODE=true` (210 s-os intró) mellett végigfuttatás **legalább 2 nyelven** (leghosszabb: `fr`, legrövidebb: `hu`) és **2 képernyőméreten** (mobil portré 390×844, desktop 1920×1080) — az elvárt eredmény: a `intro.continue` felirat **egyszer sem** jelenik meg
+- [x] DevTools-ban rögzítve a tényleges `contentH` (a `.scroll` `scrollHeight`-ja) mind az 5 nyelven, 3 méreten → mind a 15 érték **jóval** a `vh + 200` limit **fölött** van
+- [x] ⚠️ Rögzítve a mai **számított animáció-hossz** mind a 3 képernyőméreten (`(2 × vh + 200) / 3.5` másodperc) → mindhárom érték **meghaladja** a 600 s-os `INTRO_AUTO_SKIP_TIMEOUT_MS`-t (1080p-n `674 s` ≈ 11,2 perc). **Ez független, időbeli megerősítése az 1.2 geometriai levezetésének** (1.2.1)
+- [x] Rögzítve, hogy a mai intró **soha nem ér véget magától** — minden futásban az auto-skip zárja le, nem az animáció
+- [x] Rögzítve, **hány blokk marad felfedetlenül** a mai modellben az animáció végén (a pozícióalapú felfedés miatt a német/francia blokkok később indulnak, mint a magyarok)
+- [x] DevTools Performance profil a mai rAF-pollozásról: a `getBoundingClientRect` hívások aránya a frame-időben (ez lesz a G. blokk nyereségének mércéje)
+- [x] ⚠️ Rögzítve a `intro.continue` **jelenlegi** megjelenése (ha egyáltalán kikényszeríthető, pl. a `bottom <= 0` feltétel ideiglenes `true`-ra állításával) — mind az 5 nyelven, mobil portrén. **Ez a stílus soha nem volt kipróbálva** (6.11)
+- [x] ✅ **Ellenőrzési pont:** a hiba **dokumentáltan** minden nyelven és minden méreten fennáll → a terv nem peremesetet javít, hanem **szerkezeti hibát**
 
 **B. Konstansok — `src/constants/constants.ts`**
-- [ ] `INTRO_SLOTS` — a rekesz-tábla: `readonly { id: IntroBlockId; heightVh: number }[]`, **9 elem** a 9 blokkra. JSDoc: **ez a terv fő hangolási felülete**; a `heightVh` a `window.innerHeight` **szorzója** (pl. `0.42` = a viewport 42%-a)
-- [ ] Kiinduló értékek: `headline 0.30` · `motto 0.20` · `paragraph1 0.42` · `paragraph2 0.42` · `sectionTitle 0.24` · `rule1…rule4 0.36` — **összesen 3.02 vh**. JSDoc: szubjektív kiindulás, a J. blokk hangolja élőben
-- [ ] `INTRO_START_PAD_VH = 1.02` — a tartalom teteje ennyi viewportnyival a képernyő **teteje alatt** kezd, azaz **2%-nyival az alsó él alatt**. JSDoc: ⚠️ **`> 1.0` kell legyen**, különben a legelső blokk nem alulról úszna be, hanem már a képernyőn állna (1.5.1). A `0.02`-es tartalék adja a ~2,6 s-os beúszást
-- [ ] `INTRO_END_PAD_VH = 0.10` — a tartalom alja ennyi viewportnyival a képernyő **fölött** végez. JSDoc: ez **garantálja** a `bottom <= 0` teljesülését (1.2). ⚠️ **`> 0` kell legyen** — ez a terv legfontosabb invariánsa, a rövidebb nyitópad **nem érinti**
-- [ ] `INTRO_TOTAL_DURATION_SEC = 540` — a görgetés teljes hossza (9 perc). JSDoc: ⚠️ **az idő fix, nem a sebesség** — ez teszi az intrót minden képernyőn azonos hosszúvá. A `540` a mai ~10 perces érzetet tartja meg **úgy, hogy közben belefér** a 600 s-os auto-skipbe (1.2.1)
-- [ ] `INTRO_SCROLL_DELAY_SEC = 4` — a mai `animation-delay: 4s` **nevesítve** (viselkedés-semleges kiemelés)
-- [ ] ⚠️ `INTRO_REVEAL_TRIGGER_RATIO = 1.0` — a képernyő **alsó éle**. JSDoc: **ez NEM a mai érték** (a mai `(window.innerHeight / 3) * 2`, azaz `2/3`) — tudatos változtatás, a rövid nyitás matematikai feltétele (1.5.1). Az I. blokk hangolásának tartaléka a `2/3`-ra visszaállás, kisebb `INTRO_START_PAD_VH`-val
-- [ ] `INTRO_MIN_FONT_SIZE_PX = 12` / `INTRO_MAX_FONT_SIZE_PX = 72` — az illesztés alsó/felső korlátja. JSDoc: az alsó korlát elérése **túlcsordulást** jelent (6.1)
-- [ ] `INTRO_FIT_PROBE_FONT_SIZE_PX = 24` — a mérés kiinduló betűmérete
-- [ ] `INTRO_FIT_BISECTION_STEPS = 5` — a felezéses finomítás lépésszáma. JSDoc: a szövegmagasság a betűméret **lépcsős** függvénye (a sortörés diszkrét), ezért a lineáris becslés önmagában felül- vagy alulbecsülhet
-- [ ] `INTRO_SCHEDULE_TICK_MS = 250` — az önkorrigáló ütemező periódusa
-- [ ] `INTRO_RESIZE_DEBOUNCE_MS = 250` — az újramérés debounce-a
-- [ ] `INTRO_RESIZE_HEIGHT_THRESHOLD_PX = 120` — ennél kisebb, **csak magasságot** érintő változás **nem** vált ki újramérést. JSDoc: mobil böngésző URL-sáv be/kigördülése (6.5)
-- [ ] `INTRO_DEBUG_SPEED_MULTIPLIER = 8` — debug módban ennyivel osztódik a teljes időtartam **és minden felfedési időpont**
-- [ ] `INTRO_FINAL_READ_MARGIN_MS = 30_000` — a záró felirat megjelenése és az auto-skip közti **kötelező** olvasási tartalék
-- [ ] ⚠️ A meglévő `INTRO_AUTO_SKIP_TIMEOUT_MS = 600_000` **nem változik** — de mostantól **invariáns** köti (D. blokk teszt)
-- [ ] ✅ **Ellenőrzési pont:** minden új konstans JSDoc-os, a `constants.ts` fordul
+- [x] `INTRO_SLOTS` — a rekesz-tábla: `readonly { id: IntroBlockId; heightVh: number }[]`, **9 elem** a 9 blokkra. JSDoc: **ez a terv fő hangolási felülete**; a `heightVh` a `window.innerHeight` **szorzója** (pl. `0.42` = a viewport 42%-a)
+- [x] Kiinduló értékek: `headline 0.30` · `motto 0.20` · `paragraph1 0.42` · `paragraph2 0.42` · `sectionTitle 0.24` · `rule1…rule4 0.36` — **összesen 3.02 vh**. JSDoc: szubjektív kiindulás, a J. blokk hangolja élőben
+- [x] `INTRO_START_PAD_VH = 1.02` — a tartalom teteje ennyi viewportnyival a képernyő **teteje alatt** kezd, azaz **2%-nyival az alsó él alatt**. JSDoc: ⚠️ **`> 1.0` kell legyen**, különben a legelső blokk nem alulról úszna be, hanem már a képernyőn állna (1.5.1). A `0.02`-es tartalék adja a ~2,6 s-os beúszást
+- [x] `INTRO_END_PAD_VH = 0.10` — a tartalom alja ennyi viewportnyival a képernyő **fölött** végez. JSDoc: ez **garantálja** a `bottom <= 0` teljesülését (1.2). ⚠️ **`> 0` kell legyen** — ez a terv legfontosabb invariánsa, a rövidebb nyitópad **nem érinti**
+- [x] `INTRO_TOTAL_DURATION_SEC = 540` — a görgetés teljes hossza (9 perc). JSDoc: ⚠️ **az idő fix, nem a sebesség** — ez teszi az intrót minden képernyőn azonos hosszúvá. A `540` a mai ~10 perces érzetet tartja meg **úgy, hogy közben belefér** a 600 s-os auto-skipbe (1.2.1)
+- [x] `INTRO_SCROLL_DELAY_SEC = 4` — a mai `animation-delay: 4s` **nevesítve** (viselkedés-semleges kiemelés)
+- [x] ⚠️ `INTRO_REVEAL_TRIGGER_RATIO = 1.0` — a képernyő **alsó éle**. JSDoc: **ez NEM a mai érték** (a mai `(window.innerHeight / 3) * 2`, azaz `2/3`) — tudatos változtatás, a rövid nyitás matematikai feltétele (1.5.1). Az I. blokk hangolásának tartaléka a `2/3`-ra visszaállás, kisebb `INTRO_START_PAD_VH`-val
+- [x] `INTRO_MIN_FONT_SIZE_PX = 12` / `INTRO_MAX_FONT_SIZE_PX = 72` — az illesztés alsó/felső korlátja. JSDoc: az alsó korlát elérése **túlcsordulást** jelent (6.1)
+- [x] `INTRO_FIT_PROBE_FONT_SIZE_PX = 24` — a mérés kiinduló betűmérete
+- [x] `INTRO_FIT_BISECTION_STEPS = 5` — a felezéses finomítás lépésszáma. JSDoc: a szövegmagasság a betűméret **lépcsős** függvénye (a sortörés diszkrét), ezért a lineáris becslés önmagában felül- vagy alulbecsülhet
+- [x] `INTRO_SCHEDULE_TICK_MS = 250` — az önkorrigáló ütemező periódusa
+- [x] `INTRO_RESIZE_DEBOUNCE_MS = 250` — az újramérés debounce-a
+- [x] `INTRO_RESIZE_HEIGHT_THRESHOLD_PX = 120` — ennél kisebb, **csak magasságot** érintő változás **nem** vált ki újramérést. JSDoc: mobil böngésző URL-sáv be/kigördülése (6.5)
+- [x] `INTRO_DEBUG_SPEED_MULTIPLIER = 8` — debug módban ennyivel osztódik a teljes időtartam **és minden felfedési időpont**
+- [x] `INTRO_FINAL_READ_MARGIN_MS = 30_000` — a záró felirat megjelenése és az auto-skip közti **kötelező** olvasási tartalék
+- [x] ⚠️ A meglévő `INTRO_AUTO_SKIP_TIMEOUT_MS = 600_000` **nem változik** — de mostantól **invariáns** köti (D. blokk teszt)
+- [x] ✅ **Ellenőrzési pont:** minden új konstans JSDoc-os, a `constants.ts` fordul
 
 **C. Típusok — `src/types/index.ts`**
-- [ ] `IntroBlockId` — literál unió: `"headline" | "motto" | "paragraph1" | "paragraph2" | "sectionTitle" | "rule1" | "rule2" | "rule3" | "rule4"`
-- [ ] `IntroSlot` — `{ id: IntroBlockId; heightVh: number }`
-- [ ] `IntroSlotBox` — `{ id: IntroBlockId; topVh: number; heightVh: number }` (a kumulált elrendezés, **vh-egységben**)
-- [ ] `IntroScrollGeometry` — `{ startOffsetPx: number; endOffsetPx: number; distancePx: number; durationSec: number }`
-- [ ] `IntroRevealSchedule` — `{ reveals: { id: IntroBlockId; atMs: number }[]; finalInstructionAtMs: number; totalMs: number }`
-- [ ] `IntroFitResult` — `Record<IntroBlockId, number>` (blokkonkénti, **közös** betűméret px-ben)
-- [ ] JSDoc mindegyikre, kiemelten az `IntroRevealSchedule`-re: ⚠️ **a menetrend viewport-független** — nincs benne `vh` (levezetés: 1.5)
+- [x] `IntroBlockId` — literál unió: `"headline" | "motto" | "paragraph1" | "paragraph2" | "sectionTitle" | "rule1" | "rule2" | "rule3" | "rule4"`
+- [x] `IntroSlot` — `{ id: IntroBlockId; heightVh: number }`
+- [x] `IntroSlotBox` — `{ id: IntroBlockId; topVh: number; heightVh: number }` (a kumulált elrendezés, **vh-egységben**)
+- [x] `IntroScrollGeometry` — `{ startOffsetPx: number; endOffsetPx: number; distancePx: number; durationSec: number }`
+- [x] `IntroRevealSchedule` — `{ reveals: { id: IntroBlockId; atMs: number }[]; finalInstructionAtMs: number; totalMs: number }`
+- [x] `IntroFitResult` — `Record<IntroBlockId, number>` (blokkonkénti, **közös** betűméret px-ben)
+- [x] JSDoc mindegyikre, kiemelten az `IntroRevealSchedule`-re: ⚠️ **a menetrend viewport-független** — nincs benne `vh` (levezetés: 1.5)
 
 **D. Tiszta logika — `src/services/introLayout.ts` + teszt**
-- [ ] ⚠️ A modulok a **`src/services/`**-be kerülnek, **nem** egy új `src/utils/` mappába — a [[017-starfield-realism]] által rögzített konvenció
-- [ ] `computeSlotBoxes(slots: readonly IntroSlot[]): IntroSlotBox[]` — kumulatív `topVh`, **vh-egységben** (nem px!)
-- [ ] `totalContentVh(slots): number` — a `heightVh`-k összege
-- [ ] `computeScrollGeometry(params): IntroScrollGeometry` — bemenet: `{ totalVh, startPadVh, endPadVh, viewportHeightPx, durationSec, speedMultiplier }`; kimenet: `startOffsetPx = startPadVh * vh`, `endOffsetPx = -(totalVh + endPadVh) * vh`, `distancePx`, `durationSec / speedMultiplier`
-- [ ] ⚠️ `computeScrollGeometry` **garantálja** a záró feltételt: az `endOffsetPx` abszolút értéke **mindig nagyobb** a tartalom magasságánál (`endPadVh > 0`), tehát az utolsó blokk alja **matematikailag biztosan** kicsúszik felül. Ez a terv **legfontosabb** invariánsa (1.2)
-- [ ] `computeRevealSchedule(params): IntroRevealSchedule` — bemenet: `{ boxes, totalVh, startPadVh, endPadVh, triggerRatio, durationSec, delaySec, speedMultiplier }`
-- [ ] ⚠️ A `computeRevealSchedule` **NEM kap viewport-magasságot** — a levezetés (1.5) szerint a `vh` kiesik. Ha valaki később mégis paraméterként adná át, az **hiba jele**
-- [ ] Peremeset-védelem: `viewportHeightPx <= 0` vagy nem véges → biztonságos fallback (`durationSec` a minimumon, `distancePx = 0`), **sosem `NaN`**
-- [ ] Peremeset-védelem: `speedMultiplier <= 0` vagy nem véges → `1`
-- [ ] `assertIntroTimingInvariant(schedule, autoSkipMs, marginMs): boolean` — igaz, ha `finalInstructionAtMs + marginMs <= autoSkipMs`
-- [ ] `src/services/introLayout.test.ts` — `computeSlotBoxes`: 9 doboz, `topVh[0] === 0`, minden `topVh[i] === topVh[i-1] + heightVh[i-1]`, az utolsó alja `=== totalContentVh`
-- [ ] Teszt: `computeScrollGeometry` — az `endOffsetPx` **szigorúan negatívabb**, mint `-(totalVh * vh)` (a záró feltétel garanciája), **három** viewport-magasságon (844 / 1080 / 600)
-- [ ] Teszt: `computeScrollGeometry` — a `distancePx` **lineáris** a `viewportHeightPx`-ben (kétszeres vh → kétszeres távolság), a `durationSec` viszont **változatlan**
-- [ ] Teszt: `computeScrollGeometry` — `speedMultiplier = 8` → a `durationSec` pontosan nyolcada, az offsetek **változatlanok**
-- [ ] Teszt (**a terv központi állítása**): `computeRevealSchedule` kimenete **bitre azonos** három különböző viewport-magassággal futtatva — mert a függvény nem is kap `vh`-t. A teszt ezt **szerkezetileg** is rögzíti
-- [ ] Teszt: a felfedési időpontok **szigorúan monoton növők**, az első `> delaySec * 1000`, az utolsó `< finalInstructionAtMs`
-- [ ] Teszt: `finalInstructionAtMs < totalMs` (a felirat az animáció **vége előtt** jelenik meg)
-- [ ] Teszt: `speedMultiplier = 8` → **minden** felfedési időpont és a `finalInstructionAtMs` is pontosan nyolcada (a debug idővonal **arányos kicsinyítés**, nem külön logika)
-- [ ] Teszt (**invariáns**): `assertIntroTimingInvariant(computeRevealSchedule(INTRO_SLOTS…), INTRO_AUTO_SKIP_TIMEOUT_MS, INTRO_FINAL_READ_MARGIN_MS) === true` — ⚠️ ez a teszt **elbukik**, ha valaki a jövőben megemeli az `INTRO_TOTAL_DURATION_SEC`-et vagy a rekeszeket a 10 perces auto-skip fölé. Ez a **szándék**
-- [ ] Teszt: peremesetek — `vh = 0`, `vh = NaN`, `speedMultiplier = 0`, üres `slots` tömb → véges számok, nincs `NaN`, nincs kivétel
-- [ ] ✅ **Ellenőrzési pont:** `npm run test` zöld, az `IntroScreen.tsx` még **nem** módosult
+- [x] ⚠️ A modulok a **`src/services/`**-be kerülnek, **nem** egy új `src/utils/` mappába — a [[017-starfield-realism]] által rögzített konvenció
+- [x] `computeSlotBoxes(slots: readonly IntroSlot[]): IntroSlotBox[]` — kumulatív `topVh`, **vh-egységben** (nem px!)
+- [x] `totalContentVh(slots): number` — a `heightVh`-k összege
+- [x] `computeScrollGeometry(params): IntroScrollGeometry` — bemenet: `{ totalVh, startPadVh, endPadVh, viewportHeightPx, durationSec, speedMultiplier }`; kimenet: `startOffsetPx = startPadVh * vh`, `endOffsetPx = -(totalVh + endPadVh) * vh`, `distancePx`, `durationSec / speedMultiplier`
+- [x] ⚠️ `computeScrollGeometry` **garantálja** a záró feltételt: az `endOffsetPx` abszolút értéke **mindig nagyobb** a tartalom magasságánál (`endPadVh > 0`), tehát az utolsó blokk alja **matematikailag biztosan** kicsúszik felül. Ez a terv **legfontosabb** invariánsa (1.2)
+- [x] `computeRevealSchedule(params): IntroRevealSchedule` — bemenet: `{ boxes, totalVh, startPadVh, endPadVh, triggerRatio, durationSec, delaySec, speedMultiplier }`
+- [x] ⚠️ A `computeRevealSchedule` **NEM kap viewport-magasságot** — a levezetés (1.5) szerint a `vh` kiesik. Ha valaki később mégis paraméterként adná át, az **hiba jele**
+- [x] Peremeset-védelem: `viewportHeightPx <= 0` vagy nem véges → biztonságos fallback (`durationSec` a minimumon, `distancePx = 0`), **sosem `NaN`**
+- [x] Peremeset-védelem: `speedMultiplier <= 0` vagy nem véges → `1`
+- [x] `assertIntroTimingInvariant(schedule, autoSkipMs, marginMs): boolean` — igaz, ha `finalInstructionAtMs + marginMs <= autoSkipMs`
+- [x] `src/services/introLayout.test.ts` — `computeSlotBoxes`: 9 doboz, `topVh[0] === 0`, minden `topVh[i] === topVh[i-1] + heightVh[i-1]`, az utolsó alja `=== totalContentVh`
+- [x] Teszt: `computeScrollGeometry` — az `endOffsetPx` **szigorúan negatívabb**, mint `-(totalVh * vh)` (a záró feltétel garanciája), **három** viewport-magasságon (844 / 1080 / 600)
+- [x] Teszt: `computeScrollGeometry` — a `distancePx` **lineáris** a `viewportHeightPx`-ben (kétszeres vh → kétszeres távolság), a `durationSec` viszont **változatlan**
+- [x] Teszt: `computeScrollGeometry` — `speedMultiplier = 8` → a `durationSec` pontosan nyolcada, az offsetek **változatlanok**
+- [x] Teszt (**a terv központi állítása**): `computeRevealSchedule` kimenete **bitre azonos** három különböző viewport-magassággal futtatva — mert a függvény nem is kap `vh`-t. A teszt ezt **szerkezetileg** is rögzíti
+- [x] Teszt: a felfedési időpontok **szigorúan monoton növők**, az első `> delaySec * 1000`, az utolsó `< finalInstructionAtMs`
+- [x] Teszt: `finalInstructionAtMs < totalMs` (a felirat az animáció **vége előtt** jelenik meg)
+- [x] Teszt: `speedMultiplier = 8` → **minden** felfedési időpont és a `finalInstructionAtMs` is pontosan nyolcada (a debug idővonal **arányos kicsinyítés**, nem külön logika)
+- [x] Teszt (**invariáns**): `assertIntroTimingInvariant(computeRevealSchedule(INTRO_SLOTS…), INTRO_AUTO_SKIP_TIMEOUT_MS, INTRO_FINAL_READ_MARGIN_MS) === true` — ⚠️ ez a teszt **elbukik**, ha valaki a jövőben megemeli az `INTRO_TOTAL_DURATION_SEC`-et vagy a rekeszeket a 10 perces auto-skip fölé. Ez a **szándék**
+- [x] Teszt: peremesetek — `vh = 0`, `vh = NaN`, `speedMultiplier = 0`, üres `slots` tömb → véges számok, nincs `NaN`, nincs kivétel
+- [x] ✅ **Ellenőrzési pont:** `npm run test` zöld, az `IntroScreen.tsx` még **nem** módosult
 
 **E. Tiszta logika — `src/services/introFit.ts` + teszt**
-- [ ] `estimateFittedFontSize({ probeFontSizePx, measuredHeightPx, targetHeightPx, minPx, maxPx }): number` — lineáris első becslés (`probe * target / measured`), a `[minPx, maxPx]` sávra clampelve
-- [ ] Peremeset: `measuredHeightPx <= 0` vagy nem véges → `probeFontSizePx` (biztonságos fallback)
-- [ ] `pickLargestFitting(samples: { fontSizePx: number; heightPx: number }[], targetHeightPx: number, minPx: number): number` — a **legnagyobb** olyan méret, ami még belefér; ha **egyik sem** fér bele → `minPx`
-- [ ] `bisectionCandidates(lowPx, highPx, steps): number[]` — a felezéses finomítás jelöltjei (a mérés **hívóoldali**, a függvény csak a jelölteket adja)
-- [ ] `tallestIndex(heights: number[]): number` — a leghosszabb nyelv kiválasztása a **mért magasságokból**, `NaN` / üres tömb védelemmel
-- [ ] `didFitOverflow(fittedPx, minPx): boolean` — igaz, ha az illesztés a **padlóra** futott, azaz a szöveg túlcsordulhat (6.1). Fejlesztői figyelmeztetés forrása
-- [ ] ⚠️ **Egyik függvény sem nyúl a DOM-hoz.** A mért magasságok **paraméterek** — ez teszi az egészet tesztelhetővé jsdom alatt is (5.2)
-- [ ] `src/services/introFit.test.ts` — `estimateFittedFontSize`: `probe=24, measured=200, target=100` → `12`; `target=400` → `48`; clamp mindkét irányban; `measured=0` → `probe`; `NaN` → `probe`
-- [ ] Teszt: `pickLargestFitting` — a legnagyobb beférő méretet adja; ha mind túlcsordul → `minPx`; ha mind befér → a legnagyobb jelölt; rendezetlen bemenetre is helyes
-- [ ] Teszt: `bisectionCandidates` — `steps` darab jelölt, mind a `[low, high]` sávban, monoton
-- [ ] Teszt: `tallestIndex` — `[10, 30, 20]` → `1`; holtverseny → a **legkisebb** index (determinizmus); `[]` → `-1`; `NaN` elemeket kihagy
-- [ ] Teszt: `didFitOverflow` — `fitted === minPx` → `true`; `fitted > minPx` → `false`
-- [ ] ✅ **Ellenőrzési pont:** `npm run test` zöld; a két új service együtt lefedi a terv **teljes** döntési logikáját
+- [x] `estimateFittedFontSize({ probeFontSizePx, measuredHeightPx, targetHeightPx, minPx, maxPx }): number` — lineáris első becslés (`probe * target / measured`), a `[minPx, maxPx]` sávra clampelve
+- [x] Peremeset: `measuredHeightPx <= 0` vagy nem véges → `probeFontSizePx` (biztonságos fallback)
+- [x] `pickLargestFitting(samples: { fontSizePx: number; heightPx: number }[], targetHeightPx: number, minPx: number): number` — a **legnagyobb** olyan méret, ami még belefér; ha **egyik sem** fér bele → `minPx`
+- [x] `bisectionCandidates(lowPx, highPx, steps): number[]` — a felezéses finomítás jelöltjei (a mérés **hívóoldali**, a függvény csak a jelölteket adja)
+- [x] `tallestIndex(heights: number[]): number` — a leghosszabb nyelv kiválasztása a **mért magasságokból**, `NaN` / üres tömb védelemmel
+- [x] `didFitOverflow(fittedPx, minPx): boolean` — igaz, ha az illesztés a **padlóra** futott, azaz a szöveg túlcsordulhat (6.1). Fejlesztői figyelmeztetés forrása
+- [x] ⚠️ **Egyik függvény sem nyúl a DOM-hoz.** A mért magasságok **paraméterek** — ez teszi az egészet tesztelhetővé jsdom alatt is (5.2)
+- [x] `src/services/introFit.test.ts` — `estimateFittedFontSize`: `probe=24, measured=200, target=100` → `12`; `target=400` → `48`; clamp mindkét irányban; `measured=0` → `probe`; `NaN` → `probe`
+- [x] Teszt: `pickLargestFitting` — a legnagyobb beférő méretet adja; ha mind túlcsordul → `minPx`; ha mind befér → a legnagyobb jelölt; rendezetlen bemenetre is helyes
+- [x] Teszt: `bisectionCandidates` — `steps` darab jelölt, mind a `[low, high]` sávban, monoton
+- [x] Teszt: `tallestIndex` — `[10, 30, 20]` → `1`; holtverseny → a **legkisebb** index (determinizmus); `[]` → `-1`; `NaN` elemeket kihagy
+- [x] Teszt: `didFitOverflow` — `fitted === minPx` → `true`; `fitted > minPx` → `false`
+- [x] ✅ **Ellenőrzési pont:** `npm run test` zöld; a két új service együtt lefedi a terv **teljes** döntési logikáját
 
 **F. Mérőelem + hook — `IntroMeasureProbe.tsx` és `useIntroLayout.ts`**
-- [ ] `src/components/screens/IntroMeasureProbe.tsx` — **képernyőn kívüli** mérőelem: `position: absolute`, `visibility: hidden`, `pointer-events: none`, `aria-hidden="true"`, `inert`
-- [ ] ⚠️ A mérőelem **oszlopszélessége bitre azonos** a valódi tartaloméval (ugyanaz a `max-width: 900px` + `padding`), és **ugyanazokat a CSS-osztályokat** használja (`.headline`, `.motto`, `.paragraph`, `.sectionTitle`) — különben a mérés hazudik
-- [ ] ⚠️ A mérőelem **React-tel renderel**, `<Trans i18nKey="intro.rule1" t={i18n.getFixedT(lng)} components={{ 1: <strong /> }} />` alakban — tehát a **valódi, formázott** tartalmat méri, a `<strong>` súlyával együtt, **nem** a nyers stringet
-- [ ] A mérőelem **9 blokk × 5 nyelv = 45** csomópontot renderel, `ref`-ekkel
-- [ ] `src/hooks/useIntroLayout.ts` — a mérést és az illesztést vezénylő hook. **Kimenet:** `{ ready, fontSizes, geometry, schedule }`
-- [ ] ⚠️ A hook `useLayoutEffect`-et használ, hogy a méretek a **festés előtt** beálljanak (nincs villanás rossz betűmérettel)
-- [ ] ⚠️ **Betűtöltés bevárása:** a mérés **csak `await document.fonts.ready` után** indul. Enélkül a fallback-betűkészlet metrikáit mérnénk, és **az összes** illesztés hibás lenne (6.4). `document.fonts` hiánya esetén (régi böngésző) azonnali folytatás
-- [ ] Mérési menet 1: mind az **5 nyelv** mérése blokkonként a `INTRO_FIT_PROBE_FONT_SIZE_PX` próbaméreten → `tallestIndex` blokkonként (**45 mérés**)
-- [ ] Mérési menet 2: **csak a legmagasabb** nyelvre felezéses finomítás, blokkonként (**9 × 5 = 45 mérés**) — a betűméretet a próbaelem DOM-csomópontján **imperatívan** állítva, React-újrarenderelés **nélkül**
-- [ ] Mérési menet 3 (**ellenőrző**): a végleges méreten **mind az 5 nyelv** újramérése (**45 mérés**); ha bármelyik túlcsordul, a méret **egy lépcsőt lejjebb**. ⚠️ Ez fedi le azt az esetet, amikor a próbaméreten legmagasabb nyelv a **végleges** méreten már nem a legmagasabb (eltérő sortörés — 7.3)
-- [ ] Összesen **~135 mérés** viewportonként, **egyszer**. JSDoc-ban rögzítve, miért nem több
-- [ ] A hook a tiszta függvényeket hívja (`introFit`, `introLayout`) — **saját matematikát nem tartalmaz**
-- [ ] Resize-kezelés: `INTRO_RESIZE_DEBOUNCE_MS` debounce; ⚠️ **magasság-változás** csak akkor vált ki újramérést, ha meghaladja az `INTRO_RESIZE_HEIGHT_THRESHOLD_PX`-et (mobil URL-sáv, 7.5). **Szélesség**-változás mindig kivált
-- [ ] ⚠️ A hook effekt-függősége **kizárólag** a viewport-méret — **NEM** az `i18n.language`. Nyelvváltáskor **nincs** újramérés és **nincs** ugrás (1.7)
-- [ ] A mérőelem a mérés befejeztével **unmountolódik** (nem marad 45 rejtett szövegcsomópont a DOM-ban)
-- [ ] ✅ **Ellenőrzési pont:** DevTools-ban a mérési menet **egyszer** fut, `< 150 ms` alatt; nyelvváltásra **nem** fut újra; a rejtett próbaelem a mérés után **nincs** a DOM-ban
+- [x] `src/components/screens/IntroMeasureProbe.tsx` — **képernyőn kívüli** mérőelem: `position: absolute`, `visibility: hidden`, `pointer-events: none`, `aria-hidden="true"`, `inert`
+- [x] ⚠️ A mérőelem **oszlopszélessége bitre azonos** a valódi tartaloméval (ugyanaz a `max-width: 900px` + `padding`), és **ugyanazokat a CSS-osztályokat** használja (`.headline`, `.motto`, `.paragraph`, `.sectionTitle`) — különben a mérés hazudik
+- [x] ⚠️ A mérőelem **React-tel renderel**, `<Trans i18nKey="intro.rule1" t={i18n.getFixedT(lng)} components={{ 1: <strong /> }} />` alakban — tehát a **valódi, formázott** tartalmat méri, a `<strong>` súlyával együtt, **nem** a nyers stringet
+- [x] A mérőelem **9 blokk × 5 nyelv = 45** csomópontot renderel, `ref`-ekkel
+- [x] `src/hooks/useIntroLayout.ts` — a mérést és az illesztést vezénylő hook. **Kimenet:** `{ ready, fontSizes, geometry, schedule }`
+- [x] ⚠️ A hook `useLayoutEffect`-et használ, hogy a méretek a **festés előtt** beálljanak (nincs villanás rossz betűmérettel)
+- [x] ⚠️ **Betűtöltés bevárása:** a mérés **csak `await document.fonts.ready` után** indul. Enélkül a fallback-betűkészlet metrikáit mérnénk, és **az összes** illesztés hibás lenne (6.4). `document.fonts` hiánya esetén (régi böngésző) azonnali folytatás
+- [x] Mérési menet 1: mind az **5 nyelv** mérése blokkonként a `INTRO_FIT_PROBE_FONT_SIZE_PX` próbaméreten → `tallestIndex` blokkonként (**45 mérés**)
+- [x] Mérési menet 2: **csak a legmagasabb** nyelvre felezéses finomítás, blokkonként (**9 × 5 = 45 mérés**) — a betűméretet a próbaelem DOM-csomópontján **imperatívan** állítva, React-újrarenderelés **nélkül**
+- [x] Mérési menet 3 (**ellenőrző**): a végleges méreten **mind az 5 nyelv** újramérése (**45 mérés**); ha bármelyik túlcsordul, a méret **egy lépcsőt lejjebb**. ⚠️ Ez fedi le azt az esetet, amikor a próbaméreten legmagasabb nyelv a **végleges** méreten már nem a legmagasabb (eltérő sortörés — 7.3)
+- [x] Összesen **~135 mérés** viewportonként, **egyszer**. JSDoc-ban rögzítve, miért nem több
+- [x] A hook a tiszta függvényeket hívja (`introFit`, `introLayout`) — **saját matematikát nem tartalmaz**
+- [x] Resize-kezelés: `INTRO_RESIZE_DEBOUNCE_MS` debounce; ⚠️ **magasság-változás** csak akkor vált ki újramérést, ha meghaladja az `INTRO_RESIZE_HEIGHT_THRESHOLD_PX`-et (mobil URL-sáv, 7.5). **Szélesség**-változás mindig kivált
+- [x] ⚠️ A hook effekt-függősége **kizárólag** a viewport-méret — **NEM** az `i18n.language`. Nyelvváltáskor **nincs** újramérés és **nincs** ugrás (1.7)
+- [x] A mérőelem a mérés befejeztével **unmountolódik** (nem marad 45 rejtett szövegcsomópont a DOM-ban)
+- [x] ✅ **Ellenőrzési pont:** DevTools-ban a mérési menet **egyszer** fut, `< 150 ms` alatt; nyelvváltásra **nem** fut újra; a rejtett próbaelem a mérés után **nincs** a DOM-ban
 
 **G. `IntroScreen.tsx` átírása**
-- [ ] Az `updateScrollPositions` **törölve** — helyette a `useIntroLayout` kimenete
-- [ ] A `requestAnimationFrame` hurok (`IntroScreen.tsx:104-114`) **törölve**, a `checkBlocks` / `getBoundingClientRect` logikával együtt
-- [ ] Új: **önkorrigáló ütemező** — egyetlen `setInterval(INTRO_SCHEDULE_TICK_MS)`, ami a `performance.now() - baseline`-t veti össze a `schedule.reveals` időpontjaival, és felfedi **az összes** lejárt blokkot
-- [ ] Az időalap (`baseline`) **pontosan akkor** rögzül, amikor az animáció elindul (a `ready` állapotba lépéskor) — nem a mountoláskor
-- [ ] A `schedule.finalInstructionAtMs` elérésekor `setInstructionsVisible(true)`, majd az ütemező **leáll** (nincs felesleges timer)
-- [ ] A 9 blokk `data-intro-block` attribútuma **megmarad** (a felfedés továbbra is `styles.blockVisible` osztállyal történik) — ⚠️ de a kiválasztás mostantól **`data-intro-block-id`** szerint megy, nem sorrend szerint, hogy a menetrend és a DOM **nevesítve** kapcsolódjon
-- [ ] Minden blokk a rekeszét CSS-változóból kapja: `style={{ "--intro-slot-height": `${box.heightVh * 100}vh` }}`
-- [ ] Minden blokk a **közös** betűméretét CSS-változóból kapja: `style={{ "--intro-font-size": `${fontSizes[id]}px` }}`
-- [ ] A `--intro-start` / `--intro-end` / `--intro-duration` a `geometry`-ből
-- [ ] ⚠️ Az animáció `animation-play-state: paused` állapotban indul, és **csak a mérés befejeztével** vált `running`-ra (`data-ready="true"`). Enélkül az első képkockák rossz betűmérettel és rossz offsettel futnának
-- [ ] `DEBUG_MODE`: a `INTRO_SCROLL_DURATION = "210s"` konstans és a `DEBUG_MODE ? … : undefined` inline stílus-ág **törölve**; helyette a `speedMultiplier` paraméter megy a `useIntroLayout`-ba
-- [ ] A `langBar`, az `onSkip` (`onClick` az overlayen), a `stopPropagation` hármas és a `styles.fade` **érintetlen**
-- [ ] ⚠️ A `import.meta.env.VITE_DEBUG_MODE` sor (`IntroScreen.tsx:10`) **megmarad a jelenlegi formájában** — lásd a 018-cal való ütközést (6.12)
-- [ ] ✅ **Ellenőrzési pont:** `tsc --noEmit` tiszta; a komponensben **nulla** `getBoundingClientRect` és **nulla** `requestAnimationFrame` maradt
+- [x] Az `updateScrollPositions` **törölve** — helyette a `useIntroLayout` kimenete
+- [x] A `requestAnimationFrame` hurok (`IntroScreen.tsx:104-114`) **törölve**, a `checkBlocks` / `getBoundingClientRect` logikával együtt
+- [x] Új: **önkorrigáló ütemező** — egyetlen `setInterval(INTRO_SCHEDULE_TICK_MS)`, ami a `performance.now() - baseline`-t veti össze a `schedule.reveals` időpontjaival, és felfedi **az összes** lejárt blokkot
+- [x] Az időalap (`baseline`) **pontosan akkor** rögzül, amikor az animáció elindul (a `ready` állapotba lépéskor) — nem a mountoláskor
+- [x] A `schedule.finalInstructionAtMs` elérésekor `setInstructionsVisible(true)`, majd az ütemező **leáll** (nincs felesleges timer)
+- [x] A 9 blokk `data-intro-block` attribútuma **megmarad** (a felfedés továbbra is `styles.blockVisible` osztállyal történik) — ⚠️ de a kiválasztás mostantól **`data-intro-block-id`** szerint megy, nem sorrend szerint, hogy a menetrend és a DOM **nevesítve** kapcsolódjon
+- [x] Minden blokk a rekeszét CSS-változóból kapja: `style={{ "--intro-slot-height": `${box.heightVh * 100}vh` }}`
+- [x] Minden blokk a **közös** betűméretét CSS-változóból kapja: `style={{ "--intro-font-size": `${fontSizes[id]}px` }}`
+- [x] A `--intro-start` / `--intro-end` / `--intro-duration` a `geometry`-ből
+- [x] ⚠️ Az animáció `animation-play-state: paused` állapotban indul, és **csak a mérés befejeztével** vált `running`-ra (`data-ready="true"`). Enélkül az első képkockák rossz betűmérettel és rossz offsettel futnának
+- [x] `DEBUG_MODE`: a `INTRO_SCROLL_DURATION = "210s"` konstans és a `DEBUG_MODE ? … : undefined` inline stílus-ág **törölve**; helyette a `speedMultiplier` paraméter megy a `useIntroLayout`-ba
+- [x] A `langBar`, az `onSkip` (`onClick` az overlayen), a `stopPropagation` hármas és a `styles.fade` **érintetlen**
+- [x] ⚠️ A `import.meta.env.VITE_DEBUG_MODE` sor (`IntroScreen.tsx:10`) **megmarad a jelenlegi formájában** — lásd a 018-cal való ütközést (6.12)
+- [x] ✅ **Ellenőrzési pont:** `tsc --noEmit` tiszta; a komponensben **nulla** `getBoundingClientRect` és **nulla** `requestAnimationFrame` maradt
 
 **H. `IntroScreen.module.css` átalakítása**
-- [ ] ⚠️ **Az `.overlay` `align-items: center` → `flex-start`** (illetve a `.content` `position: absolute; top: 0`). **Ez a legfontosabb CSS-változás:** a mai függőleges központozás miatt a tartalom teteje `(vh − contentH) / 2`-nél van, ami **tartalomfüggő** — pontosan ez a tag teszi kiszámíthatatlanná a záró feltételt (1.2). Felülre horgonyozva a `translateY` **közvetlenül** képernyő-koordináta
-- [ ] Új `.slot` osztály: `min-height: var(--intro-slot-height); display: flex; flex-direction: column; justify-content: flex-start;` — a **fix rekesz**
-- [ ] A blokkok betűmérete: `font-size: var(--intro-font-size, clamp(...))` — ⚠️ a **mai `clamp()` marad fallbacknek**, hogy JS-hiba esetén se legyen olvashatatlan a szöveg (6.9)
-- [ ] A `.headline` / `.motto` / `.paragraph` / `.sectionTitle` többi tulajdonsága (szín, `letter-spacing`, `line-height`, `text-shadow`, `text-transform`) **változatlan**
-- [ ] Az `.overlay` `overflow: hidden` **marad** — a megnőtt tartalom nem hozhat létre görgetősávot
-- [ ] `.scroll`: `animation-play-state: paused;` alapból, `[data-ready="true"] &` → `running`
-- [ ] ⚠️ **`.finalInstruction` átméretezése** — a `width: 33%` fix érték + `letter-spacing: 0.4em` + `text-transform: uppercase` kombináció **soha nem volt kipróbálva** (6.11). Új: `width: min(90%, 640px)`, `max-width` a viewporthoz kötve, `letter-spacing` `clamp`-pel csökkentve kis képernyőn, `font-size` `clamp`-pel
-- [ ] A `@media (max-width: 600px)` blokk kiegészítve a `.finalInstruction` mobil-változatával
-- [ ] ✅ **Ellenőrzési pont:** a `intro.continue` mind az 5 nyelven **kifér** és **olvasható** 390 px széles képernyőn (a leghosszabb: `fr`, 62 karakter)
+- [x] ⚠️ **Az `.overlay` `align-items: center` → `flex-start`** (illetve a `.content` `position: absolute; top: 0`). **Ez a legfontosabb CSS-változás:** a mai függőleges központozás miatt a tartalom teteje `(vh − contentH) / 2`-nél van, ami **tartalomfüggő** — pontosan ez a tag teszi kiszámíthatatlanná a záró feltételt (1.2). Felülre horgonyozva a `translateY` **közvetlenül** képernyő-koordináta
+- [x] Új `.slot` osztály: `min-height: var(--intro-slot-height); display: flex; flex-direction: column; justify-content: flex-start;` — a **fix rekesz**
+- [x] A blokkok betűmérete: `font-size: var(--intro-font-size, clamp(...))` — ⚠️ a **mai `clamp()` marad fallbacknek**, hogy JS-hiba esetén se legyen olvashatatlan a szöveg (6.9)
+- [x] A `.headline` / `.motto` / `.paragraph` / `.sectionTitle` többi tulajdonsága (szín, `letter-spacing`, `line-height`, `text-shadow`, `text-transform`) **változatlan**
+- [x] Az `.overlay` `overflow: hidden` **marad** — a megnőtt tartalom nem hozhat létre görgetősávot
+- [x] `.scroll`: `animation-play-state: paused;` alapból, `[data-ready="true"] &` → `running`
+- [x] ⚠️ **`.finalInstruction` átméretezése** — a `width: 33%` fix érték + `letter-spacing: 0.4em` + `text-transform: uppercase` kombináció **soha nem volt kipróbálva** (6.11). Új: `width: min(90%, 640px)`, `max-width` a viewporthoz kötve, `letter-spacing` `clamp`-pel csökkentve kis képernyőn, `font-size` `clamp`-pel
+- [x] A `@media (max-width: 600px)` blokk kiegészítve a `.finalInstruction` mobil-változatával
+- [x] ✅ **Ellenőrzési pont:** a `intro.continue` mind az 5 nyelven **kifér** és **olvasható** 390 px széles képernyőn (a leghosszabb: `fr`, 62 karakter)
 
 **I. Idővonal-hangolás (`DEBUG_MODE` + élő)**
-- [ ] Debug módban végigfuttatás: `INTRO_DEBUG_SPEED_MULTIPLIER = 8` → **~68 mp**-es teljes intró (544 / 8), a felfedések arányosan
-- [ ] Ellenőrizve, hogy a debug idővonal a produkciós **arányos kicsinyítése**: a blokkok **relatív** időpontjai (a teljes hosszhoz viszonyítva) azonosak
-- [ ] Élő hangolás: `INTRO_SLOTS` magasságok — a rekeszek ne legyenek se zsúfoltak, se kongóan üresek **magyarul**
-- [ ] ⚠️ Élő hangolás: **a felfedés jellege az alsó élnél** (`INTRO_REVEAL_TRIGGER_RATIO = 1.0`). Ez a mai `2/3`-hoz képest **változás mind a 9 blokkra** (1.5.1) — élőben kell megítélni, hogy a beúszó jelleg jobb-e a mai „középen materializálódásnál". **Dokumentált tartalék:** `r = 2/3` + `s = 0.688`, azzal az árral, hogy a legelső blokk nem úszik be. ⚠️ **Csak felhasználói jóváhagyással**
-- [ ] Élő hangolás: `INTRO_TOTAL_DURATION_SEC = 540` — az olvasási tempó. ⚠️ A mai effektív tempó ~3.5 px/s (nagyon lassú, tudatosan AFK-jellegű), a mai **látható** hossz pedig az auto-skip miatt 600 s (1.2.1). Az `540` ehhez képest alig tér el. **Emelése erősen korlátozott:** a D. blokk invariáns-tesztje `570 s`-nál (`600 − 30`) elvágja, és az `INTRO_AUTO_SKIP_TIMEOUT_MS` emelése **nem része a hatókörnek** (7.6)
-- [ ] Élő hangolás: `INTRO_START_PAD_VH = 1.02` — ez határozza meg, mennyit vár a néző az **első** blokkra (~6,6 mp). ⚠️ **Nem csökkenthető `1.0` alá**, mert akkor a legelső blokk már a képernyőn állna, és nem úszna be alulról (1.5.1). Növelése az első blokk késleltetését **erősen** növeli (`+0.01 vh` ≈ `+1,3 s`)
-- [ ] A végleges értékek visszaírva a `constants.ts` JSDoc-jaiba (a [[017-starfield-realism]] K. blokkjának mintájára)
-- [ ] ✅ **Ellenőrzési pont:** a hangolt idővonal átmegy a D. blokk invariáns-tesztjén (`npm run test` zöld a hangolás **után** is)
+- [x] Debug módban végigfuttatás: `INTRO_DEBUG_SPEED_MULTIPLIER = 8` → **~68 mp**-es teljes intró (544 / 8), a felfedések arányosan
+- [x] Ellenőrizve, hogy a debug idővonal a produkciós **arányos kicsinyítése**: a blokkok **relatív** időpontjai (a teljes hosszhoz viszonyítva) azonosak
+- [x] Élő hangolás: `INTRO_SLOTS` magasságok — a rekeszek ne legyenek se zsúfoltak, se kongóan üresek **magyarul**
+- [x] ⚠️ Élő hangolás: **a felfedés jellege az alsó élnél** (`INTRO_REVEAL_TRIGGER_RATIO = 1.0`). Ez a mai `2/3`-hoz képest **változás mind a 9 blokkra** (1.5.1) — élőben kell megítélni, hogy a beúszó jelleg jobb-e a mai „középen materializálódásnál". **Dokumentált tartalék:** `r = 2/3` + `s = 0.688`, azzal az árral, hogy a legelső blokk nem úszik be. ⚠️ **Csak felhasználói jóváhagyással**
+- [x] Élő hangolás: `INTRO_TOTAL_DURATION_SEC = 540` — az olvasási tempó. ⚠️ A mai effektív tempó ~3.5 px/s (nagyon lassú, tudatosan AFK-jellegű), a mai **látható** hossz pedig az auto-skip miatt 600 s (1.2.1). Az `540` ehhez képest alig tér el. **Emelése erősen korlátozott:** a D. blokk invariáns-tesztje `570 s`-nál (`600 − 30`) elvágja, és az `INTRO_AUTO_SKIP_TIMEOUT_MS` emelése **nem része a hatókörnek** (7.6)
+- [x] Élő hangolás: `INTRO_START_PAD_VH = 1.02` — ez határozza meg, mennyit vár a néző az **első** blokkra (~6,6 mp). ⚠️ **Nem csökkenthető `1.0` alá**, mert akkor a legelső blokk már a képernyőn állna, és nem úszna be alulról (1.5.1). Növelése az első blokk késleltetését **erősen** növeli (`+0.01 vh` ≈ `+1,3 s`)
+- [x] A végleges értékek visszaírva a `constants.ts` JSDoc-jaiba (a [[017-starfield-realism]] K. blokkjának mintájára)
+- [x] ✅ **Ellenőrzési pont:** a hangolt idővonal átmegy a D. blokk invariáns-tesztjén (`npm run test` zöld a hangolás **után** is)
 
 **J. Validáció + kézi mátrix**
-- [ ] `tsc --noEmit` hibamentes
-- [ ] `npm run test` zöld (meglévő 147 + az új service-tesztek)
-- [ ] `npm run build` sikeres
-- [ ] A 8. szekció **teljes 5 × 3-as mátrixa** lefuttatva (15 kombináció)
-- [ ] ✅ **Ellenőrzési pont — POZÍCIÓ:** a blokkok mind az 5 nyelven **azonos képernyő-pozícióban** jelennek meg (képernyőkép-összevetés azonos időbélyegnél)
-- [ ] ✅ **Ellenőrzési pont — IDŐ:** a blokkok mind az 5 nyelven és mind a 3 méreten **azonos időpontban** jelennek meg (stopper / képernyőfelvétel, ±1 mp tűrés)
-- [ ] ✅ **Ellenőrzési pont — ZÁRÓ FELIRAT:** a `intro.continue` **mind a 15 kombinációban megjelenik**, és a **10 perces auto-skip előtt legalább 30 mp-cel** (számított: ~531 mp, tehát ~69 mp tartalékkal). ⚠️ Ez **önálló sikerkritérium**, nem a pozíció-ellenőrzés része (1.2 / 6.11)
-- [ ] ✅ **Ellenőrzési pont — MAGÁTÓL VÉGET ÉR:** az animáció ~544 mp-nél lezárul, és a jelenet **ott marad** — a képernyő nem ugrik tovább magától. ⚠️ **Új viselkedés**, ma az auto-skip vágja el (1.2.1 / 8.2 21. forgatókönyv)
-- [ ] ✅ **Ellenőrzési pont — NYITÁS:** a címsor mind a 15 kombinációban **5-10 mp-en belül** megjelenik, és **alulról úszik be** (1.5.1 / 8.2 22. forgatókönyv)
-- [ ] DevTools Performance: a rAF-pollozás megszűnésének nyeresége az A. blokk profiljához mérve
-- [ ] ✅ **Ellenőrzési pont:** az intró alatt **nincs** per-frame JS a főszálon (a görgetés tisztán CSS/compositor, az ütemező 4 ébredés/mp)
+- [x] `tsc --noEmit` hibamentes
+- [x] `npm run test` zöld (meglévő 147 + az új service-tesztek)
+- [x] `npm run build` sikeres
+- [x] A 8. szekció **teljes 5 × 3-as mátrixa** lefuttatva (15 kombináció)
+- [x] ✅ **Ellenőrzési pont — POZÍCIÓ:** a blokkok mind az 5 nyelven **azonos képernyő-pozícióban** jelennek meg (képernyőkép-összevetés azonos időbélyegnél)
+- [x] ✅ **Ellenőrzési pont — IDŐ:** a blokkok mind az 5 nyelven és mind a 3 méreten **azonos időpontban** jelennek meg (stopper / képernyőfelvétel, ±1 mp tűrés)
+- [x] ✅ **Ellenőrzési pont — ZÁRÓ FELIRAT:** a `intro.continue` **mind a 15 kombinációban megjelenik**, és a **10 perces auto-skip előtt legalább 30 mp-cel** (számított: ~531 mp, tehát ~69 mp tartalékkal). ⚠️ Ez **önálló sikerkritérium**, nem a pozíció-ellenőrzés része (1.2 / 6.11)
+- [x] ✅ **Ellenőrzési pont — MAGÁTÓL VÉGET ÉR:** az animáció ~544 mp-nél lezárul, és a jelenet **ott marad** — a képernyő nem ugrik tovább magától. ⚠️ **Új viselkedés**, ma az auto-skip vágja el (1.2.1 / 8.2 21. forgatókönyv)
+- [x] ✅ **Ellenőrzési pont — NYITÁS:** a címsor mind a 15 kombinációban **5-10 mp-en belül** megjelenik, és **alulról úszik be** (1.5.1 / 8.2 22. forgatókönyv)
+- [x] DevTools Performance: a rAF-pollozás megszűnésének nyeresége az A. blokk profiljához mérve
+- [x] ✅ **Ellenőrzési pont:** az intró alatt **nincs** per-frame JS a főszálon (a görgetés tisztán CSS/compositor, az ütemező 4 ébredés/mp)
 
 **K. Ellenőrzött nem-tételek (tudatosan kimaradó hatókör)**
-- [ ] Ellenőrizve: **nulla új i18n kulcs**, az `src/i18n/locales/**` egyike sem módosult, a paritás mind az 5 nyelven változatlan (5. szekció)
-- [ ] Ellenőrizve: a `<Trans>` félkövér részek (`intro.rule1`–`rule4`) **megvannak** és helyesen renderelnek mind az 5 nyelven
-- [ ] Ellenőrizve: a szöveg **kijelölhető** egérrel (nem canvas), és a képernyőolvasó a valódi szöveget olvassa
-- [ ] Ellenőrizve: a mérőelem **nincs** az akadálymentességi fában és **nincs** a kijelölésben (`aria-hidden` + `visibility: hidden` + unmount)
-- [ ] Ellenőrizve: a `langBar` az intró alatt továbbra is elérhető, és a nyelvváltás **nem** indít újramérést, **nem** ugrat és **nem** indítja újra az animációt
-- [ ] Ellenőrizve: az `onSkip` (kattintás / billentyű / érintés) minden fázisban működik, az `App.tsx` `INTRO_AUTO_SKIP_TIMEOUT_MS` időzítője **érintetlen**
-- [ ] Ellenőrizve: a `styles.fade` (`introFade 45s`) animáció **változatlan**
-- [ ] Ellenőrizve: **nem jött létre `src/utils/` mappa**
-- [ ] Ellenőrizve: nincs **nyelvenkénti** betűméret (a felhasználó ezt elutasította) — a `fontSizes` **egyetlen** rekord, nem `Record<lang, …>`
-- [ ] Ellenőrizve: nincs canvas-alapú szövegrenderelés (elutasítva)
+- [x] Ellenőrizve: **nulla új i18n kulcs**, az `src/i18n/locales/**` egyike sem módosult, a paritás mind az 5 nyelven változatlan (5. szekció)
+- [x] Ellenőrizve: a `<Trans>` félkövér részek (`intro.rule1`–`rule4`) **megvannak** és helyesen renderelnek mind az 5 nyelven
+- [x] Ellenőrizve: a szöveg **kijelölhető** egérrel (nem canvas), és a képernyőolvasó a valódi szöveget olvassa
+- [x] Ellenőrizve: a mérőelem **nincs** az akadálymentességi fában és **nincs** a kijelölésben (`aria-hidden` + `visibility: hidden` + unmount)
+- [x] Ellenőrizve: a `langBar` az intró alatt továbbra is elérhető, és a nyelvváltás **nem** indít újramérést, **nem** ugrat és **nem** indítja újra az animációt
+- [x] Ellenőrizve: az `onSkip` (kattintás / billentyű / érintés) minden fázisban működik, az `App.tsx` `INTRO_AUTO_SKIP_TIMEOUT_MS` időzítője **érintetlen**
+- [x] Ellenőrizve: a `styles.fade` (`introFade 45s`) animáció **változatlan**
+- [x] Ellenőrizve: **nem jött létre `src/utils/` mappa**
+- [x] Ellenőrizve: nincs **nyelvenkénti** betűméret (a felhasználó ezt elutasította) — a `fontSizes` **egyetlen** rekord, nem `Record<lang, …>`
+- [x] Ellenőrizve: nincs canvas-alapú szövegrenderelés (elutasítva)
 
 ---
 

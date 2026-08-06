@@ -203,6 +203,25 @@
   }
 }
 
+/* Headline-specific rule for landscape phones (the intro runs in landscape on
+   mobile). There the viewport is wide but only ~330-450px tall, so the headline
+   slot (0.3vh) is ~100-135px. With the default clamp(0.08em, 1vw, 0.35em)
+   tracking, 1vw is large enough to wrap "Realtime Space Travel" onto two lines,
+   and fitting two lines into that short slot drives the font down to its floor.
+
+   Dropping the tracking to a fixed, small value keeps the title on a single
+   line, so the shared fit can grow it to fill the slot's width instead — a
+   markedly larger, readable title. The measurement probe reuses this same
+   .headline class, so the fit measures the one-line height automatically and the
+   0.3vh slot invariant still holds (the headline never overflows its slot).
+   Desktop is untouched: it is landscape but far taller than 500px. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .headline {
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+  }
+}
+
 @keyframes introFade {
   0% {
     opacity: 0;

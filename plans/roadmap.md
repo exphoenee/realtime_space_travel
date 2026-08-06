@@ -4,10 +4,10 @@
 # Regenerate with: python .claude/scripts/generate_roadmap.py
 generated_at: "2026-08-06"
 total_plans: 24
-implemented: 17
+implemented: 18
 in_progress: 1
-not_started: 6
-tasks_done: 1013
+not_started: 5
+tasks_done: 1147
 tasks_total: 1616
 plans:
   - step: 0
@@ -145,9 +145,9 @@ plans:
     dependencies: [003-firebase-auth-settings, 005-ingame-shop-strapi-stripe, 007-state-persist-page-refresh]
   - step: 19
     slug: "019-intro-deterministic-layout"
-    status: "not-started"
+    status: "implemented"
     category: "ui"
-    tasks_done: 0
+    tasks_done: 134
     tasks_total: 134
     dependencies: []
   - step: 20
@@ -188,8 +188,8 @@ plans:
 
 ## Project Status
 
-- **Plans:** 17 implemented · 1 in progress · 6 not started (of 24)
-- **Tasks:** 1013/1616 done (63%)
+- **Plans:** 18 implemented · 1 in progress · 5 not started (of 24)
+- **Tasks:** 1147/1616 done (71%)
 
 ## Overview
 
@@ -214,7 +214,7 @@ plans:
 | 16 | Notification retention | ⬜ Not started | 0/48 | — | core | 15 |
 | 17 | Élethűbb csillagmező (Starfield realizmus) | ✅ Implemented | 134/134 | — | ui | 11 |
 | 18 | Next.js 16 migráció | ⬜ Not started | 0/153 | — | core | 3, 5, 7 |
-| 19 | Determinisztikus intró-elrendezés | ⬜ Not started | 0/134 | — | ui | — |
+| 19 | Determinisztikus intró-elrendezés | ✅ Implemented | 134/134 | — | ui | — |
 | 20 | Mobil/tablet kamera orientáció-kompenzáció | ✅ Implemented | 34/34 | — | core | — |
 | 21 | Stripe csalásvédelem | ⬜ Not started | 0/53 | — | security | 5, 9, 10, 18 |
 | 22 | Stripe adózás és ÁFA-megfelelőség | ⬜ Not started | 0/9 | — | payments | 5 |
@@ -233,7 +233,6 @@ plans:
 - **Step 15 — Toast notification rendszer** (69/72): **`database.rules.json` deploy** — ⚠️ **felhasználói művelet, még nem futott le.** Amíg a szabályok nincsenek élesítve, a `sendNotification` a címzett node-jába íráskor `PERMISSION_DENIED`-et kap (a hiba elnyelődik, lásd D. blokk), így a toast-ok **nem jelennek meg** a másik félnél.
 - **Step 16 — Notification retention** (0/48): `src/constants/constants.ts`: `NOTIFICATION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000` (7 nap)
 - **Step 18 — Next.js 16 migráció** (0/153): `npm run test` lefuttatva a migráció **előtt**, a pontos szám rögzítve (elvárt: **147 teszt / 9 fájl**, mind zöld)
-- **Step 19 — Determinisztikus intró-elrendezés** (0/134): Böngészős megerősítés: `DEBUG_MODE=true` (210 s-os intró) mellett végigfuttatás **legalább 2 nyelven** (leghosszabb: `fr`, legrövidebb: `hu`) és **2 képernyőméreten** (mobil portré 390×844, desktop 1920×1080) — az elvárt eredmény: a `intro.continue` felirat **egyszer sem** jelenik meg
 - **Step 21 — Stripe csalásvédelem** (0/53): `.env`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** átnevezés (a `VITE_` prefix elhagyása)
 - **Step 22 — Stripe adózás és ÁFA-megfelelőség** (0/9): `[K]` Dashboard → **Tax** → Get started; **origin address** (székhely) megadása
 - **Step 23 — Stripe élesítés** (0/76): `[A]` [[021-stripe-fraud-defense]] **A fázis** teljes lefutása: `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` (`.env`, `.env.example`, `create_payment_links.mjs` **és mindkét workflow `env:` blokkja**), kulcs-rotáció, **restricted key**, `scripts/check_secrets.mjs`, CI-beépítés
