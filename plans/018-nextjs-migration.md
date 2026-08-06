@@ -18,7 +18,7 @@ dependencies:
 related_plans:
   - 016-notification-retention
   - 017-starfield-realism
-  - 021-intro-deterministic-layout
+  - 019-intro-deterministic-layout
 tags:
   - nextjs
   - migration
@@ -36,7 +36,7 @@ tags:
 
 **Cél:** a ma tisztán kliensoldali Vite SPA teljes átköltöztetése **Next.js App Routerre**, Vercel hosztolással, hogy a projekt **szerveroldali futtatókörnyezetet** kapjon. A Firebase (Auth + Realtime Database) háttérszolgáltatásként megmarad; a GitHub Pages deployment megszűnik.
 
-> 🎯 **Miért készül ez a terv — egy mondatban.** A [[019-stripe-fraud-defense]] és a [[020-stripe-go-live]] **nem fejezhető be szerveroldal nélkül**: nincs hova tenni a Stripe titkos kulcsot, nincs mi fogadja a webhookot, és nincs mi írja a pénztárcát szerveroldalról. A [[005-ingame-shop-strapi-stripe]] pontosan azért választotta a Payment Link megoldást, mert a Firebase **Spark** csomagon nincs Cloud Functions. Ez a migráció **nem a Stripe-ot valósítja meg**, hanem **megteremti a helyet**, ahol a 019 F fázisa és a 020 végre elvégezhető.
+> 🎯 **Miért készül ez a terv — egy mondatban.** A [[021-stripe-fraud-defense]] és a [[023-stripe-go-live]] **nem fejezhető be szerveroldal nélkül**: nincs hova tenni a Stripe titkos kulcsot, nincs mi fogadja a webhookot, és nincs mi írja a pénztárcát szerveroldalról. A [[005-ingame-shop-strapi-stripe]] pontosan azért választotta a Payment Link megoldást, mert a Firebase **Spark** csomagon nincs Cloud Functions. Ez a migráció **nem a Stripe-ot valósítja meg**, hanem **megteremti a helyet**, ahol a 021 F fázisa és a 023 végre elvégezhető.
 
 > ⚠️ **Ez a migráció NEM SSR-előnyökért történik.** A játék lényegében teljes egészében kliensoldali: canvas + `requestAnimationFrame` + webkamera + `getUserMedia` + Web Audio + `localStorage`. A szerveroldali renderelésnek **nulla haszna** és **jelentős kockázata** van itt (hidratálási eltérések). A cél **kizárólag** az API route-ok (`app/api/**`) és a szerveroldali titokkezelés. **Egy későbbi olvasó ne kezdje el szerverkomponensesíteni a játékot** — a 9. szekció ezt tételesen kimondja.
 
@@ -63,10 +63,10 @@ tags:
 | MediaPipe betöltés | **`next/script` `beforeInteractive`** a root layoutban + **lusta (lazy) stub**. A ma eager `window.FaceDetection` olvasás Next-ben **kötelezően** lustává alakítandó (7.3) |
 | MediaPipe alias | **webpack alias** a `next.config.ts`-ben (`config.resolve.alias`), a mai `vite.config.ts` alias 1:1 megfelelője. Turbopack esetén `turbopack.resolveAlias` **is** kell |
 | Cross-origin isolation (COEP/COOP) | ❌ **Nem** kerül dokumentum-szintre. A mai `firebase.json` a headereket csak a `.wasm` **assetre** teszi (tehát ma sincs valódi izoláció). Dokumentum-szintű COEP **elrontaná a `signInWithPopup` Google bejelentkezést** (7.5) |
-| Routing | **Catch-all `app/[[...slug]]/page.tsx`** — pontosan a mai `firebase.json` `"**" → /index.html` SPA-fallback szemantikája. Így a `/shop/success` és a 020 jövőbeli `/legal/*` mély linkjei **külön fájl nélkül** működnek |
+| Routing | **Catch-all `app/[[...slug]]/page.tsx`** — pontosan a mai `firebase.json` `"**" → /index.html` SPA-fallback szemantikája. Így a `/shop/success` és a 023 jövőbeli `/legal/*` mély linkjei **külön fájl nélkül** működnek |
 | Debug mód | **Vercel környezetenkénti env:** Production `NEXT_PUBLIC_DEBUG_MODE=false`, Preview `true`, Development `true`. Ez pótolja azt, amit a GitHub Pages build adott |
-| Stripe kulcs helye | **`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_` prefix NÉLKÜL**, Vercel env változóként. Fizikailag képtelen a bundle-be kerülni — ez oldja fel a [[019-stripe-fraud-defense]] 3.0 ellentmondását |
-| API route-ok ebben a tervben | **Csak egy füstteszt** (`app/api/health/route.ts`). A Stripe Checkout Session és webhook route-ok a [[019-stripe-fraud-defense]] F fázisához és a [[020-stripe-go-live]]-hoz tartoznak — itt csak a **hely és a minta** készül el |
+| Stripe kulcs helye | **`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_` prefix NÉLKÜL**, Vercel env változóként. Fizikailag képtelen a bundle-be kerülni — ez oldja fel a [[021-stripe-fraud-defense]] 3.0 ellentmondását |
+| API route-ok ebben a tervben | **Csak egy füstteszt** (`app/api/health/route.ts`). A Stripe Checkout Session és webhook route-ok a [[021-stripe-fraud-defense]] F fázisához és a [[023-stripe-go-live]]-hoz tartoznak — itt csak a **hely és a minta** készül el |
 | i18n kulcsok | **Nulla új kulcs.** A paritás mind az 5 nyelven változatlan — a `dev` skill **ne indítsa** az `i18n` agentet |
 
 ---
@@ -112,7 +112,7 @@ tags:
 **C. Env változó átvezetés — tételes** *(3.1 tábla, 27 előfordulás, 17 fájl)*
 
 - [ ] `.env.example` átírva: mind a 8 `VITE_FIREBASE_*` → `NEXT_PUBLIC_FIREBASE_*`, `VITE_DEBUG_MODE` → `NEXT_PUBLIC_DEBUG_MODE`
-- [ ] `.env.example`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** (prefix nélkül) + a komment átírása: „**szerveroldali** változó, `NEXT_PUBLIC_` prefix nélkül fizikailag nem kerülhet a kliens bundle-be" (ez a [[019-stripe-fraud-defense]] A fázisának egy tételét **elvégzi**)
+- [ ] `.env.example`: `VITE_STRIPE_SECRET_KEY` → **`STRIPE_SECRET_KEY`** (prefix nélkül) + a komment átírása: „**szerveroldali** változó, `NEXT_PUBLIC_` prefix nélkül fizikailag nem kerülhet a kliens bundle-be" (ez a [[021-stripe-fraud-defense]] A fázisának egy tételét **elvégzi**)
 - [ ] `.env.example`: új `NEXT_PUBLIC_SITE_URL` sor (a `metadataBase`-hez)
 - [ ] Helyi `.env` átnevezése `.env.local`-ra (Next konvenció; a `.env` is működik, de a `.env.local` gitignore-olt alapból)
 - [ ] `src/firebase/config.ts` — **8 sor** (6, 7, 8, 9, 23, 24, 25, 26): `import.meta.env.VITE_FIREBASE_*` → `process.env.NEXT_PUBLIC_FIREBASE_*`
@@ -123,7 +123,7 @@ tags:
 - [ ] `src/components/shop/ShopScreen.tsx:142` — idem
 - [ ] `src/components/screens/IntroScreen.tsx:9` — idem
 - [ ] `src/components/screens/MainMenu.tsx:13` — idem
-- [ ] `src/constants/shopCatalog.ts:54` — `import.meta.env.DEV` → `process.env.NODE_ENV !== "production"`. ⚠️ **Viselkedés-jegyzet:** a Vercel **preview** build is production build (`NODE_ENV === "production"`), tehát a preview a **prod** Payment Linket használja — pontosan úgy, ahogy ma a GitHub Pages build. A [[020-stripe-go-live]] élesítéskor ezt **explicit kapcsolóra** akarhatja cserélni (3.4)
+- [ ] `src/constants/shopCatalog.ts:54` — `import.meta.env.DEV` → `process.env.NODE_ENV !== "production"`. ⚠️ **Viselkedés-jegyzet:** a Vercel **preview** build is production build (`NODE_ENV === "production"`), tehát a preview a **prod** Payment Linket használja — pontosan úgy, ahogy ma a GitHub Pages build. A [[023-stripe-go-live]] élesítéskor ezt **explicit kapcsolóra** akarhatja cserélni (3.4)
 - [ ] ⚠️ **Nem szabad** `process.env`-et objektumként destrukturálni vagy dinamikusan indexelni (`process.env[key]`) — a Next build-idejű behelyettesítése **csak a szó szerinti `process.env.NEXT_PUBLIC_X` alakot** ismeri fel
 - [ ] Ellenőrzés grepnel: `import.meta` **nulla** előfordulás a `src/`-ben és a gyökérben (a `plans/` és a `.claude/` találatok dokumentációk, azok maradnak)
 - [ ] ✅ **Ellenőrzési pont:** `npm run typecheck` hibamentes; `npm run dev` → a Firebase inicializálódik (nincs „Missing Firebase config" hiba), a debug mód a `.env.local` szerint kapcsol
@@ -203,7 +203,7 @@ tags:
 - [ ] `src/components/shop/ShopScreen.tsx:119-122` — a `window.history.replaceState` URL-tisztítás **változatlanul működik** (nem Next router, hanem natív History API — ez itt előny, nem hiba)
 - [ ] ⚠️ **Nem vezetünk be `next/navigation` routert.** A játék belső navigációja `GamePhase` állapotgéppel megy, nem URL-lel — ez így marad
 - [ ] A catch-all route következménye rögzítve: ismeretlen URL **200**-at ad 404 helyett, pontosan úgy, mint ma az SPA-fallback
-- [ ] Forward-compat jegyzet a [[020-stripe-go-live]] C fázisához: a `/legal/terms`, `/legal/privacy`, `/legal/refund`, `/legal/imprint` mély linkek a catch-all alatt **külön route-fájl nélkül** működni fognak
+- [ ] Forward-compat jegyzet a [[023-stripe-go-live]] C fázisához: a `/legal/terms`, `/legal/privacy`, `/legal/refund`, `/legal/imprint` mély linkek a catch-all alatt **külön route-fájl nélkül** működni fognak
 - [ ] ✅ **Ellenőrzési pont:** `/`, `/shop/success?session_id=cs_test_x`, `/legal/terms`, `/tetszoleges/url` — mind a játékot tölti be, a `session_id` query paraméter **megérkezik** a kliensre
 
 **I. Tesztek — Vitest megtartása**
@@ -231,7 +231,7 @@ tags:
 - [ ] Vercel: Node.js verzió **20** (a mai workflow-kkal egyezően)
 - [ ] **Firebase Console → Authentication → Settings → Authorized domains**: a Vercel production domain **és** a stabil branch-preview domain felvéve. ⚠️ A Firebase **nem támogat wildcard domaint** — minden random preview URL-en `auth/unauthorized-domain` lesz (7.7)
 - [ ] `firebase.json`: a `hosting` szekció sorsáról döntés — **javaslat:** megtartva, de a tartalma egy `redirects` blokkra cserélve, ami a Vercel domainre irányít (301, query string megőrzéssel), amíg a Stripe Payment Linkek redirect URL-je át nem áll (7.9)
-- [ ] ⚠️ **Cross-plan blokkoló:** a 8 meglévő Stripe Payment Link redirect URL-je a `https://realtimespacetravel-e74e3.web.app/shop/success` címre mutat. A migráció után ezeket **újra kell generálni** a Vercel domainre — vagy a Firebase Hosting redirectnek kell megőriznie a `?session_id` query stringet. Ez a [[019-stripe-fraud-defense]] D fázisának és a [[020-stripe-go-live]]-nak közvetlen érintettsége
+- [ ] ⚠️ **Cross-plan blokkoló:** a 8 meglévő Stripe Payment Link redirect URL-je a `https://realtimespacetravel-e74e3.web.app/shop/success` címre mutat. A migráció után ezeket **újra kell generálni** a Vercel domainre — vagy a Firebase Hosting redirectnek kell megőriznie a `?session_id` query stringet. Ez a [[021-stripe-fraud-defense]] D fázisának és a [[023-stripe-go-live]]-nak közvetlen érintettsége
 - [ ] `README` / `CLAUDE.md` frissítése: `npm run dev` port **3000** (nem 5173), nincs `/realtime_space_travel/` base path, nincs `build:gh-pages`
 - [ ] ✅ **Ellenőrzési pont:** a `main`-re pusholva a Vercel production deploy zöld; a `/api/health` a production domainen válaszol; a `database.rules.json` módosítása kiváltja a rules-deploy workflow-t (és **semmi mást**)
 
@@ -250,7 +250,7 @@ tags:
 - [ ] `npm run lint` (`next lint`) hibamentes vagy tudatosan konfigurált kivételekkel
 - [ ] `npm run test` → **147/147 zöld**
 - [ ] `npm run build` sikeres; a build log **nem** tartalmaz „use client" / hidratálási figyelmeztetést
-- [ ] `npm run build` után a `.next/` bundle **átvizsgálva Stripe-kulcsra**: `Select-String -Path .next\static\chunks\*.js -Pattern "sk_test_|sk_live_|rk_"` → **0 találat** (ez a [[019-stripe-fraud-defense]] `check_secrets.mjs` tételének Next-változata)
+- [ ] `npm run build` után a `.next/` bundle **átvizsgálva Stripe-kulcsra**: `Select-String -Path .next\static\chunks\*.js -Pattern "sk_test_|sk_live_|rk_"` → **0 találat** (ez a [[021-stripe-fraud-defense]] `check_secrets.mjs` tételének Next-változata)
 - [ ] A 8. szekció **mind a 14 kézi forgatókönyve** lefuttatva a Vercel **preview** deploymenten
 - [ ] A 8. szekció kritikus forgatókönyvei (1, 2, 3, 9, 12) megismételve a **production** deploymenten
 - [ ] Bundle-méret összevetés a baseline-nal (A. blokk) — nagyságrendi növekedés esetén vizsgálat
@@ -273,7 +273,7 @@ tags:
 - [ ] Ellenőrizve: **nincs `next/navigation`** használat — a `GamePhase` állapotgép változatlan
 - [ ] Ellenőrizve: **nincs `@/…` path alias** — a relatív importok változatlanok
 - [ ] Ellenőrizve: **nincs Stripe Checkout Session / webhook route** ebben a tervben — csak az `app/api/health/route.ts` füstteszt
-- [ ] Ellenőrizve: **nincs Firebase Admin SDK függőség** hozzáadva — a 019 F fázisa hozza be
+- [ ] Ellenőrizve: **nincs Firebase Admin SDK függőség** hozzáadva — a 021 F fázisa hozza be
 - [ ] Ellenőrizve: a `GamePhase` állapotgép, a `useAttentionMonitor` logika, a Starfield renderelés és a shop üzleti logikája **egyetlen sorral sem** változott üzletileg (csak env/asset-útvonal szinten)
 
 ---
@@ -311,8 +311,8 @@ app/
     └── health/route.ts      SZERVER — runtime: "nodejs"  ← A SZERVEROLDAL
                                                              (füstteszt)
         ▼ ide jön később
-    stripe/checkout/route.ts   ← [[020-stripe-go-live]]
-    stripe/webhook/route.ts    ← [[019-stripe-fraud-defense]] F fázis
+    stripe/checkout/route.ts   ← [[023-stripe-go-live]]
+    stripe/webhook/route.ts    ← [[021-stripe-fraud-defense]] F fázis
 
 src/**                       VÁLTOZATLAN szerkezet, kliensoldali
                              (csak env- és asset-útvonal átvezetés)
@@ -429,14 +429,14 @@ Az `useUIStore` (hangerő, nehézség, kamera-hozzájárulás) ma **memóriában
 | SEO haszon | nincs | lenne, de **irreleváns**: a játék tartalma bejelentkezés és webkamera mögött van |
 | Kód-változás | ~2 sor őr | teljes routing-refaktor |
 
-**Döntés:** kliensoldali init. Az egyetlen ok, ami a Next-natív utat indokolná, a nyelvenkénti SEO — ez egy webkamerás AFK-játéknál nem szempont. A [[020-stripe-go-live]] jogi oldalai (`/legal/*`) esetleg indexelhetőek lennének, de azok is elérhetők maradnak egyetlen nyelvsemleges URL-en.
+**Döntés:** kliensoldali init. Az egyetlen ok, ami a Next-natív utat indokolná, a nyelvenkénti SEO — ez egy webkamerás AFK-játéknál nem szempont. A [[023-stripe-go-live]] jogi oldalai (`/legal/*`) esetleg indexelhetőek lennének, de azok is elérhetők maradnak egyetlen nyelvsemleges URL-en.
 
 ### 1.7 Routing — catch-all, nem `next/navigation`
 
 A játék belső navigációja a `GamePhase` állapotgép (`intro → mainMenu → missionSelect → …`), **nem az URL**. Ez a migráció után is így marad. Az URL-nek mindössze **két** szerepe van:
 
 1. `/shop/success` — a Stripe Payment Link visszatérése ([[005-ingame-shop-strapi-stripe]]).
-2. `/legal/*` — a [[020-stripe-go-live]] C fázisának tervezett mély linkjei.
+2. `/legal/*` — a [[023-stripe-go-live]] C fázisának tervezett mély linkjei.
 
 A mai `firebase.json` ezt egy `"**" → /index.html` rewrite-tal oldja meg. A Next-megfelelője az **opcionális catch-all** `app/[[...slug]]/page.tsx`, ami minden útvonalra ugyanazt a klienst tölti be — az `app/api/**` route handlerek **elsőbbséget élveznek**, tehát az API nem esik a catch-all alá.
 
@@ -447,10 +447,10 @@ A mai `firebase.json` ezt egy `"**" → /index.html` rewrite-tal oldja meg. A Ne
 | Ma (Vite SPA) | A migráció után (Next.js + Vercel) |
 |---|---|
 | `VITE_STRIPE_SECRET_KEY` a `.env`-ben és **mindkét deploy workflow `env:` blokkjában** | `STRIPE_SECRET_KEY` **Vercel env változó**, `NEXT_PUBLIC_` prefix nélkül |
-| A `VITE_` prefix **szándéknyilatkozat**: „ez a böngészőbe való" — egyetlen `import.meta.env.VITE_STRIPE_SECRET_KEY` sor **némán** kiszivárogtatná ([[019-stripe-fraud-defense]] 3.0) | A prefix nélküli változó a kliens bundle-be **fizikailag képtelen** bekerülni: a Next build-idejű behelyettesítése kizárólag `NEXT_PUBLIC_`-ra vonatkozik |
-| A kulcsnak **nincs legitim szerepe** egy kizárólag kliensoldali buildben (a 019 3.0 „tágabb következtetése") | A kulcsnak **van** hova mennie: az API route futásidejű környezete |
+| A `VITE_` prefix **szándéknyilatkozat**: „ez a böngészőbe való" — egyetlen `import.meta.env.VITE_STRIPE_SECRET_KEY` sor **némán** kiszivárogtatná ([[021-stripe-fraud-defense]] 3.0) | A prefix nélküli változó a kliens bundle-be **fizikailag képtelen** bekerülni: a Next build-idejű behelyettesítése kizárólag `NEXT_PUBLIC_`-ra vonatkozik |
+| A kulcsnak **nincs legitim szerepe** egy kizárólag kliensoldali buildben (a 021 3.0 „tágabb következtetése") | A kulcsnak **van** hova mennie: az API route futásidejű környezete |
 
-Ez **feloldja** a [[019-stripe-fraud-defense]] 3.0 és a [[020-stripe-go-live]] A fázisa közti rögzített ellentmondást (megtartani átnevezve **vagy** eltávolítani): a helyes válasz **egyikük sem** volt, hanem **átköltöztetni szerveroldalra** — ami eddig nem létezett. A migráció után:
+Ez **feloldja** a [[021-stripe-fraud-defense]] 3.0 és a [[023-stripe-go-live]] A fázisa közti rögzített ellentmondást (megtartani átnevezve **vagy** eltávolítani): a helyes válasz **egyikük sem** volt, hanem **átköltöztetni szerveroldalra** — ami eddig nem létezett. A migráció után:
 
 - a `.env` / GitHub secret / workflow `env:` blokk **egyike sem** tartalmaz Stripe kulcsot,
 - a kulcs egyetlen példánya a Vercel env store-ban él,
@@ -461,23 +461,23 @@ Ez **feloldja** a [[019-stripe-fraud-defense]] 3.0 és a [[020-stripe-go-live]] 
 | Payment Link (ma) | Checkout Session + webhook (a migráció után lehetséges) |
 |---|---|
 | Nincs szerveroldali visszaigazolás | `checkout.session.completed` webhook, `Stripe-Signature` ellenőrzéssel |
-| A jóváírás **kizárólag** a localStorage tartalmán alapul (019 „kritikus rés") | A jóváírás a Stripe **aláírt** eseményéből származik |
-| A refund után a kredit **nem vonódik vissza** ([[020-stripe-go-live]] 14. szekció) | `charge.refunded` esemény kezelhető |
-| A `session_id` valódisága kliensről **nem ellenőrizhető** (019 11. tábla) | `stripe.checkout.sessions.retrieve(id)` szerveroldalon |
+| A jóváírás **kizárólag** a localStorage tartalmán alapul (021 „kritikus rés") | A jóváírás a Stripe **aláírt** eseményéből származik |
+| A refund után a kredit **nem vonódik vissza** ([[023-stripe-go-live]] 14. szekció) | `charge.refunded` esemény kezelhető |
+| A `session_id` valódisága kliensről **nem ellenőrizhető** (021 11. tábla) | `stripe.checkout.sessions.retrieve(id)` szerveroldalon |
 
-⚠️ **Webhook-implementációs jegyzet a 019 F fázisának:** az App Router route handlerben az aláírás-ellenőrzéshez a **nyers body** kell — `await req.text()`, **soha nem** `await req.json()`. A route-nak `export const runtime = "nodejs"` kell (az Edge runtime nem viszi a `stripe` SDK-t és a `firebase-admin`-t).
+⚠️ **Webhook-implementációs jegyzet a 021 F fázisának:** az App Router route handlerben az aláírás-ellenőrzéshez a **nyers body** kell — `await req.text()`, **soha nem** `await req.json()`. A route-nak `export const runtime = "nodejs"` kell (az Edge runtime nem viszi a `stripe` SDK-t és a `firebase-admin`-t).
 
 #### (c) Firebase Admin SDK → RTDB „Phase-2" szabályok
 
-A [[003-firebase-auth-settings]] 6. pontja és a [[019-stripe-fraud-defense]] 6.2 architektúrája ugyanazt a hiányzó darabot írja le: egy **szerveroldali író**, ami a `users/{key}/wallet`-et frissíti, hogy a kliens írási joga megvonható legyen:
+A [[003-firebase-auth-settings]] 6. pontja és a [[021-stripe-fraud-defense]] 6.2 architektúrája ugyanazt a hiányzó darabot írja le: egy **szerveroldali író**, ami a `users/{key}/wallet`-et frissíti, hogy a kliens írási joga megvonható legyen:
 
 ```jsonc
 "wallet": { ".write": false }   // Phase-2 — csak a szerver írhat
 ```
 
-A `firebase-admin` egy Next API route-ban (Node runtime, service account a Vercel env-ben) ezt **közvetlenül** megteszi — Cloud Functions és Blaze terv **nélkül**. Ez a 019 csalásvédelmének **legfontosabb hiányzó építőköve**: az „ingyen kredit" rés (019 5. szekció) így nem csak **szűkül**, hanem **megszűnik**.
+A `firebase-admin` egy Next API route-ban (Node runtime, service account a Vercel env-ben) ezt **közvetlenül** megteszi — Cloud Functions és Blaze terv **nélkül**. Ez a 021 csalásvédelmének **legfontosabb hiányzó építőköve**: az „ingyen kredit" rés (021 5. szekció) így nem csak **szűkül**, hanem **megszűnik**.
 
-> A 019 6.3 táblája Cloudflare Workerst ajánlott külső futtatónak, mert a Firebase Spark nem enged Cloud Functionst. Ez a migráció **jobb megoldást ad ugyanarra**: nem egy külön üzemeltetendő komponens, hanem ugyanaz a deploy, ugyanaz a repó, ugyanaz a TypeScript kódbázis. A 019 F fázisának Worker-specifikus tételei ennek megfelelően **egyszerűsödnek**.
+> A 021 6.3 táblája Cloudflare Workerst ajánlott külső futtatónak, mert a Firebase Spark nem enged Cloud Functionst. Ez a migráció **jobb megoldást ad ugyanarra**: nem egy külön üzemeltetendő komponens, hanem ugyanaz a deploy, ugyanaz a repó, ugyanaz a TypeScript kódbázis. A 021 F fázisának Worker-specifikus tételei ennek megfelelően **egyszerűsödnek**.
 
 ---
 
@@ -612,7 +612,7 @@ A `shopCatalog.ts:54` ma `import.meta.env.DEV` alapján választ dev vagy prod P
 | Vercel **preview** build | — | `false` | **prod** |
 | Vercel **production** build | — | `false` | prod |
 
-**Viselkedési paritás megvan** (a GH Pages debug build is a prod linket használta). ⚠️ De a [[020-stripe-go-live]] élesítése után a preview deployment **valós pénzes** Payment Linkre mutatna. A 020-nek ezt kezelnie kell: javasolt egy explicit `NEXT_PUBLIC_STRIPE_MODE` (`test` | `live`) env változó, környezetenként állítva — **ez nem ennek a tervnek a feladata**, de itt kerül rögzítésre.
+**Viselkedési paritás megvan** (a GH Pages debug build is a prod linket használta). ⚠️ De a [[023-stripe-go-live]] élesítése után a preview deployment **valós pénzes** Payment Linkre mutatna. A 023-nek ezt kezelnie kell: javasolt egy explicit `NEXT_PUBLIC_STRIPE_MODE` (`test` | `live`) env változó, környezetenként állítva — **ez nem ennek a tervnek a feladata**, de itt kerül rögzítésre.
 
 ---
 
@@ -646,8 +646,8 @@ A `shopCatalog.ts:54` ma `import.meta.env.DEV` alapján választ dev vagy prod P
 | [[005-ingame-shop-strapi-stripe]] | **Előfeltétel.** Az itt megépített Payment Link út és a `/shop/success` redirect a migráció routing-követelménye. A redirect URL a migráció után **újragenerálandó** |
 | [[003-firebase-auth-settings]] | **Előfeltétel.** A Firebase Auth + RTDB séma, ami a migráció után **változatlanul** marad. Az itt felvázolt „Phase-2" szerveroldali szabályokat a migráció **teszi lehetővé** |
 | [[007-state-persist-page-refresh]] | **Előfeltétel.** A `space-travel-game` persist viselkedése a hidratálási munka **referenciája**: a migráció után az F5-viselkedésnek bitre azonosnak kell lennie |
-| [[019-stripe-fraud-defense]] | **Ráépülő.** Az F fázisa (webhook backend) ezután Vercel API route-tal, nem Cloudflare Workerrel valósul meg. Az A fázis kulcs-átnevezés tételét a migráció C. blokkja **elvégzi** |
-| [[020-stripe-go-live]] | **Ráépülő.** Az A fázis 019-tal való ütközését a migráció **feloldja**; a C fázis `/legal/*` mély linkjei a catch-all route alatt működnek |
+| [[021-stripe-fraud-defense]] | **Ráépülő.** Az F fázisa (webhook backend) ezután Vercel API route-tal, nem Cloudflare Workerrel valósul meg. Az A fázis kulcs-átnevezés tételét a migráció C. blokkja **elvégzi** |
+| [[023-stripe-go-live]] | **Ráépülő.** Az A fázis 021-tal való ütközését a migráció **feloldja**; a C fázis `/legal/*` mély linkjei a catch-all route alatt működnek |
 | [[017-starfield-realism]] | **Kódütközés.** A `Starfield.tsx:120` `BASE_URL` sora a 017 által frissen írt régióban van — a D. blokk diffje itt ütközhet, ha a 017 nincs mergelve |
 
 ### 5.2 Technikai függőségek
@@ -659,14 +659,14 @@ A `shopCatalog.ts:54` ma `import.meta.env.DEV` alapján választ dev vagy prod P
 | `zustand` | ^4.5 (marad) | A `persist` `skipHydration` opciója 4.x-ben elérhető |
 | `i18next` / `react-i18next` | marad | A `react-i18next` 17 támogatja a React 19-et |
 | `@tensorflow/tfjs` · `@tensorflow-models/face-detection` | marad | Kliens-only, `ssr: false` mögött |
-| `firebase` | ^12 (marad) | A kliens SDK; a `firebase-admin` **később**, a 019 F fázisában |
+| `firebase` | ^12 (marad) | A kliens SDK; a `firebase-admin` **később**, a 021 F fázisában |
 | `vitest` · `vite` · `@vitejs/plugin-react` | marad devDependencyként | A Vitest belül Vite-ot használ |
 | `stripe` | marad | Ma csak a `scripts/create_payment_links.mjs` használja |
 
 ### 5.3 Külső / fiók-szintű függőségek
 
 - **Vercel fiók + projekt** a GitHub repóhoz kötve.
-- ⚠️ **Vercel csomag:** a Hobby ToS **tiltja a kereskedelmi használatot** — valós pénzes fizetést kiszolgáló deploymenthez **Pro csomag** kell. ✅ **Eldőlt (2026-07-30): Hobby-n maradunk, valós pénzes fizetés nélkül** — lásd 12.1. A migráció és a teszt módú Stripe ezzel nem ütközik; a [[019-stripe-fraud-defense]] 6.3 táblájának Vercel-kizárása **kizárólag a valós pénzes endpointra** marad érvényben, azaz a [[020-stripe-go-live]] külön Pro-döntést igényel
+- ⚠️ **Vercel csomag:** a Hobby ToS **tiltja a kereskedelmi használatot** — valós pénzes fizetést kiszolgáló deploymenthez **Pro csomag** kell. ✅ **Eldőlt (2026-07-30): Hobby-n maradunk, valós pénzes fizetés nélkül** — lásd 12.1. A migráció és a teszt módú Stripe ezzel nem ütközik; a [[021-stripe-fraud-defense]] 6.3 táblájának Vercel-kizárása **kizárólag a valós pénzes endpointra** marad érvényben, azaz a [[023-stripe-go-live]] külön Pro-döntést igényel
 - **Firebase Console** hozzáférés az authorized domains bővítéséhez.
 - **Stripe Dashboard** hozzáférés a Payment Link redirect URL-ek újragenerálásához.
 
@@ -748,7 +748,7 @@ process.env[key];                                  // ❌ undefined
 console.log(process.env);                          // ❌ üres/részleges objektum
 ```
 
-Ez egyben **előny**: pontosan ez teszi lehetetlenné, hogy a `STRIPE_SECRET_KEY` véletlenül kiszivárogjon (a Vite-nál ez a [[019-stripe-fraud-defense]] 3.1 táblájában dokumentált footgun volt).
+Ez egyben **előny**: pontosan ez teszi lehetetlenné, hogy a `STRIPE_SECRET_KEY` véletlenül kiszivárogjon (a Vite-nál ez a [[021-stripe-fraud-defense]] 3.1 táblájában dokumentált footgun volt).
 
 ### 7.5 ⚠️ Dokumentum-szintű COEP elrontaná a Google bejelentkezést
 
@@ -792,7 +792,7 @@ A 8 létező (teszt módú) Payment Link `after_completion.redirect.url` mezője
 
 Két út:
 
-- **(a) Újragenerálás** (ajánlott): `scripts/create_payment_links.mjs --redirect=https://<vercel-domain>/shop/success`, majd a `src/constants/shopCatalog.ts` URL-jeinek frissítése. ⚠️ Ez a lépés **együtt mehet** a [[019-stripe-fraud-defense]] D fázisának `?session_id={CHECKOUT_SESSION_ID}` toldalékával — egy körben, nem kétszer.
+- **(a) Újragenerálás** (ajánlott): `scripts/create_payment_links.mjs --redirect=https://<vercel-domain>/shop/success`, majd a `src/constants/shopCatalog.ts` URL-jeinek frissítése. ⚠️ Ez a lépés **együtt mehet** a [[021-stripe-fraud-defense]] D fázisának `?session_id={CHECKOUT_SESSION_ID}` toldalékával — egy körben, nem kétszer.
 - **(b) Firebase Hosting 301** a Vercel domainre, query string megőrzésével. Átmeneti megoldásnak jó, de egy fizetési út **két hosztoló közti redirectre** építése törékeny.
 
 ### 7.10 A dev port és minden dokumentált parancs megváltozik
@@ -849,8 +849,8 @@ A migráció **27 env/asset-sort** és **3 SSR-védelmet** érint. Minden ezen f
 | 3 | **`next/font`** | A projekt nem tölt be webfontot |
 | 4 | **`next/navigation` router** | A navigáció `GamePhase` állapotgép, nem URL (1.7) |
 | 5 | **`@/…` path alias bevezetése** | 92 fájl importsorát írná át, nulla funkcionális haszonért; a migráció diffjét olvashatatlanná tenné |
-| 6 | **Stripe Checkout Session / webhook route** | A [[019-stripe-fraud-defense]] F fázisa és a [[020-stripe-go-live]] hatóköre. Itt csak a **hely** készül el (`app/api/health/route.ts` mintaként) |
-| 7 | **`firebase-admin` bevezetése** | Ugyanaz — a 019 F fázisa hozza be, a service account kezelésével együtt |
+| 6 | **Stripe Checkout Session / webhook route** | A [[021-stripe-fraud-defense]] F fázisa és a [[023-stripe-go-live]] hatóköre. Itt csak a **hely** készül el (`app/api/health/route.ts` mintaként) |
+| 7 | **`firebase-admin` bevezetése** | Ugyanaz — a 021 F fázisa hozza be, a service account kezelésével együtt |
 | 8 | **RTDB „Phase-2" rules (`wallet.write = false`)** | Csak akkor kapcsolható be, ha **van** szerveroldali író. A migráció ezt **lehetővé teszi**, de nem vezeti be |
 | 9 | **A `useUIStore` perzisztálása** | A hangerő/nehézség ma is elveszik F5-re; ez **meglévő viselkedés**, nem migrációs regresszió. Külön terv tárgya |
 | 10 | **Tesztkeretrendszer-váltás (Playwright / Jest)** | 147 zöld teszt nem kockáztatható egy build-migráció közben (I. blokk) |
@@ -888,14 +888,14 @@ A migráció **27 env/asset-sort** és **3 SSR-védelmet** érint. Minden ezen f
 
 ## 11. Kapcsolódó tervek
 
-- [[019-stripe-fraud-defense]] – **A migráció legfontosabb haszonélvezője.** A 3.0 szekció „tágabb következtetése" kimondja, hogy *„egy titkos kulcsnak egy kizárólag kliensoldali buildben nincs legitim szerepe"*, és hogy a kulcs tényleges használatához *„előbb szerveroldali futtatókörnyezet kell"* — **ezt a környezetet teremti meg ez a terv**. A 019 A fázisának `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` átnevezését a migráció C. blokkja **elvégzi** (a workflow-kból a kulcs egyszerűen eltűnik, mert maguk a workflow-k szűnnek meg vagy csupaszodnak le). A 019 **F fázisa** (Cloudflare Worker + webhook + RTDB REST) a migráció után **egyszerűsödik**: ugyanabban a repóban, ugyanabban a deployban, `app/api/stripe/webhook/route.ts`-ként valósul meg, `firebase-admin`-nal. Ezzel a 019 5.1 „amit backend nélkül NEM lehet elérni" listája **teljes egészében megoldhatóvá válik**, és a `wallet` „Phase-2" szabálya (`".write": false`) bevezethető. ⚠️ **Ütközés:** a 019 6.3 táblája a **Vercel Hobby ToS** miatt zárta ki a Vercelt kereskedelmi endpointként — lásd 12.1.
-- [[020-stripe-go-live]] – **Blokkoló előfeltétele lesz ennek a tervnek.** A 020 A fázisa és a 019 3.0 közti, ott kifejezetten „egyeztetendő eltérésként" jelölt ellentmondás (a Stripe kulcs a workflow `env:` blokkjában **maradjon átnevezve** vagy **tűnjön el**) a migrációval **feloldódik**: a kérdés tárgytalanná válik, mert a build-workflow-k megszűnnek, a kulcs pedig szerveroldali env változóvá lép elő. A 020 C fázisának `/legal/terms`, `/legal/privacy`, `/legal/refund`, `/legal/imprint` **mély linkjei** a catch-all route alatt külön route-fájl nélkül működnek (1.7). A 020-nek a migráció után kezelnie kell: (a) a Payment Linkek **újragenerálását** a Vercel domainre (7.9), (b) a Stripe Dashboard **weboldal URL / ToS URL / Privacy URL** mezőinek átállítását, (c) a dev/prod link-választás explicit kapcsolóját (3.4).
+- [[021-stripe-fraud-defense]] – **A migráció legfontosabb haszonélvezője.** A 3.0 szekció „tágabb következtetése" kimondja, hogy *„egy titkos kulcsnak egy kizárólag kliensoldali buildben nincs legitim szerepe"*, és hogy a kulcs tényleges használatához *„előbb szerveroldali futtatókörnyezet kell"* — **ezt a környezetet teremti meg ez a terv**. A 021 A fázisának `VITE_STRIPE_SECRET_KEY` → `STRIPE_SECRET_KEY` átnevezését a migráció C. blokkja **elvégzi** (a workflow-kból a kulcs egyszerűen eltűnik, mert maguk a workflow-k szűnnek meg vagy csupaszodnak le). A 021 **F fázisa** (Cloudflare Worker + webhook + RTDB REST) a migráció után **egyszerűsödik**: ugyanabban a repóban, ugyanabban a deployban, `app/api/stripe/webhook/route.ts`-ként valósul meg, `firebase-admin`-nal. Ezzel a 021 5.1 „amit backend nélkül NEM lehet elérni" listája **teljes egészében megoldhatóvá válik**, és a `wallet` „Phase-2" szabálya (`".write": false`) bevezethető. ⚠️ **Ütközés:** a 021 6.3 táblája a **Vercel Hobby ToS** miatt zárta ki a Vercelt kereskedelmi endpointként — lásd 12.1.
+- [[023-stripe-go-live]] – **Blokkoló előfeltétele lesz ennek a tervnek.** A 023 A fázisa és a 021 3.0 közti, ott kifejezetten „egyeztetendő eltérésként" jelölt ellentmondás (a Stripe kulcs a workflow `env:` blokkjában **maradjon átnevezve** vagy **tűnjön el**) a migrációval **feloldódik**: a kérdés tárgytalanná válik, mert a build-workflow-k megszűnnek, a kulcs pedig szerveroldali env változóvá lép elő. A 023 C fázisának `/legal/terms`, `/legal/privacy`, `/legal/refund`, `/legal/imprint` **mély linkjei** a catch-all route alatt külön route-fájl nélkül működnek (1.7). A 023-nek a migráció után kezelnie kell: (a) a Payment Linkek **újragenerálását** a Vercel domainre (7.9), (b) a Stripe Dashboard **weboldal URL / ToS URL / Privacy URL** mezőinek átállítását, (c) a dev/prod link-választás explicit kapcsolóját (3.4).
 - [[005-ingame-shop-strapi-stripe]] – **Előfeltétel.** Az itt megépített Payment Link út `/shop/success` redirectje a migráció routing-követelménye (H. blokk), az `import.meta.env.DEV` alapú dev/prod link-választás pedig a C. blokk 16. tétele. A 005 „Ismert korlátok" táblájának *„Nincs webhook → nincs automatikus verifikáció"* sora **ezzel a tervvel válik feloldhatóvá**. ⚠️ A cross-origin localStorage korlát (localhost ↔ hosztolt origin) a migráció után **localhost ↔ Vercel domain** relációra változik — a jelenség változatlan.
 - [[017-starfield-realism]] – **Kódütközés és minta.** Ütközés: a `Starfield.tsx:120` cockpit-fallback `BASE_URL` sora a 017 által frissen írt régióban van (D. blokk 2. tétel). Minta: a 017 3.2 tételes átvezetési táblája és a „mi történik, ha kimarad" megközelítése ebben a tervben a 3.1–3.3 táblákban folytatódik; a 017 A. blokkjának elmaradt baseline-jából levont tanulság indokolja az itteni A. blokk kötelezővé tételét.
 - [[003-firebase-auth-settings]] – **Előfeltétel és haszonélvező.** A Firebase Auth + RTDB séma változatlanul marad; a migráció **egyetlen** Firebase-érintettsége az authorized domains bővítése (7.7) és a `NEXT_PUBLIC_FIREBASE_*` átnevezés. A 003 6. pontjában felvázolt szerveroldali `awardWage` / `purchaseWithCredits` (ott Cloud Functionökkel, Blaze tervvel) a migráció után **Vercel API route-ként**, Blaze terv nélkül valósítható meg.
 - [[007-state-persist-page-refresh]] – **Előfeltétel és referencia.** A `space-travel-game` persist viselkedése a hidratálási munka (F. blokk) mércéje: a migráció után az F5-viselkedésnek **bitre azonosnak** kell lennie. A `skipHydration` bevezetése technikai védelem, nem viselkedésváltás — ha bármi eltérés adódik, az **regresszió**.
 - [[012-wall-of-shame]] – **Érintett közvetve.** A küldetésnapló RTDB-ben él, tehát a domainváltás (7.8) nem érinti a bejelentkezett felhasználóknál; a **vendégek** viszont új `deviceId`-t kapnak az új originen, tehát a naplójuk „eltűnik". Kommunikálandó.
-- [[021-intro-deterministic-layout]] – ⚠️ **Kódütközés, egyik irányban sem függőség.** A C. blokk **3.1 táblájának 14. tétele** (`src/components/screens/IntroScreen.tsx` · `VITE_DEBUG_MODE` → `NEXT_PUBLIC_DEBUG_MODE`) **pontosan azt a sort** érinti (`IntroScreen.tsx:10`), amit a 021 G. blokkja is átír a komponens jelentős átalakítása közben. **Feloldás:** ha a 021 **előbb** fut, a 14. tétel változatlanul elvégezhető, csak a sor környezete néz ki másképp; ha a migráció fut előbb, a 021-nek a már átírt `process.env`-es formát kell megtartania. Mindkét irányban **egyetlen sor**. ⚠️ A 021 `dependencies: []` — **nem** vár erre a migrációra, és ez a migráció sem vár rá. **Két ellenőrzési pont a migráció után** (ha a 021 már megvan): (a) a 021 `useIntroLayout` hookja **kliens-only** (`document.fonts`, `window.innerHeight`), tehát a `ssr: false` határ mögé kell essen — a `document.fonts` szerveroldalon nem létezik; (b) a React 18 → 19 **StrictMode dupla-effekt** viselkedése a hook `await document.fonts.ready` utáni `setState`-jét érinti, ott cleanup-védelem kell. A 021 tiszta moduljai (`src/services/introLayout.ts`, `introFit.ts`) keretrendszer-függetlenek, tehát a migráció **nem érinti** őket.
+- [[019-intro-deterministic-layout]] – ⚠️ **Kódütközés, egyik irányban sem függőség.** A C. blokk **3.1 táblájának 14. tétele** (`src/components/screens/IntroScreen.tsx` · `VITE_DEBUG_MODE` → `NEXT_PUBLIC_DEBUG_MODE`) **pontosan azt a sort** érinti (`IntroScreen.tsx:10`), amit a 019 G. blokkja is átír a komponens jelentős átalakítása közben. **Feloldás:** ha a 019 **előbb** fut, a 14. tétel változatlanul elvégezhető, csak a sor környezete néz ki másképp; ha a migráció fut előbb, a 019-nek a már átírt `process.env`-es formát kell megtartania. Mindkét irányban **egyetlen sor**. ⚠️ A 019 `dependencies: []` — **nem** vár erre a migrációra, és ez a migráció sem vár rá. **Két ellenőrzési pont a migráció után** (ha a 019 már megvan): (a) a 019 `useIntroLayout` hookja **kliens-only** (`document.fonts`, `window.innerHeight`), tehát a `ssr: false` határ mögé kell essen — a `document.fonts` szerveroldalon nem létezik; (b) a React 18 → 19 **StrictMode dupla-effekt** viselkedése a hook `await document.fonts.ready` utáni `setState`-jét érinti, ott cleanup-védelem kell. A 019 tiszta moduljai (`src/services/introLayout.ts`, `introFit.ts`) keretrendszer-függetlenek, tehát a migráció **nem érinti** őket.
 - [[016-notification-retention]] – **Nem érintett**, de megjegyzendő: a `notifications/{uid}` node takarítása a migráció után szintén **szerveroldalról** (Vercel API route + cron) elvégezhető, nem csak kliensoldali TTL-lel. Ez a 016 hatókörét bővítő lehetőség, nem ennek a tervnek a feladata.
 
 ---
@@ -906,11 +906,11 @@ A migráció **27 env/asset-sort** és **3 SSR-védelmet** érint. Minden ezen f
 
 ### 12.1 ✅ Vercel Hobby — valós pénzes fizetés nélkül
 
-A [[019-stripe-fraud-defense]] 6.3 táblája a serverless futtatók összevetésénél a Vercelt **kifejezetten kizárta**:
+A [[021-stripe-fraud-defense]] 6.3 táblája a serverless futtatók összevetésénél a Vercelt **kifejezetten kizárta**:
 
 > | **Vercel Hobby** | bőséges | ⚠️ **NEM** — a Hobby ToS tiltja a kereskedelmi használatot | Valós pénzes fizetést kiszolgáló endpointhoz **Pro** csomag kellene |
 
-A felhasználó a Vercelt választotta deploy célként. A migráció **önmagában** (fizetés nélkül) Hobby csomagon is fut, de amint a [[020-stripe-go-live]] élesedik, a valós pénzt kiszolgáló endpoint **Pro csomagot** igényel (~20 USD/hó/felhasználó).
+A felhasználó a Vercelt választotta deploy célként. A migráció **önmagában** (fizetés nélkül) Hobby csomagon is fut, de amint a [[023-stripe-go-live]] élesedik, a valós pénzt kiszolgáló endpoint **Pro csomagot** igényel (~20 USD/hó/felhasználó).
 
 **✅ DÖNTÉS (2026-07-30): Hobby csomagon maradunk, valós pénzes fizetés nélkül.** A Vercel Pro (~20 USD/hó) **nincs vállalva**.
 
@@ -921,12 +921,12 @@ Mit jelent ez a gyakorlatban:
 | A migráció maga (A–N blokkok) | ✅ **Igen**, teljes egészében |
 | Stripe **teszt módú** Checkout Session + webhook | ✅ **Igen** — a teszt mód nem kereskedelmi használat, a Hobby ToS nem tiltja |
 | A Stripe titkos kulcs szerveroldali env-be költöztetése | ✅ **Igen** |
-| `firebase-admin` szerveroldalon + a **Phase-2** RTDB szabályok (szerver-only wallet/inventory írás) | ✅ **Igen** — és ez a [[019-stripe-fraud-defense]] legfontosabb hiányzó építőköve |
-| **Valós pénz** átvétele ([[020-stripe-go-live]]) | ❌ **Nem** — ehhez Pro kell |
+| `firebase-admin` szerveroldalon + a **Phase-2** RTDB szabályok (szerver-only wallet/inventory írás) | ✅ **Igen** — és ez a [[021-stripe-fraud-defense]] legfontosabb hiányzó építőköve |
+| **Valós pénz** átvétele ([[023-stripe-go-live]]) | ❌ **Nem** — ehhez Pro kell |
 
-**Következmény a roadmapre:** a [[020-stripe-go-live]] végrehajtása egy **külön, későbbi Pro-döntéshez** van kötve. Ez jól illeszkedik ahhoz, hogy a 020 a lista utolsó eleme. A [[019-stripe-fraud-defense]] viszont **nem** blokkolt: a csalásvédelem érdemi része (Admin SDK, Phase-2 szabályok, a kliensoldali egyenlegírás megszüntetése) független attól, hogy valós pénz mozog-e — ma ugyanis a **kliens írja a saját egyenlegét**, és ez a rés Hobby-n is bezárható.
+**Következmény a roadmapre:** a [[023-stripe-go-live]] végrehajtása egy **külön, későbbi Pro-döntéshez** van kötve. Ez jól illeszkedik ahhoz, hogy a 023 a lista utolsó eleme. A [[021-stripe-fraud-defense]] viszont **nem** blokkolt: a csalásvédelem érdemi része (Admin SDK, Phase-2 szabályok, a kliensoldali egyenlegírás megszüntetése) független attól, hogy valós pénz mozog-e — ma ugyanis a **kliens írja a saját egyenlegét**, és ez a rés Hobby-n is bezárható.
 
-⚠️ Aki a 020-hoz ér, annak **először** a Vercel Pro (vagy egy alternatív futtató — a 019 6.3 táblája Cloudflare Workerst ajánlott) kérdését kell eldöntenie. A 019 6.3 táblájának Vercel-kizárása tehát **érvényben marad a valós pénzes endpointra**, és nincs ellentmondásban ezzel a migrációval.
+⚠️ Aki a 023-hoz ér, annak **először** a Vercel Pro (vagy egy alternatív futtató — a 021 6.3 táblája Cloudflare Workerst ajánlott) kérdését kell eldöntenie. A 021 6.3 táblájának Vercel-kizárása tehát **érvényben marad a valós pénzes endpointra**, és nincs ellentmondásban ezzel a migrációval.
 
 ### 12.2 ✅ Next 16 + React 19
 

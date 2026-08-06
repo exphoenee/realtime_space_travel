@@ -20,7 +20,7 @@ related_plans:
   - 011-difficulty-event-system
   - 013-social-multiplayer
   - 015-toast-notification
-  - 022-mobile-camera-orientation
+  - 020-mobile-camera-orientation
 tags:
   - ui
   - camera
@@ -64,7 +64,7 @@ tags:
 
 | Kérdés | Választás |
 |--------|-----------|
-| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 015-toast-notification / 019 előtt |
+| Elhelyezés a roadmapen | **14. lépés** — a 013-social-multiplayer után, a 015-toast-notification / 021 előtt |
 | Hol él a consent állapot? | **Firebase RTDB** `users/{rtdbKey}/settings/cameraConsent` — a `useUIStore.cameraConsent` lokális cache |
 | Milyen típusú a screen? | **Teljes képernyős GamePhase oldal** (`"cameraConsent"` fázis), nem modál. F5 után is ugyanaz az oldal jön vissza |
 | Mikor jelenik meg? | Ha `needsCameraConsent()` igazat ad: a tárolt consent nem `"granted"`, **vagy** a böngésző engedélye `"denied"` / `"prompt"` |
@@ -484,7 +484,7 @@ Windows alatt a webcam **nem szabadul fel azonnal** az előző handle lezárása
 - **Használja (L. blokk):** a meglévő `src/components/ui/Modal.tsx` generikus modalt a `CameraHelpModal` alapjaként ([[001-main-menu-settings]] UI-készlete) — nincs új modal-infrastruktúra
 - **Nem függ:** shop-tól, social funkcióktól
 - **Blokkolja:** a játék indítását (nincs kamera consent → nincs játék)
-- **Kapcsolódik:** [[022-mobile-camera-orientation]] — az itt beszerzett `getUserMedia` streamre épül a mobil/tablet orientáció-kompenzáció (a szenzorképet detektálás előtt állóra forgatja). Ugyanaz a kamera-domain; a `cameraOrientation.ts` a `cameraPermission.ts` mellé, a `services/` rétegbe kerül
+- **Kapcsolódik:** [[020-mobile-camera-orientation]] — az itt beszerzett `getUserMedia` streamre épül a mobil/tablet orientáció-kompenzáció (a szenzorképet detektálás előtt állóra forgatja). Ugyanaz a kamera-domain; a `cameraOrientation.ts` a `cameraPermission.ts` mellé, a `services/` rétegbe kerül
 
 ## 10. Kockázatok
 
