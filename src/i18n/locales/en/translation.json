@@ -34,7 +34,7 @@
     "step": {
       "camera": "Connecting camera...",
       "model": "Loading the artificial intelligence model...",
-      "calibration": "Calibrating the face recognition system...",
+      "calibration": "Calibrating the attention-detection system...",
       "ready": "All systems ready!"
     },
     "status": {
@@ -83,7 +83,7 @@
     },
     "cameraConsent": {
       "title": "Camera Access",
-      "description": "This game uses face recognition to track your attention during the mission.\n\nYour camera feed is processed entirely on your device. No images or video are ever sent to any server, stored, or shared with third parties.\n\nYou can enable or disable camera access at any time in the Settings menu.",
+      "description": "This game uses your camera to track your attention during the mission. The system does not recognise faces or identify people — it only checks the position of the eyes relative to the nose and ears to detect whether you are sitting in front of the screen and paying attention.\n\nYour camera feed is processed entirely on your device, locally. No image, video or facial data is ever sent to a server, stored, or shared with third parties.\n\nYou can enable or disable camera access at any time in the Settings menu.",
       "allow": "Allow",
       "deny": "Deny",
       "browserDenied": "Camera access has been blocked in your browser. Please allow it in your browser settings.",

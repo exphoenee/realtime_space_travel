@@ -34,7 +34,7 @@
     "step": {
       "camera": "Kamera wird verbunden...",
       "model": "Modell der künstlichen Intelligenz wird geladen...",
-      "calibration": "Gesichtserkennungssystem wird kalibriert...",
+      "calibration": "Aufmerksamkeitserkennungssystem wird kalibriert...",
       "ready": "Alle Systeme bereit!"
     },
     "status": {
@@ -83,7 +83,7 @@
     },
     "cameraConsent": {
       "title": "Kamerazugriff",
-      "description": "Dieses Spiel verwendet Gesichtserkennung, um deine Aufmerksamkeit während der Mission zu verfolgen.\n\nDein Kamerabild wird ausschließlich auf deinem Gerät verarbeitet. Es werden niemals Bilder oder Videos an einen Server gesendet, gespeichert oder mit Dritten geteilt.\n\nDu kannst den Kamerazugriff jederzeit im Einstellungsmenü aktivieren oder deaktivieren.",
+      "description": "Dieses Spiel nutzt deine Kamera, um während der Mission deine Aufmerksamkeit zu verfolgen. Das System erkennt keine Gesichter und identifiziert keine Personen — es prüft lediglich die Position der Augen im Verhältnis zu Nase und Ohren, um zu erkennen, ob du vor dem Bildschirm sitzt und aufmerksam bist.\n\nDein Kamerabild wird ausschließlich lokal auf deinem Gerät verarbeitet. Es werden niemals Bilder, Videos oder Gesichtsdaten an einen Server gesendet, gespeichert oder mit Dritten geteilt.\n\nDu kannst den Kamerazugriff jederzeit im Einstellungsmenü aktivieren oder deaktivieren.",
       "allow": "Erlauben",
       "deny": "Ablehnen",
       "browserDenied": "Der Kamerazugriff wurde in deinem Browser blockiert. Bitte erlaube ihn in den Browsereinstellungen.",

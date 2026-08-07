@@ -15,7 +15,7 @@ dependencies:
   - 015-toast-notification
 related_plans:
   - 013-social-multiplayer
-  - 018-nextjs-migration
+  - 020-nextjs-migration
 tags:
   - firebase
   - rtdb
@@ -341,7 +341,7 @@ Ha valaha mégis kell UI (pl. GDPR-adatkezelési igény), az **külön terv** le
 
 - **Előfeltétel:** [[015-toast-notification]] — ez a terv az ott létrehozott `notifications` node-ot, a `subscribeNotifications`-t és a `useNotificationListener`-t módosítja. A 015 I. blokkjának nyitott `notifications` takarítás tétele és a 7.3 kockázat **ide kerül át**
 - **Kapcsolódó:** [[013-social-multiplayer]] — a növekedés forrása a chat (`sendMessage`, `chats/{chatId}/unread`); ha valaha visszatérne a „nulla írású chat-toast" alternatíva, azt a 013 chat-rétegében kellene megvalósítani
-- **Nem függ tőle és nem függ rá:** a Stripe-tervek ([[021-stripe-fraud-defense]], [[023-stripe-go-live]]) — más node, más rules-ág
+- **Nem függ tőle és nem függ rá:** a Stripe-tervek ([[021-stripe-fraud-defense]], [[024-stripe-go-live]]) — más node, más rules-ág
 - **Elhelyezés a roadmapen:** a 015 után. Ideálisan **a 015 `database.rules.json` deployjával együtt vagy előtte** landoljon, mert a növekedés a deploy pillanatában élesedik
 
 ---

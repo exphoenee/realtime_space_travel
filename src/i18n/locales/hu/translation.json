@@ -34,7 +34,7 @@
     "step": {
       "camera": "Kamera csatlakoztatása...",
       "model": "Mesterséges intelligencia modell betöltése...",
-      "calibration": "Arcfelismerő rendszer kalibrálása...",
+      "calibration": "Figyelemérzékelő rendszer kalibrálása...",
       "ready": "Minden rendszer üzemkész!"
     },
     "status": {
@@ -83,7 +83,7 @@
     },
     "cameraConsent": {
       "title": "Kamera hozzáférés",
-      "description": "Ez a játék arcfelismerést használ a figyelmed követésére a küldetés során.\n\nA kamera képe kizárólag a te eszközödön kerül feldolgozásra. Semmilyen kép vagy videó nem kerül elküldésre szerverre, tárolásra vagy harmadik féllel való megosztásra.\n\nA kamera hozzáférését bármikor engedélyezheted vagy letilthatod a Beállítások menüben.",
+      "description": "Ez a játék a kamerát a figyelmed követésére használja a küldetés során. A rendszer nem ismer fel arcokat és nem azonosít személyeket — pusztán azt vizsgálja, hogy a kamera előtt ülő arc szeme milyen pozícióban van az orrhoz és a fülekhez képest, így érzékeli, hogy a képernyő előtt ülsz-e és figyelsz-e.\n\nA kamera képe kizárólag a te eszközödön, helyben kerül feldolgozásra; semmilyen kép, videó vagy arcadat nem kerül szerverre, tárolásra vagy harmadik félhez.\n\nA kamera hozzáférését bármikor engedélyezheted vagy letilthatod a Beállítások menüben.",
       "allow": "Engedélyez",
       "deny": "Elutasít",
       "browserDenied": "A kamera hozzáférés le van tiltva a böngésződben. Kérjük, engedélyezd a böngésző beállításaiban.",

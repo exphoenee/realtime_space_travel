@@ -1,21 +1,21 @@
 ---
 title: "Determinisztikus intró-elrendezés – nyelv- és képernyőfüggetlen pozíciók, közös betűméret, időalapú felfedés"
-slug: 019-intro-deterministic-layout
+slug: 018-intro-deterministic-layout
 type: plan
 category: ui
 status: implemented
 implemented: true
 implemented_at: "2026-08-06"
 created_at: "2026-07-30"
-updated_at: "2026-08-06"  # átszámozva: step 21 → 19 (Stripe-tervek a lista végére kerültek)
+updated_at: "2026-08-06"  # átszámozva: step 19 → 18 (Stripe-tervek a lista végére kerültek)
 author: exphoenee
-step: 19
+step: 18
 phases: []
 dependencies: []
 related_plans:
   - 000-i18n-nyelvesites
   - 017-starfield-realism
-  - 018-nextjs-migration
+  - 020-nextjs-migration
 tags:
   - intro
   - layout
@@ -32,7 +32,7 @@ tags:
 
 **Cél:** az `IntroScreen` (Star Wars-szerű felfelé úszó szöveg) **mind az 5 nyelven és minden képernyőméreten pontosan ugyanúgy** nézzen ki: a szövegblokkok **azonos időpontban** és **azonos pozícióban** jelenjenek meg, a betűméret **közös** legyen, az intró teljes hossza **azonos**, a záró „continue" felirat pedig **garantáltan** megjelenjen.
 
-> ⚠️ **Ez a terv semmitől nem függ.** `dependencies: []` — **szándékosan üres**. A sorszám (019) csak az időrendet tükrözi, **nem** függőséget: ez a terv **bármikor implementálható**, akár azonnal, a [[018-nextjs-migration]] **előtt** is. Egy későbbi olvasó ne higgye, hogy a Next.js migrációra vár. Az egyetlen kapcsolódás a 018-hoz egy **kódütközési figyelmeztetés** (6.12), nem függőség.
+> ⚠️ **Ez a terv semmitől nem függ.** `dependencies: []` — **szándékosan üres**. A sorszám (018) csak az időrendet tükrözi, **nem** függőséget: ez a terv **bármikor implementálható**, akár azonnal, a [[020-nextjs-migration]] **előtt** is. Egy későbbi olvasó ne higgye, hogy a Next.js migrációra vár. Az egyetlen kapcsolódás a 020-hoz egy **kódütközési figyelmeztetés** (6.12), nem függőség.
 
 > 🎯 **A gyökérok egy mondatban.** A mai `IntroScreen` a görgetés kezdő- és végpontját **kizárólag a viewport magasságából** számolja (`IntroScreen.tsx:18-24`, tudatos döntés a nyelvváltáskori ugrálás ellen), a tartalom magasságát pedig **szándékosan figyelmen kívül hagyja**. Így a görgetési út fixen `2 × vh + 200` px, a tartalom magassága viszont nyelvenként és képernyőméretenként erősen változik — **két független mennyiség, amiknek egyezniük kellene, de semmi nem köti össze őket.**
 
@@ -188,7 +188,7 @@ tags:
 - [x] ⚠️ Az animáció `animation-play-state: paused` állapotban indul, és **csak a mérés befejeztével** vált `running`-ra (`data-ready="true"`). Enélkül az első képkockák rossz betűmérettel és rossz offsettel futnának
 - [x] `DEBUG_MODE`: a `INTRO_SCROLL_DURATION = "210s"` konstans és a `DEBUG_MODE ? … : undefined` inline stílus-ág **törölve**; helyette a `speedMultiplier` paraméter megy a `useIntroLayout`-ba
 - [x] A `langBar`, az `onSkip` (`onClick` az overlayen), a `stopPropagation` hármas és a `styles.fade` **érintetlen**
-- [x] ⚠️ A `import.meta.env.VITE_DEBUG_MODE` sor (`IntroScreen.tsx:10`) **megmarad a jelenlegi formájában** — lásd a 018-cal való ütközést (6.12)
+- [x] ⚠️ A `import.meta.env.VITE_DEBUG_MODE` sor (`IntroScreen.tsx:10`) **megmarad a jelenlegi formájában** — lásd a 020-szal való ütközést (6.12)
 - [x] ✅ **Ellenőrzési pont:** `tsc --noEmit` tiszta; a komponensben **nulla** `getBoundingClientRect` és **nulla** `requestAnimationFrame` maradt
 
 **H. `IntroScreen.module.css` átalakítása**
@@ -593,7 +593,7 @@ Az implementáció **blokkonként, külön committal** halad — a sorrend a TOD
 
 ## 4. Függőségek
 
-- **`dependencies: []` — ez a terv semmitől nem függ.** Nincs előfeltétele, bármikor implementálható. A 019-es sorszám **időrend**, nem sorrendi kényszer.
+- **`dependencies: []` — ez a terv semmitől nem függ.** Nincs előfeltétele, bármikor implementálható. A 018-as sorszám **időrend**, nem sorrendi kényszer.
 - **Semmi nem függ ettől a tervtől.** Az `IntroScreen` külső szerződése (`{ onSkip }` prop) **azonos marad**, tehát az `App.tsx` és a `ScreenRouter` érintetlen.
 - **Nem érinti:** Firebase, auth, shop, Stripe, notification, kamera, arcfelismerés, `useGameStore`, `useUIStore`, `useShopStore`.
 - **Egyetlen külső érintkezés:** az `App.tsx`-beli `INTRO_AUTO_SKIP_TIMEOUT_MS` időzítő. Azt **nem módosítjuk**, de az új idővonalnak **alá kell férnie** — ezt a D. blokk invariáns-tesztje gépileg őrzi.
@@ -722,9 +722,9 @@ Az `intro.continue` hosszai:
 
 ⚠️ **Ha a tipográfiai megkötések (nagybetűs, ritkított) miatt a hosszú nyelvek így sem férnek ki elfogadhatóan**, felmerülhet egy rövidebb, mobilra szánt kulcs — **ez lenne az egyetlen ok új i18n kulcsra** (5. szekció). Ekkor **külön indoklással** kell jelezni és az `i18n` agentet elindítani.
 
-### 6.12 ⚠️ Kódütközés a [[018-nextjs-migration]]-nel
+### 6.12 ⚠️ Kódütközés a [[020-nextjs-migration]]-nel
 
-A 018 C. blokkja a **3.1 tábla 14. tételeként** kifejezetten átírja:
+A 020 C. blokkja a **3.1 tábla 14. tételeként** kifejezetten átírja:
 
 ```
 src/components/screens/IntroScreen.tsx   import.meta.env.VITE_DEBUG_MODE
@@ -733,9 +733,9 @@ src/components/screens/IntroScreen.tsx   import.meta.env.VITE_DEBUG_MODE
 
 Ez **pontosan** az `IntroScreen.tsx:10` sor, amit ez a terv is érint (a G. blokk megtartja, de a fájl körülötte jelentősen átalakul).
 
-**Következmény:** ha ez a terv a migráció **után** fut, a 018 tábla-tétele már elvégezte a cserét — a G. blokknak azt a formát kell megtartania. Ha **előtte** fut, a 018 diffje ütközhet, de a csere továbbra is **egyetlen sor**, tehát triviálisan feloldható.
+**Következmény:** ha ez a terv a migráció **után** fut, a 020 tábla-tétele már elvégezte a cserét — a G. blokknak azt a formát kell megtartania. Ha **előtte** fut, a 020 diffje ütközhet, de a csere továbbra is **egyetlen sor**, tehát triviálisan feloldható.
 
-**Egyéb érintettség nincs:** a `src/services/introLayout.ts` és `introFit.ts` **keretrendszer-független** tiszta modulok, a `useIntroLayout` pedig kliensoldali hook, ami a 018 `ssr: false` határa mögött változatlanul működik.
+**Egyéb érintettség nincs:** a `src/services/introLayout.ts` és `introFit.ts` **keretrendszer-független** tiszta modulok, a `useIntroLayout` pedig kliensoldali hook, ami a 020 `ssr: false` határa mögött változatlanul működik.
 
 ⚠️ Két dolgot **ellenőrizni kell**, ha a migráció ezután fut: (a) a React 18 → 19 StrictMode dupla-effekt viselkedése a `useIntroLayout` mérési effektjén (a mérés **idempotens**, tehát biztonságos, de a `document.fonts.ready` `await` utáni `setState` cleanup-védelmet igényel), (b) a `document.fonts` szerveroldalon **nem létezik** — a hook csak a kliens-only határ mögött futhat.
 
@@ -875,4 +875,4 @@ A `.slot` / illesztési mechanizmus elvben újrahasznosítható lenne (pl. `Miss
 
 - [[017-starfield-realism]] – **Minta, nem függőség.** Innen származik (a) a **tiszta függvény / `src/services/`** szétválasztás konvenciója (*„ami tiszta függvény, az kikerül és tesztelhető; ami DOM/canvas-állapot, az marad"*), (b) a „**nincs és ne is legyen `src/utils/`**" szabály, (c) a mért mennyiségek **paraméterként** való átvétele a determinisztikus tesztelhetőségért, és (d) a `vh`-alapú, viewport-arányos számítás megközelítése. Tanulság-átvétel: a 017 **A. blokkja (baseline) kimaradt**, ezért a hangolása nem tudott mihez mérni — **itt az A. blokk ezért kötelező**. Kódütközés a két terv közt **nincs**: a 017 a `Starfield.tsx`-et írja, ez az `IntroScreen.tsx`-et.
 - [[000-i18n-nyelvesites]] – **A fordítási kulcsok forrása.** Az `intro.headline` / `motto` / `paragraph1` / `paragraph2` / `sectionTitle` / `rule1`–`rule4` / `continue` kulcsok és az 5 nyelvű paritás onnan származik. ⚠️ Ez a terv **nulla kulcsot ad hozzá és nulla kulcsot módosít** — csak **fogyasztja** őket, egy új módon: a mérőelem `i18n.getFixedT(lng)`-vel **mind az 5 fordítást** kiolvassa, nem csak az aktívat. Ez azért működik, mert az `src/i18n/index.ts:5-9` **statikus importtal** tölt (nincs lusta betöltés). ⚠️ **Következmény a 000-ra nézve:** ha valaha lusta betöltésre (namespace-splitre) váltunk, ennek a tervnek a mérése **eltörik** — a hooknak akkor `i18n.loadLanguages([...])`-t kellene bevárnia.
-- [[018-nextjs-migration]] – ⚠️ **KÓDÜTKÖZÉS-FIGYELMEZTETÉS, nem függőség.** A migráció C. blokkja (3.1 tábla, **14. tétel**) az `src/components/screens/IntroScreen.tsx` `import.meta.env.VITE_DEBUG_MODE` sorát `process.env.NEXT_PUBLIC_DEBUG_MODE`-ra írja át — és az `IntroScreen.tsx:10` **pontosan ilyen sor**. Ha ez a terv a migráció **után** fut, a G. blokknak a már átírt formát kell megtartania; ha **előtte**, a 018 diffje ütközhet, de a feloldás **egyetlen sor**. ⚠️ **Ez NEM teszi függővé a két tervet egyik irányban sem** (`dependencies: []`). Egyéb érintettség: a `src/services/introLayout.ts` és `introFit.ts` keretrendszer-független, tehát változatlanul működik; a `useIntroLayout` viszont **kliens-only** (`document.fonts`, `window`), tehát a 018 `ssr: false` határa mögé kell essen, és a React 18 → 19 StrictMode dupla-effektjére a mérési effekt cleanup-védelmét ellenőrizni kell (6.12).
+- [[020-nextjs-migration]] – ⚠️ **KÓDÜTKÖZÉS-FIGYELMEZTETÉS, nem függőség.** A migráció C. blokkja (3.1 tábla, **14. tétel**) az `src/components/screens/IntroScreen.tsx` `import.meta.env.VITE_DEBUG_MODE` sorát `process.env.NEXT_PUBLIC_DEBUG_MODE`-ra írja át — és az `IntroScreen.tsx:10` **pontosan ilyen sor**. Ha ez a terv a migráció **után** fut, a G. blokknak a már átírt formát kell megtartania; ha **előtte**, a 020 diffje ütközhet, de a feloldás **egyetlen sor**. ⚠️ **Ez NEM teszi függővé a két tervet egyik irányban sem** (`dependencies: []`). Egyéb érintettség: a `src/services/introLayout.ts` és `introFit.ts` keretrendszer-független, tehát változatlanul működik; a `useIntroLayout` viszont **kliens-only** (`document.fonts`, `window`), tehát a 020 `ssr: false` határa mögé kell essen, és a React 18 → 19 StrictMode dupla-effektjére a mérési effekt cleanup-védelmét ellenőrizni kell (6.12).

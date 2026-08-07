@@ -188,7 +188,7 @@ tags:
 
 **F rész — Áruház letiltása nem regisztrált usereknél (2026-07-28)**
 
-> A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[023-stripe-go-live]]).
+> A [[013-social-multiplayer]] O. blokkjában bevezetett vendég-őr **kiterjesztése** a `shop` fázisra. **Indok:** a vásárlásoknak túl kell élniük egy eldobható vendég-sessiont — vendégként vett tartalom a session elvesztésével elveszne, valós pénzért vett kredit esetén ez elfogadhatatlan ([[024-stripe-go-live]]).
 >
 > ℹ️ **Frissítve (2026-07-29):** az üzenet **megjelenítése** azóta megváltozott — beágyazott bekezdés helyett **warning toast**. Kanonikus leírás: [[015-toast-notification]] H. blokk / 0.9. A `shop.guestNotice` kulcs, a 🔒 prefix, a `title` tooltip és a `ScreenRouter` `needsAccount` listája **változatlan**.
 

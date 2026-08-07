@@ -34,7 +34,7 @@
     "step": {
       "camera": "Connexion de la caméra...",
       "model": "Chargement du modèle d'intelligence artificielle...",
-      "calibration": "Calibrage du système de reconnaissance faciale...",
+      "calibration": "Calibrage du système de détection d'attention...",
       "ready": "Tous les systèmes sont prêts !"
     },
     "status": {
@@ -83,7 +83,7 @@
     },
     "cameraConsent": {
       "title": "Accès à la caméra",
-      "description": "Ce jeu utilise la reconnaissance faciale pour suivre votre attention pendant la mission.\n\nLe flux de votre caméra est traité entièrement sur votre appareil. Aucune image ou vidéo n'est jamais envoyée à un serveur, stockée ou partagée avec des tiers.\n\nVous pouvez activer ou désactiver l'accès à la caméra à tout moment dans le menu Paramètres.",
+      "description": "Ce jeu utilise votre caméra pour suivre votre attention pendant la mission. Le système ne reconnaît pas les visages et n'identifie personne — il analyse uniquement la position des yeux par rapport au nez et aux oreilles afin de détecter si vous êtes assis devant l'écran et attentif.\n\nL'image de votre caméra est traitée entièrement en local, sur votre appareil. Aucune image, vidéo ou donnée faciale n'est jamais envoyée à un serveur, stockée ou partagée avec des tiers.\n\nVous pouvez activer ou désactiver l'accès à la caméra à tout moment dans le menu Paramètres.",
       "allow": "Autoriser",
       "deny": "Refuser",
       "browserDenied": "L'accès à la caméra a été bloqué dans votre navigateur. Veuillez l'autoriser dans les paramètres de votre navigateur.",

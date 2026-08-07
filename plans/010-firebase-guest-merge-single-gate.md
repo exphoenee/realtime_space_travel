@@ -18,7 +18,7 @@ related_plans:
   - 005-ingame-shop-strapi-stripe
   - 012-wall-of-shame
   - 021-stripe-fraud-defense
-  - 023-stripe-go-live
+  - 024-stripe-go-live
 tags:
   - firebase
   - auth
@@ -35,7 +35,7 @@ tags:
 
 **Cél:** a [[009-firebase-identity-split-bugfix]] által bevezetett per-`deviceId` `migratedFrom` idempotencia-jelölés **adatvesztő** viselkedésének felszámolása. A guest→regisztrált-fiók beolvasztás **fiók-szintű, életében-egyszer** kapuvá alakul (`profile/guestMergeClaimed`), az **első** merge a vendég kreditet és tárgyait **hozzáadja** a fiókhoz, a további merge-kísérletek **blokkolódnak** (figyelmeztetéssel), a `device_map` szivárgás minden ágon megszűnik, és a felhasználó **vásárláskor** figyelmeztetést kap a vendég-adat elvesztésének kockázatáról.
 
-> ⚠️ **Ez a terv a [[009-firebase-identity-split-bugfix]] FOLYTATÁSA/JAVÍTÁSA, és a [[021-stripe-fraud-defense]] + [[023-stripe-go-live]] ELŐFELTÉTELE.** A 009 megszüntette a `deviceId`-rotációt — ezzel viszont az idempotencia-jelölés (`migratedFrom/{deviceId}`) **csapdává** vált: a visszatérő, változatlan `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor **nyomtalanul törlődik**. Valós pénzes kredit ([[021-stripe-fraud-defense]], [[023-stripe-go-live]]) ilyen adatvesztés fölé nem tehető.
+> ⚠️ **Ez a terv a [[009-firebase-identity-split-bugfix]] FOLYTATÁSA/JAVÍTÁSA, és a [[021-stripe-fraud-defense]] + [[024-stripe-go-live]] ELŐFELTÉTELE.** A 009 megszüntette a `deviceId`-rotációt — ezzel viszont az idempotencia-jelölés (`migratedFrom/{deviceId}`) **csapdává** vált: a visszatérő, változatlan `deviceId`-n frissen vásárolt vendég-kredit a következő Google-belépéskor **nyomtalanul törlődik**. Valós pénzes kredit ([[021-stripe-fraud-defense]], [[024-stripe-go-live]]) ilyen adatvesztés fölé nem tehető.
 
 ---
 
@@ -301,7 +301,7 @@ users/{uid}/profile/
 ## 3. Függőségek
 
 - **Előfeltétel:** [[009-firebase-identity-split-bugfix]] — annak `migrateGuestData` / `rtdbKey` / self-healing kódját javítja/folytatja (a per-`deviceId` idempotencia csapdáját).
-- **Blokkolja:** [[021-stripe-fraud-defense]] és [[023-stripe-go-live]] — mindkettő a `wallet` node integritására épül; valós pénzes kredit nem mehet adatvesztő merge fölé.
+- **Blokkolja:** [[021-stripe-fraud-defense]] és [[024-stripe-go-live]] — mindkettő a `wallet` node integritására épül; valós pénzes kredit nem mehet adatvesztő merge fölé.
 - **Érinti:** [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`); [[004-firebase-auth-bugfix]] — az eredeti guest→Google migráció és `deviceId`-modell.
 - **Kézi lépések:** Firebase Console (J blokk: 5 árva `device_map` törlés, opcionális kredit-jóváírás, opcionális flag-beállítás).
 - **Végrehajtási branch:** `develop`.
@@ -353,7 +353,7 @@ A felhalmozódott anonim auth-userek **kliensről nem törölhetők** (`deleteUs
 
 ### 5.4 Stripe-visszatérési kredit-jóváírási race (kifizetett kredit elveszik) — lásd 11.
 
-A Payment Link-visszatérés utáni jóváírás jelenleg a mount-effektben **azonnal**, a szinkron **előtt**, `set()`-tel (felülírva) fut → a meglévő szerver-egyenleg elveszhet, és tranziens auth-állapotban a guest node-ra írhat. Javítás: **kettős kapu** (auth-ready + `creditsLoaded`) + **atomikus `runTransaction` inkrement** + **kliensoldali idempotencia** (11.3). Regresszió-veszély a jelenlegi `buyCredits` / `updateUserWallet` (`set()`) útra: ezt a Stripe-flow-ból ki kell váltani az inkrementre; a `buyCredits` a nem-Stripe (debug) úton maradhat. Ez a wallet-integritási ág a [[023-stripe-go-live]] élesítés előfeltétele; a szerveroldali `session_id`-ledger a [[021-stripe-fraud-defense]] hatóköre.
+A Payment Link-visszatérés utáni jóváírás jelenleg a mount-effektben **azonnal**, a szinkron **előtt**, `set()`-tel (felülírva) fut → a meglévő szerver-egyenleg elveszhet, és tranziens auth-állapotban a guest node-ra írhat. Javítás: **kettős kapu** (auth-ready + `creditsLoaded`) + **atomikus `runTransaction` inkrement** + **kliensoldali idempotencia** (11.3). Regresszió-veszély a jelenlegi `buyCredits` / `updateUserWallet` (`set()`) útra: ezt a Stripe-flow-ból ki kell váltani az inkrementre; a `buyCredits` a nem-Stripe (debug) úton maradhat. Ez a wallet-integritási ág a [[024-stripe-go-live]] élesítés előfeltétele; a szerveroldali `session_id`-ledger a [[021-stripe-fraud-defense]] hatóköre.
 
 ---
 
@@ -446,7 +446,7 @@ vi.mock("firebase/database", () => ({
 
 - [[009-firebase-identity-split-bugfix]] — **közvetlen előfeltétel.** Ez a terv annak per-`deviceId` `migratedFrom` idempotencia-csapdáját és a `device_map`-szivárgást javítja, és a wallet-politikát „target győz"-ről „első merge = összeadás + fiók-flag"-re cseréli.
 - [[021-stripe-fraud-defense]] — **erre a tervre épül.** A wallet-növekmény-limit szabálynak `!data.exists()` ágra **és** az egyszeri guest-merge írás kivételére van szüksége (5.1).
-- [[023-stripe-go-live]] — **erre a tervre épül.** Valós pénzes kredit nem indulhat adatvesztő guest-merge fölött.
+- [[024-stripe-go-live]] — **erre a tervre épül.** Valós pénzes kredit nem indulhat adatvesztő guest-merge fölött.
 - [[005-ingame-shop-strapi-stripe]] — a kredit-jóváírás célútvonala (`users/{rtdbKey}/wallet/credits`).
 - [[004-firebase-auth-bugfix]] — az eredeti guest→Google migráció, `deviceId`-modell és `device_map` forrása.
 - [[000-i18n-nyelvesites]] — a 3 új kulcs teljes paritása mind az 5 nyelven.
@@ -457,7 +457,7 @@ vi.mock("firebase/database", () => ({
 
 ## 11. Stripe-visszatérési kredit-jóváírási race (kifizetett kredit elveszik)
 
-> ⚠️ **Ez az ág a [[023-stripe-go-live]] ÉLESÍTÉS EGYIK ELŐFELTÉTELE** (dependency-lánc: 012 → 011 → 010). Valós pénzes kredit nem veszhet el a Stripe-visszatérés utáni jóváíráskor. Ugyanahhoz a wallet-integritáshoz tartozik, amit ez a terv úgyis érint (A–B blokk, `useShopStore` / `userData` wallet-írás); a robusztus **szerveroldali** `session_id`-ledger (`credit_claims/{sessionId}`) és a wallet-növekmény-limit a [[021-stripe-fraud-defense]] hatóköre — itt a **kliensoldali minimum** kell, ami a normál flow-ban **nem veszít és nem duplikál**.
+> ⚠️ **Ez az ág a [[024-stripe-go-live]] ÉLESÍTÉS EGYIK ELŐFELTÉTELE** (dependency-lánc: 012 → 011 → 010). Valós pénzes kredit nem veszhet el a Stripe-visszatérés utáni jóváíráskor. Ugyanahhoz a wallet-integritáshoz tartozik, amit ez a terv úgyis érint (A–B blokk, `useShopStore` / `userData` wallet-írás); a robusztus **szerveroldali** `session_id`-ledger (`credit_claims/{sessionId}`) és a wallet-növekmény-limit a [[021-stripe-fraud-defense]] hatóköre — itt a **kliensoldali minimum** kell, ami a normál flow-ban **nem veszít és nem duplikál**.
 
 ### 11.1 Tünet (élő adatból + kódból igazolva)
 
